@@ -12,10 +12,29 @@ public sealed class FileRow(FileEntry entry) : INotifyPropertyChanged
     private bool isEditing;
     private string draftName = entry.Name;
     private IBrush fileColor = Brushes.White;
-    private bool selected;
-    public IBrush NameForeground => selected ? Brushes.White : fileColor;
+    private bool current;
+    private bool active;
+    private bool marked;
+    private static readonly IBrush markColor = new SolidColorBrush(Color.Parse("#FFD278"));
+    public bool IsMarked => marked;
+    public string MarkGlyph => marked ? "✓" : "";
+    private static readonly IBrush activeCursor = new SolidColorBrush(Color.Parse("#15558A"));
+    private static readonly IBrush inactiveCursor = new SolidColorBrush(Color.Parse("#1D2532"));
+    public bool IsCurrent => current;
+    public IBrush RowBackground => current ? active ? activeCursor : inactiveCursor : Brushes.Transparent;
+    public IBrush NameForeground => marked ? markColor : current ? Brushes.White : fileColor;
+    public void SetMarked(bool value)
+    {
+        if (marked == value) return;
+        marked = value; Changed(nameof(IsMarked)); Changed(nameof(MarkGlyph)); Changed(nameof(NameForeground));
+    }
     public void SetFileColor(IBrush color) { fileColor = color; Changed(nameof(NameForeground)); }
-    public void SetSelected(bool value) { if (selected == value) return; selected = value; Changed(nameof(NameForeground)); }
+    public void SetCurrent(bool value, bool panelActive)
+    {
+        if (current == value && active == panelActive) return;
+        current = value; active = panelActive;
+        Changed(nameof(IsCurrent)); Changed(nameof(RowBackground)); Changed(nameof(NameForeground));
+    }
     public FileEntry Entry { get; } = entry;
     public string Name => Entry.Name;
     public string Kind => Entry.IsDirectory ? "DIR" : Entry.Extension.ToUpperInvariant();

@@ -35,9 +35,10 @@ To open specific directories:
 
 | Input | Action |
 | --- | --- |
-| Up / Down, Home / End, Ctrl+Home / Ctrl+End | Move the file cursor |
-| PageUp / PageDown | Move by approximately one visible page |
-| Shift+arrows, Shift+Home / End / PageUp / PageDown | Extend selection |
+| Up / Down, Home / End, Ctrl+Home / Ctrl+End | Move the file cursor and keep marks |
+| PageUp / PageDown | Move by approximately one visible page and keep marks |
+| Shift+Up / Shift+Down | Toggle the departed row and move the cursor; plain arrows keep the marks |
+| Shift+Home / End / PageUp / PageDown | Mark a range to a boundary or page; repeat a fully marked range to remove its marks |
 | Ctrl+A, Ctrl+click, Shift+click | Select all, toggle a row, select a range |
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
@@ -48,7 +49,7 @@ To open specific directories:
 | Up / Down in the command line | Return focus to the active file panel |
 | Alt+Up / Alt+Down in the command line | Recall an older / newer command; return to the unfinished draft |
 | Ctrl+Enter / Ctrl+Shift+Enter | Insert the current file name / full path; quote spaces |
-| Escape | Clear the command line; editing and search keep their own Escape action |
+| Escape | Clear file marks and the command line, then focus files; editing and search keep their own first Escape action |
 | Enter / double-click on `..`, Ctrl+PageUp, Backspace | Open the parent directory and restore its cursor |
 | Alt+Down / panel History button | Open the shared navigation window with History active |
 | Ctrl+D | Open the same navigation window with Favorites active; Insert adds the current directory, F2 edits its label, Delete removes the favorite |
@@ -63,12 +64,32 @@ To open specific directories:
 | Ctrl+R | Optional immediate reload; normal directory updates are automatic |
 | Alt+Shift+Enter | Calculate all child folder sizes in the active panel; press again or Escape to cancel |
 | F7 | Open the new-folder dialog |
-| F5 | Copy selected files to the other panel without overwriting |
+| F5 | Confirm copying selected files and folders to the other panel |
+| Shift+F5 | Confirm a copy in the active panel |
+| F6 | Confirm moving selected files and folders to the other panel |
+| F8 / Delete | Open deletion confirmation with Recycle Bin selected |
+| Shift+Delete | Open the same confirmation with permanent deletion selected |
 | F12 / Feedback button | Highlight an interface element and add a comment, including inside application dialogs |
 | Notes button | View the saved refinement list and remove comments |
 | View > Reset column widths | Restore the active panel's default column widths |
 
-Sort headers accept clicks across their area; the strip at the right edge resizes a column. The final column fills remaining space and has no resize handle. Size defaults leave room for byte counts up to ten GiB. Type headings and values are centered; Size headings align with byte counts. File names have Windows system icons, panels have square corners, and inactive selection is faint. Only a top strip marks the active panel; the sides and bottom have no outline. The executable, main window and owned dialogs use the Xcmd application icon.
+Sort headers accept clicks across their area; the strip at the right edge resizes a column. The final column fills remaining space and has no resize handle. Size defaults leave room for byte counts up to ten GiB. Type headings and values are centered; Size headings align with byte counts. File names have Windows system icons. The cursor uses one blue background with or without marks. The inactive panel uses a faint cursor background. Marked files keep an amber check and file name, including under the cursor. Moving the cursor does not change row size or text position. Shift+Up and Shift+Down remove an existing mark when the row is marked again. Panels have square corners. Table rows stay above the footer and outside the space reserved for scroll bars. Only a top strip marks the active panel; the sides and bottom have no outline. The executable, main window and owned dialogs use the Xcmd application icon.
+
+## File operations prototype
+
+Default confirmation buttons use a blue background and respond to Enter. Focusing Cancel makes Cancel the Enter action and keeps the files unchanged. The highlighted action follows the active editor or button in navigation and conflict dialogs. The multiline comment editor keeps Enter for a new line and Ctrl+Enter to add the comment.
+
+F5 confirms copying selected files and folders to the other panel. F6 confirms moving them. Edit the destination before pressing Enter: use an existing directory, or a full new name for one item. Shift+F5 proposes a copy in the active panel with a new name. Copying a batch into its source directory is rejected. Shift+F5 for one item proposes an explicit new name; it does not allow replacing the source path. Each request keeps the source paths and confirmed destination; later panel navigation does not change them. F7 creates a folder; Shift+F6 keeps inline rename.
+
+Requests run in order in the background. Both panels remain available. The operation strip appears after one second of running work and hides shortly after completion. Short operations report their result in the status line. The strip uses a fixed-height summary with full paths in hover help. Operations first count files without changing the destination. Progress shows processed files against that total, a bar based on file bytes, and an estimated remaining time. Selected root items are labelled separately in the history. Counting is cancellable; incomplete counts are reported. Remaining time excludes counting and conflict dialogs and is an estimate, not a fixed completion time. Choose **Details** or **View > File operations** to inspect requests and individual results, including hidden short operations. **Cancel current** stops the running request; **Cancel selected** also works for a queued request. Completed changes remain after cancellation. Cancellation does not roll back a batch.
+
+Folders with the same name merge. Destination-only files stay in place. Regular files with equal contents, sizes, modification times and basic attributes are skipped without a question. Other existing files require **Skip**, **Rename**, **Replace**, or **Cancel operation**. The compact conflict dialog compares source and destination sizes and modification times; hover over each shortened directory to see its full path. Apply-to-all affects matching conflict types in that request only. A folder cannot replace a file, and a file cannot replace a folder. Finish an open dialog, rename or command-line edit before the next conflict dialog appears.
+
+Copies use a temporary destination file and replace the final path only after the copy finishes. A cancelled copy keeps an existing destination file. Moves use a filesystem rename when possible. The copy-delete fallback removes each source only after copying that item succeeds. A skipped or failed child keeps the remaining source folder available. Results identify partial changes and failures.
+
+F8 or Delete opens a short deletion question with **Recycle Bin** selected. Shift+Delete selects **Permanently** instead. The underlined **R** and **P** show the **Alt+R** and **Alt+P** access keys. Choose either mode in the same dialog, then press Enter or the highlighted **Yes** button. Escape or **Cancel** keeps the files. Windows processes each recycled tree as one item; cancellation takes effect between selected items. Recycling is limited to local fixed drives. If Windows would delete an item permanently instead, Xcmd refuses that operation. Permanent deletion checks cancellation between files.
+
+Copy and move report unsupported links and junctions without following them. Writes through linked parent directories are also rejected. Permanent deletion removes a link itself and does not traverse its target. Pause, retry, queue reordering, content comparison and newer-file conflict rules are not included in this prototype.
 
 ## File colors
 
@@ -84,6 +105,8 @@ Enter or double-click opens the current file through the Windows shell. Executab
 
 The launch adapter uses the Windows file association through [ProcessStartInfo.UseShellExecute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.useshellexecute?view=net-10.0). Xcmd passes the file path separately from command text.
 
+Opening View > File operations focuses the request list. Use arrows to select a request and Tab to reach cancellation and details controls. Cancelling a request or changing its status keeps focus in the history. Hiding details or pressing Escape returns focus to files. An operation waiting for a conflict decision shows its reason while the current edit or dialog finishes. Move and delete keep only surviving file marks; an empty mark set stays empty.
+
 ## Command line
 
 Before each Windows Shell launch, Xcmd reads the current system and user environment from Windows. New processes receive added, changed and removed settings without restarting Xcmd. Program lookup uses the current `PATH`, and `%VARIABLE%` in a program target uses the current value. Variables inherited only by the Xcmd process are preserved. Xcmd restores its own process environment after each launch, including failed launches.
@@ -92,7 +115,7 @@ Already running terminals keep their existing environment. If an external applic
 
 The single command row below the panels starts programs and opens files through Windows ShellExecute. Every launch uses the active panel's current directory. Type a program name such as `cmd`, a file, a shortcut or a URL, then press Enter. Quote a program path that contains spaces. Xcmd passes the argument text to Windows without a command interpreter. To use interpreter commands, invoke the interpreter explicitly, for example `cmd /c dir`. There is no embedded terminal or shell selector.
 
-Plain typing from files inserts text in the command line. Left, Right and Ctrl+L focus the line. Up or Down returns focus to the active panel without moving its cursor. Escape clears the line. Alt+Up and Alt+Down recall commands and restore an unfinished draft after the latest command. From files, Alt+Up recalls a command; Alt+Down keeps directory history. Tab from the line switches to the other panel.
+Plain typing from files inserts text in the command line. Left, Right and Ctrl+L focus the line. Up or Down returns focus to the active panel without moving its cursor. Escape clears the line and file marks, then returns focus to that panel without moving the cursor. Alt+Up and Alt+Down recall commands and restore an unfinished draft after the latest command. From files, Alt+Up recalls a command; Alt+Down keeps directory history. Tab from the line switches to the other panel.
 
 Ctrl+C copies selected command text. Without a selection, Ctrl+C copies the whole command and keeps the caret in place. An empty command leaves the clipboard unchanged. Long directory paths keep their right end visible; hover over the path to see the full directory. Keyboard hints use separators and wrap in narrow windows.
 
@@ -104,7 +127,7 @@ A successful launch clears the submitted text and records it in shared command h
 
 ## Name search
 
-Press Alt and the first letter, release Alt, and continue typing to extend the name prefix. The list stays visible and the cursor moves to a matching entry. A letter with no matching name is ignored, so the existing prefix stays usable. Escape, cursor navigation, pointer movement, commands, panel switches and window deactivation clear the prefix. The status line shows the accepted prefix. An active search delays directory refresh and automatic release changes.
+Press Alt and the first letter, release Alt, and continue typing to extend the name prefix. The list stays visible and the cursor moves to a matching entry. A letter with no matching name is ignored, so the existing prefix stays usable. Escape, cursor navigation, pointer movement, commands, panel switches and window deactivation clear the prefix. Name jumping keeps file marks. The status line shows the accepted prefix. An active search delays directory refresh and automatic release changes.
 
 Search handles physical keys even when Windows sends no text input, tries the loaded Windows keyboard layouts, and avoids counting a key and its text event twice. For example, Russian `еуые` can find English `test`. Physical key translation and actual input routing are covered separately; headless checks do not simulate the complete native Windows input backend.
 
@@ -124,7 +147,7 @@ Sorting and session restore keep completed measurements, including automatic rel
 
 Launch the current release once. When a newer verified release is published locally, the running application switches to it automatically after two seconds without input. Directory reads, file operations, command-line focus, inline rename, open dialogs and feedback mode delay the switch. The header reports when an update is waiting.
 
-The application saves the command draft, history, caret, selection and focus, both panel locations, file cursors, selected entries, sorting, directory history and its cursors, scroll positions, column widths, the active panel, window size, position, maximized/minimized state and activation, and feedback comments. The replacement restores this state before announcing readiness, waits for the previous process to exit, and then shows its window. A background or minimized window is not activated during an update. A replacement startup failure leaves the current version open. Missing directories fall back to an accessible parent; missing selected files are omitted.
+The application saves the command draft, history, caret, selection and focus, both panel locations, file cursors, selected entries and mark mode, sorting, directory history and its cursors, scroll positions, column widths, the active panel, window size, position, maximized/minimized state and activation, and feedback comments. The replacement restores this state before announcing readiness, waits for the previous process to exit, and then shows its window. A background or minimized window is not activated during an update. A replacement startup failure leaves the current version open. Missing directories fall back to an accessible parent; missing selected files are omitted.
 
 The session is also saved on normal close. State is stored under `%LOCALAPPDATA%/Xcmd/session.json`, outside release directories. Invalid state on a normal launch starts a new session with a visible message; invalid state during an update blocks the update. Moving a native window between monitors remains outside headless verification.
 
@@ -132,7 +155,7 @@ Automatic updates run only from release directories. Development builds and auto
 
 ## Comment on the interface
 
-Choose **Feedback** or press F12, then move the pointer to highlight an element and click it. Every application dialog has its own Feedback button and F12 shortcut. The comment window belongs to the window being annotated, so its draft, selection and workflow stay intact. This also works for the comment editor itself. Selection for a comment does not activate the underlying control. Write a comment and choose **Add comment** or press Ctrl+Enter. Escape first cancels selection; when not selecting, Escape closes the comment dialog. The selected element stays outlined while the comment dialog is open.
+Choose **Feedback** or press F12, then move the pointer to highlight an element and click it. Every application dialog has its own Feedback button and F12 shortcut. The comment window belongs to the window being annotated, so its draft, selection and workflow stay intact. This also works for the comment editor itself. Labels, status messages, errors and disabled actions can all be selected for a comment. Selection uses the visible element instead of its outer window and does not activate the underlying control. Write a comment and choose **Add comment** or press Ctrl+Enter. Escape first cancels selection; when not selecting, Escape closes the comment dialog. The selected element stays outlined while the comment dialog is open.
 
 Choose **Notes** to see the refinement list. Each comment records the element, directory, release and time. Comments are saved immediately, survive updates and ordinary restarts, and are compiled into `%LOCALAPPDATA%/Xcmd/refinements.md` as an English Markdown checklist. User comments keep their original text. The Notes window shows the saved list's location and can remove a selected comment.
 

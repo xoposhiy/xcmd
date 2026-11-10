@@ -4,7 +4,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xcmd.Core;
+using Xcmd.Desktop;
 using Xcmd.Probe.Infrastructure;
+using static Xcmd.Probe.Infrastructure.FileOperationProbe;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Scenarios;
@@ -81,13 +83,14 @@ public static class PanelScenarios
             await c.KeyAsync(Key.PageUp);
             Equal("..", c.Window.Left.Current?.Name, "PageUp returns to the first row");
         }),
-        new("shift-range-selection", "UC20", async c =>
+        new("shift-mark-and-move-selection", "UC20; Mark departing rows and keep independent cursor", async c =>
         {
             await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
             await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
-            Equal(3, c.Window.Left.SelectedNames().Length, "Shift+Down extends selection");
+            Equal(2, c.Window.Left.SelectedNames().Length, "Shift+Down marks the two departed rows");
+            Equal(".env", c.Window.Left.Current?.Name, "The cursor advances past the marks");
             await c.KeyAsync(Key.Down);
-            Equal(1, c.Window.Left.SelectedNames().Length, "Plain arrow clears the range");
+            Equal(2, c.Window.Left.SelectedNames().Length, "Plain arrows preserve marked rows");
         }),
         new("ctrl-a-and-sort-preserve-selection", "UC13; UC20", async c =>
         {
@@ -355,11 +358,14 @@ public static class PanelScenarios
         new("copy-real-file-and-conflict", "UC04; UC34", async c =>
         {
             await c.SelectAsync("alpha.txt");
-            await c.KeyAsync(Key.F5);
+            await CopyAsync(c);
             Equal("abc", File.ReadAllText(Path.Combine(c.RightPath, "alpha.txt")), "Copy writes the actual file contents");
             Check(c.Window.Right.Rows.Any(row => row.Name == "alpha.txt"), "Copy refreshes the destination panel.");
-            await c.KeyAsync(Key.F5);
-            Check(c.Window.LastError != null, "Copy reports a collision instead of overwriting.");
+            File.WriteAllText(Path.Combine(c.RightPath, "alpha.txt"), "destination version");
+            await CopyAsync(c);
+            Check(c.Window.OperationDialog is FileConflictDialog, "Copy asks for a conflict decision instead of overwriting.");
+            await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
+            Equal("destination version", File.ReadAllText(Path.Combine(c.RightPath, "alpha.txt")), "Cancelling a conflict keeps the destination");
         }),
         new("empty-directory-keyboard", "UC20", async c =>
         {

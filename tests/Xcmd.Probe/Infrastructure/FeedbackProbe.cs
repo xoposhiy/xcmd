@@ -1,0 +1,25 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.VisualTree;
+using Xcmd.Core;
+using static Xcmd.Probe.Infrastructure.ProbeContext;
+
+namespace Xcmd.Probe.Infrastructure;
+
+public static class FeedbackProbe
+{
+    public static TextBlock Text(Window window, string value) => window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == value && !text.GetVisualAncestors().OfType<TextBox>().Any());
+
+    public static async Task<FeedbackNote> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
+    {
+        await context.KeyAsync(Key.F12, target: window);
+        await context.ClickAsync(element, target: window);
+        var comment = context.Window.Feedback.ActiveComment;
+        Check(comment != null, "Clicking a visible element opens a comment.");
+        await context.TextAsync("Feedback selection check", comment);
+        await context.KeyAsync(Key.Enter, RawInputModifiers.Control, comment);
+        var note = context.Window.Feedback.Notes.Last();
+        Equal(expectedName, note.ElementName, "Feedback identifies the clicked element instead of its window");
+        return note;
+    }
+}

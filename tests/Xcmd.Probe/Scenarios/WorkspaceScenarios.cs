@@ -7,6 +7,7 @@ using Xcmd.Core;
 using Xcmd.Desktop;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
+using static Xcmd.Probe.Infrastructure.FileOperationProbe;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 using static Xcmd.Probe.Infrastructure.WorkspaceProbe;
 
@@ -132,7 +133,7 @@ public static class WorkspaceScenarios
             await lifecycle.InitializeAsync(new[] { c.LeftPath, c.RightPath });
             await c.SelectAsync("alpha.txt");
             var gate = c.FileSystem.PauseNextCopy(Path.Combine(c.LeftPath, "alpha.txt"));
-            c.PressKey(Key.F5); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            c.PressKey(Key.F5); ConfirmTransfer(c); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             try
             {
                 await Task.Delay(2200); await lifecycle.PollAsync();

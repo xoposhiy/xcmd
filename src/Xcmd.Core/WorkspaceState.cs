@@ -1,7 +1,7 @@
 namespace Xcmd.Core;
 
 public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cursor, string[] Selected,
-    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null);
+    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false);
 public sealed record ColumnState(double Width, bool Star);
 public sealed record WindowPlacement(int X, int Y, double Width, double Height, bool Maximized, bool Minimized = false, bool Active = true);
 public sealed record FeedbackNote(string Id, string Release, string ElementId, string ElementName,

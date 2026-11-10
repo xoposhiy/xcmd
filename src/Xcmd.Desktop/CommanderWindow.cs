@@ -28,10 +28,10 @@ public sealed partial class CommanderWindow : Window
     public PanelView OppositePanel => ActivePanel == Left ? Right : Left;
     public NameDialog? ActiveDialog { get; private set; }
     public DirectoryNavigationDialog? ActiveNavigationDialog { get; private set; }
-    public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null;
+    public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null || OperationDialog != null;
     public FavoriteDirectories Favorites { get; } = new();
     public event Func<Task>? FavoritesChanged;
-    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading;
+    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Operations.HasPendingWork;
     public string? LastError { get; private set; }
     public string StatusMessage => status.Text ?? "";
     public List<string> Trace { get; } = [];
@@ -49,6 +49,16 @@ public sealed partial class CommanderWindow : Window
     {
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
         fileSystem ??= new LocalFileSystem();
+        operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
+        Operations = new FileOperationQueue(new FileOperationRunner(operationStore, ResolveFileConflictAsync));
+        OperationsView = new FileOperationsView(Operations);
+        Operations.Finished += job =>
+        {
+            Execute(RefreshOperationPanelsAsync);
+            var failure = job.Outcomes.FirstOrDefault(result => result.Kind == FileOutcomeKind.Failed);
+            if (failure != null) SetError(Path.GetFileName(failure.Source) + ": " + failure.Message);
+            else status.Text = $"{job.Request.Kind}: {job.ProcessedFiles:N0}/{job.TotalFiles:N0} files · {job.SkippedFiles:N0} skipped · {job.State}";
+        };
         Title = "Xcmd";
         Icon = ApplicationIcon.Load();
         Width = 1280; Height = 760; MinWidth = 840; MinHeight = 400;
@@ -57,6 +67,7 @@ public sealed partial class CommanderWindow : Window
         Left = new PanelView("left", fileSystem, fileTypes);
         Right = new PanelView("right", fileSystem, fileTypes);
         ActivePanel = Left;
+        OperationsView.FilesRequested += () => ActivePanel.FocusCurrent();
         foreach (var panel in new[] { Left, Right })
         {
             panel.Activated += Activate;
@@ -65,7 +76,7 @@ public sealed partial class CommanderWindow : Window
             panel.LocationVisited += path => { if (!restoringVisits) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(path); };
             panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
         }
-        var layout = new Grid { RowDefinitions = new RowDefinitions("32,*,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("32,*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
         var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") };
         header.Children.Add(mainMenu = BuildMenu());
         Grid.SetColumn(updateMessage, 1); header.Children.Add(updateMessage);
@@ -81,10 +92,11 @@ public sealed partial class CommanderWindow : Window
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
         Grid.SetRow(panels, 1); layout.Children.Add(panels);
         var help = BuildKeyboardHelp();
-        Grid.SetRow(CommandLine, 2); layout.Children.Add(CommandLine);
+        Grid.SetRow(OperationsView, 2); layout.Children.Add(OperationsView);
+        Grid.SetRow(CommandLine, 3); layout.Children.Add(CommandLine);
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
-        Grid.SetRow(help, 3); layout.Children.Add(help);
-        Grid.SetRow(status, 4); layout.Children.Add(status);
+        Grid.SetRow(help, 4); layout.Children.Add(help);
+        Grid.SetRow(status, 5); layout.Children.Add(status);
         var root = new Grid();
         root.Children.Add(layout);
         Content = root;
@@ -98,7 +110,7 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyDownEvent, (_, _) => lastInput = Stopwatch.GetTimestamp(), RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
-        Closing += (_, _) => CancelDirectorySizes();
+        Closing += (_, _) => { CancelDirectorySizes(); Operations.CancelAll(); OperationDialog?.Close(); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
@@ -108,7 +120,7 @@ public sealed partial class CommanderWindow : Window
     private static WrapPanel BuildKeyboardHelp()
     {
         var help = new WrapPanel { Name = "KeyboardHelp" };
-        string[] hints = ["Tab  Panels", "Enter  Open / Run", "Ctrl+L  Command line", "Esc  Clear", "↑ ↓  Files", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+        string[] hints = ["F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
         foreach (var hint in hints)
             help.Children.Add(new Border
             {
@@ -166,6 +178,11 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
         if (HasOpenDialog) return;
+        if (OperationsView.IsKeyboardFocusWithin)
+        {
+            if (e.Key == Key.Escape) { ActivePanel.FocusCurrent(); e.Handled = true; }
+            return;
+        }
         if (CommandLine.HasKeyboardFocus) { HandleCommandLineKey(e); return; }
         altInput = e.KeyModifiers.HasFlag(KeyModifiers.Alt) || e.Key is Key.LeftAlt or Key.RightAlt;
         if (ActivePanel.EditingRow != null) { HandleRenameKey(e); return; }
@@ -266,8 +283,9 @@ public sealed class NameDialog : Window
         Title = "New folder"; Width = 440; SizeToContent = SizeToContent.Height;
         CanResize = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         AutomationProperties.SetAutomationId(Editor, "new-folder.name");
-        var create = new Button { Content = "Create", Name = "CreateFolder", HorizontalAlignment = HorizontalAlignment.Right };
+        var create = new Button { Content = "Create", Name = "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
         create.Click += (_, _) => Submitted?.Invoke(Editor.Text ?? "");
+        DialogActions.FollowFocus(this, create);
         Content = new StackPanel
         {
             Margin = new Thickness(14),
@@ -278,7 +296,7 @@ public sealed class NameDialog : Window
         {
             if (feedback?.IsPickingIn(this) == true) return;
             if (e.Key == Key.Escape) { Close(); e.Handled = true; }
-            else if (e.Key == Key.Enter) { Submitted?.Invoke(Editor.Text ?? ""); e.Handled = true; }
+            else if (e.Key == Key.Enter && Editor.IsKeyboardFocusWithin) { Submitted?.Invoke(Editor.Text ?? ""); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
     }
 }

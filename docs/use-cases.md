@@ -10,10 +10,10 @@ This inventory records accepted goals and current limits. Implemented behavior i
 - Keep keyboard navigation, command history, name/path insertion, directory history and favorites as direct workflows. Use Alt for name search and plain typing for the command line.
 - Keep the `..` parent row and Ctrl+PageUp. Entering a child directory selects `..`; parent returns, history and session restore keep remembered cursors.
 - Use natural file-name ordering. Keep directories first and sorted by ascending name. Keep focus in the source panel after Ctrl+Left/Right. Inline rename selects the full name, including the extension.
-- Use compact controls, Windows system icons, configurable file colors, square corners and faint inactive selection. A top strip marks the active panel.
+- Use compact controls, Windows system icons, configurable file colors, square corners and faint inactive cursors. A top strip marks the active panel.
 - Combine directory History, Frequent locations and Favorites in one navigation window. Share favorites and frequency scores between panels. Count qualified work visits rather than quick transitions, exclude roots and reduce older scores over time.
 - Keep basic multi-file selection. Advanced selection and directory synchronization are deferred.
-- Keep conflict handling as a required future workflow. The current file copy rejects an existing destination; it does not implement conflict choices.
+- Handle copy and move conflicts explicitly. The prototype supports Skip, Rename and Replace, with apply-to-all for matching conflict types. Comparison and newer-file rules remain planned.
 - Keep Git inspection limited to file status and diffs. Git write operations are deferred.
 - Search by name substring, mask or contents. Handle encodings and supported archives automatically. Return useful results before scanning dependency directories. The [search design](search.md) distinguishes confirmed requirements from proposed scheduling and ignore rules.
 - Test every implemented workflow without visible application windows or human assistance. Deliver separate verified releases and preserve the workspace during local release handoff.
@@ -26,8 +26,8 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC01 | Start a terminal in the active directory. | Implemented through quick launch | Type a program name such as `cmd`. Dedicated Git Bash, CMD and PowerShell launch actions are deferred. |
 | UC02 | Quickly run a program or open a file. | Implemented | ShellExecute uses the active panel directory. Support local cd, history, name/path insertion, editor focus keys, Escape and saved drafts. Very frequent workflow. |
 | UC03 | Jump to a file or directory by name. | Implemented | Start with Alt and a letter, release Alt and continue typing. Ignore unmatched letters. Support loaded keyboard layouts and physical keys without duplicate text. |
-| UC04 | Copy files and directories between panels. | Partial | F5 copies selected individual files without overwriting. Recursive copy, progress, queue behavior and conflict choices remain planned. |
-| UC05 | Move files and directories. | Planned | Define conflicts, cross-volume behavior, progress, queue behavior and selection afterward. |
+| UC04 | Copy files and directories between panels. | Prototype | F5 recursively copies files and empty folders, merges folders, reports progress and failures, and supports cancellation and conflicts. Links are reported without traversal. |
+| UC05 | Move files and directories. | Prototype | F6 uses a same-volume move when possible and a copy-delete fallback otherwise. Delete each source only after its copy succeeds; keep skipped or failed source items. |
 | UC06 | Create a directory. | Implemented | F7 opens a name dialog. Validate a single directory name and show conflicts. Nested creation is not implemented. |
 | UC07 | Create and edit a file. | Planned | Define the editor handoff and whether Shift+F4 should start it. |
 | UC08 | Edit a file in an external editor. | Planned | Notepad++ is the existing editor preference. Confirm the F4 command and arguments before implementation. |
@@ -55,19 +55,20 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC30 | Show a flat recursive file list. | Planned | Define paths, exclusions and operations on mixed-directory entries. |
 | UC31 | Work with search results in a panel. | Planned | Frequent workflow. Preserve access to file operations and viewing; define return to the normal directory. |
 | UC32 | Preview a file in the opposite panel. | Planned | Frequent workflow. Define routing, keyboard focus and panel restoration. |
-| UC33 | Queue long file operations. | Planned | Keep panels usable. Define ordering, progress, cancellation, pause and retry. |
-| UC34 | Resolve copy and move conflicts. | Planned; required | Define compare, skip, rename, overwrite, newer-file rules, directory conflicts and apply-to-all behavior. |
-| UC35 | Delete with familiar Total Commander behavior. | Planned | Support Recycle Bin and separate permanent deletion. Define keys and confirmations. |
+| UC33 | Queue long file operations. | Prototype | Run requests in order while panels remain usable. Capture targets at submission, count files before changes, show file and byte progress with estimated remaining time, and cancel counting, running or queued work. Pause, retry and reordering remain planned. |
+| UC34 | Resolve copy and move conflicts. | Prototype; required | Skip, Rename and Replace regular files; apply Skip or Replace to matching conflicts in the current request. Merge folders without removing destination-only contents. Compare and newer-file rules remain planned. |
+| UC35 | Delete with familiar Total Commander behavior. | Prototype | F8/Delete selects Recycle Bin; Shift+Delete selects permanent deletion. The same short confirmation allows either mode, with Yes focused for Enter. Reject permanent fallback when recycling is unavailable. |
 | UC36 | Identify links and junctions and inspect their targets. | Partial | Folder sizes skip links and test a real junction cycle. Target inspection, target navigation, broken links and file-operation policies remain planned. |
 | UC37 | Start agent tasks in the active directory. | Deferred | No provider, command syntax or execution policy is selected. |
 | UC38 | Restore the workspace and switch to a newer local release. | Implemented | Save panels, window state, navigation, measurements, command drafts and notes. Verify real process handoff and safe startup failure. |
 | UC39 | Comment on interface elements and keep a refinement list. | Implemented | F12 and Feedback work in the main window and dialogs. Save notes immediately, compile a checklist and support resolution records. |
 | UC40 | Launch the latest verified release from one permanent shortcut. | Implemented | Permanent Xcmd.exe and Xcmd.lnk preserve shortcuts across releases. Share a Windows taskbar identity, keep caller arguments and working directory, and allow releases while the application runs. |
+| UC41 | Duplicate files and folders in the active panel. | Prototype | Shift+F5 confirms a new name in the active directory. A batch cannot target its source directory, and source paths cannot be replaced. The destination remains editable. |
 
 ## Work outside the current scope
 
 - Panel tabs and embedded terminals.
-- Dedicated same-directory duplication, indexed global lookup, checksum tools, SFTP and dedicated network-location support.
+- Indexed global lookup, checksum tools, SFTP and dedicated network-location support.
 - Clipboard name/path export and duplicate-content detection; neither workflow was selected.
 - Advanced selection by mask, inversion and restoration; basic multi-file selection stays implemented.
 - Directory synchronization and Git write operations.

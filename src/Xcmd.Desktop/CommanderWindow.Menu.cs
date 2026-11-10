@@ -24,7 +24,12 @@ public sealed partial class CommanderWindow
                 {
                     Item("New folder", OpenCreateDirectoryDialog, new(Key.F7)),
                     Item("Rename", () => ActivePanel.BeginRename(), new(Key.F6, KeyModifiers.Shift)),
-                    Item("Copy to other panel", CopySelected, new(Key.F5)), Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter)), Item("Exit", Close)
+                    Item("Copy to other panel", CopySelected, new(Key.F5)),
+                    Item("Copy in this panel", () => TransferSelected(FileOperationKind.Copy, samePanel: true), new(Key.F5, KeyModifiers.Shift)),
+                    Item("Move to other panel", () => TransferSelected(FileOperationKind.Move), new(Key.F6)),
+                    Item("Move to Recycle Bin", () => DeleteSelected(false), new(Key.F8)),
+                    Item("Delete permanently", () => DeleteSelected(true), new(Key.Delete, KeyModifiers.Shift)),
+                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter)), Item("Exit", Close)
                 } },
                 new() { Header = "Navigate", ItemsSource = new MenuItem[]
                 {
@@ -38,7 +43,8 @@ public sealed partial class CommanderWindow
                 new() { Header = "View", ItemsSource = new[]
                 {
                     Item("Reset column widths", () => ActivePanel.ResetColumns()), Item("Reload file colors", () => Execute(ReloadFileTypesAsync)),
-                    Item("Calculate folder sizes", () => Execute(CalculateDirectorySizesAsync), new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift))
+                    Item("Calculate folder sizes", () => Execute(CalculateDirectorySizesAsync), new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift)),
+                    Item("File operations", () => OperationsView.ToggleDetails())
                 } },
                 new() { Header = "Help", ItemsSource = new MenuItem[]
                 {
@@ -58,15 +64,6 @@ public sealed partial class CommanderWindow
 
     private void CopySelected()
     {
-        var source = ActivePanel;
-        var destination = OppositePanel;
-        var destinationPath = destination.Session.DirectoryPath;
-        var selected = source.Table.SelectedItems!.OfType<FileRow>().Where(row => !row.Entry.IsParent).Select(row => row.Entry).ToArray();
-        Execute(async () =>
-        {
-            foreach (var entry in selected) await source.Session.FileSystem.CopyFileAsync(entry, destinationPath);
-            if (destination.Session.DirectoryPath == destinationPath) await destination.LoadAsync(destinationPath, preserveSelection: true);
-            if (ActivePanel == source) source.FocusCurrent();
-        });
+        TransferSelected(FileOperationKind.Copy);
     }
 }

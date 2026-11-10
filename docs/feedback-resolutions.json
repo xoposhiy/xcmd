@@ -1,23 +1,182 @@
 [
-  { "noteId": "bb026cf27c9c428d8397a29fdd2d5779", "summary": "Sort headers accept clicks across their full area while keeping resize handles usable." },
-  { "noteId": "5af79214b6da4dfbb8ca39bab341f2ab", "summary": "Panels and controls have square corners. Selection in the inactive panel uses a faint background." },
-  { "noteId": "ab9749e492af447c9e2c6567ea996788", "summary": "A command menu replaces the large title inside the window." },
-  { "noteId": "d247070a7bb843bf87c851071221b35d", "summary": "F12 and a Feedback button select elements in every application dialog without losing its draft or selection." },
-  { "noteId": "cd93d0b55fc147b08af4cec74e89f697", "summary": "History, Frequent locations and Favorites share one navigation window with Left/Right list selection. Frequent locations use qualified active visits and a three-day score half-life." },
-  { "noteId": "39d17bc21aa647a7bdee458ada36ed41", "summary": "Panels automatically monitor their directories and preserve cursor, selection and scroll when external files change." },
-  { "noteId": "0b1bc7975a964cb886ea0cadef428c15", "summary": "Type, size and modified values are vertically centered with the file name." },
-  { "noteId": "09de4866bc20440fba3da51bae532071", "summary": "File rows display Windows shell icons for folders and file types. Native handles are released and icon loading stays off the UI thread." },
-  { "noteId": "34116a4af9ec465c84971750a8c9e0eb", "summary": "The final column fills remaining space without a trailing resize handle. View > Reset column widths restores defaults with room for ten-gigabyte byte counts." },
-  { "noteId": "c3f15927b1a642b6914d953907cd3ace", "summary": "History is a subtle text link without a dropdown arrow. Hover help shows Alt+Down." },
-  { "noteId": "ab03ec8272774ef6a7c0a7e5d68908aa", "summary": "Entering a child directory selects its parent entry so a second Enter returns. History and session restore still preserve saved cursors." },
-  { "noteId": "1b1871a797a54eedaafc1ef8061eb949", "summary": "Alt name jumping handles physical key events without relying on text input, avoids duplicate text events, and tries the loaded Windows keyboard layouts." },
-  { "noteId": "50806b69523d4f9fab10dd8f16e8d098", "summary": "All application windows were rendered and reviewed. Panel headers, footers, history rows and dialog margins are compact; small forms fit their content and action buttons align to the right." },
-  { "noteId": "0e3158c716fa49b0ad99db725ec7da3a", "summary": "Start name search with Alt and a letter, then release Alt and keep typing. Unmatched letters are ignored. Navigation, pointer movement, commands, Escape and focus changes clear the prefix." },
-  { "noteId": "e02f63d6f98f49549732971fce471595", "summary": "Only the active history column has a selection. Switching columns remembers each cursor. Compact single-line paths fit more locations, and the dialog height adapts to its contents." },
-  { "noteId": "b4fcf9cd382647e3b2cd3e38ab9c3497", "summary": "The Type heading and file type values share the same horizontal center. Size headings align with byte counts, and cell padding matches the header layout." },
-  { "noteId": "4609e9294c03417db963b82c41b50edb", "summary": "Ctrl+C copies the whole command when no text is selected, keeping the draft, caret and selection. Selected text still copies normally." },
-  { "noteId": "2c7326e5452d4c07896d0b99adce86b4", "summary": "The command directory trims from the left and can use 510 pixels. Narrow windows reserve space for command input. Hover help shows the full path." },
-  { "noteId": "08d9435a258f4c98a52fc7d32f51b12d", "summary": "Sort headings use larger, light text centered vertically against a dark blue background." },
-  { "noteId": "4b49fc88f356419f96d1f0d93fc5e3af", "summary": "Windows launch errors show the target and a short reason without repeating the working directory or process details." },
-  { "noteId": "b3e412f03fb24c19961d1d7d44050a35", "summary": "Keyboard shortcuts have visible separators and wrap to keep every command visible in narrow windows." }
+  {
+    "noteId": "bb026cf27c9c428d8397a29fdd2d5779",
+    "summary": "Sort headers accept clicks across their full area while keeping resize handles usable."
+  },
+  {
+    "noteId": "5af79214b6da4dfbb8ca39bab341f2ab",
+    "summary": "Panels and controls have square corners. Selection in the inactive panel uses a faint background."
+  },
+  {
+    "noteId": "ab9749e492af447c9e2c6567ea996788",
+    "summary": "A command menu replaces the large title inside the window."
+  },
+  {
+    "noteId": "d247070a7bb843bf87c851071221b35d",
+    "summary": "F12 and a Feedback button select elements in every application dialog without losing its draft or selection."
+  },
+  {
+    "noteId": "cd93d0b55fc147b08af4cec74e89f697",
+    "summary": "History, Frequent locations and Favorites share one navigation window with Left/Right list selection. Frequent locations use qualified active visits and a three-day score half-life."
+  },
+  {
+    "noteId": "39d17bc21aa647a7bdee458ada36ed41",
+    "summary": "Panels automatically monitor their directories and preserve cursor, selection and scroll when external files change."
+  },
+  {
+    "noteId": "0b1bc7975a964cb886ea0cadef428c15",
+    "summary": "Type, size and modified values are vertically centered with the file name."
+  },
+  {
+    "noteId": "09de4866bc20440fba3da51bae532071",
+    "summary": "File rows display Windows shell icons for folders and file types. Native handles are released and icon loading stays off the UI thread."
+  },
+  {
+    "noteId": "34116a4af9ec465c84971750a8c9e0eb",
+    "summary": "The final column fills remaining space without a trailing resize handle. View > Reset column widths restores defaults with room for ten-gigabyte byte counts."
+  },
+  {
+    "noteId": "c3f15927b1a642b6914d953907cd3ace",
+    "summary": "History is a subtle text link without a dropdown arrow. Hover help shows Alt+Down."
+  },
+  {
+    "noteId": "ab03ec8272774ef6a7c0a7e5d68908aa",
+    "summary": "Entering a child directory selects its parent entry so a second Enter returns. History and session restore still preserve saved cursors."
+  },
+  {
+    "noteId": "1b1871a797a54eedaafc1ef8061eb949",
+    "summary": "Alt name jumping handles physical key events without relying on text input, avoids duplicate text events, and tries the loaded Windows keyboard layouts."
+  },
+  {
+    "noteId": "50806b69523d4f9fab10dd8f16e8d098",
+    "summary": "All application windows were rendered and reviewed. Panel headers, footers, history rows and dialog margins are compact; small forms fit their content and action buttons align to the right."
+  },
+  {
+    "noteId": "0e3158c716fa49b0ad99db725ec7da3a",
+    "summary": "Start name search with Alt and a letter, then release Alt and keep typing. Unmatched letters are ignored. Navigation, pointer movement, commands, Escape and focus changes clear the prefix."
+  },
+  {
+    "noteId": "e02f63d6f98f49549732971fce471595",
+    "summary": "Only the active history column has a selection. Switching columns remembers each cursor. Compact single-line paths fit more locations, and the dialog height adapts to its contents."
+  },
+  {
+    "noteId": "b4fcf9cd382647e3b2cd3e38ab9c3497",
+    "summary": "The Type heading and file type values share the same horizontal center. Size headings align with byte counts, and cell padding matches the header layout."
+  },
+  {
+    "noteId": "4609e9294c03417db963b82c41b50edb",
+    "summary": "Ctrl+C copies the whole command when no text is selected, keeping the draft, caret and selection. Selected text still copies normally."
+  },
+  {
+    "noteId": "2c7326e5452d4c07896d0b99adce86b4",
+    "summary": "The command directory trims from the left and can use 510 pixels. Narrow windows reserve space for command input. Hover help shows the full path."
+  },
+  {
+    "noteId": "08d9435a258f4c98a52fc7d32f51b12d",
+    "summary": "Sort headings use larger, light text centered vertically against a dark blue background."
+  },
+  {
+    "noteId": "4b49fc88f356419f96d1f0d93fc5e3af",
+    "summary": "Windows launch errors show the target and a short reason without repeating the working directory or process details."
+  },
+  {
+    "noteId": "b3e412f03fb24c19961d1d7d44050a35",
+    "summary": "Keyboard shortcuts have visible separators and wrap to keep every command visible in narrow windows."
+  },
+  {
+    "noteId": "3c4ea4d943ac4bb0aa9319121716c3fa",
+    "summary": "The operation strip appears only after one second of running work and hides after completion. Operation history remains available from View > File operations."
+  },
+  {
+    "noteId": "1b6a31d172064b449438f683314c2ce9",
+    "summary": "Deletion uses a short question and a Yes button with initial focus. Enter confirms the selected deletion mode."
+  },
+  {
+    "noteId": "2ec89ddeeb124127a65ce7ab1a8abee2",
+    "summary": "F5 and F6 confirm an editable destination. Shift+F5 copies in the active panel. Delete and Shift+Delete default to Recycle Bin and permanent deletion; both modes can be selected in the confirmation."
+  },
+  {
+    "noteId": "dd0baaaa34ee46709e9d860b7005cf29",
+    "summary": "The operation summary has a fixed height. Long paths use an ellipsis and remain available in hover help."
+  },
+  {
+    "noteId": "1b783cba8f7141078b4f3c635ea6deb7",
+    "summary": "The conflict dialog uses a compact two-column comparison, short action labels, and full paths in hover help."
+  },
+  {
+    "noteId": "c95eff48202d42a7b5971dc37a66a096",
+    "summary": "Escape clears the command line and returns focus to the active file panel without moving its cursor."
+  },
+  {
+    "noteId": "cf6b8a490e3b4141b9a5679e06ca75e3",
+    "summary": "The shortcut strip omits Tab, Enter, Escape and plain arrow navigation. Less obvious shortcuts remain visible."
+  },
+  {
+    "noteId": "6de85c3a875b4bbca56f235897d551a7",
+    "summary": "Copy and Move appear in the confirmation body with the selected name or item count and the destination."
+  },
+  {
+    "noteId": "f32cd636c8cb458888f4392d0f86f024",
+    "summary": "Existing regular files are skipped without a question only when contents, size, modification time and basic attributes match."
+  },
+  {
+    "noteId": "f0f54f0a3e7843e7a0fe895c2f380a4b",
+    "summary": "Copy completion preserves the source cursor, marks and scroll position. Copying onto source paths is rejected before submission; batches never create automatic duplicates."
+  },
+  {
+    "noteId": "60191038d81948448ccc97ea67b4815a",
+    "summary": "Operations count files before changing them, show processed files against that total, and display a byte progress bar with an estimated remaining time. Selected roots and file totals have separate labels."
+  },
+  {
+    "noteId": "843b9fa0e8174905b7931cd130fa3842",
+    "summary": "Shift+Up and Shift+Down toggle the departed row and move the cursor. Plain arrows preserve marks so keyboard users can skip rows and copy only marked files."
+  },
+  {
+    "noteId": "3e4871b810294eda899720fd5bce82b0",
+    "summary": "Deletion modes use underlined R and P access keys. The highlighted Yes button confirms the selected mode on Enter, including while a mode has focus."
+  },
+  {
+    "noteId": "8f8f8b85521941adbcf8801fa2ecb1cb",
+    "summary": "Marked files have an amber check and file name, separate from the cursor. Shift+Up and Shift+Down toggle the departed row, so repeating the action removes its mark."
+  },
+  {
+    "noteId": "46d8bdd4876c43e2a547790ade546810",
+    "summary": "Escape clears file marks and keeps the cursor. Escape from the command line also clears marks and returns focus to files. Editors and search keep their own first Escape action."
+  },
+  {
+    "noteId": "a35a0c8d546145a7b7f1f06172182f98",
+    "summary": "Table rows stay inside their viewport. Scroll bars reserve their own space, and an opaque footer has a clear top boundary."
+  },
+  {
+    "noteId": "442232743b7d4c7f910aae79983d7dc9",
+    "summary": "Recycle Bin and Permanently show underlined R and P access keys instead of shortcut text in parentheses. Alt+R and Alt+P select the modes."
+  },
+  {
+    "noteId": "86888cab4c704feb92fc2e70b760616d",
+    "summary": "The Yes label has no Enter hint. Default actions share a blue style and respond to Enter in folder, transfer, delete, conflict and navigation dialogs. Multiline comments keep Enter for a new line and Ctrl+Enter to submit."
+  },
+  {
+    "noteId": "7ba501d93c13406b9e646c430593955e",
+    "summary": "Cursor and mark changes keep the same row size and column positions. Fitting columns do not gain a horizontal scroll bar; wider columns still scroll."
+  },
+  {
+    "noteId": "e7f78ecb795246be989d97a1c19c195d",
+    "summary": "The cursor always uses the same blue background, with a faint background in the inactive panel. Marked files always use an amber name and check, including when the cursor is on a marked file."
+  },
+  {
+    "noteId": "952f5b9282c54521befa7d378277e037",
+    "summary": "Up, Down, Home, End, Ctrl+Home, Ctrl+End, Page Up, Page Down and name jumping move the cursor without clearing file marks. Escape clears marks."
+  },
+  {
+    "noteId": "cfb36eff45f147b599ea9911e207339e",
+    "summary": "The cursor uses a background without a layout border. Moving the cursor keeps text, icons and cells at the same positions."
+  },
+  {
+    "noteId": "dc7071b6eee347bca487b859352050f4",
+    "summary": "Shift+Home, Shift+End, Shift+Page Up and Shift+Page Down fill an incomplete range and remove a fully marked range when repeated. Marks outside the range remain unchanged, and the parent entry is excluded."
+  },
+  {
+    "noteId": "bcd07adebc694cc9bc6315cfdfd617bd",
+    "summary": "The navigation window no longer shows the obvious-keyboard hint. Static text has a shared feedback hit-test surface, visual hit testing includes disabled actions, and feedback identifies the nearest meaningful element before its outer window. The architecture documents the rule and pointer checks cover the application dialogs."
+  }
 ]

@@ -18,11 +18,12 @@ public sealed class DirectoryNavigationDialog : Window
 {
     private readonly FavoriteDirectories favorites;
     private readonly string currentDirectory;
-    private readonly TextBlock message = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock message = new() { Name = "NavigationMessage", FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
     private readonly Button open = new() { Content = "Open", Name = "NavigationOpen", MinWidth = 80 };
     private readonly Button add = new() { Content = "Add current directory", Name = "FavoriteAdd" };
     private readonly Button rename = new() { Content = "Save name", Name = "FavoriteRename" };
     private readonly Button remove = new() { Content = "Remove", Name = "FavoriteRemove" };
+    private readonly Button cancel = new() { Content = "Cancel", Name = "NavigationCancel", MinWidth = 80 };
     private readonly Grid editorRow;
     private readonly Dictionary<ListBox, int> cursors = [];
     private ListBox activeList;
@@ -99,13 +100,13 @@ public sealed class DirectoryNavigationDialog : Window
         var editorControls = new Control[] { NameEditor, rename, add, remove };
         for (var i = 0; i < editorControls.Length; i++) { Grid.SetColumn(editorControls[i], i + 1); editorRow.Children.Add(editorControls[i]); }
         open.Click += (_, _) => OpenSelection();
-        var cancel = new Button { Content = "Cancel", Name = "NavigationCancel", MinWidth = 80 };
         cancel.Click += (_, _) => Close();
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Children = { cancel, open } };
         var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto"), RowSpacing = 8 };
         layout.Children.Add(columns); Grid.SetRow(editorRow, 1); layout.Children.Add(editorRow);
         Grid.SetRow(message, 2); layout.Children.Add(message); Grid.SetRow(buttons, 3); layout.Children.Add(buttons);
-        Content = layout; ActivateList(activeList); ShowHint();
+        Content = layout; ActivateList(activeList);
+        AddHandler(GotFocusEvent, (_, _) => UpdateActions(), RoutingStrategies.Bubble);
         AddHandler(KeyDownEvent, (_, e) => HandleKey(e, comments, lists), RoutingStrategies.Tunnel);
     }
 
@@ -201,7 +202,7 @@ public sealed class DirectoryNavigationDialog : Window
         Favorites.ItemsSource = favorites.Items.ToArray();
         Favorites.SelectedIndex = id == null ? Math.Min(index, favorites.Items.Count - 1) : favorites.Items.ToList().FindIndex(item => item.Id == id);
         if (Favorites.SelectedItem == null) NameEditor.Text = "";
-        ShowHint(); UpdateActions();
+        ShowMessage(""); UpdateActions();
     }
     private void UpdateActions()
     {
@@ -209,9 +210,13 @@ public sealed class DirectoryNavigationDialog : Window
         var selected = Favorites.SelectedItem as FavoriteDirectory;
         remove.IsEnabled = NameEditor.IsEnabled = !IsOpening && selected != null;
         rename.IsEnabled = !IsOpening && selected != null && NameEditor.Text != selected.Name;
+        var actions = new[] { open, rename, add, remove, cancel };
+        var focused = FocusManager?.GetFocusedElement();
+        var primary = focused is Button button ? actions.Contains(button) ? button : null
+            : NameEditor.IsKeyboardFocusWithin ? rename : open;
+        foreach (var action in actions) action.IsDefault = action == primary && action.IsEnabled;
     }
-    private void ShowHint() => ShowMessage("Tab / Shift+Tab moves between controls · Left / Right switches lists · Enter opens · F2 edits a favorite · Insert adds the current directory");
-    private void ShowMessage(string text, bool error = false) { Error = error ? text : null; message.Text = text; message.Foreground = error ? Brushes.Salmon : Brushes.LightGray; }
+    private void ShowMessage(string text, bool error = false) { Error = error ? text : null; message.Text = text; message.IsVisible = text.Length > 0; message.Foreground = error ? Brushes.Salmon : Brushes.LightGray; }
     private void OpenSelection()
     {
         var path = activeList.SelectedItem is FavoriteDirectory favorite ? favorite.Path : activeList.SelectedItem as string;

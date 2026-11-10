@@ -22,8 +22,12 @@ public sealed class PanelView : Border
     private readonly Dictionary<SortField, Button> headers = [];
     private string? cursorName;
     private bool headersConfigured;
+    private bool keyboardMarks;
+    private string? rangeAnchor;
     private FileTypes fileTypes;
-    private HashSet<FileRow> selectedRows = [];
+    private FileRow? currentRow;
+    private bool isActive;
+    private HashSet<FileRow> markedRows = [];
     private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
     public PanelSession Session { get; }
     public TableView Table { get; }
@@ -46,7 +50,7 @@ public sealed class PanelView : Border
         return new(Session.DirectoryPath, Session.SortOrder, Current?.Name,
             CaptureRowSelection(),
             Session.PreviousDirectories.ToArray(), Session.CaptureCursors(),
-            Table.Columns.Select(column => new ColumnState(column.Width.Value, column.Width.IsStar)).ToArray(), offset.X, offset.Y, sizes.Values.ToArray());
+            Table.Columns.Select(column => new ColumnState(column.Width.Value, column.Width.IsStar)).ToArray(), offset.X, offset.Y, sizes.Values.ToArray(), keyboardMarks || SelectedNames().Length > 1);
     }
 
     public async Task RestoreStateAsync(PanelState state)
@@ -55,6 +59,7 @@ public sealed class PanelView : Border
         Session.RestoreNavigation(state);
         if (Session.DirectoryPath.Equals(state.DirectoryPath, StringComparison.OrdinalIgnoreCase))
             foreach (var measurement in state.Sizes ?? []) sizes[measurement.Name] = measurement;
+        keyboardMarks = state.HasMarks || state.Selected.Length > 1 || state.Selected.Length > 0 && !state.Selected.Contains(state.Cursor, StringComparer.OrdinalIgnoreCase);
         ApplyEntries(state.Selected, state.Cursor);
         if (state.Selected.Length == 0) Table.SelectedItems?.Clear();
         for (var i = 0; i < Math.Min(Table.Columns.Count, state.Columns.Length); i++)
@@ -106,9 +111,11 @@ public sealed class PanelView : Border
         var offset = Scroll?.Offset ?? default;
         ApplyEntries(selected, current);
         RestoreRefreshCursorAndSelection(current, index, selected.Length > 0);
-        if (focused) FocusCurrent();
         Table.UpdateLayout();
         if (Scroll is { } scroll) scroll.Offset = offset;
+        Table.UpdateLayout();
+        if (focused) FocusCurrent(scrollIntoView: false);
+        if (Scroll is { } restored) restored.Offset = offset;
         UpdateSummary();
     }
 
@@ -125,7 +132,7 @@ public sealed class PanelView : Border
         if (!Rows.Any(row => row.Name == current) && Rows.Count > 0)
         {
             var next = Rows[Math.Clamp(index, 0, Rows.Count - 1)]; cursorName = next.Name;
-            if (Table.SelectedItems?.Count == 0 && hadSelection) Table.SelectedItem = next;
+            if (!keyboardMarks && Table.SelectedItems?.Count == 0 && hadSelection) Table.SelectedItem = next;
         }
         if (!hadSelection) Table.SelectedItems?.Clear();
     }
@@ -146,18 +153,19 @@ public sealed class PanelView : Border
         {
             Name = id + "Files",
             SelectionMode = SelectionMode.Multiple,
+            ClipToBounds = true,
+            AutoScrollToSelectedItem = false,
             Focusable = true,
             FontSize = 13,
             Background = Brushes.Transparent
         };
         AutomationProperties.SetAutomationId(Table, id + ".files");
         Table.IsTextSearchEnabled = false;
+        ScrollViewer.SetBringIntoViewOnFocusChange(Table, false);
+        ScrollViewer.SetAllowAutoHide(Table, false);
         Table.Resources["TableViewColumnResizerMargin"] = new Thickness(0);
         Table.Resources["TableViewRowPadding"] = new Thickness(0);
-        Table.Styles.Add(new Style(selector => selector.OfType<TableViewRow>())
-        {
-            Setters = { new Setter(MinHeightProperty, 26d), new Setter(PaddingProperty, new Thickness(0)) }
-        });
+        Table.ItemContainerTheme = FileRowTheme.Create();
         Table.Styles.Add(new Style(selector => selector.OfType<TableViewCell>())
         { Setters = { new Setter(PaddingProperty, new Thickness(8, 0)) } });
         Table.Styles.Add(new Style(selector => selector.OfType<TableViewColumnHeader>())
@@ -188,11 +196,21 @@ public sealed class PanelView : Border
                 {
                     if (EditingRow != null && file != EditingRow && !IsCommitting) CancelRename();
                     cursorName = file.Name;
+                    UpdateSummary();
                 }
             }
             Activated?.Invoke(this);
         };
-        Table.PointerPressed += (_, _) => Activated?.Invoke(this);
+        Table.PointerPressed += (_, e) =>
+        {
+            if (e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any())
+            {
+                rangeAnchor = null;
+                keyboardMarks = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                UpdateSummary();
+            }
+            Activated?.Invoke(this);
+        };
         Table.DoubleTapped += (_, e) =>
         {
             if (EditingRow == null && e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any())
@@ -222,7 +240,17 @@ public sealed class PanelView : Border
         content.Children.Add(pathContainer);
         Grid.SetRow(Table, 1);
         content.Children.Add(Table);
-        var summaryContainer = new Border { Padding = new Thickness(8, 2), Child = summary };
+        var summaryContainer = new Border
+        {
+            Name = id + "Footer",
+            Padding = new Thickness(8, 2),
+            Child = summary,
+            Background = Background,
+            BorderBrush = new SolidColorBrush(Color.Parse("#354157")),
+            BorderThickness = new Thickness(0, 1, 0, 0),
+            ClipToBounds = true
+        };
+        AutomationProperties.SetAutomationId(summary, id + ".summary");
         Grid.SetRow(summaryContainer, 2);
         content.Children.Add(summaryContainer);
         Child = content;
@@ -244,6 +272,8 @@ public sealed class PanelView : Border
 
     private void ConfigureHeaders()
     {
+        foreach (var viewer in Table.GetVisualDescendants().OfType<ScrollViewer>()) viewer.AllowAutoHide = false;
+        foreach (var presenter in Table.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ScrollContentPresenter>()) presenter.ClipToBounds = true;
         var headers = Table.GetVisualDescendants().OfType<TableViewColumnHeader>().ToArray();
         if (headers.Length < Table.Columns.Count) return;
         headersConfigured = true;
@@ -305,10 +335,13 @@ public sealed class PanelView : Border
 
     private Control MakeNameCell(FileRow row)
     {
-        var grid = new Grid { DataContext = row, MinHeight = 26, ColumnDefinitions = new ColumnDefinitions("22,*") };
+        var grid = new Grid { DataContext = row, MinHeight = 26, ColumnDefinitions = new ColumnDefinitions("16,22,*") };
+        var mark = new TextBlock { Name = "FileMark", Foreground = new SolidColorBrush(Color.Parse("#FFD278")), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+        mark.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.MarkGlyph)));
+        grid.Children.Add(mark);
         var icon = new Image { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, DataContext = row };
         AutomationProperties.SetAutomationId(icon, "file.icon");
-        grid.Children.Add(icon); Icons.Bind(icon, row);
+        Grid.SetColumn(icon, 1); grid.Children.Add(icon); Icons.Bind(icon, row);
         var text = new TextBlock
         {
             Text = row.Name,
@@ -332,8 +365,8 @@ public sealed class PanelView : Border
         editor.Bind(TextBox.TextProperty, new Binding(nameof(FileRow.DraftName)) { Mode = BindingMode.TwoWay });
         // Unhandled editor keys must not reach the table's row navigation.
         editor.KeyDown += (_, e) => e.Handled = true;
-        Grid.SetColumn(text, 1); grid.Children.Add(text);
-        Grid.SetColumn(editor, 1); grid.Children.Add(editor);
+        Grid.SetColumn(text, 2); grid.Children.Add(text);
+        Grid.SetColumn(editor, 2); grid.Children.Add(editor);
         return grid;
     }
 
@@ -341,6 +374,7 @@ public sealed class PanelView : Border
     {
         LoadingRequested?.Invoke(this);
         CancelRename();
+        if (!preserveSelection) keyboardMarks = false;
         var selected = preserveSelection ? SelectedNames() : [];
         Session.RememberCursor(Current?.Name);
         var previousPath = Session.DirectoryPath;
@@ -369,14 +403,15 @@ public sealed class PanelView : Border
 
     private void ApplyEntries(string[] selected, string? current)
     {
+        rangeAnchor = null;
         Rows = Session.Entries.Select(entry => { var row = new FileRow(entry); ApplyFileColor(row); row.SetMeasurement(sizes.GetValueOrDefault(entry.Name)); return row; }).ToList();
         Table.ItemsSource = Rows;
         Table.SelectedItems?.Clear();
         foreach (var row in Rows.Where(row => selected.Contains(row.Name, StringComparer.OrdinalIgnoreCase)))
             Table.SelectedItems?.Add(row);
         var cursor = Rows.FirstOrDefault(row => row.Name.Equals(current, StringComparison.OrdinalIgnoreCase));
-        if (Table.SelectedItems?.Count == 0) Table.SelectedItem = cursor ?? Rows.FirstOrDefault();
-        cursorName = (cursor ?? Table.SelectedItem as FileRow)?.Name;
+        if (!keyboardMarks && Table.SelectedItems?.Count == 0) Table.SelectedItem = cursor ?? Rows.FirstOrDefault();
+        cursorName = (cursor ?? Table.SelectedItem as FileRow ?? Rows.FirstOrDefault())?.Name;
         UpdateSummary();
     }
 
@@ -384,13 +419,14 @@ public sealed class PanelView : Border
 
     private string[] CaptureRowSelection() => Table.SelectedItems?.OfType<FileRow>().Select(row => row.Name).ToArray() ?? [];
 
-    public void FocusCurrent()
+    public void FocusCurrent(bool scrollIntoView = true)
     {
+        UpdateSummary();
         Table.UpdateLayout();
         var index = Current is { } current ? Rows.IndexOf(current) : -1;
         if (index >= 0)
         {
-            Table.ScrollIntoView(index);
+            if (scrollIntoView) Table.ScrollIntoView(index);
             Table.UpdateLayout();
             if (Table.ContainerFromIndex(index) is Control container) { container.Focus(); return; }
         }
@@ -401,8 +437,7 @@ public sealed class PanelView : Border
     {
         if (Rows.Count == 0) return;
         var index = last ? Rows.Count - 1 : 0;
-        if (extend) Table.Selection.SelectRange(Table.Selection.AnchorIndex < 0 ? 0 : Table.Selection.AnchorIndex, index);
-        else Table.SelectedIndex = index;
+        MoveTo(index, extend);
         cursorName = Rows[index].Name;
         FocusCurrent();
     }
@@ -412,8 +447,8 @@ public sealed class PanelView : Border
 
     public void SelectRow(FileRow row)
     {
+        MoveTo(Rows.IndexOf(row), extend: false);
         cursorName = row.Name;
-        Table.SelectedItem = row;
         FocusCurrent();
     }
 
@@ -424,10 +459,68 @@ public sealed class PanelView : Border
         var page = Math.Max(1, (int)(Table.Bounds.Height / Math.Max(1, rowHeight)) - 2);
         var current = Current is { } row ? Rows.IndexOf(row) : 0;
         var index = Math.Clamp(current + (down ? page : -page), 0, Rows.Count - 1);
-        if (extend) Table.Selection.SelectRange(Table.Selection.AnchorIndex < 0 ? current : Table.Selection.AnchorIndex, index);
-        else Table.SelectedIndex = index;
+        MoveTo(index, extend);
         cursorName = Rows[index].Name;
         FocusCurrent();
+    }
+
+    private void MoveTo(int index, bool extend)
+    {
+        if (extend) ToggleRange(index);
+        else
+        {
+            rangeAnchor = null;
+            if (!keyboardMarks && SelectedNames().Length <= 1) Table.SelectedIndex = index;
+        }
+    }
+
+    private void ToggleRange(int index)
+    {
+        rangeAnchor ??= Current?.Name;
+        var anchor = Math.Max(0, Rows.FindIndex(row => row.Name == rangeAnchor));
+        var range = Rows.Skip(Math.Min(anchor, index)).Take(Math.Abs(index - anchor) + 1).Where(row => !row.Entry.IsParent).ToArray();
+        var selected = keyboardMarks || SelectedNames().Length > 1
+            ? CaptureRowSelection().ToHashSet(StringComparer.OrdinalIgnoreCase) : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var remove = range.All(row => selected.Contains(row.Name));
+        foreach (var row in range)
+        {
+            if (remove) selected.Remove(row.Name);
+            else selected.Add(row.Name);
+        }
+        keyboardMarks = true;
+        Table.SelectedItems?.Clear();
+        foreach (var row in Rows.Where(row => !row.Entry.IsParent && selected.Contains(row.Name))) Table.SelectedItems?.Add(row);
+        UpdateSummary();
+    }
+
+    public void MoveCursor(bool down, bool mark)
+    {
+        rangeAnchor = null;
+        if (Current is not { } current || Rows.Count == 0) return;
+        var index = Rows.IndexOf(current);
+        var next = Math.Clamp(index + (down ? 1 : -1), 0, Rows.Count - 1);
+        var hadMarks = keyboardMarks || SelectedNames().Length > 1;
+        if (mark || hadMarks) keyboardMarks = true;
+        if (keyboardMarks)
+        {
+            var selected = hadMarks ? CaptureRowSelection().Where(name => name != "..").ToHashSet(StringComparer.OrdinalIgnoreCase) : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (mark && !current.Entry.IsParent && !selected.Add(current.Name)) selected.Remove(current.Name);
+            cursorName = Rows[next].Name;
+            FocusCurrent();
+            Table.SelectedItems?.Clear();
+            foreach (var row in Rows.Where(row => selected.Contains(row.Name))) Table.SelectedItems?.Add(row);
+            UpdateSummary();
+        }
+        else { Table.SelectedIndex = next; cursorName = Rows[next].Name; FocusCurrent(); }
+    }
+
+    public void ClearMarks()
+    {
+        rangeAnchor = null;
+        keyboardMarks = false;
+        Table.SelectedItems?.Clear();
+        UpdateSummary();
+        FocusCurrent(scrollIntoView: false);
     }
 
     public void BeginRename()
@@ -488,11 +581,8 @@ public sealed class PanelView : Border
 
     public void SetActive(bool active)
     {
-        foreach (var key in new[] { "TableViewRowBackgroundSelected", "TableViewRowBackgroundSelectedPointerOver", "TableViewRowBackgroundSelectedPressed" })
-        {
-            if (active) Table.Resources.Remove(key);
-            else Table.Resources[key] = new SolidColorBrush(Color.Parse("#1D2532"));
-        }
+        isActive = active;
+        currentRow?.SetCurrent(true, active);
         BorderBrush = active ? new SolidColorBrush(Color.Parse("#75B9F5")) : Brushes.Transparent;
     }
 
@@ -516,9 +606,14 @@ public sealed class PanelView : Border
     private void UpdateSummary()
     {
         var selection = Table.SelectedItems?.OfType<FileRow>().ToHashSet() ?? [];
-        foreach (var row in selectedRows.Except(selection)) row.SetSelected(false);
-        foreach (var row in selection.Except(selectedRows)) row.SetSelected(true);
-        selectedRows = selection;
+        var current = Current;
+        if (currentRow != current) currentRow?.SetCurrent(false, isActive);
+        currentRow = current;
+        currentRow?.SetCurrent(true, isActive);
+        var marked = keyboardMarks || selection.Count > 1 ? selection.Where(row => !row.Entry.IsParent).ToHashSet() : [];
+        foreach (var row in markedRows.Except(marked)) row.SetMarked(false);
+        foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
+        markedRows = marked;
         summary.Text = Session.Error ?? $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {SelectedNames().Length:N0} selected";
     }
 }

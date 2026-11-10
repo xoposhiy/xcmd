@@ -7,7 +7,8 @@ public sealed partial class CommanderWindow
 {
     private void HandleCommandLineKey(KeyEventArgs e)
     {
-        if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None) { CommandLine.Clear(); SetError(null); }
+        if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
+        { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); }
         else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
             Execute(CommandLine.CopyAllAsync);
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
@@ -58,7 +59,7 @@ public sealed partial class CommanderWindow
         if (e.Key == Key.Up && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); CommandLine.BrowseHistory(true); e.Handled = true; return true; }
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && directorySizes == null && !nameJump.Active)
-        { CommandLine.Clear(); SetError(null); e.Handled = true; return true; }
+        { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); e.Handled = true; return true; }
         return false;
     }
 
@@ -126,7 +127,8 @@ public sealed partial class CommanderWindow
 
     private bool HandlePanelNavigation(KeyEventArgs e, bool ctrl, bool shift)
     {
-        if (e.Key is Key.Home or Key.End) ActivePanel.SelectBoundary(e.Key == Key.End, shift);
+        if (!ctrl && e.Key is Key.Up or Key.Down) ActivePanel.MoveCursor(e.Key == Key.Down, shift);
+        else if (e.Key is Key.Home or Key.End) ActivePanel.SelectBoundary(e.Key == Key.End, shift);
         else if (!ctrl && e.Key is (Key.PageUp or Key.PageDown)) ActivePanel.MovePage(e.Key == Key.PageDown, shift);
         else if (ctrl && e.Key is Key.F3 or Key.F4 or Key.F5 or Key.F6)
         {
@@ -136,7 +138,25 @@ public sealed partial class CommanderWindow
         else if (e.Key == Key.Enter) { if (launchKeysHeld.Add(e.Key)) Execute(() => OpenCurrentAsync(ActivePanel)); }
         else if (e.Key == Key.Back || (ctrl && e.Key == Key.PageUp)) OpenParent();
         else if (e.Key == Key.F7) OpenCreateDirectoryDialog();
-        else if (e.Key == Key.F5) CopySelected();
+        else return HandleFileOperationKey(e);
+        return true;
+    }
+
+    private bool HandleFileOperationKey(KeyEventArgs e)
+    {
+        if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.F5 or Key.F6 or Key.F8 or Key.Delete)
+        {
+            if (launchKeysHeld.Add(e.Key))
+            {
+                if (e.Key == Key.F5) CopySelected();
+                else if (e.Key == Key.F6) TransferSelected(FileOperationKind.Move);
+                else DeleteSelected(false);
+            }
+        }
+        else if (e.Key == Key.Delete && e.KeyModifiers == KeyModifiers.Shift)
+        { if (launchKeysHeld.Add(e.Key)) DeleteSelected(true); }
+        else if (e.Key == Key.F5 && e.KeyModifiers == KeyModifiers.Shift)
+        { if (launchKeysHeld.Add(e.Key)) TransferSelected(FileOperationKind.Copy, samePanel: true); }
         else return false;
         return true;
     }

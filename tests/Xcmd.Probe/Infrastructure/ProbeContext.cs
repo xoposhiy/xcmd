@@ -73,16 +73,18 @@ public sealed class ProbeContext : IDisposable
             Window.UpdateLayout();
             if (Window.ActiveDialog is { } dialog) dialog.UpdateLayout();
             if (Window.ActiveNavigationDialog is { } history) history.UpdateLayout();
+            Window.OperationDialog?.UpdateLayout();
             Window.Feedback.ActiveComment?.UpdateLayout();
             Window.Feedback.ActiveNotes?.UpdateLayout();
             VerifyHeadlessWindow(Window);
             if (Window.ActiveDialog is { } activeDialog) VerifyHeadlessWindow(activeDialog);
             if (Window.ActiveNavigationDialog is { } activeHistory) VerifyHeadlessWindow(activeHistory);
+            if (Window.OperationDialog is { } operationDialog) VerifyHeadlessWindow(operationDialog);
             if (Window.Feedback.ActiveComment is { } comment) VerifyHeadlessWindow(comment);
             if (Window.Feedback.ActiveNotes is { } notes) VerifyHeadlessWindow(notes);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             if (watch.Elapsed > TimeSpan.FromSeconds(20)) throw new TimeoutException("The application did not become idle.");
-        } while (Window.IsBusy);
+        } while (Window.IsBusy && !Window.Operations.IsWaitingForDecision);
     }
 
     private void VerifyHeadlessWindow(Window window)
@@ -179,6 +181,18 @@ public sealed class ProbeContext : IDisposable
     public async Task ScreenshotAsync(string name, Window? target = null)
     {
         await SettleAsync();
+        SaveFrame(name, target);
+    }
+
+    public void CaptureFailure(string name, Window? target = null)
+    {
+        (target ?? Window).UpdateLayout();
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        SaveFrame(name, target);
+    }
+
+    private void SaveFrame(string name, Window? target)
+    {
         using var image = (target ?? Window).CaptureRenderedFrame() ?? throw new InvalidOperationException("Offscreen rendering returned no image.");
         Check(image.PixelSize.Width >= (target == null ? 840 : 400) && image.PixelSize.Height >= (target == null ? 400 : 120), "The rendered frame has the expected size.");
         image.Save(Path.Combine(OutputPath, name + ".png"), PngBitmapEncoderOptions.Default);
@@ -192,7 +206,8 @@ public sealed class ProbeContext : IDisposable
         focused = (Window.FocusManager?.GetFocusedElement() as Control)?.GetType().Name,
         busy = Window.IsBusy,
         error = Window.LastError,
-        dialog = Window.ActiveDialog?.Title ?? Window.ActiveNavigationDialog?.Title,
+        dialog = Window.ActiveDialog?.Title ?? Window.ActiveNavigationDialog?.Title ?? Window.OperationDialog?.Title,
+        operations = Window.Operations.Jobs.Select(job => new { job.Id, job.State, job.CurrentPath, job.BytesTransferred, job.TotalFiles, job.ProcessedFiles, job.SkippedFiles, job.FailedEntries, job.TotalBytes, job.ProcessedBytes, job.TotalsComplete, job.Outcomes }),
         historyDialog = Window.ActiveNavigationDialog is { } history ? new { selected = history.Directories.SelectedItem, history.IsOpening, history.Error } : null,
         left = PanelSnapshot(Window.Left),
         right = PanelSnapshot(Window.Right),
@@ -231,6 +246,7 @@ public sealed class ProbeContext : IDisposable
     {
         Window.ActiveDialog?.Close();
         Window.ActiveNavigationDialog?.Close();
+        Window.OperationDialog?.Close();
         Window.Feedback.ActiveComment?.Close();
         Window.Feedback.ActiveNotes?.Close();
         Window.Close();

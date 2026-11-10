@@ -26,14 +26,15 @@ internal static class Program
 
     private static int RunScenarios(string[] args)
     {
-        var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).ToArray();
+        var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).Concat(FileOperationScenarios.All).Concat(OperationRefinementScenarios.All).Concat(SelectionAndDialogScenarios.All).Concat(PanelCursorScenarios.All).Concat(RangeAndFeedbackScenarios.All).Concat(OperationUsabilityScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");
             return 0;
         }
         var filter = Option(args, "--filter");
-        var selected = scenarios.Where(scenario => filter == null || scenario.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var filters = filter?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var selected = scenarios.Where(scenario => filters == null || filters.Any(value => scenario.Id.Contains(value, StringComparison.OrdinalIgnoreCase))).ToArray();
         if (selected.Length == 0) { Console.Error.WriteLine("No matching scenarios."); return 2; }
         var output = Path.GetFullPath(Option(args, "--output") ?? Path.Combine("artifacts", "probe", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")));
         Directory.CreateDirectory(output);
@@ -63,8 +64,8 @@ internal static class Program
                     catch
                     {
                         context.SaveSnapshot();
-                        await context.ScreenshotAsync("failure");
-                        if (context.Window.ActiveNavigationDialog is { } history) await context.ScreenshotAsync("failure-history", history);
+                        context.CaptureFailure("failure");
+                        if (context.Window.ActiveNavigationDialog is { } history) context.CaptureFailure("failure-history", history);
                         throw;
                     }
                     return true;

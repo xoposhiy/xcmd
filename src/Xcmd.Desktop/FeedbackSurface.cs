@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Xcmd.Desktop;
 
@@ -25,11 +26,11 @@ internal sealed class FeedbackSurface
             else if (IsPicking) { if (e.Key == Key.Escape) Cancel(); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
         window.AddHandler(InputElement.PointerMovedEvent, (_, e) =>
-        { if (IsPicking) Highlight(FeedbackController.Target(e.Source as Control)); }, RoutingStrategies.Tunnel);
+        { if (IsPicking) Highlight(Pick(e.GetPosition(window))); }, RoutingStrategies.Tunnel);
         window.AddHandler(InputElement.PointerPressedEvent, (_, e) =>
         {
             if (!IsPicking) return;
-            pointed = FeedbackController.Target(e.Source as Control); e.Handled = true;
+            pointed = Pick(e.GetPosition(window)); e.Handled = true;
         }, RoutingStrategies.Tunnel);
         window.AddHandler(InputElement.PointerReleasedEvent, (_, e) =>
         {
@@ -39,6 +40,8 @@ internal sealed class FeedbackSurface
             IsPicking = false; Highlight(selected); controller.OpenComment(window, selected, this);
         }, RoutingStrategies.Tunnel);
     }
+
+    private Control? Pick(Point point) => FeedbackController.Target(window.GetVisualAt(point, visual => visual != overlay) as Control);
 
     public void Begin()
     {

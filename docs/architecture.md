@@ -86,6 +86,10 @@ Desktop does not call raw filesystem, process, or native import APIs. It uses In
 
 Extract a Core workflow when an interaction gains substantial UI-independent decisions: operation planning, conflict choices, queue state, cancellation outcomes, or reusable actions. Keep the control-specific part in Desktop. A helper class or controller inside Desktop is sufficient when the complexity is about controls and their lifetime.
 
+## Feedback selection
+
+Keep every visible label, status, error and disabled action selectable in feedback. Keep the shared transparent background for `TextBlock`; text without a hit-test surface cannot be selected reliably. Use visual hit testing for feedback so disabled actions remain selectable. Resolve the nearest meaningful element before an outer window's identifier. Exclude only decorative feedback overlays from selection. Attach every application dialog through `FeedbackController` and check new content with real pointer input.
+
 ## State and background work
 
 Assign one live owner to each piece of state:

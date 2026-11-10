@@ -2,9 +2,9 @@
 
 Xcmd is a Windows file manager with two panels and keyboard controls. It uses C# on .NET 10 and Avalonia 12.1.6.
 
-The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, copying individual files without overwriting, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
+The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
 
-Recursive copy, move, delete, operation queues, conflict choices, archives, search, viewers and Git inspection are planned. They are not part of the current build. See [requirements and status](docs/use-cases.md).
+The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Feedback builds receive focused smoke checks rather than full final verification. Archives, search, viewers and Git inspection remain planned. See [requirements and status](docs/use-cases.md).
 
 ## Run
 

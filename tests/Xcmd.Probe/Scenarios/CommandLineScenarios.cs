@@ -35,7 +35,7 @@ public static class CommandLineScenarios
             Equal("日本語", editor.SelectedText, "Copying keeps the text selected");
             Equal("tool 日本語 argument", editor.Text, "Copying keeps the draft");
             Equal(0, c.Launcher.Requests.Count, "Copying never executes the command");
-            await c.KeyAsync(Key.Escape); await c.KeyAsync(Key.C, RawInputModifiers.Control);
+            await c.KeyAsync(Key.Escape); await c.KeyAsync(Key.L, RawInputModifiers.Control); await c.KeyAsync(Key.C, RawInputModifiers.Control);
             Equal("日本語", await clipboard.TryGetTextAsync(), "Copying an empty command keeps the clipboard");
         }),
         new("command-line-long-directory-and-help", "UC02; readable command layout", async c =>
@@ -56,7 +56,7 @@ public static class CommandLineScenarios
                     Check(c.Window.CommandLine.Editor.Bounds.Width >= 300, "The editor remains usable beside a long path.");
                     Check(width != 1280 || label.Bounds.Width is >= 490 and <= 510, "The directory can use the wider 510-pixel limit.");
                     var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
-                    Equal(8, help.Children.Count, "All eight shortcut groups are visible");
+                    Equal(10, help.Children.Count, "Only useful shortcut groups remain visible");
                     Check(help.Children.OfType<Border>().Skip(1).All(border => border.BorderThickness.Left == 1), "Shortcut groups have visible separators.");
                     Check(help.Children.All(group => group.Bounds.Right <= help.Bounds.Width && group.Bounds.Bottom <= help.Bounds.Height), "All shortcut groups fit without clipping.");
                     Check(help.GetVisualDescendants().OfType<TextBlock>().All(text => text.TextLayout.TextLines.Count == 1), "Each shortcut stays on the same line as its action.");
@@ -73,7 +73,7 @@ public static class CommandLineScenarios
             Check(!c.Window.Readiness.CanRestart, "Command editing delays release updates.");
             await c.KeyAsync(Key.Escape);
             Equal("", c.Window.CommandLine.Editor.Text, "Escape clears the command");
-            Check(c.Window.CommandLine.HasKeyboardFocus, "Escape keeps the command line focused.");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Escape returns focus to the active panel.");
             await c.TextAsync("draft"); await c.KeyAsync(Key.Down);
             Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Down returns to the active panel.");
             Equal("alpha.txt", c.Window.Left.Current?.Name, "Returning focus does not move the file cursor");

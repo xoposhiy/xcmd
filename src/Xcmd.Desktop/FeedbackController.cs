@@ -67,9 +67,8 @@ public sealed class FeedbackController
     internal static Control? Target(Control? source)
     {
         var ancestors = source?.GetSelfAndVisualAncestors().OfType<Control>().ToArray() ?? [];
-        return ancestors.FirstOrDefault(control => control is Button or TableViewRow or TableViewColumnHeader) ??
-            ancestors.FirstOrDefault(control => !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(control))) ??
-            ancestors.FirstOrDefault(control => control is TextBlock { Text.Length: > 0 }) ?? source;
+        return ancestors.FirstOrDefault(control => control is Button or TextBox or TableViewRow or TableViewColumnHeader) ??
+            ancestors.FirstOrDefault(control => control is TextBlock { Text.Length: > 0 } || !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(control))) ?? source;
     }
 
     internal void OpenComment(Window source, Control control, FeedbackSurface surface)
@@ -80,6 +79,7 @@ public sealed class FeedbackController
         var name = control switch
         {
             TableViewRow { DataContext: FileRow row } => "File row: " + row.Name,
+            Button { Content: AccessText text } => text.Text?.Replace("_", "", StringComparison.Ordinal) ?? id,
             Button button => button.Content?.ToString() ?? id,
             TextBlock text => text.Text ?? id,
             _ => AutomationProperties.GetName(control) ?? id
@@ -174,6 +174,7 @@ public sealed class CommentDialog : Window
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         AutomationProperties.SetAutomationId(Editor, "feedback.comment");
         var add = new Button { Content = "Add comment", Name = "AddComment", IsEnabled = false };
+        add.Classes.Add("primary");
         Editor.TextChanged += (_, _) => add.IsEnabled = !string.IsNullOrWhiteSpace(Editor.Text);
         void Submit() { if (!string.IsNullOrWhiteSpace(Editor.Text)) Submitted?.Invoke(Editor.Text); }
         add.Click += (_, _) => Submit();

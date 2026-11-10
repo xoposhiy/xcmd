@@ -6,6 +6,24 @@ The recorded environment on 2026-11-10 used the SDK in `global.json`, .NET runti
 
 ## Behavioral coverage
 
+The `review-*` cases cover Enter on focused Cancel in transfer and deletion dialogs, keyboard access to operation history, cancelling queued work, focus preserved when actions become disabled or labels change, no replacement marks after Move/Delete, and visible explanations for conflicts deferred by command input. These cases address the independent finalization usability review.
+
+The `range-toggle-*` cases cover repeated Shift+Home/End and Shift+PageUp/PageDown ranges, partial ranges, marks outside a range and exclusion of the parent entry. The `feedback-*-labels*` cases cover static text, status and errors in the main, navigation, folder, transfer, delete, conflict and comment windows, disabled actions, labels inside radio buttons, and feedback that preserves the underlying workflow.
+
+The `cursor-*` cases cover cursor appearance with no marks, keyboard marks, mouse marks and a marked cursor; faint inactive cursors; unchanged row, text, icon and cell geometry; no horizontal overflow for fitting columns at 100% and 150%; scrolling for wide columns; marks preserved by boundary, page and name navigation; and JSON restore of one marked file under the cursor.
+
+The `polish-*` cases cover visible file marks separate from the cursor, repeated Shift+arrow toggling, Escape clearing marks, clipped table rows with space for scroll bars at 100% and 150%, underlined deletion access keys, default action color and Enter behavior in folder, transfer, delete, conflict and navigation dialogs, and multiline comment submission with Ctrl+Enter.
+
+The `operations-review-*` cases cover useful shortcut hints, explicit Copy/Move prompts, content and metadata checks before automatic skip, selective keyboard marking, source scroll preservation after later layout passes, counting before changes, counting cancellation, consistent file totals, byte progress, estimated remaining time, and deletion shortcuts.
+
+The file-operations feedback prototype adds the `operations-*` scenario group. Focused smoke checks cover recursive and empty-folder copy, folder merge, Skip/Rename/Replace, apply-to-all, same-volume move, the copy-delete fallback, partial move, captured queue targets, cancellation, safe overwrite, delete confirmations, partial failures, real junctions, and real Windows Recycle Bin contents. The native recycle fixture restores only its own file and folder after checking their contents. The junction and recycle checks need permission to create a real junction and write to the Windows Recycle Bin; a restricted-environment failure does not count as passing native coverage.
+
+These checks do not establish full finalization coverage. In particular, the forced copy-delete scenario exercises real file changes through a controlled move capability; it is not evidence of a move between two physical volumes. The final quality gate and independent usability review remain pending until the user accepts the prototype.
+
+The `operations-feedback-*` cases cover transfer confirmation, edited destination names, Shift+F5 copies in the active panel, rejection of batch copies into their source folder, deletion-mode choices, Enter confirmation, delayed progress visibility, and fixed progress height with long file names. Focus and compact-layout checks also cover Escape returning from the command line to the active panel. Native recycle checks include choosing Recycle Bin from a Shift+Delete confirmation.
+
+Run a focused check against a built driver with `Xcmd.Probe.exe --filter operations- --output <new-output-directory>`. Use the direct driver for feedback checks; `Test-Xcmd.ps1 -Filter` also runs the architecture stage and is reserved for finalization.
+
 | Requirement | Scenario groups | Evidence |
 | --- | --- | --- |
 | UC01, UC02: quick launch and file opening | `command-line-*`, `command-*` | Actual typing, focus keys, Escape, history and draft recovery, name/path insertion, quotes, local cd, held Enter, failures, pending launches, saved editor state, feedback, selection-or-all clipboard copying, left-trimmed paths, wrapped keyboard hints and compact layout at 150%. The production ShellExecute adapter launches a windowless executable and a real shortcut; reports verify raw arguments, Unicode, relative targets, working directory and concise missing-program errors. |
