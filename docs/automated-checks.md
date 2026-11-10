@@ -2,7 +2,7 @@
 
 ## Run the checks
 
-Use Windows, PowerShell 7, the SDK selected by `global.json`, and Python 3.11 or later.
+Use Windows, PowerShell 7, the SDK selected by `global.json`, Python 3.11 or later, and the Visual Studio C++ build tools with a Windows SDK for the NativeAOT launcher.
 
 ```powershell
 ./scripts/Test-Xcmd.ps1
@@ -10,7 +10,7 @@ Use Windows, PowerShell 7, the SDK selected by `global.json`, and Python 3.11 or
 
 This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path before publishing. CI runs the same command on Windows.
 
-The architecture command also builds the framework-dependent Windows x64 launcher from a small source subset of Infrastructure. The launcher has no project or UI dependencies, uses `packages.launcher.lock.json`, and keeps build outputs under `artifacts/launcher`. Normal project and package checks still cover the same six application/test projects. Launcher scenarios use isolated installation trees and do not change taskbar pins.
+The architecture command also builds the self-contained Windows x64 NativeAOT launcher from a small source subset of Infrastructure. The launcher has no project or UI dependencies, uses `packages.launcher.lock.json`, and keeps build outputs under `artifacts/launcher`. Normal project and package checks still cover the same six application/test projects. Launcher scenarios use isolated installation trees and do not change taskbar pins.
 
 For a shorter check while editing:
 

@@ -11,7 +11,7 @@ public sealed class SessionStore(string path)
     {
         if (!File.Exists(Path)) return null;
         await using var stream = File.OpenRead(Path);
-        var state = await JsonSerializer.DeserializeAsync<WorkspaceState>(stream)
+        var state = await JsonSerializer.DeserializeAsync(stream, SessionJsonContext.Default.WorkspaceState)
             ?? throw new InvalidDataException("The saved session is empty.");
         state.Validate();
         return state;
@@ -24,7 +24,7 @@ public sealed class SessionStore(string path)
         var temporary = Path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true }));
+            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(state, SessionJsonContext.Default.WorkspaceState));
             File.Move(temporary, Path, overwrite: true);
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }

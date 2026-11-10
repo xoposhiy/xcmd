@@ -1,57 +1,84 @@
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 
 namespace Xcmd.Infrastructure;
 
-public static class WindowsShortcut
+public static unsafe class WindowsShortcut
 {
     public const string ApplicationId = "Xcmd.FileManager";
 
     public static void Create(string path, string launcher)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Xcmd shortcuts require Windows.");
-        launcher = Path.GetFullPath(launcher);
-        var type = Type.GetTypeFromCLSID(new Guid("00021401-0000-0000-C000-000000000046"), throwOnError: true)!;
-        var instance = Activator.CreateInstance(type)!;
-        try
-        {
-            var link = (IShellLink)instance;
-            link.SetPath(launcher);
-            link.SetWorkingDirectory(Path.GetDirectoryName(launcher)!);
-            link.SetDescription("Open the latest verified Xcmd release");
-            link.SetIconLocation(launcher, 0);
-            link.SetShowCmd(1);
-            using (var properties = new ShellProperties((ShellProperties.IPropertyStore)instance, ownsStore: false))
-            {
-                properties.Set(5, ApplicationId);
-                properties.Commit();
-                ((IPersistFile)instance).Save(Path.GetFullPath(path), true);
-            }
-        }
-        finally { Marshal.FinalReleaseComObject(instance); }
+        var apartment = CoInitializeEx(0, 2);
+        if (apartment < 0 && apartment != unchecked((int)0x80010106)) Marshal.ThrowExceptionForHR(apartment);
+        try { CreateLink(path, launcher); }
+        finally { if (apartment >= 0) CoUninitialize(); }
     }
 
-    [ComImport, Guid("000214F9-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IShellLink
+    private static void CreateLink(string path, string launcher)
     {
-        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int length, nint data, uint flags);
-        void GetIDList(out nint list);
-        void SetIDList(nint list);
-        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder text, int length);
-        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string text);
-        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int length);
-        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string path);
-        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder arguments, int length);
-        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string arguments);
-        void GetHotkey(out short key);
-        void SetHotkey(short key);
-        void GetShowCmd(out int command);
-        void SetShowCmd(int command);
-        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder path, int length, out int index);
-        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string path, int index);
-        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string path, uint reserved);
-        void Resolve(nint window, uint flags);
-        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string path);
+        launcher = Path.GetFullPath(launcher);
+        var classId = new Guid("00021401-0000-0000-C000-000000000046");
+        var linkId = new Guid("000214F9-0000-0000-C000-000000000046");
+        Marshal.ThrowExceptionForHR(CoCreateInstance(in classId, 0, 1, in linkId, out var link));
+        try
+        {
+            SetText(link, 20, launcher);
+            SetText(link, 9, Path.GetDirectoryName(launcher)!);
+            SetText(link, 7, "Open the latest verified Xcmd release");
+            fixed (char* icon = launcher)
+                Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, char*, int, int>)Table(link)[17])(link, icon, 0));
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, int, int>)Table(link)[15])(link, 1));
+            SetApplicationId(link);
+            Save(link, Path.GetFullPath(path));
+        }
+        finally { Marshal.Release(link); }
     }
+
+    // Fixed COM vtables keep shortcut creation compatible with the NativeAOT launcher.
+    private static nint* Table(nint instance) => *(nint**)instance;
+
+    private static void SetText(nint link, int slot, string text)
+    {
+        fixed (char* value = text)
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, char*, int>)Table(link)[slot])(link, value));
+    }
+
+    private static void SetApplicationId(nint link)
+    {
+        var id = new Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99");
+        Marshal.ThrowExceptionForHR(Marshal.QueryInterface(link, in id, out var store));
+        try
+        {
+            var key = new PropertyKey(new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"), 5);
+            fixed (char* text = ApplicationId)
+            {
+                var value = new PropertyVariant { Type = 31, Text = (nint)text };
+                Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, PropertyKey*, PropertyVariant*, int>)Table(store)[6])(store, &key, &value));
+            }
+            Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, int>)Table(store)[7])(store));
+        }
+        finally { Marshal.Release(store); }
+    }
+
+    private static void Save(nint link, string path)
+    {
+        var id = new Guid("0000010b-0000-0000-C000-000000000046");
+        Marshal.ThrowExceptionForHR(Marshal.QueryInterface(link, in id, out var file));
+        try
+        {
+            fixed (char* text = path)
+                Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, char*, int, int>)Table(file)[6])(file, text, 1));
+        }
+        finally { Marshal.Release(file); }
+    }
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    private static extern int CoCreateInstance(in Guid classId, nint outer, uint context, in Guid interfaceId, out nint instance);
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    private static extern int CoInitializeEx(nint reserved, uint flags);
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    private static extern void CoUninitialize();
 }

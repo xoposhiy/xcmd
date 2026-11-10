@@ -55,7 +55,7 @@ Current examples:
 - `WindowsExternalLauncher`, `KeyboardLayouts`, and `SystemIcons`: Windows integration.
 - `WindowsLaunchEnvironment`: read the current Windows user/system environment with [CreateEnvironmentBlock](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createenvironmentblock) and apply a serialized temporary override around ShellExecute. Restore the Xcmd environment after launch; keep process-only variables and track removed persistent names from launcher construction.
 - `ReleaseCatalog`, `RestartProcess`, and `StartupDiagnostics`: release files, process handoff, and startup diagnostics.
-- `ReleaseFiles`, `BootstrapProgram`, `WindowsShortcut`, and `WindowsTaskbar`: verified release discovery, the permanent entry point, and Windows taskbar properties. The launcher build compiles a small Infrastructure source subset into `Xcmd.exe` with no Core or UI dependency. Its outputs and package lock are separate from the normal library build. The normal three-project dependency graph stays the same.
+- `ReleaseFiles`, `BootstrapProgram`, `WindowsShortcut`, and `WindowsTaskbar`: verified release discovery, the permanent entry point, and Windows taskbar properties. The launcher build compiles a small Infrastructure source subset into a self-contained NativeAOT `Xcmd.exe` with no Core or UI dependency. Shortcut creation uses fixed COM interfaces without runtime COM wrappers so the same code works in NativeAOT. Its outputs and package lock are separate from the normal library build. The normal three-project dependency graph stays the same.
 
 These adapters may know Xcmd contracts and state records. An adapter does not need to work unchanged in an unrelated application. Make a module general only when a concrete use benefits from it.
 
@@ -118,7 +118,7 @@ The areas that need care are within the projects:
 | Window and panel coordination | `CommanderWindow` and `PanelView` combine many interactions and state transitions. Partial files divide source text but keep one class and one set of state. | Extract a focused controller or Core workflow when a specific interaction becomes difficult to follow or test. |
 | File operations | Copy coordination and rename execution live in Desktop; `PanelSession.FileSystem` exposes the adapter contract. | Keep the simple current path. Add explicit Core operation requests and outcomes when implementing conflicts, queues, or richer cancellation. |
 | State synchronization | Applied rows, live cursor/selection, Core directory state, and saved snapshots meet at refresh and restore boundaries. | Preserve a clear owner and add regression scenarios when changing these boundaries. |
-| Startup work | `PanelView` loads bundled file-type settings synchronously during construction. API bans do not prove that an adapter call is nonblocking. | If startup work grows or delays are measured, load settings once during initialization and pass the result to panels. |
+| Startup work | `CommanderWindow` loads bundled file-type settings once and passes the same result to both panels. API bans do not prove that an adapter call is nonblocking. | Keep startup work measured and avoid repeated settings reads. |
 
 These are improvement points, not a requirement to refactor all listed code now. New project boundaries would not resolve them by themselves.
 

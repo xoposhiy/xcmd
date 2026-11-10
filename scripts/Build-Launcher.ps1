@@ -9,7 +9,7 @@ try {
     $intermediate = Join-Path $projectRoot 'artifacts/launcher/obj/'
     $binary = Join-Path $projectRoot 'artifacts/launcher/bin/'
     $lockFile = Join-Path $projectRoot 'src/Xcmd.Infrastructure/packages.launcher.lock.json'
-    dotnet publish src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj -c Release -r win-x64 --self-contained false --output $output `
+    dotnet publish src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj -c Release -r win-x64 --self-contained true --output $output `
         -p:XcmdLauncher=true -p:RestoreLockedMode=true "-p:NuGetLockFilePath=$lockFile" `
         "-p:BaseIntermediateOutputPath=$intermediate" "-p:BaseOutputPath=$binary" `
         -p:UseSharedCompilation=false -m:1 -v minimal

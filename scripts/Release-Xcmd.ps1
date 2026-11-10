@@ -19,13 +19,17 @@ try {
     }
 
     New-Item -ItemType Directory -Path $releasePath | Out-Null
-    dotnet publish src/Xcmd.Desktop/Xcmd.Desktop.csproj -c Release --no-build --no-restore --no-self-contained --output $releasePath -v minimal
+    dotnet publish src/Xcmd.Desktop/Xcmd.Desktop.csproj -c Release -r win-x64 --no-self-contained -p:PublishReadyToRun=true -p:RestoreLockedMode=true --output $releasePath -m:1 -p:UseSharedCompilation=false -v minimal
     if ($LASTEXITCODE -ne 0) { throw 'Publishing failed. The current release was not changed.' }
     $executable = Join-Path $releasePath 'Xcmd.Desktop.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published executable is missing.' }
     Copy-Item -LiteralPath $resultsPath -Destination (Join-Path $releasePath 'verification.json')
     Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/feedback-resolutions.json') -Destination (Join-Path $releasePath 'feedback-resolutions.json')
     @{ id = $releaseId; restartProtocol = 1 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releasePath 'release.json')
+    $startupOutput = Join-Path $projectRoot ('artifacts/startup/release-' + $releaseId)
+    & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Test-Startup.ps1') -ApplicationPath $releasePath -OutputPath $startupOutput -Native
+    if ($LASTEXITCODE -ne 0) { throw 'Published startup verification failed. The current release was not changed.' }
+    Copy-Item -LiteralPath (Join-Path $startupOutput 'results.json') -Destination (Join-Path $releasePath 'startup-verification.json')
     & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Install-Launcher.ps1')
     if ($LASTEXITCODE -ne 0) { throw 'Launcher setup failed. The current release was not changed.' }
     $markerPath = Join-Path $projectRoot 'releases/latest.txt'

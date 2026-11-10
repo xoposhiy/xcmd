@@ -5,10 +5,9 @@ namespace Xcmd.Infrastructure;
 
 public static class FileTypeSettings
 {
-    private static readonly JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
     private static string BundledPath => Path.Combine(AppContext.BaseDirectory, "config", "file-types.json");
     public static FileTypes Bundled() => Parse(File.ReadAllText(BundledPath));
-    public static FileTypes Parse(string json) => new(JsonSerializer.Deserialize<FileTypeConfiguration>(json, options)
+    public static FileTypes Parse(string json) => new(JsonSerializer.Deserialize(json, FileTypesJsonContext.Default.FileTypeConfiguration)
         ?? throw new InvalidDataException("File type settings are empty."));
 
     public static async Task<FileTypes> LoadAsync(string path)

@@ -27,20 +27,6 @@ internal sealed class ShellProperties(ShellProperties.IPropertyStore store, bool
         if (ownsStore && OperatingSystem.IsWindows()) Marshal.FinalReleaseComObject(store);
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal readonly struct PropertyKey(Guid format, uint id)
-    {
-        public readonly Guid Format = format;
-        public readonly uint Id = id;
-    }
-
-    [StructLayout(LayoutKind.Explicit, Size = 24)]
-    internal struct PropertyVariant
-    {
-        [FieldOffset(0)] public ushort Type;
-        [FieldOffset(8)] public nint Text;
-    }
-
     [ComImport, Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IPropertyStore
     {

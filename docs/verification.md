@@ -1,8 +1,8 @@
 # Verification coverage
 
-The current suite contains 167 behavioral scenarios. Run `./scripts/Test-Xcmd.ps1` for the complete path or `./scripts/Release-Xcmd.ps1` to verify and publish a ready build. Both commands run architecture checks, analyzer self-checks, formatting, code metrics and headless behavior checks. The GitHub Actions workflow uses the same verification path on Windows.
+The current suite contains 168 behavioral scenarios. Run `./scripts/Test-Xcmd.ps1` for the complete path or `./scripts/Release-Xcmd.ps1` to verify and publish a ready build. Both commands run architecture checks, analyzer self-checks, formatting, code metrics and headless behavior checks. The GitHub Actions workflow uses the same verification path on Windows.
 
-The verified environment on 2026-11-10 used the SDK in `global.json`, .NET runtime 10.0.2, Avalonia 12.1.6 and Windows 10.0.26300. All 167 scenarios passed with no build warnings and zero native application windows. Compiled architecture rules, evaluated project/package policies in Debug and Release, the isolated launcher build policy, 14 deliberate analyzer violations, formatting and Lizard metrics passed.
+The verified environment on 2026-11-10 used the SDK in `global.json`, .NET runtime 10.0.2, Avalonia 12.1.6 and Windows 10.0.26300. All 168 scenarios passed with no build warnings and zero native application windows. Compiled architecture rules, evaluated project/package policies in Debug and Release, the isolated launcher build policy, 14 deliberate analyzer violations, formatting and Lizard metrics passed.
 
 ## Behavioral coverage
 
@@ -23,9 +23,27 @@ The verified environment on 2026-11-10 used the SDK in `global.json`, .NET runti
 | UC39: element feedback | `workspace-feedback-*`, `refinement-feedback-*`, `refinement-resolution-*` | Pointer selection without activation, editor focus, nonempty and multiline comments, cancellation, removal, immediate JSON/Markdown saves, dialog drafts, resolution records and real process handoff. |
 | Background reads and large directories | `background-read-*`, `obsolete-read-*`, `large-directory-*` | Controlled pauses around the real filesystem adapter prove input remains usable and newer reads cancel obsolete work. A fixture with 10,009 real entries checks virtualization, recycled-row rename, sorting and rendering. |
 | Rules and input precedence | `rules-*` | Seven scenarios check numeric name runs and ties, Windows device names, validation error order, command targets and raw arguments, saved panel constraints, favorite identity, combined keyboard modifiers and editor confirmation priority. |
-| UC40: permanent launch and taskbar identity | `launcher-*` | Six scenarios run the actual single-file launcher and a real Windows shortcut, preserve arguments and working directory, reject invalid release trees, defer replacement of a locked launcher, read native taskbar properties and complete a headless application update after the launcher exits. Record launcher exit latency. Native shell properties use one invisible fixture window; all application windows remain headless. See [release evidence](evidence/stable-launcher-2026-11-10.json). |
+| UC40: permanent launch and taskbar identity | `launcher-*` | Seven scenarios run the actual self-contained NativeAOT launcher and a real Windows shortcut, preserve arguments and working directory, reject invalid release trees, defer replacement of a locked launcher, read native taskbar properties and complete a headless application update after the launcher exits. Record launcher exit latency. Native shell properties use one invisible fixture window; all application windows remain headless. See [release evidence](evidence/stable-launcher-2026-11-10.json). |
+
+Independent usability review of the startup workflow required measuring the real launcher, restoring a saved session without directory overrides, and retaining every timing sample. The startup probe follows those requirements. The hidden native probe measures readiness to call Show; it does not prove when pixels appear on the desktop.
 
 Independent usability review of the command-line workflow found no open issues after pending-launch feedback was added. The review used the actual source and a compact 840×400 offscreen image. Repeat independent review for changed user workflows, as required by the [architecture](architecture.md).
+
+## Startup measurements
+
+Published desktop assemblies use ReadyToRun for Windows x64. The Windows backend uses Skia software rendering to avoid initializing ANGLE and a GPU device on each launch. The large-directory scenario records paging render times at normal and 150% scale. The permanent launcher uses NativeAOT with runtime/compiler 10.0.14 and needs no installed .NET runtime. The desktop application still uses the installed .NET runtime. Saved sessions and file-type settings use generated JSON metadata; both panels share one bundled settings load.
+
+`Release-Xcmd.ps1` also runs `Test-Startup.ps1` against the published assemblies before updating the latest-release marker. This separate native diagnostic keeps the main window hidden. The regular behavior suite still creates zero native application windows.
+
+To measure a published release again:
+
+```powershell
+./scripts/Test-Startup.ps1 -ApplicationPath releases/<release-id> -Native
+```
+
+Omit `-Native` to use Avalonia.Headless. The script uses an isolated installation, the real permanent launcher, the actual `App` startup path, and a saved workspace with 250 real files in each panel. It verifies restored directories, cursor, active panel and command draft. Each process exits before the next run. The test driver is also precompiled to avoid measuring its own JIT work. Results retain the first run and every later sample, launcher exit times, phase timings, median and maximum. Headless runs also retain complete offscreen images. No sample is discarded. The first run after copying files is not a controlled cold-cache or post-boot measurement.
+
+Native timings start before launching the permanent executable and end immediately before the actual App calls Show. The native probe does not show or render its hidden window. Headless runs record the same endpoint and a separate time to the first complete rendered frame. Native timings exclude Explorer click handling, the Show call, and desktop presentation. The probe cannot establish a hard one-second taskbar-click-to-visible-frame guarantee, and the measurements are not a portable timing gate for different machines.
 
 ## Complexity refactor evidence
 

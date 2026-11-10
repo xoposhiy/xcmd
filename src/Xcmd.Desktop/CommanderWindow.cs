@@ -53,8 +53,9 @@ public sealed partial class CommanderWindow : Window
         Icon = ApplicationIcon.Load();
         Width = 1280; Height = 760; MinWidth = 840; MinHeight = 400;
         Background = new SolidColorBrush(Color.Parse("#0E1420"));
-        Left = new PanelView("left", fileSystem);
-        Right = new PanelView("right", fileSystem);
+        var fileTypes = FileTypeSettings.Bundled();
+        Left = new PanelView("left", fileSystem, fileTypes);
+        Right = new PanelView("right", fileSystem, fileTypes);
         ActivePanel = Left;
         foreach (var panel in new[] { Left, Right })
         {

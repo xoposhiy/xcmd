@@ -1,10 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(XcmdLauncher)' == 'true'">
     <OutputType>WinExe</OutputType>
     <AssemblyName>Xcmd</AssemblyName>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>false</SelfContained>
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <RuntimeFrameworkVersion>10.0.14</RuntimeFrameworkVersion>
     <ApplicationIcon>../Xcmd.Desktop/Assets/app.ico</ApplicationIcon>
     <DebugType>none</DebugType>
   </PropertyGroup>
@@ -12,6 +16,7 @@
     <ProjectReference Include="../Xcmd.Core/Xcmd.Core.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(XcmdLauncher)' == 'true'">
-    <Compile Include="BootstrapProgram.cs;ReleaseFiles.cs;WindowsShortcut.cs;ShellProperties.cs" />
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="10.0.14" />
+    <Compile Include="BootstrapProgram.cs;ReleaseFiles.cs;WindowsShortcut.cs;ShellPropertyValues.cs" />
   </ItemGroup>
 </Project>

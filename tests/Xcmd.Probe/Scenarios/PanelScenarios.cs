@@ -419,6 +419,7 @@ public static class PanelScenarios
             await c.ClickHeaderAsync("Size");
             c.Measurements["sortAndLayoutMs"] = sort.Elapsed.TotalMilliseconds;
             await c.ScreenshotAsync("large-directory");
+            RenderingProbe.MeasurePaging(c);
         }),
         new("column-resize-pointer", "UC13; UC20", async c =>
         {

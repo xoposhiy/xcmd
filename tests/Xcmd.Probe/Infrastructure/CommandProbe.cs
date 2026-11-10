@@ -1,10 +1,11 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using static Xcmd.Probe.Infrastructure.WorkspaceProbe;
 
 namespace Xcmd.Probe.Infrastructure;
 
-public sealed record LaunchReport(string WorkingDirectory, string[] Arguments, string? Executable = null, Dictionary<string, string?>? Environment = null);
+public sealed record LaunchReport(string WorkingDirectory, string[] Arguments, string? Executable = null, Dictionary<string, string?>? Environment = null, int ProcessId = 0);
 public sealed record LaunchFixture(string Directory, string Executable, string Report);
 
 public static class CommandProbe
@@ -21,7 +22,17 @@ public static class CommandProbe
     public static async Task<LaunchReport> ReadReportAsync(string path)
     {
         await WaitAsync(() => File.Exists(path));
-        return JsonSerializer.Deserialize<LaunchReport>(await File.ReadAllTextAsync(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        var report = JsonSerializer.Deserialize<LaunchReport>(await File.ReadAllTextAsync(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        if (report.ProcessId > 0)
+        {
+            try
+            {
+                using var process = Process.GetProcessById(report.ProcessId);
+                await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(15));
+            }
+            catch (ArgumentException) { }
+        }
+        return report;
     }
 
     public static void CreateShortcut(string path, LaunchFixture fixture, string workingDirectory)

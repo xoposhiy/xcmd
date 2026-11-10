@@ -17,12 +17,13 @@ internal static class Program
         TaskbarIdentity.ConfigureProcess();
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UsePlatformDetect();
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UseDesktopPlatform();
 }
 
 public sealed class App : Application
 {
     public Func<CommanderWindow, LaunchSettings, WorkspaceLifecycle>? LifecycleFactory { get; init; }
+    public Action<CommanderWindow> WindowPresenter { get; init; } = window => window.Show();
     public Task StartupTask { get; private set; } = Task.CompletedTask;
     public override void Initialize()
     {
@@ -52,7 +53,7 @@ public sealed class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static async Task StartWindowAsync(IClassicDesktopStyleApplicationLifetime desktop, CommanderWindow window, WorkspaceLifecycle lifecycle, LaunchSettings settings)
+    private async Task StartWindowAsync(IClassicDesktopStyleApplicationLifetime desktop, CommanderWindow window, WorkspaceLifecycle lifecycle, LaunchSettings settings)
     {
         try
         {
@@ -62,7 +63,7 @@ public sealed class App : Application
             if (settings.WaitForProcess == null) window.ShowActivated = true;
             desktop.MainWindow = window;
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-            window.Show();
+            WindowPresenter(window);
             window.RestoreView();
         }
         catch (Exception error)

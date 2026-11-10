@@ -120,6 +120,50 @@ public static class LauncherProbe
         using var process = Process.Start(new ProcessStartInfo(fixture.Shortcut) { UseShellExecute = true });
     }
 
+    public static async Task CheckWorkerShortcutAsync(LauncherFixture fixture)
+    {
+        var worker = fixture with { Shortcut = Path.Combine(fixture.Root, "worker.lnk") };
+        await Task.Run(() => WindowsShortcut.Create(worker.Shortcut, worker.Launcher));
+        TaskbarProbe.CheckShortcut(worker);
+    }
+
+    public static async Task CheckStartupAsync(ProbeContext context, LauncherFixture fixture)
+    {
+        var executable = AddRelease(fixture.Releases, NewId, copyApplication: true);
+        File.Copy(executable, fixture.ReleaseExecutable(NewId), overwrite: true);
+        SelectRelease(fixture, NewId);
+        var session = Path.Combine(fixture.Root, "session.json");
+        var expected = context.Window.CaptureWorkspace();
+        await new SessionStore(session).SaveAsync(expected);
+        var reportPath = Path.Combine(fixture.Root, "startup.json");
+        var timer = ProbeTimer.Start();
+        try
+        {
+            Equal(0, await RunAsync(fixture, fixture.Root, "--startup-host", reportPath, session), "The startup launcher succeeds");
+            await WaitAsync(() => File.Exists(reportPath));
+            using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
+            var state = report.RootElement.GetProperty("state").Deserialize<WorkspaceState>()!;
+            Equal(expected.Left.DirectoryPath, state.Left.DirectoryPath, "Startup restores the left directory");
+            Equal(expected.Right.DirectoryPath, state.Right.DirectoryPath, "Startup restores the right directory");
+            Equal(expected.ActivePanel, state.ActivePanel, "Startup restores the active panel");
+            Equal(0, report.RootElement.GetProperty("visibleApplicationWindows").GetInt32(), "The startup probe opens no visible windows");
+            Check(File.Exists(reportPath + ".png"), "Startup retains the offscreen frame.");
+            context.Measurements["startupProbeCompletedMs"] = timer.Elapsed.TotalMilliseconds;
+        }
+        finally { await CloseStartupHostAsync(reportPath); }
+    }
+
+    private static async Task CloseStartupHostAsync(string report)
+    {
+        if (!File.Exists(report + ".pid")) return;
+        Process process;
+        try { process = Process.GetProcessById(int.Parse(File.ReadAllText(report + ".pid"), System.Globalization.CultureInfo.InvariantCulture)); }
+        catch (ArgumentException) { return; }
+        using var host = new RunningApplication(process);
+        try { await host.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10)); Equal(0, host.ExitCode, "The startup host exits cleanly"); }
+        finally { await host.StopAsync(); }
+    }
+
     public static async Task CheckHeadlessHandoffAsync(ProbeContext context, LauncherFixture fixture)
     {
         var reports = Path.Combine(fixture.Root, "reports");

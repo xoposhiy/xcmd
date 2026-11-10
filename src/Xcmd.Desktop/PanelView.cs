@@ -22,7 +22,7 @@ public sealed class PanelView : Border
     private readonly Dictionary<SortField, Button> headers = [];
     private string? cursorName;
     private bool headersConfigured;
-    private FileTypes fileTypes = FileTypeSettings.Bundled();
+    private FileTypes fileTypes;
     private HashSet<FileRow> selectedRows = [];
     private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
     public PanelSession Session { get; }
@@ -130,8 +130,9 @@ public sealed class PanelView : Border
         if (!hadSelection) Table.SelectedItems?.Clear();
     }
 
-    public PanelView(string id, IFileSystem fileSystem)
+    public PanelView(string id, IFileSystem fileSystem, FileTypes? fileTypes = null)
     {
+        this.fileTypes = fileTypes ?? FileTypeSettings.Bundled();
         Id = id;
         Name = id;
         Session = new PanelSession(fileSystem);

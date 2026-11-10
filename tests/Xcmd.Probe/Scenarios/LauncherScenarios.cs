@@ -8,6 +8,11 @@ public static class LauncherScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("launcher-startup-restores-workspace", "UC40; UC38; startup measurement", async c =>
+        {
+            var fixture = LauncherProbe.Prepare(c);
+            await LauncherProbe.CheckStartupAsync(c, fixture);
+        }),
         new("launcher-latest-arguments-and-working-directory", "UC40; stable entry point", async c =>
         {
             var fixture = LauncherProbe.Prepare(c);
@@ -36,6 +41,7 @@ public static class LauncherScenarios
             LauncherProbe.SelectRelease(fixture, NewId);
             Equal(0, await LauncherProbe.RunAsync(fixture, c.LeftPath, "--create-shortcut", fixture.Shortcut), "The launcher creates its shortcut");
             TaskbarProbe.CheckShortcut(fixture);
+            await LauncherProbe.CheckWorkerShortcutAsync(fixture);
             LauncherProbe.OpenShortcut(fixture);
             var report = await CommandProbe.ReadReportAsync(Path.Combine(fixture.Releases, NewId, "launch-report.json"));
             Equal(fixture.ReleaseExecutable(NewId), report.Executable, "The real Windows shortcut starts the verified release");

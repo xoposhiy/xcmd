@@ -19,7 +19,13 @@ internal static class Program
 {
     public static int Main(string[] args)
     {
+        if (args.FirstOrDefault() == "--startup-host") return StartupProcessHost.Run(args.Skip(1).ToArray());
         if (args.FirstOrDefault() == "--lifecycle-host") return LifecycleProcessHost.Run(args.Skip(1).ToArray());
+        return RunScenarios(args);
+    }
+
+    private static int RunScenarios(string[] args)
+    {
         var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
