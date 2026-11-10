@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(XcmdLauncher)' == 'true'">
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>Xcmd</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <ApplicationIcon>../Xcmd.Desktop/Assets/app.ico</ApplicationIcon>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(XcmdLauncher)' != 'true'">
+    <ProjectReference Include="../Xcmd.Core/Xcmd.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(XcmdLauncher)' == 'true'">
+    <Compile Include="BootstrapProgram.cs;ReleaseFiles.cs;WindowsShortcut.cs;ShellProperties.cs" />
+  </ItemGroup>
+</Project>

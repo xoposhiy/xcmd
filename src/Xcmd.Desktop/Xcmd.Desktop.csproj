@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/app.ico" />
+    <Content Include="config/file-types.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <ProjectReference Include="../Xcmd.Core/Xcmd.Core.csproj" />
+    <ProjectReference Include="../Xcmd.Infrastructure/Xcmd.Infrastructure.csproj" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+</Project>

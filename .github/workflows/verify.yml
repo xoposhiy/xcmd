@@ -1,0 +1,23 @@
+name: Verify
+
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Verify architecture and behavior
+        shell: pwsh
+        run: ./scripts/Test-Xcmd.ps1 -OutputPath artifacts/probe/ci
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: verification-failure
+          path: artifacts/probe/ci

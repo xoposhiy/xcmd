@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AvaloniaVersion>12.1.6</AvaloniaVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <AnalysisLevel>10.0</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)CodeMetricsConfig.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="$(MSBuildProjectName.StartsWith('Xcmd.')) And '$(MSBuildProjectName)' != 'Xcmd.Probe' And '$(MSBuildProjectName)' != 'Xcmd.LaunchProbe' And '$(MSBuildProjectName)' != 'Xcmd.Architecture'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)config/BannedSymbols.Blocking.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Xcmd.Core' Or '$(MSBuildProjectName)' == 'Xcmd.Desktop'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)config/BannedSymbols.IO.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Xcmd.Core'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)config/BannedSymbols.Ambient.txt" />
+  </ItemGroup>
+</Project>

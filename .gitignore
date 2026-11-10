@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+.packages/
+.dotnet/
+artifacts/
+releases/
+/Xcmd.exe
+/Xcmd.lnk
+.review/
+.vs/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+Thumbs.db
+.DS_Store

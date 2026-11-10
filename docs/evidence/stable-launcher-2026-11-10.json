@@ -1,0 +1,114 @@
+{
+  "verifiedOn": "2026-11-10",
+  "scope": "Permanent launcher, Windows shortcuts and taskbar identity across immutable releases.",
+  "releaseId": "20261110-125539-739-d14778c0",
+  "sourceFingerprint": "b55450456cd13210ed19ec522f835877eda0bc60c0c8e6fe1c4e75b4a6ed76d0",
+  "productionProjects": [
+    "Xcmd.Core",
+    "Xcmd.Infrastructure",
+    "Xcmd.Desktop"
+  ],
+  "launcher": {
+    "path": "Xcmd.exe",
+    "sha256": "92472546bef04478e2397742fcd059fd0249507bd950b20cb110ff8af268eb3b",
+    "bytes": 199134,
+    "machine": "Windows x64",
+    "subsystem": "Windows GUI",
+    "deployment": "Framework-dependent single file",
+    "runtime": ".NET 10",
+    "project": "Xcmd.Infrastructure",
+    "buildProperty": "XcmdLauncher=true",
+    "projectReferences": [],
+    "uiDependencies": []
+  },
+  "shortcut": {
+    "path": "Xcmd.lnk",
+    "target": "Xcmd.exe",
+    "workingDirectory": "Launcher directory",
+    "arguments": [],
+    "icon": "Xcmd.exe,0",
+    "applicationId": "Xcmd.FileManager"
+  },
+  "verification": {
+    "sourceFingerprintBefore": "b55450456cd13210ed19ec522f835877eda0bc60c0c8e6fe1c4e75b4a6ed76d0",
+    "sourceFingerprintAfter": "b55450456cd13210ed19ec522f835877eda0bc60c0c8e6fe1c4e75b4a6ed76d0",
+    "startedAt": "2026-11-10T11:55:39.1166580Z",
+    "exitCode": 0,
+    "status": "passed",
+    "finishedAt": "2026-11-10T11:58:58.9495960Z",
+    "architectureRules": 11,
+    "analyzerSelfChecks": 14,
+    "behaviorScenarios": 167,
+    "behaviorFailures": 0,
+    "nativeApplicationWindows": 0,
+    "buildWarnings": 0,
+    "formattingPassed": true,
+    "metricsPassed": true,
+    "reportAggregationTestsPassed": 13
+  },
+  "launcherScenarios": [
+    {
+      "id": "launcher-latest-arguments-and-working-directory",
+      "passed": true,
+      "elapsedMs": 816.104,
+      "measurements": {
+        "headlessWindowsVerified": 1,
+        "launcherExitMs": 351.9645
+      }
+    },
+    {
+      "id": "launcher-rejects-invalid-and-unverified-releases",
+      "passed": true,
+      "elapsedMs": 293.6355,
+      "measurements": {
+        "headlessWindowsVerified": 1
+      }
+    },
+    {
+      "id": "launcher-shortcut-native-shell",
+      "passed": true,
+      "elapsedMs": 1122.3726,
+      "measurements": {
+        "headlessWindowsVerified": 1
+      }
+    },
+    {
+      "id": "launcher-busy-file-keeps-release-publishing-available",
+      "passed": true,
+      "elapsedMs": 2841.0885,
+      "measurements": {
+        "headlessWindowsVerified": 1
+      }
+    },
+    {
+      "id": "launcher-window-taskbar-identity-and-relaunch",
+      "passed": true,
+      "elapsedMs": 243.2238,
+      "measurements": {
+        "headlessWindowsVerified": 1,
+        "invisibleShellFixtureWindows": 1
+      }
+    },
+    {
+      "id": "launcher-headless-application-survives-and-updates",
+      "passed": true,
+      "elapsedMs": 13458.5145,
+      "measurements": {
+        "headlessWindowsVerified": 1
+      }
+    }
+  ],
+  "independentUsabilityReview": {
+    "status": "passed",
+    "openFindings": 0,
+    "resolvedFindings": [
+      "Taskbar setup and cleanup failures must not abort startup, handoff or close.",
+      "Document the permanent launcher, taskbar pinning and one-time replacement of an old pin."
+    ]
+  },
+  "limits": [
+    "Windows API checks verify shortcut and taskbar properties without automating Explorer pinning or inspecting visible taskbar grouping.",
+    "The native shell property fixture creates one invisible window. Application windows use Avalonia.Headless.",
+    "The launcher exit measurement does not measure application window readiness."
+  ]
+}

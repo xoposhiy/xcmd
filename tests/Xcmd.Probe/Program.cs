@@ -1,0 +1,100 @@
+using System.Diagnostics;
+using System.Text.Json;
+using Avalonia;
+using Avalonia.Headless;
+using Xcmd.Desktop;
+using Xcmd.Probe.Infrastructure;
+using Xcmd.Probe.Scenarios;
+
+namespace Xcmd.Probe;
+
+public static class ProbeAppBuilder
+{
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
+        .UseSkia()
+        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
+}
+
+internal static class Program
+{
+    public static int Main(string[] args)
+    {
+        if (args.FirstOrDefault() == "--lifecycle-host") return LifecycleProcessHost.Run(args.Skip(1).ToArray());
+        var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).ToArray();
+        if (args.Contains("--list"))
+        {
+            foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");
+            return 0;
+        }
+        var filter = Option(args, "--filter");
+        var selected = scenarios.Where(scenario => filter == null || scenario.Id.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (selected.Length == 0) { Console.Error.WriteLine("No matching scenarios."); return 2; }
+        var output = Path.GetFullPath(Option(args, "--output") ?? Path.Combine("artifacts", "probe", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")));
+        Directory.CreateDirectory(output);
+        var results = new List<object>();
+        var failures = 0;
+        using var session = HeadlessUnitTestSession.StartNew(typeof(ProbeAppBuilder));
+        foreach (var scenario in selected)
+        {
+            var watch = Stopwatch.StartNew();
+            var folder = Path.Combine(output, scenario.Id);
+            Directory.CreateDirectory(folder);
+            string? failure = null;
+            Dictionary<string, object>? measurements = null;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+            try
+            {
+                session.Dispatch(async () =>
+                {
+                    using var context = new ProbeContext(folder);
+                    try
+                    {
+                        await context.StartAsync();
+                        await scenario.Run(context);
+                        context.SaveSnapshot();
+                        measurements = context.Measurements;
+                    }
+                    catch
+                    {
+                        context.SaveSnapshot();
+                        await context.ScreenshotAsync("failure");
+                        if (context.Window.ActiveNavigationDialog is { } history) await context.ScreenshotAsync("failure-history", history);
+                        throw;
+                    }
+                    return true;
+                }, timeout.Token).WaitAsync(TimeSpan.FromSeconds(95)).GetAwaiter().GetResult();
+                if (!args.Contains("--keep-fixtures"))
+                {
+                    var retries = FixtureCleanup.Remove(folder);
+                    if (retries > 0 && measurements != null) measurements["fixtureCleanupRetries"] = retries;
+                }
+            }
+            catch (Exception error)
+            {
+                failure = error.ToString(); failures++;
+                File.WriteAllText(Path.Combine(folder, "failure.txt"), failure);
+            }
+            results.Add(new { scenario.Id, scenario.Requirement, passed = failure == null, elapsedMs = watch.Elapsed.TotalMilliseconds, measurements, failure });
+            Console.WriteLine($"{(failure == null ? "PASS" : "FAIL")} {scenario.Id} ({watch.ElapsedMilliseconds} ms){(failure == null ? "" : ": " + failure.Split('\n')[0])}");
+            File.WriteAllText(Path.Combine(output, "results.json"), JsonSerializer.Serialize(new
+            {
+                framework = "Avalonia 12.1.6",
+                runtime = Environment.Version.ToString(),
+                operatingSystem = Environment.OSVersion.ToString(),
+                backend = "Avalonia.Headless + Skia software rendering",
+                nativeApplicationWindows = 0,
+                total = results.Count,
+                failures,
+                scenarios = results
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        Console.WriteLine($"{results.Count - failures}/{results.Count} passed. Results: {Path.Combine(output, "results.json")}");
+        return failures == 0 ? 0 : 1;
+    }
+
+    private static string? Option(string[] args, string name)
+    {
+        var index = Array.IndexOf(args, name);
+        return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
+    }
+}

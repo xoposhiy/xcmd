@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Xcmd.Core/Xcmd.Core.csproj" />
+    <ProjectReference Include="../../src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Xcmd.Desktop/Xcmd.Desktop.csproj" />
+    <ProjectReference Include="../Xcmd.Probe/Xcmd.Probe.csproj" />
+    <PackageReference Include="TngTech.ArchUnitNET" Version="0.13.5" />
+  </ItemGroup>
+</Project>

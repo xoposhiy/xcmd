@@ -1,0 +1,96 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.VisualTree;
+using Xcmd.Desktop;
+using Xcmd.Infrastructure;
+using Xcmd.Probe.Infrastructure;
+using static Xcmd.Probe.Infrastructure.DirectorySizeProbe;
+using static Xcmd.Probe.Infrastructure.ProbeContext;
+using static Xcmd.Probe.Infrastructure.WorkspaceProbe;
+
+namespace Xcmd.Probe.Scenarios;
+
+public static class DirectorySizeScenarios
+{
+    public static IReadOnlyList<Scenario> All { get; } =
+    [
+        new("folder-size-recursive-and-empty", "UC12; recursive folder sizes", async c =>
+        {
+            var expected = AddNestedFiles(c); await c.SelectAsync("alpha.txt");
+            await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            var folder = c.Window.Left.Rows.Single(row => row.Name == "folder1");
+            Equal(expected, folder.Measurement!.Size.Bytes, "The size includes nested file bytes");
+            Equal(2L, folder.Measurement.Size.Files, "The size includes nested file counts");
+            Equal("0", c.Window.Left.Rows.Single(row => row.Name == "folder2").DisplaySize, "An empty directory has zero bytes");
+            Check(c.Window.Left.Rows.Single(row => row.Name == "..").Measurement == null, "The parent row is never measured.");
+            Equal("alpha.txt", c.Window.Left.Current?.Name, "Calculating sizes preserves the file cursor");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Calculating sizes preserves focus.");
+            var sizeCell = c.Row("folder1").GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == expected.ToString("N0"));
+            Check(ToolTip.GetTip(sizeCell)?.ToString()?.Contains("Files: 2") == true, "The displayed cell reports its measurement details.");
+            await c.ScreenshotAsync("calculated-folders");
+        }),
+        new("folder-size-sort-restore-and-refresh", "UC12; UC38; measurement persistence", async c =>
+        {
+            var expected = AddNestedFiles(c); await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            await c.ClickHeaderAsync("Size");
+            Equal(expected, c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement!.Size.Bytes, "Sorting keeps the measured sizes");
+            var store = new SessionStore(Path.Combine(c.FixturePath, "session.json")); await store.SaveAsync(c.Window.CaptureWorkspace());
+            await c.Window.RestoreWorkspaceAsync((await store.ReadAsync())!);
+            Equal(expected, c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement!.Size.Bytes, "Session restore keeps the measured sizes");
+            using var updates = new DirectoryUpdates(c.Window); await updates.PollAsync();
+            Equal(expected, c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement!.Size.Bytes, "An unchanged monitor refresh keeps restored measurements");
+            await c.KeyAsync(Key.R, RawInputModifiers.Control);
+            Check(c.Window.Left.Rows.Where(row => row.Entry.IsDirectory).All(row => row.Measurement == null), "An explicit reload clears old measurements for recalculation.");
+        }),
+        new("folder-size-cancel-and-responsive-input", "UC12; background work and cancellation", async c =>
+        {
+            var gate = c.FileSystem.PauseNextRead(Path.Combine(c.LeftPath, "folder1"));
+            c.PressKey(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Check(c.Window.IsCalculatingDirectorySizes && c.Window.Readiness.Busy && !c.Window.Readiness.CanRestart, "A running measurement defers release changes.");
+            c.PressKey(Key.Tab); Equal("right", c.Window.ActivePanel.Id, "Panel switching remains responsive during a scan");
+            c.PressKey(Key.Escape); await c.SettleAsync();
+            Check(gate.WasCancelled && !c.Window.IsCalculatingDirectorySizes, "Escape cancels the outstanding directory read.");
+            Check(c.Window.Right.Table.IsKeyboardFocusWithin, "Cancellation leaves focus in the panel the user selected.");
+            await c.KeyAsync(Key.Tab); await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            Check(c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement != null, "A canceled measurement can be started again.");
+        }),
+        new("folder-size-navigation-cancels-old-results", "UC12; navigation during background work", async c =>
+        {
+            var gate = c.FileSystem.PauseNextRead(Path.Combine(c.LeftPath, "folder1"));
+            c.PressKey(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            c.PressKey(Key.Down); c.PressKey(Key.Enter); await c.SettleAsync();
+            Check(gate.WasCancelled && !c.Window.IsCalculatingDirectorySizes, "Leaving the source directory cancels its scan.");
+            Equal(Path.Combine(c.LeftPath, "folder2"), c.Window.Left.Session.DirectoryPath, "The requested directory opens during cancellation");
+            Check(c.Window.Left.Rows.All(row => row.Measurement == null), "Late measurements cannot appear in another directory.");
+        }),
+        new("folder-size-partial-access", "UC12; unreadable subdirectories", async c =>
+        {
+            var blocked = Path.Combine(c.LeftPath, "folder1", "blocked"); Directory.CreateDirectory(blocked); c.FileSystem.DenyRead(blocked);
+            await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            var folder = c.Window.Left.Rows.Single(row => row.Name == "folder1");
+            Equal(11L, folder.Measurement!.Size.Bytes, "Readable files still contribute when one directory is unavailable");
+            Equal(1, folder.Measurement.Size.Errors, "The result records the unreadable directory");
+            Check(folder.DisplaySize.StartsWith("≥ ") && folder.SizeDescription.Contains("Unreadable directories: 1"), "Incomplete totals are marked in the cell and tooltip.");
+            Equal("0", c.Window.Left.Rows.Single(row => row.Name == "folder2").DisplaySize, "A partial result does not stop other folders");
+        }),
+        new("folder-size-native-junction-cycle", "UC12; native reparse point integration", async c =>
+        {
+            await CreateJunctionAsync(c);
+            await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            var size = c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement!.Size;
+            Equal(11L, size.Bytes, "A junction cycle cannot duplicate file bytes");
+            Equal(1, size.SkippedLinks, "Native junctions are detected and skipped");
+            Check(size.Incomplete, "The result reports the excluded link.");
+        }),
+        new("folder-size-close-cancels-scan", "UC12; UC38; close during background work", async c =>
+        {
+            var store = new SessionStore(Path.Combine(c.FixturePath, "session.json"));
+            using var lifecycle = new WorkspaceLifecycle(c.Window, store, null); await lifecycle.InitializeAsync(new[] { c.LeftPath, c.RightPath });
+            var gate = c.FileSystem.PauseNextRead(Path.Combine(c.LeftPath, "folder1"));
+            c.PressKey(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            c.Window.Close(); await WaitAsync(() => !c.Window.IsVisible);
+            Check(gate.WasCancelled, "Closing cancels the outstanding scan before saving.");
+            Equal(c.LeftPath, (await store.ReadAsync())!.Left.DirectoryPath, "Closing still saves the workspace");
+        })
+    ];
+}

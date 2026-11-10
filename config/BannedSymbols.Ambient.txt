@@ -1,0 +1,18 @@
+P:System.Environment.CurrentDirectory;Pass the working directory explicitly.
+M:System.IO.Directory.GetCurrentDirectory;Pass the working directory explicitly.
+M:System.Environment.GetEnvironmentVariable(System.String);Read environment settings in infrastructure.
+M:System.Environment.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget);Read environment settings in infrastructure.
+M:System.Environment.GetEnvironmentVariables;Read environment settings in infrastructure.
+M:System.Environment.GetEnvironmentVariables(System.EnvironmentVariableTarget);Read environment settings in infrastructure.
+M:System.Environment.GetFolderPath(System.Environment.SpecialFolder);Resolve system folders in infrastructure.
+M:System.Environment.GetFolderPath(System.Environment.SpecialFolder,System.Environment.SpecialFolderOption);Resolve system folders in infrastructure.
+P:System.AppContext.BaseDirectory;Pass the application directory explicitly.
+P:System.TimeProvider.System;Pass the clock explicitly.
+T:System.Diagnostics.Stopwatch;Pass elapsed time explicitly.
+P:System.DateTime.Now;Pass the current time explicitly.
+P:System.DateTime.UtcNow;Pass the current time explicitly.
+P:System.DateTime.Today;Pass the current time explicitly.
+P:System.DateTimeOffset.Now;Pass the current time explicitly.
+P:System.DateTimeOffset.UtcNow;Pass the current time explicitly.
+N:Microsoft.Win32;Keep Windows integration in infrastructure.
+N:System.Runtime.InteropServices;Keep native interop in infrastructure.

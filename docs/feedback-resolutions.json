@@ -1,0 +1,18 @@
+[
+  { "noteId": "bb026cf27c9c428d8397a29fdd2d5779", "summary": "Sort headers accept clicks across their full area while keeping resize handles usable." },
+  { "noteId": "5af79214b6da4dfbb8ca39bab341f2ab", "summary": "Panels and controls have square corners. Selection in the inactive panel uses a faint background." },
+  { "noteId": "ab9749e492af447c9e2c6567ea996788", "summary": "A command menu replaces the large title inside the window." },
+  { "noteId": "d247070a7bb843bf87c851071221b35d", "summary": "F12 and a Feedback button select elements in every application dialog without losing its draft or selection." },
+  { "noteId": "cd93d0b55fc147b08af4cec74e89f697", "summary": "History, Frequent locations and Favorites share one navigation window with Left/Right list selection. Frequent locations use qualified active visits and a three-day score half-life." },
+  { "noteId": "39d17bc21aa647a7bdee458ada36ed41", "summary": "Panels automatically monitor their directories and preserve cursor, selection and scroll when external files change." },
+  { "noteId": "0b1bc7975a964cb886ea0cadef428c15", "summary": "Type, size and modified values are vertically centered with the file name." },
+  { "noteId": "09de4866bc20440fba3da51bae532071", "summary": "File rows display Windows shell icons for folders and file types. Native handles are released and icon loading stays off the UI thread." },
+  { "noteId": "34116a4af9ec465c84971750a8c9e0eb", "summary": "The final column fills remaining space without a trailing resize handle. View > Reset column widths restores defaults with room for ten-gigabyte byte counts." },
+  { "noteId": "c3f15927b1a642b6914d953907cd3ace", "summary": "History is a subtle text link without a dropdown arrow. Hover help shows Alt+Down." },
+  { "noteId": "ab03ec8272774ef6a7c0a7e5d68908aa", "summary": "Entering a child directory selects its parent entry so a second Enter returns. History and session restore still preserve saved cursors." },
+  { "noteId": "1b1871a797a54eedaafc1ef8061eb949", "summary": "Alt name jumping handles physical key events without relying on text input, avoids duplicate text events, and tries the loaded Windows keyboard layouts." },
+  { "noteId": "50806b69523d4f9fab10dd8f16e8d098", "summary": "All application windows were rendered and reviewed. Panel headers, footers, history rows and dialog margins are compact; small forms fit their content and action buttons align to the right." },
+  { "noteId": "0e3158c716fa49b0ad99db725ec7da3a", "summary": "Start name search with Alt and a letter, then release Alt and keep typing. Unmatched letters are ignored. Navigation, pointer movement, commands, Escape and focus changes clear the prefix." },
+  { "noteId": "e02f63d6f98f49549732971fce471595", "summary": "Only the active history column has a selection. Switching columns remembers each cursor. Compact single-line paths fit more locations, and the dialog height adapts to its contents." },
+  { "noteId": "b4fcf9cd382647e3b2cd3e38ab9c3497", "summary": "The Type heading and file type values share the same horizontal center. Size headings align with byte counts, and cell padding matches the header layout." }
+]

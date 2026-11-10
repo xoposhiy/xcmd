@@ -1,0 +1,31 @@
+M:System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.ConfiguredTaskAwaitable`1.ConfiguredTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1.ConfiguredValueTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.TaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.TaskAwaiter`1.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.ValueTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.ValueTaskAwaiter`1.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Runtime.CompilerServices.YieldAwaitable.YieldAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait;Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait(System.Int32,System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait(System.Int32);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait(System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan,System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.Wait(System.TimeSpan);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Collections.Generic.IEnumerable{System.Threading.Tasks.Task},System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.ReadOnlySpan{System.Threading.Tasks.Task});Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[],System.Int32,System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[],System.Int32);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[],System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[],System.TimeSpan);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[]);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[],System.Int32,System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[],System.Int32);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[],System.Threading.CancellationToken);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[],System.TimeSpan);Await asynchronous work instead of blocking a thread.
+M:System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[]);Await asynchronous work instead of blocking a thread.
+P:System.Threading.Tasks.Task`1.Result;Await asynchronous work instead of blocking a thread.
+P:System.Threading.Tasks.ValueTask`1.Result;Await asynchronous work instead of blocking a thread.
+M:System.Threading.Thread.Sleep(System.Int32);Use an owned asynchronous delay instead of blocking a thread.
+M:System.Threading.Thread.Sleep(System.TimeSpan);Use an owned asynchronous delay instead of blocking a thread.

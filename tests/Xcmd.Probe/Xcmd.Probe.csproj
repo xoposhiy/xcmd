@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Xcmd.Desktop/Xcmd.Desktop.csproj" />
+    <ProjectReference Include="../Xcmd.LaunchProbe/Xcmd.LaunchProbe.csproj" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+  <Target Name="CopyLaunchProbe" AfterTargets="Build">
+    <ItemGroup><LaunchProbeFiles Include="../Xcmd.LaunchProbe/bin/$(Configuration)/$(TargetFramework)/*" /></ItemGroup>
+    <Copy SourceFiles="@(LaunchProbeFiles)" DestinationFolder="$(OutDir)launch-probe" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="../../artifacts/launcher/publish/Xcmd.exe" DestinationFolder="$(OutDir)launcher" Condition="Exists('../../artifacts/launcher/publish/Xcmd.exe')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

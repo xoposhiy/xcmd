@@ -1,0 +1,14 @@
+T:System.IO.File;Use an infrastructure adapter for filesystem access.
+T:System.IO.Directory;Use an infrastructure adapter or pure Path operations.
+T:System.IO.FileInfo;Use an infrastructure adapter for filesystem access.
+T:System.IO.DirectoryInfo;Use an infrastructure adapter or pure Path operations.
+T:System.IO.FileStream;Use an infrastructure adapter for filesystem access.
+T:System.IO.FileSystemWatcher;Use an infrastructure adapter for directory monitoring.
+T:System.IO.RandomAccess;Use an infrastructure adapter for filesystem access.
+T:System.IO.StreamReader;Read files in an infrastructure adapter.
+T:System.IO.StreamWriter;Write files in an infrastructure adapter.
+T:System.Diagnostics.Process;Launch processes in an infrastructure adapter.
+T:System.Diagnostics.ProcessStartInfo;Build process requests in an infrastructure adapter.
+T:System.Runtime.InteropServices.DllImportAttribute;Keep native interop in infrastructure.
+T:System.Runtime.InteropServices.LibraryImportAttribute;Keep native interop in infrastructure.
+T:System.Runtime.InteropServices.NativeLibrary;Keep native library loading in infrastructure.
