@@ -13,11 +13,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11.9'
-      - name: Verify architecture and behavior
+      - name: Verify and generate code health report
         shell: pwsh
-        run: ./scripts/Test-Xcmd.ps1 -OutputPath artifacts/probe/ci
+        run: ./scripts/Report-CodeHealth.ps1 -OutputPath artifacts/code-health/ci
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: verification-failure
-          path: artifacts/probe/ci
+          name: code-health
+          path: artifacts/code-health/ci

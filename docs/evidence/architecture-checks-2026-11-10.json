@@ -1,0 +1,20 @@
+{
+  "verifiedOn": "2026-11-10",
+  "scope": "Historical architecture audit before the Windows Shell command-line change. This is not the current behavior verification.",
+  "sdk": "10.0.102",
+  "archUnitNet": "0.13.5",
+  "bannedApiAnalyzers": "5.6.0",
+  "lizard": "1.25.1",
+  "productionProjects": ["Xcmd.Core", "Xcmd.Infrastructure", "Xcmd.Desktop"],
+  "evaluatedProjects": 6,
+  "evaluatedConfigurations": ["Debug", "Release"],
+  "architectureRules": 11,
+  "dependencyRuleSelfChecksPassed": true,
+  "analyzerViolationsRejected": 14,
+  "allowedPathAndAsyncFixturePassed": true,
+  "formattingPassed": true,
+  "metricsPassed": true,
+  "behaviorScenarios": 153,
+  "behaviorFailures": 0,
+  "nativeApplicationWindows": 0
+}

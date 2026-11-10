@@ -53,6 +53,8 @@ Results, input and state traces, failure details and offscreen images are writte
 
 See [automated checks](docs/automated-checks.md) for enforced rules and limits, and [verification coverage](docs/verification.md) for current evidence and native coverage limits.
 
+Generate the [code health report](docs/automated-checks.md#code-health-report) with `./scripts/Report-CodeHealth.ps1` to inspect measured values by project, folder, file, function, and type. CI publishes the same report as a `code-health` artifact.
+
 ## Build a ready release
 
 ```powershell

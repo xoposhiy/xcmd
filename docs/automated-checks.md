@@ -32,6 +32,8 @@ dotnet format whitespace Xcmd.slnx --no-restore
 
 ## Project boundaries
 
+See [Code health report](#code-health-report) for measured values at project, folder, file, function, and type level.
+
 The [code architecture](architecture.md) defines the three production projects. Project-scoped API bans protect Core and Desktop.
 
 | Project | Allowed production dependencies | Responsibility |
@@ -62,6 +64,8 @@ SDK analyzers come from the exact SDK pinned in `global.json`. NuGet lock files 
 
 Limits were selected after measuring the existing production code. They apply to all production files; there is no legacy baseline or list of ignored methods.
 
+`config/metrics.json` defines Lizard limits. `CodeMetricsConfig.txt` defines the .NET analyzer limits.
+
 | Metric | Limit |
 | --- | --- |
 | Roslyn cyclomatic complexity, CA1502 | At most 25 per method |
@@ -85,6 +89,32 @@ Production code has no method-level exception to the blocking API ban.
 Feature folders and feature namespaces do not exist yet. The current cycle check protects layers. Add feature slices with the first feature-namespace migration; a passing layer check is not evidence that unstructured classes have no feature cycles.
 
 Static checks do not establish correct runtime behavior, task ownership, error reporting, or usability. Reflection and string-based lookup can bypass type dependencies. The existing headless and real-adapter scenarios remain required. Native desktop input and external application appearance retain the limits listed in the [development requirements](development-requirements.md).
+
+## Code health report
+
+Generate a report with fresh architecture, analyzer, formatting, metric, and behavioral checks:
+
+```powershell
+./scripts/Report-CodeHealth.ps1
+```
+
+The command prints the report path. Each default run creates a separate directory under `artifacts/code-health`. `artifacts/code-health/latest.txt` points to the latest generated report. Open `index.html` in that directory.
+
+The report includes project, folder, file, Lizard function, and Roslyn type/member views. Filter production or test code, select a project or file, search names, and sort columns. Production limits are enforced; test metrics are informational. Download the full JSON, file/function/member CSV tables, or raw Roslyn XML from the report.
+
+The report reads the actual limits from `config/metrics.json` and `CodeMetricsConfig.txt`. Project maintainability is the Microsoft tool's assembly index. File and folder maintainability columns show the lowest member value, not a separate health score. Type coupling is not additive, and partial classes span files.
+
+For measurements without rerunning verification:
+
+```powershell
+./scripts/Report-CodeHealth.ps1 -SkipVerification
+```
+
+Such a report explicitly marks verification as skipped and labels older behavioral results as historical. A fresh verification run records source fingerprints before and after the checks. A source change during measurement prevents a passing current-source status.
+
+Microsoft.CodeAnalysis.Metrics 5.6.0 produces semantic XML. Its package uses Roslyn Workspace 4.12.0 and omits the host needed to load SDK projects. The report command restores that matching host separately and combines them only under `artifacts/code-health-tools`. The pinned SDK build remains authoritative for lint diagnostics. The reporting tool is not a production dependency.
+
+CI runs the report command and uploads the `code-health` artifact on success or failure. This includes the report, raw metrics, verification log, and behavioral diagnostics. The lightweight `Test-Xcmd.ps1` and release workflow keep their existing verification path.
 
 ## Tool references
 

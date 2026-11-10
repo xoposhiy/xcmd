@@ -1,0 +1,9 @@
+{
+  "lizard": {
+    "ccn": 25,
+    "cognitive": 25,
+    "nesting": 10,
+    "codeLines": 150,
+    "parameters": 8
+  }
+}

@@ -1,0 +1,414 @@
+{
+  "verifiedOn": "2026-11-10",
+  "scope": "Behavior-preserving simplification of production methods near complexity limits.",
+  "productionProjects": [
+    "Xcmd.Core",
+    "Xcmd.Infrastructure",
+    "Xcmd.Desktop"
+  ],
+  "baselineSourceFingerprint": "d73229820f415e91e8d8feaa2ce6fae17f2a06ab2ca23e802e4f4ed4d6978ebe",
+  "verifiedSourceFingerprint": "2a0382df189dfc02a364fa95c33007b8090409518e047bc79afbc38ec849cdd9",
+  "limitsChanged": false,
+  "limits": {
+    "lizard": {
+      "ccn": 25,
+      "cognitive": 25,
+      "nesting": 10,
+      "codeLines": 150,
+      "parameters": 8
+    },
+    "roslyn": {
+      "ccn": 25,
+      "maintainability": 10,
+      "coupling": 150
+    }
+  },
+  "nearLimitDefinition": "At least 80% of any configured Lizard maximum.",
+  "productionNearLimitFunctions": {
+    "before": 11,
+    "after": 0
+  },
+  "verification": {
+    "status": "passed",
+    "sourceFingerprintAfter": "2a0382df189dfc02a364fa95c33007b8090409518e047bc79afbc38ec849cdd9",
+    "startedAt": "2026-11-10T10:51:58.37578Z",
+    "finishedAt": "2026-11-10T10:54:51.281592Z",
+    "exitCode": 0,
+    "sourceFingerprintBefore": "2a0382df189dfc02a364fa95c33007b8090409518e047bc79afbc38ec849cdd9",
+    "architectureRules": 11,
+    "analyzerSelfChecks": 14,
+    "behaviorResults": "behavior/results.json",
+    "command": "./scripts/Release-Xcmd.ps1",
+    "releaseId": "20261110-115158-538-09f2a993",
+    "matchesCurrentSource": true,
+    "behavior": {
+      "total": 156,
+      "failures": 0,
+      "nativeApplicationWindows": 0
+    }
+  },
+  "formattingPassed": true,
+  "productionMetricsPassed": true,
+  "buildWarnings": 0,
+  "reportAggregationTestsPassed": 12,
+  "coreAssemblyComparison": {
+    "passed": true,
+    "seed": 4129,
+    "comparisons": {
+      "ValidateName": 1014,
+      "NaturalCompare": 20000,
+      "Parse": 5012,
+      "ValidateWorkspace": 98
+    },
+    "total": 26124
+  },
+  "methods": [
+    {
+      "path": "src/Xcmd.Core/CommandLine.cs",
+      "method": "Parse",
+      "before": {
+        "ccn": 16,
+        "cognitive": 15,
+        "nesting": 9,
+        "codeLines": 23,
+        "parameters": 1,
+        "utilization": 0.9
+      },
+      "after": {
+        "ccn": 5,
+        "cognitive": 4,
+        "nesting": 4,
+        "codeLines": 7,
+        "parameters": 1,
+        "utilization": 0.4
+      }
+    },
+    {
+      "path": "src/Xcmd.Core/PanelRules.cs",
+      "method": "NaturalCompare",
+      "before": {
+        "ccn": 13,
+        "cognitive": 23,
+        "nesting": 8,
+        "codeLines": 25,
+        "parameters": 2,
+        "utilization": 0.92
+      },
+      "after": {
+        "ccn": 8,
+        "cognitive": 12,
+        "nesting": 4,
+        "codeLines": 19,
+        "parameters": 2,
+        "utilization": 0.48
+      }
+    },
+    {
+      "path": "src/Xcmd.Core/PanelRules.cs",
+      "method": "ValidateName",
+      "before": {
+        "ccn": 12,
+        "cognitive": 10,
+        "nesting": 10,
+        "codeLines": 15,
+        "parameters": 1,
+        "utilization": 1.0
+      },
+      "after": {
+        "ccn": 8,
+        "cognitive": 7,
+        "nesting": 7,
+        "codeLines": 11,
+        "parameters": 1,
+        "utilization": 0.7
+      }
+    },
+    {
+      "path": "src/Xcmd.Core/WorkspaceState.cs",
+      "method": "ValidatePanel",
+      "before": {
+        "ccn": 16,
+        "cognitive": 4,
+        "nesting": 9,
+        "codeLines": 10,
+        "parameters": 1,
+        "utilization": 0.9
+      },
+      "after": {
+        "ccn": 5,
+        "cognitive": 2,
+        "nesting": 4,
+        "codeLines": 7,
+        "parameters": 1,
+        "utilization": 0.4
+      }
+    },
+    {
+      "path": "src/Xcmd.Core/WorkspaceState.cs",
+      "method": "ValidateFavorites",
+      "before": {
+        "ccn": 12,
+        "cognitive": 4,
+        "nesting": 9,
+        "codeLines": 9,
+        "parameters": 0,
+        "utilization": 0.9
+      },
+      "after": {
+        "ccn": 5,
+        "cognitive": 3,
+        "nesting": 3,
+        "codeLines": 6,
+        "parameters": 0,
+        "utilization": 0.3
+      }
+    },
+    {
+      "path": "src/Xcmd.Desktop/CommanderWindow.cs",
+      "method": "OnKeyDown",
+      "before": {
+        "ccn": 20,
+        "cognitive": 19,
+        "nesting": 5,
+        "codeLines": 22,
+        "parameters": 2,
+        "utilization": 0.8
+      },
+      "after": {
+        "ccn": 15,
+        "cognitive": 15,
+        "nesting": 6,
+        "codeLines": 18,
+        "parameters": 2,
+        "utilization": 0.6
+      }
+    },
+    {
+      "path": "src/Xcmd.Desktop/CommanderWindow.Keyboard.cs",
+      "method": "HandlePanelCommand",
+      "before": {
+        "ccn": 22,
+        "cognitive": 25,
+        "nesting": 8,
+        "codeLines": 34,
+        "parameters": 3,
+        "utilization": 1.0
+      },
+      "after": {
+        "ccn": 8,
+        "cognitive": 7,
+        "nesting": 3,
+        "codeLines": 21,
+        "parameters": 3,
+        "utilization": 0.375
+      }
+    },
+    {
+      "path": "src/Xcmd.Desktop/DirectoryNavigationDialog.cs",
+      "method": "HandleKey",
+      "before": {
+        "ccn": 20,
+        "cognitive": 16,
+        "nesting": 2,
+        "codeLines": 13,
+        "parameters": 3,
+        "utilization": 0.8
+      },
+      "after": {
+        "ccn": 11,
+        "cognitive": 12,
+        "nesting": 3,
+        "codeLines": 26,
+        "parameters": 3,
+        "utilization": 0.48
+      }
+    },
+    {
+      "path": "src/Xcmd.Desktop/PanelView.cs",
+      "method": "RefreshAsync",
+      "before": {
+        "ccn": 16,
+        "cognitive": 8,
+        "nesting": 10,
+        "codeLines": 24,
+        "parameters": 2,
+        "utilization": 1.0
+      },
+      "after": {
+        "ccn": 5,
+        "cognitive": 3,
+        "nesting": 2,
+        "codeLines": 12,
+        "parameters": 2,
+        "utilization": 0.25
+      }
+    },
+    {
+      "path": "src/Xcmd.Desktop/WorkspaceLifecycle.cs",
+      "method": "PollAsync",
+      "before": {
+        "ccn": 17,
+        "cognitive": 16,
+        "nesting": 9,
+        "codeLines": 39,
+        "parameters": 0,
+        "utilization": 0.9
+      },
+      "after": {
+        "ccn": 10,
+        "cognitive": 8,
+        "nesting": 6,
+        "codeLines": 24,
+        "parameters": 0,
+        "utilization": 0.6
+      }
+    },
+    {
+      "path": "src/Xcmd.Infrastructure/ReleaseCatalog.cs",
+      "method": "FindNextAsync",
+      "before": {
+        "ccn": 9,
+        "cognitive": 7,
+        "nesting": 8,
+        "codeLines": 16,
+        "parameters": 0,
+        "utilization": 0.8
+      },
+      "after": {
+        "ccn": 8,
+        "cognitive": 6,
+        "nesting": 7,
+        "codeLines": 16,
+        "parameters": 0,
+        "utilization": 0.7
+      }
+    }
+  ],
+  "projects": [
+    {
+      "name": "Xcmd.Core",
+      "before": {
+        "roslyn": {
+          "maintainability": 87,
+          "ccn": 311,
+          "coupling": 64,
+          "sourceLines": 547,
+          "executableLines": 337
+        },
+        "lizard": {
+          "functions": 50,
+          "averageCcn": 4.64,
+          "totalCcn": 232,
+          "maxCcn": 16,
+          "maxCognitive": 23,
+          "maxNesting": 10,
+          "nearLimitFunctions": 5
+        }
+      },
+      "after": {
+        "roslyn": {
+          "maintainability": 87,
+          "ccn": 319,
+          "coupling": 64,
+          "sourceLines": 592,
+          "executableLines": 351
+        },
+        "lizard": {
+          "functions": 62,
+          "averageCcn": 3.87,
+          "totalCcn": 240,
+          "maxCcn": 13,
+          "maxCognitive": 17,
+          "maxNesting": 7,
+          "nearLimitFunctions": 0
+        }
+      }
+    },
+    {
+      "name": "Xcmd.Infrastructure",
+      "before": {
+        "roslyn": {
+          "maintainability": 76,
+          "ccn": 174,
+          "coupling": 98,
+          "sourceLines": 498,
+          "executableLines": 311
+        },
+        "lizard": {
+          "functions": 43,
+          "averageCcn": 3.12,
+          "totalCcn": 134,
+          "maxCcn": 10,
+          "maxCognitive": 14,
+          "maxNesting": 8,
+          "nearLimitFunctions": 1
+        }
+      },
+      "after": {
+        "roslyn": {
+          "maintainability": 77,
+          "ccn": 175,
+          "coupling": 98,
+          "sourceLines": 501,
+          "executableLines": 312
+        },
+        "lizard": {
+          "functions": 44,
+          "averageCcn": 3.07,
+          "totalCcn": 135,
+          "maxCcn": 10,
+          "maxCognitive": 14,
+          "maxNesting": 7,
+          "nearLimitFunctions": 0
+        }
+      }
+    },
+    {
+      "name": "Xcmd.Desktop",
+      "before": {
+        "roslyn": {
+          "maintainability": 72,
+          "ccn": 851,
+          "coupling": 256,
+          "sourceLines": 2068,
+          "executableLines": 1487
+        },
+        "lizard": {
+          "functions": 171,
+          "averageCcn": 3.99,
+          "totalCcn": 682,
+          "maxCcn": 22,
+          "maxCognitive": 25,
+          "maxNesting": 10,
+          "nearLimitFunctions": 5
+        }
+      },
+      "after": {
+        "roslyn": {
+          "maintainability": 72,
+          "ccn": 860,
+          "coupling": 256,
+          "sourceLines": 2166,
+          "executableLines": 1500
+        },
+        "lizard": {
+          "functions": 182,
+          "averageCcn": 3.79,
+          "totalCcn": 690,
+          "maxCcn": 16,
+          "maxCognitive": 19,
+          "maxNesting": 7,
+          "nearLimitFunctions": 0
+        }
+      }
+    }
+  ],
+  "notes": [
+    "The full Release-Xcmd verification ran before metric collection. Source fingerprints match before verification, after verification and during report generation.",
+    "The three production projects and their dependency direction are unchanged.",
+    "Extracting methods adds function entry points. Total cyclomatic complexity and source lines can increase while individual methods become simpler.",
+    "Lizard and Roslyn complexity values use different models. Do not add or compare their values as one metric.",
+    "The Core assembly comparison checks results and exception types and messages for selected inputs. It does not prove equivalence for every input.",
+    "Production limits are enforced. Test metrics remain informational."
+  ]
+}

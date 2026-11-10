@@ -27,6 +27,14 @@ The verified environment on 2026-11-10 used the SDK in `global.json`, .NET runti
 
 Independent usability review of the command-line workflow found no open issues after pending-launch feedback was added. The review used the actual source and a compact 840×400 offscreen image. Repeat independent review for changed user workflows, as required by the [architecture](architecture.md).
 
+## Complexity refactor evidence
+
+The 2026-11-10 refactor keeps the three production projects and their dependency direction. Production functions at or above 80% of a configured Lizard maximum decreased from 11 to 0. No metric limit changed. `HandlePanelCommand` decreased from 22 to 8 in cyclomatic complexity and from 25 to 7 in cognitive complexity.
+
+The full release verification passed all 156 scenarios. An additional comparison of the Core assemblies before and after the refactor passed 26,124 cases with matching results and exception messages. The comparison covers natural ordering, file names, command parsing and saved workspace validation. These checks supplement the behavioral suite; they do not prove equivalence for every input.
+
+The [comparison evidence](evidence/complexity-refactor-2026-11-10.json) records all 11 methods, project metrics, limits, source fingerprints and the verified release ID. Generate a fresh [code health report](automated-checks.md#code-health-report) to inspect current projects, folders, files and members. Extracting methods adds function entry points, so total cyclomatic complexity and source lines can increase while individual methods become simpler.
+
 ## Diagnostics and isolation
 
 The runner starts the same `App`, controls, command handlers and services as the desktop build. Avalonia.Headless replaces the window and input backend; Skia renders into memory. Every application window and dialog must have a zero-valued `STUB` handle. Test scenarios use isolated fixtures and recording launchers unless a scenario explicitly tests the real Windows adapter with a controlled windowless endpoint.
