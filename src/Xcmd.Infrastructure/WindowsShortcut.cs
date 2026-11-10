@@ -6,16 +6,16 @@ public static unsafe class WindowsShortcut
 {
     public const string ApplicationId = "Xcmd.FileManager";
 
-    public static void Create(string path, string launcher)
+    public static void Create(string path, string launcher, string? icon = null)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Xcmd shortcuts require Windows.");
         var apartment = CoInitializeEx(0, 2);
         if (apartment < 0 && apartment != unchecked((int)0x80010106)) Marshal.ThrowExceptionForHR(apartment);
-        try { CreateLink(path, launcher); }
+        try { CreateLink(path, launcher, Path.GetFullPath(icon ?? launcher)); }
         finally { if (apartment >= 0) CoUninitialize(); }
     }
 
-    private static void CreateLink(string path, string launcher)
+    private static void CreateLink(string path, string launcher, string iconPath)
     {
         launcher = Path.GetFullPath(launcher);
         var classId = new Guid("00021401-0000-0000-C000-000000000046");
@@ -26,11 +26,12 @@ public static unsafe class WindowsShortcut
             SetText(link, 20, launcher);
             SetText(link, 9, Path.GetDirectoryName(launcher)!);
             SetText(link, 7, "Open the latest verified Xcmd release");
-            fixed (char* icon = launcher)
+            fixed (char* icon = iconPath)
                 Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, char*, int, int>)Table(link)[17])(link, icon, 0));
             Marshal.ThrowExceptionForHR(((delegate* unmanaged[Stdcall]<nint, int, int>)Table(link)[15])(link, 1));
             SetApplicationId(link);
             Save(link, Path.GetFullPath(path));
+            SHChangeNotify(0x2000, 0x1005, Path.GetFullPath(path), 0);
         }
         finally { Marshal.Release(link); }
     }
@@ -81,4 +82,7 @@ public static unsafe class WindowsShortcut
 
     [DllImport("ole32.dll", ExactSpelling = true)]
     private static extern void CoUninitialize();
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern void SHChangeNotify(uint events, uint flags, string path, nint secondItem);
 }

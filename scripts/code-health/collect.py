@@ -58,7 +58,7 @@ def fingerprint(root):
     paths.update(root.glob("config/BannedSymbols.*.txt"))
     paths.add(root / "config/metrics.json")
     paths.update(root.glob("scripts/*.ps1"))
-    for name in (".editorconfig", "Directory.Build.props", "global.json", "CodeMetricsConfig.txt", "Xcmd.slnx", "NuGet.Config"):
+    for name in (".editorconfig", "Directory.Build.props", "Directory.Build.targets", "global.json", "CodeMetricsConfig.txt", "Xcmd.slnx", "NuGet.Config"):
         paths.add(root / name)
     digest = hashlib.sha256()
     for path in sorted(paths):

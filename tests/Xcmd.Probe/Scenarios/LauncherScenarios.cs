@@ -47,6 +47,31 @@ public static class LauncherScenarios
             Equal(fixture.ReleaseExecutable(NewId), report.Executable, "The real Windows shortcut starts the verified release");
             Equal(fixture.Root, report.WorkingDirectory, "The shortcut uses its configured working directory");
         }),
+        new("launcher-shortcut-icon-refresh", "UC40; existing shortcut icon updates", async c =>
+        {
+            var fixture = LauncherProbe.Prepare(c);
+            var iconSource = Path.Combine(fixture.Root, "source.ico");
+            TaskbarProbe.WriteSolidIcon(iconSource, 230, 40, 70);
+            await LauncherProbe.InstallAsync(fixture, icon: iconSource);
+            var oldIcon = TaskbarProbe.ReadShortcutIcon(fixture);
+            var oldBytes = await File.ReadAllBytesAsync(oldIcon);
+            var oldPixels = TaskbarProbe.ReadIconPixels(fixture.Shortcut);
+            TaskbarProbe.CheckShortcut(fixture, oldIcon);
+            Check(oldPixels.Any(value => value != 0), "Windows returns the initial shortcut icon pixels.");
+
+            TaskbarProbe.WriteSolidIcon(iconSource, 40, 210, 230);
+            await LauncherProbe.InstallAsync(fixture, icon: iconSource);
+            var newIcon = TaskbarProbe.ReadShortcutIcon(fixture);
+            var newPixels = TaskbarProbe.ReadIconPixels(fixture.Shortcut);
+            Check(!string.Equals(oldIcon, newIcon, StringComparison.OrdinalIgnoreCase), "Changed icon pixels use a new cache path.");
+            var retainedBytes = await File.ReadAllBytesAsync(oldIcon);
+            Check(oldBytes.SequenceEqual(retainedBytes), "The previous icon stays available for existing pins.");
+            TaskbarProbe.CheckShortcut(fixture, newIcon);
+            Check(newPixels.Any(value => value != 0), "Windows returns icon pixels from the updated shortcut.");
+            Check(!oldPixels.SequenceEqual(newPixels), "The Windows shortcut icon changes after installation.");
+            await LauncherProbe.InstallAsync(fixture, icon: iconSource);
+            Equal(newIcon, TaskbarProbe.ReadShortcutIcon(fixture), "The same icon keeps its cache path");
+        }),
         new("launcher-busy-file-keeps-release-publishing-available", "UC40; UC38; independent release files", async c =>
         {
             var fixture = LauncherProbe.Prepare(c);

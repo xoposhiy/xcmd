@@ -13,7 +13,7 @@ internal static class TaskbarIdentity
         var release = ReleaseCatalog.ForApplication();
         var handle = window.TryGetPlatformHandle();
         if (release == null || handle?.HandleDescriptor != "HWND" || handle.Handle == 0) return;
-        var error = WindowsTaskbar.ConfigureWindow(handle.Handle, release.LauncherExecutable);
+        var error = WindowsTaskbar.ConfigureWindow(handle.Handle, release.LauncherExecutable, release.ApplicationIcon);
         if (error != null) window.Trace.Add("Taskbar window identity: " + error);
         var cleared = false;
         window.Closing += (_, e) =>

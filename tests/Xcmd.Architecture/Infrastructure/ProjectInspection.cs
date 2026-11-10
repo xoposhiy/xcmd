@@ -33,29 +33,28 @@ internal static class ProjectInspection
         {
             var name = Path.GetFileNameWithoutExtension(project);
             if (!References.ContainsKey(name)) throw new InvalidOperationException("Missing architecture policy: " + project);
-            foreach (var configuration in new[] { "Debug", "Release" })
-            {
-                using var manifest = await ReadManifestAsync(project, configuration);
-                var properties = manifest.RootElement.GetProperty("Properties");
-                if (properties.GetProperty("AssemblyName").GetString() != name) throw new InvalidOperationException("Unexpected assembly name: " + project);
-                var items = manifest.RootElement.GetProperty("Items");
-                RequireSame(project, "direct assembly references", items.GetProperty("Reference").EnumerateArray().Select(item => item.GetProperty("Identity").GetString()!), []);
-                RequireSame(project, "framework references", items.GetProperty("FrameworkReference").EnumerateArray().Select(item => item.GetProperty("Identity").GetString()!), ["Microsoft.NETCore.App"]);
-                var references = items.GetProperty("ProjectReference").EnumerateArray().Select(item => Path.GetFileNameWithoutExtension(item.GetProperty("FullPath").GetString()!));
-                RequireSame(project, "project references", references!, References[name]);
-                var packages = items.GetProperty("PackageReference").EnumerateArray().ToArray();
-                RequireSame(project, "package references", packages.Select(item => item.GetProperty("Identity").GetString()!), Packages[name]);
-                if (packages.Any(item => !Version.TryParse(item.GetProperty("Version").GetString(), out _))) throw new InvalidOperationException("Package versions must be pinned: " + project);
-            }
+            using var manifest = await ReadManifestAsync(project);
+            var properties = manifest.RootElement.GetProperty("Properties");
+            CheckBuildProfile(project, properties);
+            if (properties.GetProperty("AssemblyName").GetString() != name) throw new InvalidOperationException("Unexpected assembly name: " + project);
+            var items = manifest.RootElement.GetProperty("Items");
+            RequireSame(project, "direct assembly references", items.GetProperty("Reference").EnumerateArray().Select(item => item.GetProperty("Identity").GetString()!), []);
+            RequireSame(project, "framework references", items.GetProperty("FrameworkReference").EnumerateArray().Select(item => item.GetProperty("Identity").GetString()!), ["Microsoft.NETCore.App"]);
+            var references = items.GetProperty("ProjectReference").EnumerateArray().Select(item => Path.GetFileNameWithoutExtension(item.GetProperty("FullPath").GetString()!));
+            RequireSame(project, "project references", references!, References[name]);
+            var packages = items.GetProperty("PackageReference").EnumerateArray().ToArray();
+            RequireSame(project, "package references", packages.Select(item => item.GetProperty("Identity").GetString()!), Packages[name]);
+            if (packages.Any(item => !Version.TryParse(item.GetProperty("Version").GetString(), out _))) throw new InvalidOperationException("Package versions must be pinned: " + project);
         }
         await CheckLauncherAsync(Path.Combine(root, "src", "Xcmd.Infrastructure", "Xcmd.Infrastructure.csproj"));
         CheckPolicyRejectsForbiddenReferences();
-        Console.WriteLine($"PASS evaluated project and package references ({projects.Length} projects, Debug and Release)");
+        Console.WriteLine($"PASS evaluated project and package references ({projects.Length} projects, Release / win-x64 / x64)");
     }
 
     private static async Task CheckLauncherAsync(string project)
     {
-        using var manifest = await ReadManifestAsync(project, "Release", "-p:XcmdLauncher=true");
+        using var manifest = await ReadManifestAsync(project, "-p:XcmdLauncher=true");
+        CheckBuildProfile(project, manifest.RootElement.GetProperty("Properties"));
         if (manifest.RootElement.GetProperty("Properties").GetProperty("AssemblyName").GetString() != "Xcmd")
             throw new InvalidOperationException("The launcher must produce Xcmd.exe.");
         var items = manifest.RootElement.GetProperty("Items");
@@ -65,10 +64,10 @@ internal static class ProjectInspection
         Console.WriteLine("PASS launcher build has no project or UI dependencies");
     }
 
-    private static async Task<JsonDocument> ReadManifestAsync(string project, string configuration, params string[] options)
+    private static async Task<JsonDocument> ReadManifestAsync(string project, params string[] options)
     {
         var start = new ProcessStartInfo("dotnet") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in new[] { "msbuild", project, "-nologo", "-p:Configuration=" + configuration, "-getItem:ProjectReference,PackageReference,Reference,FrameworkReference", "-getProperty:AssemblyName" }) start.ArgumentList.Add(argument);
+        foreach (var argument in new[] { "msbuild", project, "-nologo", "-getItem:ProjectReference,PackageReference,Reference,FrameworkReference", "-getProperty:AssemblyName,Configuration,RuntimeIdentifier,RuntimeIdentifiers,PlatformTarget" }) start.ArgumentList.Add(argument);
         foreach (var option in options) start.ArgumentList.Add(option);
         using var process = Process.Start(start) ?? throw new IOException("MSBuild could not be started.");
         var output = process.StandardOutput.ReadToEndAsync();
@@ -84,6 +83,15 @@ internal static class ProjectInspection
     {
         if (!actual.Order(StringComparer.Ordinal).SequenceEqual(allowed.Order(StringComparer.Ordinal)))
             throw new InvalidOperationException($"{project}: unexpected {kind}: {string.Join(", ", actual)}");
+    }
+
+    private static void CheckBuildProfile(string project, JsonElement properties)
+    {
+        if (properties.GetProperty("Configuration").GetString() != "Release" ||
+            properties.GetProperty("RuntimeIdentifier").GetString() != "win-x64" ||
+            properties.GetProperty("PlatformTarget").GetString() != "x64" ||
+            properties.GetProperty("RuntimeIdentifiers").GetString() is not ("" or "win-x64"))
+            throw new InvalidOperationException(project + ": only Release / win-x64 / x64 is supported.");
     }
 
     private static void CheckPolicyRejectsForbiddenReferences()

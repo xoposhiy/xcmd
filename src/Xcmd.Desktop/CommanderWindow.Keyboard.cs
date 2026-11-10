@@ -8,6 +8,8 @@ public sealed partial class CommanderWindow
     private void HandleCommandLineKey(KeyEventArgs e)
     {
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None) { CommandLine.Clear(); SetError(null); }
+        else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
+            Execute(CommandLine.CopyAllAsync);
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
         else if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Up or Key.Down)
         { Activate(ActivePanel); ActivePanel.FocusCurrent(); }

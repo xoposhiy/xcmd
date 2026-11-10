@@ -6,6 +6,7 @@ public sealed class ReleaseCatalog(string root, string currentId, string executa
 {
     public string CurrentId { get; } = currentId;
     public string CurrentDirectory => Path.Combine(root, CurrentId);
+    public string ApplicationIcon => Path.Combine(CurrentDirectory, "app.ico");
     public string LauncherExecutable => Path.GetFullPath(Path.Combine(root, "..", "Xcmd.exe"));
 
     public async Task<ReleaseInfo?> FindNextAsync()

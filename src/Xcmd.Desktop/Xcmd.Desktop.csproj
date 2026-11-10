@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets/app.ico" />
+    <Content Include="Assets/app.ico" Link="app.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="config/file-types.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <ProjectReference Include="../Xcmd.Core/Xcmd.Core.csproj" />
     <ProjectReference Include="../Xcmd.Infrastructure/Xcmd.Infrastructure.csproj" />

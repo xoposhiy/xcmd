@@ -17,6 +17,22 @@ public static class RefinementScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("refinement-readable-sort-headings", "UC13; centered and readable headings", async c =>
+        {
+            foreach (var panel in new[] { c.Window.Left, c.Window.Right })
+            {
+                foreach (var header in panel.Table.GetVisualDescendants().OfType<TableViewColumnHeader>())
+                {
+                    var button = header.GetVisualDescendants().OfType<Button>().First(item => item.Name?.Contains("Sort", StringComparison.Ordinal) == true);
+                    var text = button.GetVisualDescendants().OfType<TextBlock>().Single();
+                    var center = text.TranslatePoint(new Point(0, text.Bounds.Height / 2), header)!.Value.Y;
+                    Check(Math.Abs(center - header.Bounds.Height / 2) < 1, "Each heading is vertically centered in the whole header.");
+                    Check(text.FontSize >= 13, "Headings are at least as large as file names.");
+                    Equal(Color.Parse("#E5EBF5"), (text.Foreground as ISolidColorBrush)?.Color, "Heading text uses a light foreground");
+                }
+            }
+            await c.ScreenshotAsync("readable-sort-headings");
+        }),
         new("refinement-full-sort-header", "UC13", async c =>
         {
             var button = Button(c.Window, "leftSortName");

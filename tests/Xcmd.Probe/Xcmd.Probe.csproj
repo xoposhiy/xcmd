@@ -9,7 +9,7 @@
     <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
   </ItemGroup>
   <Target Name="CopyLaunchProbe" AfterTargets="Build">
-    <ItemGroup><LaunchProbeFiles Include="../Xcmd.LaunchProbe/bin/$(Configuration)/$(TargetFramework)/*" /></ItemGroup>
+    <ItemGroup><LaunchProbeFiles Include="../Xcmd.LaunchProbe/bin/$(Configuration)/$(TargetFramework)/$(RuntimeIdentifier)/*" /></ItemGroup>
     <Copy SourceFiles="@(LaunchProbeFiles)" DestinationFolder="$(OutDir)launch-probe" SkipUnchangedFiles="true" />
     <Copy SourceFiles="../../artifacts/launcher/publish/Xcmd.exe" DestinationFolder="$(OutDir)launcher" Condition="Exists('../../artifacts/launcher/publish/Xcmd.exe')" SkipUnchangedFiles="true" />
   </Target>

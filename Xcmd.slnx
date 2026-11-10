@@ -1,4 +1,7 @@
 <Solution>
+  <Configurations>
+    <BuildType Name="Release" />
+  </Configurations>
   <Project Path="src/Xcmd.Core/Xcmd.Core.csproj" />
   <Project Path="src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj" />
   <Project Path="src/Xcmd.Desktop/Xcmd.Desktop.csproj" />

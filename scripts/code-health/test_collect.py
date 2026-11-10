@@ -55,16 +55,16 @@ class AggregationTests(unittest.TestCase):
 
 
 class SourceTests(unittest.TestCase):
-    def test_fingerprint_includes_launcher_lock_and_release_scripts(self):
+    def test_fingerprint_includes_build_profile_launcher_lock_and_release_scripts(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
-            for name in (".editorconfig", "Directory.Build.props", "global.json", "CodeMetricsConfig.txt", "Xcmd.slnx", "NuGet.Config",
+            for name in (".editorconfig", "Directory.Build.props", "Directory.Build.targets", "global.json", "CodeMetricsConfig.txt", "Xcmd.slnx", "NuGet.Config",
                          "config/metrics.json", "src/Xcmd.Infrastructure/packages.launcher.lock.json", "scripts/Build-Launcher.ps1", "scripts/Install-Launcher.ps1", "scripts/Release-Xcmd.ps1"):
                 target = root / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text("fixture")
             before = fingerprint(root)
-            for name in ("src/Xcmd.Infrastructure/packages.launcher.lock.json", "scripts/Build-Launcher.ps1", "scripts/Install-Launcher.ps1", "scripts/Release-Xcmd.ps1"):
+            for name in ("Directory.Build.targets", "src/Xcmd.Infrastructure/packages.launcher.lock.json", "scripts/Build-Launcher.ps1", "scripts/Install-Launcher.ps1", "scripts/Release-Xcmd.ps1"):
                 (root / name).write_text("changed")
                 after = fingerprint(root)
                 self.assertNotEqual(before, after)

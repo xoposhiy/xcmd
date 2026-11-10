@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xcmd.Core;
@@ -9,7 +10,7 @@ namespace Xcmd.Desktop;
 
 public sealed class CommandLineView : Border
 {
-    private readonly TextBlock directory = new() { MaxWidth = 340, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock directory = new() { MaxWidth = 510, TextTrimming = TextTrimming.LeadingCharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
     private readonly CommandHistory history = new();
     private bool browsing;
     public TextBox Editor { get; } = new()
@@ -30,10 +31,12 @@ public sealed class CommandLineView : Border
         Margin = new Thickness(0, 6, 0, 4);
         AutomationProperties.SetAutomationId(Editor, "command-line.input");
         AutomationProperties.SetName(Editor, "Command line");
+        AutomationProperties.SetAutomationId(directory, "command-line.directory");
         var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
         directory.Margin = new Thickness(0, 0, 8, 0);
         layout.Children.Add(directory); Grid.SetColumn(Editor, 1); layout.Children.Add(Editor); Child = layout;
-        ToolTip.SetTip(Editor, "Enter: run through Windows Shell in this directory · cd <path>: change directory · Esc: clear · Up/Down: files · Alt+Up/Down: command history · Ctrl+Enter: name · Ctrl+Shift+Enter: full path");
+        ToolTip.SetTip(Editor, "Enter: run through Windows Shell in this directory · cd <path>: change directory · Esc: clear · Ctrl+C: copy selection or the whole command · Up/Down: files · Alt+Up/Down: command history · Ctrl+Enter: name · Ctrl+Shift+Enter: full path");
+        SizeChanged += (_, _) => directory.MaxWidth = Math.Min(510, Math.Max(0, Bounds.Width - 328));
         Editor.GotFocus += (_, _) => Focused?.Invoke();
         Editor.TextChanging += (_, _) => { if (!browsing) history.Reset(); };
     }
@@ -41,6 +44,12 @@ public sealed class CommandLineView : Border
     public void SetDirectory(string path) { directory.Text = path + ">"; ToolTip.SetTip(directory, path); }
     public void FocusCommand() => Editor.Focus();
     public void Clear() { Editor.Clear(); history.Reset(); }
+    public async Task CopyAllAsync()
+    {
+        if (string.IsNullOrEmpty(Editor.Text)) return;
+        var clipboard = TopLevel.GetTopLevel(Editor)?.Clipboard ?? throw new IOException("The clipboard is unavailable.");
+        await clipboard.SetTextAsync(Editor.Text);
+    }
     public void AddHistory(string command) => history.Add(command);
     public void BrowseHistory(bool older)
     {

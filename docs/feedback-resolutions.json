@@ -14,5 +14,10 @@
   { "noteId": "50806b69523d4f9fab10dd8f16e8d098", "summary": "All application windows were rendered and reviewed. Panel headers, footers, history rows and dialog margins are compact; small forms fit their content and action buttons align to the right." },
   { "noteId": "0e3158c716fa49b0ad99db725ec7da3a", "summary": "Start name search with Alt and a letter, then release Alt and keep typing. Unmatched letters are ignored. Navigation, pointer movement, commands, Escape and focus changes clear the prefix." },
   { "noteId": "e02f63d6f98f49549732971fce471595", "summary": "Only the active history column has a selection. Switching columns remembers each cursor. Compact single-line paths fit more locations, and the dialog height adapts to its contents." },
-  { "noteId": "b4fcf9cd382647e3b2cd3e38ab9c3497", "summary": "The Type heading and file type values share the same horizontal center. Size headings align with byte counts, and cell padding matches the header layout." }
+  { "noteId": "b4fcf9cd382647e3b2cd3e38ab9c3497", "summary": "The Type heading and file type values share the same horizontal center. Size headings align with byte counts, and cell padding matches the header layout." },
+  { "noteId": "4609e9294c03417db963b82c41b50edb", "summary": "Ctrl+C copies the whole command when no text is selected, keeping the draft, caret and selection. Selected text still copies normally." },
+  { "noteId": "2c7326e5452d4c07896d0b99adce86b4", "summary": "The command directory trims from the left and can use 510 pixels. Narrow windows reserve space for command input. Hover help shows the full path." },
+  { "noteId": "08d9435a258f4c98a52fc7d32f51b12d", "summary": "Sort headings use larger, light text centered vertically against a dark blue background." },
+  { "noteId": "4b49fc88f356419f96d1f0d93fc5e3af", "summary": "Windows launch errors show the target and a short reason without repeating the working directory or process details." },
+  { "noteId": "b3e412f03fb24c19961d1d7d44050a35", "summary": "Keyboard shortcuts have visible separators and wrap to keep every command visible in narrow windows." }
 ]

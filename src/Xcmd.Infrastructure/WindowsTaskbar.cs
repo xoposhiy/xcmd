@@ -9,12 +9,12 @@ public static class WindowsTaskbar
         if (OperatingSystem.IsWindows()) Marshal.ThrowExceptionForHR(SetCurrentProcessExplicitAppUserModelID(WindowsShortcut.ApplicationId));
     });
 
-    public static string? ConfigureWindow(nint window, string launcher) => TryConfigure(() =>
+    public static string? ConfigureWindow(nint window, string launcher, string? icon = null) => TryConfigure(() =>
     {
         using var properties = ShellProperties.ForWindow(window);
         properties.Set(2, '"' + Path.GetFullPath(launcher) + '"');
         properties.Set(4, "Xcmd");
-        properties.Set(3, launcher + ",0");
+        properties.Set(3, (icon ?? launcher) + ",0");
         properties.Set(5, WindowsShortcut.ApplicationId);
     });
 

@@ -22,7 +22,7 @@ public static class CommandProbe
     public static async Task<LaunchReport> ReadReportAsync(string path)
     {
         await WaitAsync(() => File.Exists(path));
-        var report = JsonSerializer.Deserialize<LaunchReport>(await File.ReadAllTextAsync(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        var report = JsonSerializer.Deserialize<LaunchReport>(await ReadReportTextAsync(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         if (report.ProcessId > 0)
         {
             try
@@ -33,6 +33,30 @@ public static class CommandProbe
             catch (ArgumentException) { }
         }
         return report;
+    }
+
+    private static async Task<string> ReadReportTextAsync(string path)
+    {
+        var timer = Stopwatch.StartNew();
+        while (true)
+        {
+            try { return await File.ReadAllTextAsync(path); }
+            catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33 && timer.Elapsed < TimeSpan.FromSeconds(5))
+            { await Task.Delay(25); }
+        }
+    }
+
+    public static async Task<LaunchReport> ReadLockedReportAsync(ProbeContext context)
+    {
+        var path = Path.Combine(context.FixturePath, "locked-launch-report.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new LaunchReport(context.LeftPath, [])));
+        Task<LaunchReport> reading;
+        using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            reading = ReadReportAsync(path);
+            ProbeContext.Check(!reading.IsCompleted, "The report reader waits while another process holds the file.");
+        }
+        return await reading;
     }
 
     public static void CreateShortcut(string path, LaunchFixture fixture, string workingDirectory)

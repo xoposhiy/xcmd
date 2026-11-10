@@ -58,13 +58,14 @@ public static class LauncherProbe
         return process.ExitCode;
     }
 
-    public static async Task InstallAsync(LauncherFixture fixture, string? source = null)
+    public static async Task InstallAsync(LauncherFixture fixture, string? source = null, string? icon = null)
     {
         var project = new DirectoryInfo(AppContext.BaseDirectory);
         while (project != null && !File.Exists(Path.Combine(project.FullName, "scripts", "Install-Launcher.ps1"))) project = project.Parent;
         var script = Path.Combine(project?.FullName ?? throw new IOException("The install script was not found."), "scripts", "Install-Launcher.ps1");
         var start = new ProcessStartInfo("pwsh") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (var argument in new[] { "-NoProfile", "-File", script, "-Destination", fixture.Root, "-SourcePath", source ?? fixture.Launcher }) start.ArgumentList.Add(argument);
+        if (icon != null) { start.ArgumentList.Add("-IconPath"); start.ArgumentList.Add(icon); }
         using var process = Process.Start(start) ?? throw new IOException("The installer fixture did not start.");
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();

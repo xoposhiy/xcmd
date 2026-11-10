@@ -1,6 +1,7 @@
 param(
     [string]$Destination,
-    [string]$SourcePath = 'artifacts/launcher/publish/Xcmd.exe'
+    [string]$SourcePath = 'artifacts/launcher/publish/Xcmd.exe',
+    [string]$IconPath = 'src/Xcmd.Desktop/Assets/app.ico'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -10,7 +11,13 @@ $destinationRoot = [System.IO.Path]::GetFullPath($Destination, $projectRoot)
 $source = [System.IO.Path]::GetFullPath($SourcePath, $projectRoot)
 $launcher = Join-Path $destinationRoot 'Xcmd.exe'
 $shortcut = Join-Path $destinationRoot 'Xcmd.lnk'
+$iconSource = [System.IO.Path]::GetFullPath($IconPath, $projectRoot)
+$iconHash = (Get-FileHash -LiteralPath $iconSource -Algorithm SHA256).Hash.ToLowerInvariant()
+$iconDirectory = Join-Path $destinationRoot 'releases/icons'
+$icon = Join-Path $iconDirectory ($iconHash + '.ico')
 New-Item -ItemType Directory -Path $destinationRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $iconDirectory -Force | Out-Null
+if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) { Copy-Item -LiteralPath $iconSource -Destination $icon }
 if (-not (Test-Path -LiteralPath $launcher) -or (Get-FileHash -LiteralPath $source).Hash -ne (Get-FileHash -LiteralPath $launcher).Hash) {
     $temporary = $launcher + '.' + [Guid]::NewGuid().ToString('N') + '.tmp'
     try {
@@ -23,9 +30,7 @@ if (-not (Test-Path -LiteralPath $launcher) -or (Get-FileHash -LiteralPath $sour
     }
     finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary } }
 }
-if (-not (Test-Path -LiteralPath $shortcut -PathType Leaf)) {
-    $process = Start-Process -FilePath $launcher -ArgumentList @('--create-shortcut', ('"' + $shortcut + '"')) -WindowStyle Hidden -Wait -PassThru
-    if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $shortcut -PathType Leaf)) { throw 'The launcher shortcut could not be created.' }
-}
+$process = Start-Process -FilePath $source -ArgumentList @('--create-shortcut', ('"' + $shortcut + '"'), ('"' + $launcher + '"'), ('"' + $icon + '"')) -WindowStyle Hidden -Wait -PassThru
+if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $shortcut -PathType Leaf)) { throw 'The launcher shortcut could not be updated.' }
 Write-Output ('Ready launcher: ' + $launcher)
 Write-Output ('Taskbar shortcut: ' + $shortcut)

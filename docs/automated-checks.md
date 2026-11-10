@@ -4,11 +4,15 @@
 
 Use Windows, PowerShell 7, the SDK selected by `global.json`, Python 3.11 or later, and the Visual Studio C++ build tools with a Windows SDK for the NativeAOT launcher.
 
+Use one build profile: Release / `win-x64` / x64. `Directory.Build.props` supplies the defaults, and `Directory.Build.targets` rejects unsupported profiles before restore or build. Application and test outputs share `bin/Release/net10.0/win-x64`; do not create Debug or runtime-independent variants.
+
+These commands are the full finalization gate described in the [development workflow](development-workflow.md). Run the full gate before committing accepted work. Feedback iterations use small smoke checks instead; `Test-Xcmd.ps1 -Filter` still runs the architecture stage and is not the fast feedback path.
+
 ```powershell
 ./scripts/Test-Xcmd.ps1
 ```
 
-This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path before publishing. CI runs the same command on Windows.
+This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path for final releases. CI runs the same command on Windows.
 
 The architecture command also builds the self-contained Windows x64 NativeAOT launcher from a small source subset of Infrastructure. The launcher has no project or UI dependencies, uses `packages.launcher.lock.json`, and keeps build outputs under `artifacts/launcher`. Normal project and package checks still cover the same six application/test projects. Launcher scenarios use isolated installation trees and do not change taskbar pins.
 
@@ -49,7 +53,7 @@ The adapters use Core contracts and state values. Desktop can call them and own 
 | Check | Enforcement |
 | --- | --- |
 | Compiled dependencies | ArchUnitNET 0.13.5 checks Core isolation, adapter isolation, layer cycles, and production references to tests. |
-| Project and package references | Evaluated MSBuild items in Debug and Release must match an explicit allowlist. Unknown projects, unused forbidden packages, direct DLL references, extra framework references, and unpinned package versions fail. Every production project must be covered. |
+| Project and package references | Evaluated MSBuild items in Release / win-x64 / x64 must match an explicit allowlist and the single build profile. Unknown projects, unused forbidden packages, direct DLL references, extra framework references, and unpinned package versions fail. Every production project must be covered. |
 | Test boundaries | Test infrastructure cannot depend on scenarios. Scenarios use drivers for native input, process control, timing, and render scaling. Real fixture file changes and file assertions remain allowed in scenarios. |
 | API boundaries | BannedApiAnalyzers 5.6.0 rejects direct filesystem, process, and native import APIs in Core and Desktop. Core also rejects ambient clock, working-directory, and environment reads. Pure path operations remain allowed. |
 | Async code | Production code cannot block on task results, task wait overloads, awaiter results, or thread sleeps. CA2016 requires forwarding an available cancellation token. |
@@ -58,7 +62,7 @@ The adapters use Core contracts and state values. Desktop can call them and own 
 | Code metrics | CA1502, CA1505, and CA1506 fail the production build. Lizard 1.25.1 checks every production C# file, excluding build output. |
 | Check self-tests | Compiled sample violations test the dependency rules and cycle detection. A real compiler fixture tests allowed paths/awaits and forbidden I/O, process, native, clock, blocking, comparison, cancellation, and complexity cases. |
 
-SDK analyzers come from the exact SDK pinned in `global.json`. NuGet lock files and `scripts/requirements-lint.txt` pin the other tools. Tests and Debug builds of production assemblies are used for compiled architecture checks, as recommended by [ArchUnitNET](https://github.com/TNG/ArchUnitNET).
+SDK analyzers come from the exact SDK pinned in `global.json`. NuGet lock files and `scripts/requirements-lint.txt` pin the other tools. Compiled architecture checks and behavior scenarios use the same Release / win-x64 assemblies. The architecture build already builds the behavior driver; `Test-Xcmd.ps1` reuses that output without another restore and build.
 
 ## Metric limits
 

@@ -65,7 +65,7 @@ public sealed partial class CommanderWindow : Window
             panel.LocationVisited += path => { if (!restoringVisits) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(path); };
             panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
         }
-        var layout = new Grid { RowDefinitions = new RowDefinitions("32,*,Auto,24,20"), Margin = new Thickness(12, 0, 12, 6) };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("32,*,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
         var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") };
         header.Children.Add(mainMenu = BuildMenu());
         Grid.SetColumn(updateMessage, 1); header.Children.Add(updateMessage);
@@ -80,15 +80,7 @@ public sealed partial class CommanderWindow : Window
         panels.Children.Add(Left);
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
         Grid.SetRow(panels, 1); layout.Children.Add(panels);
-        var help = new TextBlock
-        {
-            Text = "Tab  Panels    Enter  Open / Run    Ctrl+L  Command line    Esc  Clear    ↑ ↓  Files    Alt+↑ ↓  Commands    Ctrl+Enter  Name    Ctrl+Shift+Enter  Path",
-            FontSize = 12,
-            VerticalAlignment = VerticalAlignment.Center,
-            Foreground = Brushes.LightGray,
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-        ToolTip.SetTip(help, help.Text);
+        var help = BuildKeyboardHelp();
         Grid.SetRow(CommandLine, 2); layout.Children.Add(CommandLine);
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
         Grid.SetRow(help, 3); layout.Children.Add(help);
@@ -111,6 +103,22 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
         Left.SetActive(true);
+    }
+
+    private static WrapPanel BuildKeyboardHelp()
+    {
+        var help = new WrapPanel { Name = "KeyboardHelp" };
+        string[] hints = ["Tab  Panels", "Enter  Open / Run", "Ctrl+L  Command line", "Esc  Clear", "↑ ↓  Files", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+        foreach (var hint in hints)
+            help.Children.Add(new Border
+            {
+                BorderThickness = new Thickness(help.Children.Count == 0 ? 0 : 1, 0, 0, 0),
+                BorderBrush = new SolidColorBrush(Color.Parse("#526078")),
+                Padding = new Thickness(help.Children.Count == 0 ? 0 : 8, 0, 8, 0),
+                Margin = new Thickness(0, 3),
+                Child = new TextBlock { Text = hint, FontSize = 12, Foreground = Brushes.LightGray }
+            });
+        return help;
     }
 
     public async Task InitializeAsync(string left, string right)

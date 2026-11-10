@@ -4,6 +4,8 @@ Confirmed cross-cutting requirement, 2026-11-09: the agent must be able to test 
 
 These requirements apply to [all user workflows](use-cases.md), including [search](search.md). They are a condition for architecture and framework choices, not a later testing improvement.
 
+Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Full quality checks, complete regression coverage, and independent usability review are required during finalization before committing. Use only Release / Windows x64 for this user's machine.
+
 ## Required capabilities
 
 - Provide a documented headless entry point that starts, drives, inspects, and closes the application under test.
@@ -75,9 +77,9 @@ On failure, retain useful diagnostics such as command/state traces, fixture path
 
 ## Deliver a ready build for review
 
-Build the current Release executable and finish automated verification before asking the user for feedback. Give the user the path to the ready executable. Do not require the user to restore dependencies, build the application, run tests or use a launch script.
+Build the current Release executable and finish the checks required by the current development phase before asking the user for feedback. Label a feedback build as smoke-checked and a final build as fully verified only after the full gate passes. Give the user the path to the ready executable. Do not require the user to restore dependencies, build the application, run tests or use a launch script.
 
-Use `scripts/Release-Xcmd.ps1` to verify and publish each iteration into a new `releases/<release-id>` directory. Include all published dependencies. Never give the user a development `bin` executable or overwrite an existing release. The user must be able to keep the previous release open while development builds and new releases continue. Update `releases/latest.txt` only after a release succeeds; keep the previous release available if verification or publishing fails.
+Use `scripts/Release-Xcmd.ps1` for fully verified final releases. Feedback builds follow the shorter path in the development workflow and have separate smoke-check evidence. Publish each build into a new `releases/<release-id>` directory and include all published dependencies. Never give the user a development `bin` executable or overwrite an existing release. The user must be able to keep the previous release open while development builds and new releases continue. Update `releases/latest.txt` only after the phase-specific checks and installation succeed; keep the previous release available if either fails.
 
 Publish the desktop application with ReadyToRun for Windows x64. Use software rendering for the Windows list-based interface and retain paging measurements at normal and 150% scale. Generate JSON metadata for saved sessions and file-type settings at build time. Load bundled file-type settings once for both panels.
 

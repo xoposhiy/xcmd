@@ -1,6 +1,10 @@
 using System.Text.Json;
+using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Media.TextFormatting;
 using Avalonia.VisualTree;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -14,6 +18,53 @@ public static class CommandLineScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("command-line-copy-selection-or-all", "UC02; command clipboard", async c =>
+        {
+            var clipboard = c.Window.Clipboard!;
+            await clipboard.SetTextAsync("previous clipboard");
+            await c.TextAsync("tool 日本語 argument");
+            var editor = c.Window.CommandLine.Editor;
+            editor.CaretIndex = 5; editor.ClearSelection();
+            await c.KeyAsync(Key.C, RawInputModifiers.Control);
+            Equal(editor.Text, await clipboard.TryGetTextAsync(), "Ctrl+C without selection copies the whole command");
+            Equal(5, editor.CaretIndex, "Copying the whole command keeps the caret");
+            Equal("", editor.SelectedText, "Copying the whole command keeps the selection empty");
+            editor.SelectionStart = 8; editor.SelectionEnd = 5;
+            await c.KeyAsync(Key.C, RawInputModifiers.Control);
+            Equal("日本語", await clipboard.TryGetTextAsync(), "Ctrl+C with selection copies only that selection");
+            Equal("日本語", editor.SelectedText, "Copying keeps the text selected");
+            Equal("tool 日本語 argument", editor.Text, "Copying keeps the draft");
+            Equal(0, c.Launcher.Requests.Count, "Copying never executes the command");
+            await c.KeyAsync(Key.Escape); await c.KeyAsync(Key.C, RawInputModifiers.Control);
+            Equal("日本語", await clipboard.TryGetTextAsync(), "Copying an empty command keeps the clipboard");
+        }),
+        new("command-line-long-directory-and-help", "UC02; readable command layout", async c =>
+        {
+            var path = @"C:\work\projects\" + new string('a', 120) + @"\日本語\runtimes";
+            c.Window.CommandLine.SetDirectory(path);
+            var label = c.Window.CommandLine.GetVisualDescendants().OfType<TextBlock>().Single(text => AutomationProperties.GetAutomationId(text) == "command-line.directory");
+            foreach (var width in new[] { 1280d, 840d })
+            {
+                c.Window.Width = width; c.Window.Height = 400;
+                foreach (var scale in new[] { 1d, 1.5d })
+                {
+                    c.Window.SetScaleForTest(scale);
+                    await c.ScreenshotAsync($"command-layout-{width}-{scale * 100}");
+                    var visible = string.Concat(label.TextLayout.TextLines.SelectMany(line => line.TextRuns).OfType<ShapedTextRun>().Select(run => run.Text.ToString()));
+                    Check(visible.StartsWith('…') && visible.EndsWith(@"\日本語\runtimes>", StringComparison.Ordinal), "A long path shows an ellipsis followed by its unchanged tail.");
+                    Equal(path, ToolTip.GetTip(label), "Hover help keeps the full directory path");
+                    Check(c.Window.CommandLine.Editor.Bounds.Width >= 300, "The editor remains usable beside a long path.");
+                    Check(width != 1280 || label.Bounds.Width is >= 490 and <= 510, "The directory can use the wider 510-pixel limit.");
+                    var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
+                    Equal(8, help.Children.Count, "All eight shortcut groups are visible");
+                    Check(help.Children.OfType<Border>().Skip(1).All(border => border.BorderThickness.Left == 1), "Shortcut groups have visible separators.");
+                    Check(help.Children.All(group => group.Bounds.Right <= help.Bounds.Width && group.Bounds.Bottom <= help.Bounds.Height), "All shortcut groups fit without clipping.");
+                    Check(help.GetVisualDescendants().OfType<TextBlock>().All(text => text.TextLayout.TextLines.Count == 1), "Each shortcut stays on the same line as its action.");
+                    var helpBottom = help.TranslatePoint(new Avalonia.Point(0, help.Bounds.Height), c.Window)!.Value.Y;
+                    Check(helpBottom < c.Window.Bounds.Height, "Wrapped help fits inside the window.");
+                }
+            }
+        }),
         new("command-line-typing-escape-and-focus", "UC02; quick launch keyboard routing", async c =>
         {
             await c.SelectAsync("alpha.txt"); await c.TextAsync("tool first");
@@ -139,7 +190,7 @@ public static class CommandLineScenarios
             c.Launcher.ForwardTo = new WindowsExternalLauncher(showWindows: false);
             await c.TextAsync("xcmd-missing-" + Guid.NewGuid().ToString("N") + ".exe");
             var draft = c.Window.CommandLine.Editor.Text; await c.KeyAsync(Key.Enter);
-            Check(c.Window.LastError != null, "A real Windows launch error reaches the application.");
+            Equal($"Cannot open '{draft}': not found.", c.Window.LastError, "A native launch error shows the target and a short reason");
             Equal(draft, c.Window.CommandLine.Editor.Text, "The failed native command remains editable");
         }),
         new("command-line-native-environment-refresh", "UC01; UC02; current Windows environment", async c =>

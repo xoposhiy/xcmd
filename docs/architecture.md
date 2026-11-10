@@ -136,7 +136,7 @@ Organize growing features into folders and focused classes within the current pr
 
 Keep fast rule/action checks, real adapter integration checks in isolated fixtures, and headless checks of the actual Avalonia controls and input routing. Scenario cases describe user actions and outcomes; drivers, native setup, process control, and timing belong in test infrastructure.
 
-For a changed user workflow, request an independent usability reviewer. Give the reviewer the use case, the change, and these criteria without the implementing agent's conclusions:
+During finalization of a changed user workflow, request an independent usability reviewer. The [development workflow](development-workflow.md) defers this review until user feedback has settled the behavior. Give the reviewer the use case, the change, and these criteria without the implementing agent's conclusions:
 
 - Frequent commands use few actions, provide clear result feedback, and avoid unnecessary delays. Measure latency when a stable scenario can establish it.
 - Rare actions explain what they do and what they change.

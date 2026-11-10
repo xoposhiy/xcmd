@@ -15,6 +15,11 @@ public static class CommandScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("command-report-sharing-retry", "Test driver; readable launch reports", async c =>
+        {
+            var report = await ReadLockedReportAsync(c);
+            Equal(c.LeftPath, report.WorkingDirectory, "A temporary file lock does not lose the completed launch report");
+        }),
         new("command-file-enter-and-double-click", "File opening; Windows default associations", async c =>
         {
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.Enter);

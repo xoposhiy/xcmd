@@ -13,9 +13,15 @@ public static class BootstrapProgram
     {
         try
         {
-            if (args is ["--create-shortcut", var path])
+            if (args is ["--create-shortcut", ..])
             {
-                WindowsShortcut.Create(path, Path.Combine(root, "Xcmd.exe"));
+                var (path, launcher, icon) = args switch
+                {
+                    [_, var linkPath] => (linkPath, Path.Combine(root, "Xcmd.exe"), (string?)null),
+                    [_, var linkPath, var target, var image] => (linkPath, target, image),
+                    _ => throw new ArgumentException("Shortcut setup requires a path and an optional launcher and icon.")
+                };
+                WindowsShortcut.Create(path, launcher, icon);
                 return 0;
             }
             var release = await ReleaseFiles.FindLatestAsync(Path.Combine(root, "releases"), "Xcmd.Desktop.exe")

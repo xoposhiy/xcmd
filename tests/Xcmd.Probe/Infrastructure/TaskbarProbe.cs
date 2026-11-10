@@ -7,7 +7,7 @@ namespace Xcmd.Probe.Infrastructure;
 
 public static class TaskbarProbe
 {
-    public static void CheckShortcut(LauncherFixture fixture)
+    public static void CheckShortcut(LauncherFixture fixture, string? icon = null)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("The taskbar probe requires Windows.");
         dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!)!;
@@ -20,13 +20,40 @@ public static class TaskbarProbe
             Equal(fixture.Launcher, (string)shortcut.TargetPath, "The shortcut uses the permanent launcher");
             Equal(fixture.Root, (string)shortcut.WorkingDirectory, "The shortcut has a stable working directory");
             Equal("", (string)shortcut.Arguments, "The shortcut does not select a fixed release");
-            Check(((string)shortcut.IconLocation).StartsWith(fixture.Launcher, StringComparison.OrdinalIgnoreCase), "The shortcut uses the permanent application icon.");
+            Equal((icon ?? fixture.Launcher) + ",0", (string)shortcut.IconLocation, "The shortcut uses the configured application icon");
             Equal("Xcmd.FileManager", (string)item.ExtendedProperty("System.AppUserModel.ID"), "The shortcut has the shared taskbar identity");
         }
         finally
         {
             foreach (object instance in new object[] { item, folder, explorer, shortcut, shell }) Marshal.FinalReleaseComObject(instance);
         }
+    }
+
+    public static string ReadShortcutIcon(LauncherFixture fixture)
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("The taskbar probe requires Windows.");
+        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!)!;
+        dynamic shortcut = shell.CreateShortcut(fixture.Shortcut);
+        try
+        {
+            var location = (string)shortcut.IconLocation;
+            return location[..location.LastIndexOf(',')];
+        }
+        finally { Marshal.FinalReleaseComObject(shortcut); Marshal.FinalReleaseComObject(shell); }
+    }
+
+    public static byte[] ReadIconPixels(string path) => SystemIcons.Read(path, false).Bytes;
+
+    public static void WriteSolidIcon(string path, byte red, byte green, byte blue)
+    {
+        using var writer = new BinaryWriter(File.Create(path));
+        writer.Write((ushort)0); writer.Write((ushort)1); writer.Write((ushort)1);
+        writer.Write((byte)16); writer.Write((byte)16); writer.Write((ushort)0);
+        writer.Write((ushort)1); writer.Write((ushort)32); writer.Write(1128); writer.Write(22);
+        writer.Write(40); writer.Write(16); writer.Write(32); writer.Write((ushort)1); writer.Write((ushort)32);
+        writer.Write(new byte[24]);
+        for (var pixel = 0; pixel < 256; pixel++) { writer.Write(blue); writer.Write(green); writer.Write(red); writer.Write((byte)255); }
+        writer.Write(new byte[64]);
     }
 
     public static void CheckWindowIdentity(string launcher)
@@ -45,6 +72,9 @@ public static class TaskbarProbe
             Equal('"' + launcher + '"', ReadProperty(window, 2), "Pinning a release window uses the permanent launcher");
             Equal("Xcmd", ReadProperty(window, 4), "The pinned application has a name");
             Equal(launcher + ",0", ReadProperty(window, 3), "The pinned application has a stable icon");
+            var icon = Path.Combine(Path.GetDirectoryName(launcher)!, "app.ico");
+            Equal<string?>(null, WindowsTaskbar.ConfigureWindow(window, launcher, icon), "A released window accepts its own icon");
+            Equal(icon + ",0", ReadProperty(window, 3), "Pinning a released window uses the released icon");
             Equal<string?>(null, WindowsTaskbar.ClearWindow(window), "Window identity cleanup succeeds");
             foreach (var id in new uint[] { 2, 3, 4, 5 }) Equal<string?>(null, ReadProperty(window, id), "Window properties are cleared before destruction");
             Check(WindowsTaskbar.ConfigureWindow(0, launcher) != null, "A shell setup failure returns diagnostics without aborting startup.");

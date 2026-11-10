@@ -166,6 +166,7 @@ public sealed class PanelView : Border
             {
                 new Setter(ContentControl.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch),
                 new Setter(ContentControl.VerticalContentAlignmentProperty, VerticalAlignment.Stretch),
+                new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(Color.Parse("#263247"))),
                 new Setter(TemplatedControl.PaddingProperty, new Thickness(0))
             }
         });
@@ -269,8 +270,11 @@ public sealed class PanelView : Border
             Padding = new Thickness(8, 0),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
+            VerticalContentAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = field == SortField.Size ? HorizontalAlignment.Right : field == SortField.Extension ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-            FontSize = 12
+            FontSize = 13,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#E5EBF5"))
         };
         AutomationProperties.SetAutomationId(button, Id + ".sort." + field.ToString().ToLowerInvariant());
         button.Click += (_, _) => { Activated?.Invoke(this); SortBy(field); FocusCurrent(); };

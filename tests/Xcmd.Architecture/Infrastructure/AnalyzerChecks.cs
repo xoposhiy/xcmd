@@ -13,7 +13,7 @@ internal static class AnalyzerChecks
         var project = Path.Combine(folder, "Xcmd.Core.csproj");
         await File.WriteAllTextAsync(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
         File.Copy(Path.Combine(root, "src", "Xcmd.Core", "packages.lock.json"), Path.Combine(folder, "packages.lock.json"));
-        var restore = await RunAsync(folder, "restore", project, "--configfile", Path.Combine(root, "NuGet.Config"), "--locked-mode", "--disable-parallel");
+        var restore = await RunAsync(folder, "restore", project, "-r", "win-x64", "-p:Configuration=Release", "--configfile", Path.Combine(root, "NuGet.Config"), "--locked-mode", "--disable-parallel");
         if (restore.ExitCode != 0) throw new InvalidOperationException(restore.Output);
         await File.WriteAllTextAsync(Path.Combine(folder, "Allowed.cs"), "public static class Allowed { public static async Task<string> ReadAsync(string path, CancellationToken token) { await Task.Delay(1, token); return Path.GetFileName(path); } }");
         var positive = await BuildAsync(folder, project);
@@ -48,7 +48,7 @@ internal static class AnalyzerChecks
     }
 
     private static Task<(int ExitCode, string Output)> BuildAsync(string folder, string project) =>
-        RunAsync(folder, "build", project, "--no-restore", "-m:1", "-p:UseSharedCompilation=false", "-v:minimal");
+        RunAsync(folder, "build", project, "-c", "Release", "-r", "win-x64", "--no-restore", "-m:1", "-p:UseSharedCompilation=false", "-v:minimal");
 
     private static async Task<(int ExitCode, string Output)> RunAsync(string folder, params string[] arguments)
     {

@@ -52,7 +52,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'The final verification fingerprint could not be computed.' }
     $verification | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $reportPath 'verification.json') -Encoding utf8
 
-    dotnet restore scripts/code-health/CodeHealth.Tools.csproj --configfile NuGet.Config --locked-mode --disable-parallel -m:1
+    dotnet restore scripts/code-health/CodeHealth.Tools.csproj -r win-x64 -p:Configuration=Release --configfile NuGet.Config --locked-mode --disable-parallel -m:1
     if ($LASTEXITCODE -ne 0) { throw 'The pinned reporting tools could not be restored.' }
     $runnerRoot = Join-Path $projectRoot 'artifacts/code-health-tools/5.6.0'
     $runner = Join-Path $runnerRoot 'Metrics/Metrics.exe'

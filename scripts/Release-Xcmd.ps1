@@ -30,7 +30,7 @@ try {
     & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Test-Startup.ps1') -ApplicationPath $releasePath -OutputPath $startupOutput -Native
     if ($LASTEXITCODE -ne 0) { throw 'Published startup verification failed. The current release was not changed.' }
     Copy-Item -LiteralPath (Join-Path $startupOutput 'results.json') -Destination (Join-Path $releasePath 'startup-verification.json')
-    & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Install-Launcher.ps1')
+    & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Install-Launcher.ps1') -IconPath (Join-Path $releasePath 'app.ico')
     if ($LASTEXITCODE -ne 0) { throw 'Launcher setup failed. The current release was not changed.' }
     $markerPath = Join-Path $projectRoot 'releases/latest.txt'
     $temporaryMarker = $markerPath + '.' + [Guid]::NewGuid().ToString('N') + '.tmp'
