@@ -3,9 +3,9 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-internal sealed class FileViewingController(CommanderWindow owner, string? editorPath)
+internal sealed class FileViewingController(CommanderWindow owner, string? editorPath, IArchiveContents archives)
 {
-    private readonly IViewerFiles files = new ViewerFiles();
+    private readonly IViewerFiles files = new ArchiveViewerFiles(archives);
     private readonly ExternalEditor editor = new(editorPath);
     private readonly List<FileViewerWindow> viewers = [];
     public IReadOnlyList<FileViewerWindow> Viewers => viewers;
@@ -31,7 +31,7 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
         var directory = panel.Session.DirectoryPath;
         var viewer = new FileViewerWindow(paths, Array.IndexOf(paths, row.Entry.FullPath), files, owner.Feedback,
             path => EditFileAsync(path, directory),
-            path => owner.LaunchExternalAsync(LaunchPlans.OpenFile(path, directory)), ThemeId);
+            path => owner.OpenFileExternallyAsync(path, directory), ThemeId);
         viewers.Add(viewer);
         viewer.ThemeChanged += id => { RestoreTheme(id); owner.Execute(owner.NotifyViewerThemeChangedAsync); };
         owner.Feedback.Attach(viewer, showButton: false);
@@ -50,6 +50,7 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
 
     private async Task EditFileAsync(string path, string directory)
     {
+        ArchivePath.RequireWritable(path);
         await owner.LaunchExternalAsync(await editor.PrepareAsync(path, directory));
     }
 }

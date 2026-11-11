@@ -43,7 +43,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC18 | Open a Windows shell context menu. | Planned | Resolve right-click selection versus menu opening and define noninteractive native verification. |
 | UC19 | Recognize file types by color. | Implemented | Ordered JSON rules use source, program and text colors. Source rules take priority for scripts; selected names remain readable. |
 | UC20 | Navigate two panels without tabs. | Implemented | Support keyboard and mouse selection, parent navigation, automatic refresh, cursor restoration, icons and compact layout. |
-| UC21 | Browse ZIP, RAR and TAR.GZ archives. | Planned | Open entries and copy files out. Define 7z, nested archives and encrypted archives. |
+| UC21 | Browse archives as folders. | Prototype | Enter opens common archive extensions; Ctrl+PageDown probes any file, including Office containers and recognized self-extracting EXEs. Browse ZIP, RAR4/5, 7z, TAR, compressed TAR and common compression streams; F3 shows archive information and entries, or views a member. F5 extracts files and folders through the operation queue. Nested archives and workspace restore are supported. Archives stay read-only; passwords, multipart discovery and archive edits remain deferred. |
 | UC22 | Create an archive. | Planned | Define formats, destination, compression defaults and existing-archive edits. |
 | UC23 | Search names, masks and contents below a directory. | Planned | Preserve useful advanced options. Handle encodings and supported archives automatically; prioritize ordinary files. See the search design. |
 | UC24 | Compare two files. | Planned | Define text/binary handling, external tools and whether editing or merging belongs in the workflow. |

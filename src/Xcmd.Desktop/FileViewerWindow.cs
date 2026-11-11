@@ -51,6 +51,7 @@ public sealed partial class FileViewerWindow : Window
     private string? imageUnavailable;
     public FileViewMode Mode { get; private set; }
     public bool IsLoading { get; private set; }
+    public bool IsArchiveReport { get; private set; }
     public bool IsSearching { get; private set; }
     public bool IsSearchVisible => searchPanel.IsVisible;
     public bool IsInformationVisible => information.IsVisible;

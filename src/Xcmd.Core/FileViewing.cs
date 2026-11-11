@@ -4,6 +4,7 @@ public enum FileViewMode { Text, Binary, Hex, Image }
 
 public sealed record FileTextQuery(string Path, string Text, int CodePage, long Start, bool Backward);
 public sealed record FileTextMatch(long Offset, int Length, bool Wrapped = false);
+public sealed record ViewerSource(string Path, bool IsArchiveReport = false);
 
 public sealed record FileSlice(long Offset, long Length, byte[] Bytes)
 {
@@ -14,6 +15,7 @@ public sealed record FileSlice(long Offset, long Length, byte[] Bytes)
 
 public interface IViewerFiles
 {
+    bool IsArchiveReport(string path) => false;
     Task<FileSlice> ReadAsync(string path, long offset, CancellationToken cancellationToken);
     Task<byte[]> ReadImageAsync(string path, CancellationToken cancellationToken);
     Task<FileTextMatch?> FindAsync(FileTextQuery query, CancellationToken cancellationToken);

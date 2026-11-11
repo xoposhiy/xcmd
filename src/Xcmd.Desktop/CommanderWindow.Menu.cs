@@ -25,17 +25,19 @@ public sealed partial class CommanderWindow
                     Item("View file", viewing.ViewCurrent, new(Key.F3)),
                     Item("Edit in Notepad++", () => Execute(viewing.EditCurrentAsync), new(Key.F4)),
                     Item("New folder", OpenCreateDirectoryDialog, new(Key.F7)),
-                    Item("Rename", () => ActivePanel.BeginRename(), new(Key.F6, KeyModifiers.Shift)),
+                    Item("Rename", RenameCurrent, new(Key.F6, KeyModifiers.Shift)),
                     Item("Copy to other panel", CopySelected, new(Key.F5)),
                     Item("Copy in this panel", () => TransferSelected(FileOperationKind.Copy, samePanel: true), new(Key.F5, KeyModifiers.Shift)),
                     Item("Move to other panel", () => TransferSelected(FileOperationKind.Move), new(Key.F6)),
                     Item("Move to Recycle Bin", () => DeleteSelected(false), new(Key.F8)),
                     Item("Delete permanently", () => DeleteSelected(true), new(Key.Delete, KeyModifiers.Shift)),
-                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter)), Item("Exit", Close)
+                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter)),
+                    Item("Open with Windows", OpenWithWindows), Item("Exit", Close)
                 } },
                 new() { Header = "Navigate", ItemsSource = new MenuItem[]
                 {
                     Item("Parent directory", OpenParent, new(Key.PageUp, KeyModifiers.Control)),
+                    Item("Open as archive", () => Execute(() => OpenArchiveAsync(ActivePanel)), new(Key.PageDown, KeyModifiers.Control)),
                     Item("Go to directory", () => OpenNavigation(ActivePanel, DirectoryList.History), new(Key.Down, KeyModifiers.Alt)),
                     Item("Favorite directories", () => OpenNavigation(ActivePanel, DirectoryList.Favorites), new(Key.D, KeyModifiers.Control)),
                     Item("Switch panel", () => { Activate(OppositePanel); ActivePanel.FocusCurrent(); }, new(Key.Tab)),

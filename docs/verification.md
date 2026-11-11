@@ -49,6 +49,14 @@ Independent usability review of the command-line workflow found no open issues a
 
 Independent usability review of the 2026-11-10 feedback changes found no open issues after keeping each shortcut and action in one group and retaining readable reasons for uncommon launch errors. The review covered source, clipboard and native launch results, command-layout images at 840×400 and 1280×400 with 100% and 150% scaling, and the table headings. These checks do not verify native desktop appearance or clipboard access under every Windows configuration.
 
+## Archive feedback checks
+
+Finalization adds `archive-pending-*`, `archive-opening-*`, `archive-report-*` and `archive-extraction-*` checks. They cover focus while a read is pending, visible loading and Escape cancellation, report identity and disabled byte modes, actual Open with Windows menu input, Skip/Replace extraction conflicts, cancellation after a real output block, destination preservation, temporary-file cleanup and refreshed archive contents. The independent [usability review](evidence/archive-usability-review-2026-11-11.md) records the findings and fixes.
+
+Build the Release / win-x64 probe and run its DLL with `--filter archive-`. These focused feedback scenarios drive actual panel keys and viewers without visible windows. They cover Enter, Ctrl+PageDown, Ctrl+Enter followed by Enter, F3 archive reports and member views, F5 file/folder extraction, empty folders, nested archives, parent cursors, Office associations, read-only actions, rejected unsafe paths, unsupported-file recovery and workspace restoration.
+
+The format scenario decompresses real TAR, TAR.GZ, GZip, BZip2, XZ, TAR.BZ2, TAR.XZ, RAR4, RAR5, 7z and 7z SFX files. The RAR and 7z fixtures come from the pinned SharpCompress release; tests never execute their programs. Offscreen captures cover the archive panel and report. The shell-bypass scenario verifies the production command route with a recording launcher; it does not open the user's archive application. Password entry, multipart discovery and other SFX installers have no coverage. These are smoke checks, not full final verification.
+
 ## Viewer feedback checks
 
 Run the prebuilt Release / win-x64 probe with `--filter viewer-` to check the viewer without native application windows. Build `tests/Xcmd.Probe/Xcmd.Probe.csproj` first if needed. This filter directly selects the smoke scenarios; it does not invoke the full verification script.
@@ -68,6 +76,8 @@ The native editor check uses the production editor launch plan and Windows Shell
 `viewer-images-and-fallback` also checks that text actions are disabled for images and enabled for byte views. `viewer-read-failure-and-keyboard-recovery` deletes a file after the viewer captures its file list, verifies the completed error state, and restores access through external actions and Alt+Left/Right. `viewer-reading-menu-search-layout` checks the temporary feedback hint in the active viewer and restoration of its reading status. The independent [usability review](evidence/viewer-usability-review-2026-11-11.md) records the finalization findings and fixes.
 
 ## Startup measurements
+
+Cross-process workspace reports are published atomically and read with bounded retries for missing files or Windows sharing locks. Invalid JSON still fails immediately. `launcher-report-publication-waits-for-unlock` holds a real exclusive file lock, starts the production test report reader, releases the lock and checks the complete result. It also verifies that malformed reports are rejected.
 
 Published desktop assemblies use ReadyToRun for Windows x64. The Windows backend uses Skia software rendering to avoid initializing ANGLE and a GPU device on each launch. The large-directory scenario records paging render times at normal and 150% scale. The permanent launcher uses NativeAOT with runtime/compiler 10.0.14 and needs no installed .NET runtime. The desktop application still uses the installed .NET runtime. Saved sessions and file-type settings use generated JSON metadata; both panels share one bundled settings load.
 

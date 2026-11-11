@@ -81,7 +81,7 @@ public sealed class PanelView : Border
     {
         while (!await LoadAsync(directory))
         {
-            var parent = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(directory));
+            var parent = ArchivePath.Parent(directory);
             if (parent == null || Session.Error == null) return false;
             directory = parent;
         }
@@ -383,7 +383,9 @@ public sealed class PanelView : Border
         {
             sizes.Clear();
             ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
-            path.Text = Session.DirectoryPath;
+            path.Text = ArchivePath.Display(Session.DirectoryPath);
+            path.TextTrimming = ArchivePath.IsEntry(Session.DirectoryPath) ? TextTrimming.LeadingCharacterEllipsis : TextTrimming.CharacterEllipsis;
+            ToolTip.SetTip(path, path.Text);
             AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);
             if (!previousPath.Equals(Session.DirectoryPath, StringComparison.OrdinalIgnoreCase)) LocationVisited?.Invoke(Session.DirectoryPath);
         }
@@ -614,6 +616,6 @@ public sealed class PanelView : Border
         foreach (var row in markedRows.Except(marked)) row.SetMarked(false);
         foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
         markedRows = marked;
-        summary.Text = Session.Error ?? $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {SelectedNames().Length:N0} selected";
+        summary.Text = Session.Error ?? (ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "") + $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {SelectedNames().Length:N0} selected";
     }
 }

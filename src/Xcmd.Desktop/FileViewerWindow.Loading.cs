@@ -39,11 +39,18 @@ public sealed partial class FileViewerWindow
         slice = null; TextContent.Text = ""; image.Source = null; decodedImage?.Bitmap.Dispose(); decodedImage = null;
         FirstVisibleByte = 0; VisibleEnd = 0;
         imageUnavailable = null; imageSignature = false;
+        IsArchiveReport = false;
         UpdateControls();
         Title = CurrentPath + " — Xcmd Viewer";
         titlePath.Text = Path.GetFileName(CurrentPath); Avalonia.Controls.ToolTip.SetTip(titlePath, CurrentPath);
         selectedEncoding = EncodingChoice.All[0];
         var page = await files.ReadAsync(CurrentPath, 0, token);
+        IsArchiveReport = files.IsArchiveReport(CurrentPath);
+        if (IsArchiveReport)
+        {
+            Title = CurrentPath + " — Archive contents — Xcmd Viewer";
+            titlePath.Text = Path.GetFileName(CurrentPath) + " · Archive contents";
+        }
         var encoding = await Task.Run(() => ViewerText.Detect(page.Bytes), token);
         token.ThrowIfCancellationRequested();
         slice = page; detected = encoding;
@@ -66,6 +73,7 @@ public sealed partial class FileViewerWindow
 
     private async Task ChangeModeAsync(FileViewMode mode, CancellationToken token)
     {
+        if (IsArchiveReport && mode != FileViewMode.Text) return;
         if (mode == FileViewMode.Image && (!CanUseImage || !await PrepareImageAsync(token))) return;
         ClearSearch();
         Mode = mode;
@@ -134,10 +142,15 @@ public sealed partial class FileViewerWindow
 
     private void UpdateControls()
     {
-        foreach (var pair in modeItems) { pair.Value.IsChecked = pair.Key == Mode; pair.Value.IsEnabled = slice != null; }
+        foreach (var pair in modeItems)
+        {
+            pair.Value.IsChecked = pair.Key == Mode;
+            pair.Value.IsEnabled = slice != null && (!IsArchiveReport || pair.Key == FileViewMode.Text);
+            Avalonia.Controls.ToolTip.SetTip(pair.Value, IsArchiveReport ? "This view shows an archive report." : null);
+        }
         modeItems[FileViewMode.Image].IsEnabled = CanUseImage;
         Avalonia.Controls.ToolTip.SetTip(modeItems[FileViewMode.Image], imageUnavailable);
-        foreach (var pair in encodingItems) { pair.Value.IsChecked = pair.Key == selectedEncoding.CodePage; pair.Value.IsEnabled = Mode == FileViewMode.Text && slice != null; }
+        foreach (var pair in encodingItems) { pair.Value.IsChecked = pair.Key == selectedEncoding.CodePage; pair.Value.IsEnabled = Mode == FileViewMode.Text && slice != null && !IsArchiveReport; }
         var text = Mode != FileViewMode.Image;
         foreach (var item in textCommands) item.IsEnabled = text && slice != null;
         TextContent.IsVisible = text; image.IsVisible = !text;

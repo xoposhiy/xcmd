@@ -56,6 +56,9 @@ public static class FileOperationRules
 {
     public static void ValidateRequest(FileOperationRequest request)
     {
+        if (request.Kind != FileOperationKind.Copy)
+            foreach (var source in request.Sources) ArchivePath.RequireWritable(source.FullPath);
+        if (request.Destination != null) ArchivePath.RequireWritable(request.Destination);
         if (request.Kind is FileOperationKind.Recycle or FileOperationKind.Delete) return;
         if (request.Destination == null) throw new ArgumentException("Choose a destination folder.");
         if (request.NewName != null && PanelRules.ValidateName(request.NewName) is { } error) throw new ArgumentException(error);

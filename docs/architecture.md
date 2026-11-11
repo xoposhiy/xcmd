@@ -48,6 +48,8 @@ Keep formatting choices that depend on display culture or presentation context i
 
 Put code in Infrastructure when it performs an external operation or translates external data and failures into application values.
 
+Archive locations use `ArchivePath` values with a physical source and entry path. `ArchiveFileSystem` routes those values to `ArchiveContents` and delegates ordinary paths to the existing filesystem and operation store. Archive contents stay read-only; extraction uses the existing copy queue. `ArchiveViewerFiles` supplies reports or temporary member files to the existing viewer. SharpCompress types, compression streams, catalog caching and temporary-file ownership stay in Infrastructure. Desktop owns archive key routing and panel focus. Filesystem monitoring skips virtual archive locations; explicit reload and workspace restore use the same archive adapter.
+
 Current examples:
 
 - `LocalFileSystem` and `DirectoryMonitor`: filesystem operations, enumeration, and change notifications.

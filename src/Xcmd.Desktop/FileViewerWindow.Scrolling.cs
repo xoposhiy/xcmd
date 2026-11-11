@@ -64,7 +64,7 @@ public sealed partial class FileViewerWindow
         previousPage.IsEnabled = FirstVisibleByte > 0;
         nextPage.IsEnabled = VisibleEnd < FileLength;
         var encoding = Mode == FileViewMode.Text ? selectedEncoding.CodePage > 0 ? selectedEncoding.Label + " (Manual)" : detected.Description : "ASCII bytes";
-        readingStatus.Text = $"{Mode}{(automaticMode ? " (Auto)" : "")} · {encoding} · Wrap {(Mode == FileViewMode.Text && wrapLines ? "on" : "off")} · {VisibleEnd:N0}/{FileLength:N0} bytes";
+        readingStatus.Text = $"{(IsArchiveReport ? "Archive report" : Mode.ToString())}{(automaticMode ? " (Auto)" : "")} · {encoding} · Wrap {(Mode == FileViewMode.Text && wrapLines ? "on" : "off")} · {VisibleEnd:N0}/{FileLength:N0} bytes";
         Progress.Text = $"{ViewedPercent:0.0}%";
         var visibleBytes = Math.Max(1, VisibleEnd - FirstVisibleByte);
         updatingScroll = true;

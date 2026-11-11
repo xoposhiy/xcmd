@@ -203,6 +203,11 @@
         "resolved": "13.0.4",
         "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
+      "SharpCompress": {
+        "type": "Transitive",
+        "resolved": "0.50.8",
+        "contentHash": "Loy3gexDEO3smsiokv3553wNDAhWfa6y4f2B8q6Bstc9Xdnmw9nbZtOrlw6YvSbJy6O2yyMgWFINgCazRPZejA=="
+      },
       "SkiaSharp": {
         "type": "Transitive",
         "resolved": "3.119.4",
@@ -262,6 +267,7 @@
       "xcmd.infrastructure": {
         "type": "Project",
         "dependencies": {
+          "SharpCompress": "[0.50.8, )",
           "UTF.Unknown": "[2.7.0, )",
           "Xcmd.Core": "[1.0.0, )"
         }

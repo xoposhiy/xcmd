@@ -14,7 +14,7 @@ public static class PanelRules
 {
     public static FileEntry? ParentEntry(string directoryPath)
     {
-        var parent = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(directoryPath));
+        var parent = ArchivePath.Parent(directoryPath);
         return parent == null ? null : new FileEntry(parent, "..", true, 0, DateTime.MinValue, IsParent: true);
     }
 

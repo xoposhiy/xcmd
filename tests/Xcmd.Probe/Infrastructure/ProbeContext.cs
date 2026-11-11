@@ -19,6 +19,7 @@ public sealed class ProbeContext : IDisposable
     public string OutputPath { get; }
     public ControlledFileSystem FileSystem { get; } = new();
     public RecordingExternalLauncher Launcher { get; } = new();
+    public ControlledArchiveContents Archives { get; }
     public CommanderWindow Window { get; }
     public InputDriver Input => new(Window);
     public Dictionary<string, object> Measurements { get; } = [];
@@ -27,7 +28,8 @@ public sealed class ProbeContext : IDisposable
 
     public ProbeContext(string outputPath)
     {
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
+        Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
+        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveContents: Archives);
         OutputPath = outputPath;
         FixturePath = Path.Combine(outputPath, "fixture");
         Directory.CreateDirectory(LeftPath);

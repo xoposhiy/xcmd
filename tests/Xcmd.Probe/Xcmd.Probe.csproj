@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="Fixtures/Archives/*" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../../src/Xcmd.Desktop/Xcmd.Desktop.csproj" />
     <ProjectReference Include="../Xcmd.LaunchProbe/Xcmd.LaunchProbe.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />

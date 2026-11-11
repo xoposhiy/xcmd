@@ -44,7 +44,8 @@ The main window combines menus and window controls in one title row. Drag the fr
 | Ctrl+A, Ctrl+click, Shift+click | Select all, toggle a row, select a range |
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
-| Enter / double-click a file | Run the application or open the file through its Windows association |
+| Enter / double-click a file | Enter a common archive, or open another file through its Windows association |
+| Ctrl+PageDown | Try to open the current file as an archive, regardless of extension |
 | F3 / F4 on a file | View inside Xcmd / edit in Notepad++ |
 | Plain typing / Left / Right / Ctrl+L | Focus the command line; typing inserts text |
 | Enter in the command line | Run through Windows ShellExecute from the active panel directory |
@@ -77,6 +78,20 @@ The main window combines menus and window controls in one title row. Drag the fr
 | View > Reset column widths | Restore the active panel's default column widths |
 
 Sort headers accept clicks across their area; the strip at the right edge resizes a column. The final column fills remaining space and has no resize handle. Size defaults leave room for byte counts up to ten GiB. Type headings and values are centered; Size headings align with byte counts. File names have Windows system icons. The cursor uses one blue background with or without marks. The inactive panel uses a faint cursor background. Marked files keep an amber check and file name, including under the cursor. Moving the cursor does not change row size or text position. Shift+Up and Shift+Down remove an existing mark when the row is marked again. Panels have square corners. Table rows stay above the footer and outside the space reserved for scroll bars. Only a top strip marks the active panel; the sides and bottom have no outline. The executable, main window and owned dialogs use the Xcmd application icon.
+
+## Archive browsing prototype
+
+Enter or double-click a ZIP, RAR, 7z, TAR or compressed archive to browse its entries in the same panel. Folders, sorting, marks and parent navigation work as in a regular directory. The footer identifies a read-only archive. Backspace, Ctrl+PageUp or the parent row leaves a folder; at the archive root, it returns to the containing location and selects the archive. Nested archives use the same controls. Saved workspaces restore archive locations and cursors. Ctrl+R reloads archive contents; archive panels do not use the filesystem directory monitor.
+
+Ctrl+PageDown tries the file contents instead of its extension. Use it for DOCX, XLSX, PPTX and other ZIP-based containers, files with unusual extensions, and recognized self-extracting EXEs. Ordinary Enter on Office files and EXEs still uses the Windows association. Self-extracting support looks for ZIP, RAR or 7z headers in the first 32 MiB of a Windows EXE. This does not support every installer format and never executes the EXE while probing it.
+
+Opening an archive shows its name and `Escape cancels` while the original panel remains usable. Escape cancels the pending read and keeps the current location, cursor and command draft. Switching panels during a read keeps focus in the selected panel after completion.
+
+To open an ordinary archive through Windows, choose File > Open with Windows, or press Ctrl+Enter and then Enter. The first key inserts its name into the command line; the second runs the existing Windows ShellExecute workflow. Inside an archive, external opening uses a temporary copy and the physical containing directory. Extract a file with F5 before editing it; F4 rejects archive entries to avoid saving changes only to a temporary copy.
+
+F3 on an archive opens a text report with its format, available size and compression information, file count, encryption and completeness flags, and entry paths. The title and status identify the archive report; byte and image modes are unavailable for reports. F3 on a member opens its text, binary data or image. F5 copies selected files or folders to the other panel, including empty folders, with the existing conflict and cancellation workflow. Copy destinations must be ordinary folders. Move, delete, rename and folder creation cannot modify an archive.
+
+Feedback checks use real ZIP, RAR4, RAR5, 7z, 7z SFX, TAR, TAR.GZ, GZip, BZip2, XZ, TAR.BZ2 and TAR.XZ samples. LZip, Zstandard, Unix compress and legacy ARC/ARJ/ACE readers are available through the same library but are outside this feedback sample set. ZIP-based packages also use the ZIP reader. Encrypted entries report that a password-capable extraction tool is needed; Xcmd has no password dialog. Multipart archive discovery is not implemented. Unsafe paths and ambiguous duplicate names are rejected. Browsing is limited to 100,000 entries, eight nested archive levels, and 256 MiB per temporarily opened member; use F5 for larger files.
 
 ## File viewer prototype
 

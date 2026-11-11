@@ -26,6 +26,23 @@ public static class WorkspaceProbe
         }
     }
 
+    public static async Task<JsonDocument> ReadWorkspaceReportAsync(string path)
+    {
+        JsonDocument? report = null;
+        await WaitAsync(() =>
+        {
+            try
+            {
+                using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                report = JsonDocument.Parse(input);
+                return true;
+            }
+            catch (IOException error) when (error is FileNotFoundException or DirectoryNotFoundException || (error.HResult & 0xFFFF) is 32 or 33)
+            { return false; }
+        });
+        return report!;
+    }
+
     public static string AddRelease(string root, string id, bool copyApplication)
     {
         var directory = Path.Combine(root, id);

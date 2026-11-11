@@ -8,7 +8,7 @@ public sealed partial class CommanderWindow
     private void HandleCommandLineKey(KeyEventArgs e)
     {
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
-        { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); }
+        { if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); } }
         else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
             Execute(CommandLine.CopyAllAsync);
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
@@ -59,7 +59,7 @@ public sealed partial class CommanderWindow
         if (e.Key == Key.Up && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); CommandLine.BrowseHistory(true); e.Handled = true; return true; }
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && directorySizes == null && !nameJump.Active)
-        { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); e.Handled = true; return true; }
+        { if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); } e.Handled = true; return true; }
         return false;
     }
 
@@ -85,7 +85,7 @@ public sealed partial class CommanderWindow
         }
         if (shift && e.Key == Key.F6)
         {
-            ActivePanel.BeginRename();
+            RenameCurrent();
             return true;
         }
         return ctrl && HandleControlPanelCommand(e.Key);
@@ -103,6 +103,9 @@ public sealed partial class CommanderWindow
                 break;
             case Key.R:
                 ReloadActivePanel();
+                break;
+            case Key.PageDown:
+                Execute(() => OpenArchiveAsync(ActivePanel));
                 break;
             default:
                 return false;

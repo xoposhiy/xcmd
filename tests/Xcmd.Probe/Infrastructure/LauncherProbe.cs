@@ -15,6 +15,23 @@ public sealed record LauncherFixture(string Root, string Launcher, string Shortc
 
 public static class LauncherProbe
 {
+    public static async Task CheckReportPublicationAsync(ProbeContext context)
+    {
+        var path = Path.Combine(context.FixturePath, "locked-report.json");
+        await File.WriteAllTextAsync(path, "{\"ready\":true}");
+        using (var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            var reading = ReadWorkspaceReportAsync(path);
+            Check(!reading.IsCompleted, "The report reader waits for an exclusive lock instead of failing");
+            locked.Dispose();
+            using var report = await reading;
+            Check(report.RootElement.GetProperty("ready").GetBoolean(), "The complete report is read after unlocking");
+        }
+        await File.WriteAllTextAsync(path, "invalid JSON");
+        try { using var report = await ReadWorkspaceReportAsync(path); throw new InvalidOperationException("Invalid report contents must fail the check."); }
+        catch (JsonException) { }
+    }
+
     public static LauncherFixture Prepare(ProbeContext context)
     {
         var root = Path.Combine(context.FixturePath, "installed Xcmd 日本語");
@@ -142,7 +159,7 @@ public static class LauncherProbe
         {
             Equal(0, await RunAsync(fixture, fixture.Root, "--startup-host", reportPath, session), "The startup launcher succeeds");
             await WaitAsync(() => File.Exists(reportPath));
-            using var report = JsonDocument.Parse(File.ReadAllText(reportPath));
+            using var report = await ReadWorkspaceReportAsync(reportPath);
             var state = report.RootElement.GetProperty("state").Deserialize<WorkspaceState>()!;
             Equal(expected.Left.DirectoryPath, state.Left.DirectoryPath, "Startup restores the left directory");
             Equal(expected.Right.DirectoryPath, state.Right.DirectoryPath, "Startup restores the right directory");
@@ -182,7 +199,7 @@ public static class LauncherProbe
         await launcher.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
         Equal(0, launcher.ExitCode, "The launcher exits while the application keeps running");
         await WaitAsync(() => File.Exists(Path.Combine(reports, OldId + ".json")));
-        using var sourceReport = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(reports, OldId + ".json")));
+        using var sourceReport = await ReadWorkspaceReportAsync(Path.Combine(reports, OldId + ".json"));
         Check(!sourceReport.RootElement.GetProperty("consoleAttached").GetBoolean(), "The launched application host has no console");
         using var source = Process.GetProcessById(sourceReport.RootElement.GetProperty("processId").GetInt32());
         try
@@ -192,7 +209,7 @@ public static class LauncherProbe
             SelectRelease(fixture, NewId);
             await source.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(25));
             await WaitAsync(() => File.Exists(Path.Combine(reports, NewId + ".json")));
-            using var replacement = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(reports, NewId + ".json")));
+            using var replacement = await ReadWorkspaceReportAsync(Path.Combine(reports, NewId + ".json"));
             Check(replacement.RootElement.GetProperty("parentExited").GetBoolean(), "The replacement waits for the source application.");
             Equal(0, replacement.RootElement.GetProperty("nativeApplicationWindows").GetInt32(), "The replacement stays headless");
             Check(!replacement.RootElement.GetProperty("consoleAttached").GetBoolean(), "The replacement application host has no console");

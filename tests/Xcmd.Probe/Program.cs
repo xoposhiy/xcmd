@@ -30,6 +30,8 @@ internal static class Program
         scenarios = scenarios.Concat(ViewerScenarios.All).ToArray();
         scenarios = scenarios.Concat(FeedbackInteractionScenarios.All).ToArray();
         scenarios = scenarios.Concat(AppearanceScenarios.All).ToArray();
+        scenarios = scenarios.Concat(ArchiveScenarios.All).ToArray();
+        scenarios = scenarios.Concat(ArchiveInteractionScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");

@@ -156,7 +156,7 @@ public static class WorkspaceScenarios
                 File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
                 var failurePath = Path.Combine(reports, OldId + "-failed-update.json");
                 await WaitAsync(() => File.Exists(failurePath));
-                using var report = JsonDocument.Parse(File.ReadAllText(failurePath));
+                using var report = await ReadWorkspaceReportAsync(failurePath);
                 Check(report.RootElement.GetProperty("IsEnabled").GetBoolean(), "The current window is usable after a replacement startup failure.");
                 var state = report.RootElement.GetProperty("state").Deserialize<WorkspaceState>()!;
                 Equal("alpha.txt", state.Left.Cursor, "A failed real process handoff retains the current cursor");
@@ -193,7 +193,7 @@ public static class WorkspaceScenarios
                 await WaitAsync(() => File.Exists(Path.Combine(reports, NewId + ".json")));
                 await old.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
                 Equal(0, old.ExitCode, "The old real process closes cleanly");
-                using var report = JsonDocument.Parse(File.ReadAllText(Path.Combine(reports, NewId + ".json")));
+                using var report = await ReadWorkspaceReportAsync(Path.Combine(reports, NewId + ".json"));
                 Check(report.RootElement.GetProperty("parentExited").GetBoolean(), "The replacement opens only after the old process exits.");
                 Equal(0, report.RootElement.GetProperty("nativeApplicationWindows").GetInt32(), "The replacement uses the actual app without native windows");
                 Check(!report.RootElement.GetProperty("consoleAttached").GetBoolean(), "The replacement process has no console");

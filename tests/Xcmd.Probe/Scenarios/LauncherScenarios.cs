@@ -8,6 +8,7 @@ public static class LauncherScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("launcher-report-publication-waits-for-unlock", "UC40; bounded report reading under real Windows sharing locks", LauncherProbe.CheckReportPublicationAsync),
         new("launcher-startup-restores-workspace", "UC40; UC38; startup measurement", async c =>
         {
             var fixture = LauncherProbe.Prepare(c);

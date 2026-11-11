@@ -4,7 +4,7 @@ Xcmd is a Windows file manager with two panels and keyboard controls. It uses C#
 
 The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
 
-The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Feedback builds receive focused smoke checks rather than full final verification. Archives, search, viewers and Git inspection remain planned. See [requirements and status](docs/use-cases.md).
+The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks rather than full final verification. Search and Git inspection remain planned. See [requirements and status](docs/use-cases.md).
 
 ## Run
 

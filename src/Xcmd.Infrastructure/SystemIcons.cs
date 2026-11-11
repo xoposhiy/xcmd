@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;
 
@@ -13,9 +14,9 @@ public static class SystemIcons
         var info = new ShellFileInfo();
         try
         {
-            var attributesOnly = !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
+            var attributesOnly = ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
             var flags = 0x100u | 1u | (attributesOnly ? 0x10u : 0);
-            var shellName = attributesOnly ? (Path.GetExtension(path) is { Length: > 0 } extension ? extension : "file") : path;
+            var shellName = attributesOnly ? directory ? "folder" : (Path.GetExtension(path) is { Length: > 0 } extension ? extension : "file") : path;
             if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags) == 0 || info.Icon == 0)
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
             return Render(info.Icon, 16);

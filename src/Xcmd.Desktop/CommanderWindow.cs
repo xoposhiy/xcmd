@@ -24,6 +24,7 @@ public sealed partial class CommanderWindow : Window
     private readonly CommanderFrame frame;
     public Grid TitleBar => frame.TitleBar;
     private readonly FileViewingController viewing;
+    private readonly ArchiveController archives;
     public FileViewerWindow? Viewer => viewing.Viewer;
     public IReadOnlyList<FileViewerWindow> Viewers => viewing.Viewers;
     public string ViewerThemeId => viewing.ThemeId;
@@ -53,11 +54,13 @@ public sealed partial class CommanderWindow : Window
     public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
-    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null)
+    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null)
     {
+        archives = new ArchiveController(this, archiveCacheRoot, archiveContents);
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
-        viewing = new FileViewingController(this, editorPath);
         fileSystem ??= new LocalFileSystem();
+        fileSystem = archives.Wrap(fileSystem);
+        viewing = new FileViewingController(this, editorPath, archives.Files);
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
         Operations = new FileOperationQueue(new FileOperationRunner(operationStore, ResolveFileConflictAsync));
         OperationsView = new FileOperationsView(Operations);
@@ -82,7 +85,7 @@ public sealed partial class CommanderWindow : Window
             panel.Activated += Activate;
             panel.OpenRequested += source => Execute(() => OpenCurrentAsync(source));
             panel.HistoryRequested += panel => OpenNavigation(panel, DirectoryList.History);
-            panel.LocationVisited += path => { if (!restoringVisits) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(path); };
+            panel.LocationVisited += path => { if (!restoringVisits && !ArchivePath.IsEntry(path)) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(ArchivePath.WorkingDirectory(path)); };
             panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
         }
         var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
@@ -111,7 +114,8 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyDownEvent, (_, _) => lastInput = Stopwatch.GetTimestamp(), RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
-        Closing += (_, _) => { CancelDirectorySizes(); Operations.CancelAll(); OperationDialog?.Close(); viewing.CloseAll(); };
+        Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); viewing.CloseAll(); };
+        Closed += async (_, _) => { await Operations.Completion; await Task.Run(archives.Dispose); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
@@ -147,7 +151,7 @@ public sealed partial class CommanderWindow : Window
         ActivePanel = panel;
         Left.SetActive(panel == Left);
         Right.SetActive(panel == Right);
-        CommandLine.SetDirectory(panel.Session.DirectoryPath);
+        CommandLine.SetDirectory(ArchivePath.WorkingDirectory(panel.Session.DirectoryPath));
     }
 
     public async void Execute(Func<Task> action)
@@ -171,6 +175,8 @@ public sealed partial class CommanderWindow : Window
         status.Text = error ?? "Ready";
         if (error != null) Trace.Add("error: " + error);
     }
+
+    internal void SetStatusMessage(string message) => status.Text = message;
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
@@ -199,8 +205,10 @@ public sealed partial class CommanderWindow : Window
     private async Task OpenCurrentAsync(PanelView panel)
     {
         if (panel.Current is not { } row) return;
+        if (!row.Entry.IsDirectory && ArchivePath.OpensOnEnter(row.Entry.FullPath))
+        { await OpenArchiveAsync(panel); return; }
         if (!row.Entry.IsDirectory)
-        { await LaunchExternalAsync(LaunchPlans.OpenFile(row.Entry.FullPath, panel.Session.DirectoryPath)); return; }
+        { await OpenFileExternallyAsync(row.Entry.FullPath, panel.Session.DirectoryPath); return; }
         await panel.LoadAsync(panel.Current.Entry.FullPath, selectName: panel.Current.Entry.IsParent ? null : "..");
         panel.FocusCurrent();
     }
@@ -219,6 +227,7 @@ public sealed partial class CommanderWindow : Window
     private void OpenCreateDirectoryDialog()
     {
         var panel = ActivePanel;
+        if (ArchivePath.IsEntry(panel.Session.DirectoryPath)) { SetError("Archives are read-only. Choose a regular folder."); return; }
         var dialog = new NameDialog(Feedback) { Background = Background };
         Feedback.Attach(dialog);
         ActiveDialog = dialog;

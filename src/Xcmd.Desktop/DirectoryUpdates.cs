@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Xcmd.Core;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
@@ -31,6 +32,11 @@ public sealed class DirectoryUpdates : IDisposable
             foreach (var panel in new[] { window.Left, window.Right })
             {
                 var path = panel.Session.DirectoryPath;
+                if (ArchivePath.IsEntry(path))
+                {
+                    if (monitors.Remove(panel, out var old)) old.Monitor.Dispose();
+                    continue;
+                }
                 if (path.Length == 0) continue;
                 if (!monitors.TryGetValue(panel, out var state) || state.Monitor.Path != path)
                 {

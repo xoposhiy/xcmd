@@ -23,7 +23,7 @@ public sealed partial class CommanderWindow
         if (runningCommand || string.IsNullOrWhiteSpace(CommandLine.Editor.Text)) return;
         var text = CommandLine.Editor.Text;
         var panel = ActivePanel;
-        var directory = panel.Session.DirectoryPath;
+        var directory = ArchivePath.WorkingDirectory(panel.Session.DirectoryPath);
         runningCommand = true;
         try
         {
@@ -46,6 +46,12 @@ public sealed partial class CommanderWindow
     private void InsertCurrentArgument(bool fullPath)
     {
         if (ActivePanel.Current is not { } row) return;
+        if (ArchivePath.IsEntry(row.Entry.FullPath))
+        {
+            if (row.Entry.IsDirectory) { SetError("Extract this folder before opening it externally."); return; }
+            Execute(async () => CommandLine.InsertArgument(await archives.Files.MaterializeAsync(row.Entry.FullPath, CancellationToken.None)));
+            return;
+        }
         CommandLine.InsertArgument(fullPath ? row.Entry.FullPath : row.Name);
     }
 }
