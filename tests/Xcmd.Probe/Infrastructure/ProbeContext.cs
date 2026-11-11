@@ -29,7 +29,7 @@ public sealed class ProbeContext : IDisposable
     public ProbeContext(string outputPath)
     {
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveContents: Archives);
+        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives);
         OutputPath = outputPath;
         FixturePath = Path.Combine(outputPath, "fixture");
         Directory.CreateDirectory(LeftPath);
@@ -76,6 +76,7 @@ public sealed class ProbeContext : IDisposable
             if (Window.ActiveDialog is { } dialog) dialog.UpdateLayout();
             if (Window.ActiveNavigationDialog is { } history) history.UpdateLayout();
             Window.OperationDialog?.UpdateLayout();
+            Window.FileSearch.Window?.UpdateLayout();
             foreach (var viewer in Window.Viewers) viewer.UpdateLayout();
             Window.Feedback.ActiveComment?.UpdateLayout();
             Window.Feedback.ActiveNotes?.UpdateLayout();
@@ -83,12 +84,13 @@ public sealed class ProbeContext : IDisposable
             if (Window.ActiveDialog is { } activeDialog) VerifyHeadlessWindow(activeDialog);
             if (Window.ActiveNavigationDialog is { } activeHistory) VerifyHeadlessWindow(activeHistory);
             if (Window.OperationDialog is { } operationDialog) VerifyHeadlessWindow(operationDialog);
+            if (Window.FileSearch.Window is { } searchWindow) VerifyHeadlessWindow(searchWindow);
             foreach (var viewer in Window.Viewers) VerifyHeadlessWindow(viewer);
             if (Window.Feedback.ActiveComment is { } comment) VerifyHeadlessWindow(comment);
             if (Window.Feedback.ActiveNotes is { } notes) VerifyHeadlessWindow(notes);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             if (watch.Elapsed > TimeSpan.FromSeconds(20)) throw new TimeoutException("The application did not become idle.");
-        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.Feedback.HasPendingSelection);
+        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.FileSearch.Window?.IsSearching == true || Window.Feedback.HasPendingSelection);
     }
 
     private void VerifyHeadlessWindow(Window window)
@@ -214,6 +216,7 @@ public sealed class ProbeContext : IDisposable
         viewer = Window.Viewer is { } viewer ? new { viewer.CurrentPath, viewer.Mode, viewer.ByteOffset, viewer.FileLength, viewer.Information, viewer.Error, viewer.IsLoading, viewer.HasImage, viewer.ReadingStatus, viewer.FirstVisibleByte, viewer.VisibleEnd, viewer.ViewedPercent } : null,
         operations = Window.Operations.Jobs.Select(job => new { job.Id, job.State, job.CurrentPath, job.BytesTransferred, job.TotalFiles, job.ProcessedFiles, job.SkippedFiles, job.FailedEntries, job.TotalBytes, job.ProcessedBytes, job.TotalsComplete, job.Outcomes }),
         historyDialog = Window.ActiveNavigationDialog is { } history ? new { selected = history.Directories.SelectedItem, history.IsOpening, history.Error } : null,
+        search = Window.FileSearch.Window is { } search ? new { search.StatusMessage, search.IsSearching, failures = search.Session?.Failures, results = SearchProbe.Results(search) } : null,
         left = PanelSnapshot(Window.Left),
         right = PanelSnapshot(Window.Right),
         input = InputTrace,
@@ -252,6 +255,7 @@ public sealed class ProbeContext : IDisposable
         Window.ActiveDialog?.Close();
         Window.ActiveNavigationDialog?.Close();
         Window.OperationDialog?.Close();
+        Window.FileSearch.Window?.Close();
         foreach (var viewer in Window.Viewers.ToArray()) viewer.Close();
         Window.Feedback.ActiveComment?.Close();
         Window.Feedback.ActiveNotes?.Close();

@@ -32,6 +32,10 @@ internal static class Program
         scenarios = scenarios.Concat(AppearanceScenarios.All).ToArray();
         scenarios = scenarios.Concat(ArchiveScenarios.All).ToArray();
         scenarios = scenarios.Concat(ArchiveInteractionScenarios.All).ToArray();
+        scenarios = scenarios.Concat(SearchScenarios.All).ToArray();
+        scenarios = scenarios.Concat(FeedbackRemarksScenarios.All).ToArray();
+        scenarios = scenarios.Concat(SearchFeedbackScenarios.All).ToArray();
+        scenarios = scenarios.Concat(SearchInteractionScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");
@@ -71,6 +75,7 @@ internal static class Program
                         context.SaveSnapshot();
                         context.CaptureFailure("failure");
                         if (context.Window.ActiveNavigationDialog is { } history) context.CaptureFailure("failure-history", history);
+                        if (context.Window.FileSearch.Window is { } search) context.CaptureFailure("failure-search", search);
                         throw;
                     }
                     return true;

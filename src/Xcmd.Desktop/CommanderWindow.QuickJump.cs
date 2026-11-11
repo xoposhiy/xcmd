@@ -12,7 +12,14 @@ public sealed partial class CommanderWindow
         {
             ResetQuickJump();
             nameJump.Begin();
-            status.Text = "Name search · type a prefix · Esc exits";
+            status.Text = "Name search · type part of a name · Esc exits";
+            e.Handled = true;
+            return true;
+        }
+        if (nameJump.Active && e.KeyModifiers == KeyModifiers.None && e.Key is Key.Up or Key.Down)
+        {
+            var match = nameJump.Move(ActivePanel.Current?.Name, e.Key == Key.Down, ActivePanel.Rows.Where(row => !row.Entry.IsParent).Select(row => row.Name));
+            if (match != null) ActivePanel.SelectRow(ActivePanel.Rows.First(row => row.Name == match));
             e.Handled = true;
             return true;
         }
@@ -37,6 +44,7 @@ public sealed partial class CommanderWindow
     {
         var active = nameJump.Active;
         nameJump.Reset(); quickStrokes.Clear(); physicalPrefix = true; suppressQuickText = false;
+        if (active) { Left.ShowNameMatches(null); Right.ShowNameMatches(null); }
         if (active) status.Text = LastError ?? "Ready";
     }
 
@@ -59,8 +67,8 @@ public sealed partial class CommanderWindow
     private bool ApplyQuickJump(string text, IEnumerable<string> prefixes)
     {
         var match = nameJump.Append(text, prefixes, ActivePanel.Rows.Where(row => !row.Entry.IsParent).Select(row => row.Name));
-        if (match != null) ActivePanel.SelectRow(ActivePanel.Rows.First(row => row.Name == match));
-        status.Text = nameJump.Prefix.Length == 0 ? "Name search · type a prefix · Esc exits" : "Jump to: " + nameJump.Prefix + " · Esc exits";
+        if (match != null) { ActivePanel.ShowNameMatches(nameJump); ActivePanel.SelectRow(ActivePanel.Rows.First(row => row.Name == match)); }
+        status.Text = nameJump.Prefix.Length == 0 ? "Name search · type part of a name · Esc exits" : "Jump to: " + nameJump.Prefix + " · ↑/↓ matches · Esc exits";
         return match != null;
     }
 

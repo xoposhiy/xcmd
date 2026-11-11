@@ -24,6 +24,7 @@ public sealed partial class CommanderWindow : Window
     private readonly CommanderFrame frame;
     public Grid TitleBar => frame.TitleBar;
     private readonly FileViewingController viewing;
+    public FileSearchController FileSearch { get; }
     private readonly ArchiveController archives;
     public FileViewerWindow? Viewer => viewing.Viewer;
     public IReadOnlyList<FileViewerWindow> Viewers => viewing.Viewers;
@@ -48,7 +49,7 @@ public sealed partial class CommanderWindow : Window
     public DirectoryUsageBook DirectoryUsage { get; } = new();
     private bool restoringVisits;
     public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || CommandLine.HasKeyboardFocus || Left.EditingRow != null || Right.EditingRow != null,
-        HasOpenDialog || IsMenuOpen || viewing.HasViewers, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
+        HasOpenDialog || FileSearch.IsOpen || IsMenuOpen || viewing.HasViewers, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
 
     public void SetUpdateMessage(string message) => updateMessage.Text = message;
     public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
@@ -61,6 +62,7 @@ public sealed partial class CommanderWindow : Window
         fileSystem ??= new LocalFileSystem();
         fileSystem = archives.Wrap(fileSystem);
         viewing = new FileViewingController(this, editorPath, archives.Files);
+        FileSearch = new FileSearchController(this, viewing, archiveCacheRoot);
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
         Operations = new FileOperationQueue(new FileOperationRunner(operationStore, ResolveFileConflictAsync));
         OperationsView = new FileOperationsView(Operations);
@@ -94,7 +96,7 @@ public sealed partial class CommanderWindow : Window
         panels.Children.Add(Left);
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
         layout.Children.Add(panels);
-        var help = BuildKeyboardHelp();
+        var help = CommanderFrame.BuildKeyboardHelp();
         Grid.SetRow(OperationsView, 1); layout.Children.Add(OperationsView);
         Grid.SetRow(CommandLine, 2); layout.Children.Add(CommandLine);
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
@@ -114,28 +116,12 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyDownEvent, (_, _) => lastInput = Stopwatch.GetTimestamp(), RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
-        Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); viewing.CloseAll(); };
+        Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
         Closed += async (_, _) => { await Operations.Completion; await Task.Run(archives.Dispose); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
         Left.SetActive(true);
-    }
-
-    private static WrapPanel BuildKeyboardHelp()
-    {
-        var help = new WrapPanel { Name = "KeyboardHelp" };
-        string[] hints = ["F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
-        foreach (var hint in hints)
-            help.Children.Add(new Border
-            {
-                BorderThickness = new Thickness(help.Children.Count == 0 ? 0 : 1, 0, 0, 0),
-                BorderBrush = new SolidColorBrush(Color.Parse("#526078")),
-                Padding = new Thickness(help.Children.Count == 0 ? 0 : 8, 0, 8, 0),
-                Margin = new Thickness(0, 3),
-                Child = new TextBlock { Text = hint, FontSize = 12, Foreground = Brushes.LightGray }
-            });
-        return help;
     }
 
     public async Task InitializeAsync(string left, string right)
@@ -185,6 +171,8 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
         if (HasOpenDialog) return;
+        if (e.Key == Key.F7 && e.KeyModifiers == KeyModifiers.Alt)
+        { ResetQuickJump(); FileSearch.Open(); e.Handled = true; return; }
         if (OperationsView.IsKeyboardFocusWithin)
         {
             if (e.Key == Key.Escape) { ActivePanel.FocusCurrent(); e.Handled = true; }

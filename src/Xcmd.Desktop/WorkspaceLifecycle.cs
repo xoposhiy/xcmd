@@ -57,7 +57,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             var left = directories.ElementAtOrDefault(0) ?? Environment.CurrentDirectory;
             await window.InitializeAsync(left, directories.ElementAtOrDefault(1) ?? left);
-            if (state != null) { window.Feedback.Restore(state.Notes); window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); }
+            if (state != null) { window.Feedback.Restore(state.Notes); window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); window.FileSearch.Restore(state.FileSearch); }
         }
         window.Closing += OnClosing;
         if (releases != null)

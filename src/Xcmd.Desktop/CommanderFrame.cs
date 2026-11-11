@@ -70,4 +70,20 @@ internal sealed class CommanderFrame
         AutomationProperties.SetAutomationId(button, id);
         return button;
     }
+    public static Control BuildKeyboardHelp()
+    {
+        var help = new WrapPanel { Name = "KeyboardHelp" };
+        string[] hints = ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+        foreach (var hint in hints)
+            help.Children.Add(new Border
+            {
+                BorderThickness = new Thickness(help.Children.Count == 0 ? 0 : 1, 0, 0, 0),
+                BorderBrush = new SolidColorBrush(Color.Parse("#526078")),
+                Padding = new Thickness(help.Children.Count == 0 ? 0 : 8, 0, 8, 0),
+                Margin = new Thickness(0, 3),
+                Child = new TextBlock { Text = hint, FontSize = 12, Foreground = Brushes.LightGray }
+            });
+        return help;
+    }
+
 }

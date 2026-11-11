@@ -56,7 +56,8 @@ public static class CommandLineScenarios
                     Check(c.Window.CommandLine.Editor.Bounds.Width >= 300, "The editor remains usable beside a long path.");
                     Check(width != 1280 || label.Bounds.Width is >= 490 and <= 510, "The directory can use the wider 510-pixel limit.");
                     var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
-                    Equal(12, help.Children.Count, "Useful shortcut groups include file viewing and editing");
+                    Equal(13, help.Children.Count, "Useful shortcut groups include file search, viewing and editing");
+                    Check(help.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "Alt+F7  Find files"), "File search is discoverable in keyboard help");
                     var hints = help.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToArray();
                     Check(hints.Contains("F3  View") && hints.Contains("F4  Edit"), "File viewing and editing shortcuts remain discoverable");
                     Check(help.Children.OfType<Border>().Skip(1).All(border => border.BorderThickness.Left == 1), "Shortcut groups have visible separators.");

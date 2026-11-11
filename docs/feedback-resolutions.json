@@ -202,5 +202,113 @@
   {
     "summary": "In feedback mode a double-click sends one normal click to the selected control and keeps selection active. Menus can be opened before selecting a child item. Comments, saved sessions and the refinement list retain the click path.",
     "noteId": "3132828621a94a4d94d41f545ce25e61"
+  },
+  {
+    "noteId": "a76ba1c8dde7405cb6b9364ba5085828",
+    "summary": "File icons keep their native Windows pixels without resampling. The selected source is large enough for the display scale, including after a scale change. Panel text uses a larger font."
+  },
+  {
+    "noteId": "8713a2c2999a4642928927cfd0a1c27a",
+    "summary": "The viewer remembers the last query across files and viewer windows. F3 reuses it, and Find selects the previous query so typing replaces it."
+  },
+  {
+    "noteId": "e575f85efd574a9b890886569ec240d9",
+    "summary": "Ctrl+Backslash opens the active panel's current drive root without changing the opposite panel."
+  },
+  {
+    "noteId": "63417f57671c41bfa49378e61795d2a4",
+    "summary": "Ctrl+Backquote opens the home directory. The shortcut uses the same physical key for English Backquote and Russian yo."
+  },
+  {
+    "noteId": "9ff51312241e4ef481428beac268682d",
+    "summary": "The refinement list opens on a separate Open tab. Resolved comments have their own tab, counts and selection. Newer comments appear first within each tab."
+  },
+  {
+    "noteId": "945c5645f3b943f2adc848a9a677fd34",
+    "summary": "Up and Down switch query fields. Alt+F selects File name and Alt+T selects Containing text. Alt+Down opens each field's saved query history. The wildcard option says Treat * and ? as text and explains that it does not require whole words."
+  },
+  {
+    "noteId": "f15e37e49666427f9a1c8ccf84e410a0",
+    "summary": "Search results use compact single-line rows with larger path text and a separate preview column. Plain text search streams long lines without a line-length failure. Coverage issues have a short summary and collapsed details."
+  },
+  {
+    "noteId": "8f78a98146d14ebb9e8c6ddf196a7414",
+    "summary": "Editing query fields or options keeps the current results and workers. A pending-settings message explains how to apply the draft. Starting the changed query cancels and joins the old workers before replacing them."
+  },
+  {
+    "noteId": "0a7ca2b9ec744f818d71ab5e720ea661",
+    "summary": "Search does not restart an unchanged query while it is running. Changed settings are applied only when the user starts the next search."
+  },
+  {
+    "noteId": "81382b3bf786418abc619eff6f269b4b",
+    "summary": "Enter starts search from query fields and checkboxes. It does not toggle a checkbox. Space remains the checkbox toggle key."
+  },
+  {
+    "noteId": "fd694c27618248a2a26c08ba6c371819",
+    "summary": "The matching excerpt has its own right-hand Preview column. Paths and line numbers stay in compact aligned rows."
+  },
+  {
+    "noteId": "0eaa32e0543345dd9be824c4957f76b8",
+    "summary": "Skipped scope separates known Git-ignored files, Git-ignored folder roots and standard folders. Expand details to inspect paths, reasons and exact Git rules. The expansion button appears only when locations were skipped and names the relevant scope. Folder contents are not counted."
+  },
+  {
+    "noteId": "ad6e59cbda1f40daa50e7a42fee4bcc4",
+    "summary": "Search results use a native table with resizable Path, Line and Preview columns. Column widths are saved with the workspace and restored when search opens again."
+  },
+  {
+    "noteId": "7ae6803d15134cb8830b1c9b8cf43851",
+    "summary": "Skipped locations use compact single-line rows with Path and Reason columns, readable text and resizable saved widths. Git rules appear in Reason; the repeated folder and counting notes are removed from rows."
+  },
+  {
+    "noteId": "8c2012a5be9947d6921c6efefbb31ed3",
+    "summary": "Whole name matches the complete name instead of a substring. Wildcard masks still match the complete name. The mode is saved with search settings."
+  },
+  {
+    "noteId": "f6f9be74ed0b4116b91bbcf818ad67ed",
+    "summary": "The redundant line explaining name matching, archives and binary files is removed. Context help stays in control tooltips."
+  },
+  {
+    "noteId": "113383dbd4d04300b1f1d331f35ac5f3",
+    "summary": "The extra feedback row above Search in is removed. Feedback is available in the bottom action row and through F12."
+  },
+  {
+    "noteId": "64cad18663494878892a8436c744fad5",
+    "summary": "The status uses Complete, matches, checked and skipped. The same skipped term appears in the details and the Search skipped files action; selected scope and deferred are removed from this flow."
+  },
+  {
+    "noteId": "f43f7f13b66b402ca049d8553aba25b3",
+    "summary": "Search is an independent non-modal window without an owner that keeps it above the main window. Panel commands and dialogs remain available. Alt+F7 restores the same search window and keeps its results; automatic updates still wait until search closes."
+  },
+  {
+    "noteId": "290c4b5aeed44589b24bb09870d3a09c",
+    "summary": "Alt name jumping matches text anywhere in a file or directory name. The leftmost occurrence wins, so prefix matches have priority. Equal positions use the first visible row. Layout translation and ignored unmatched input still work."
+  },
+  {
+    "noteId": "4fbe3b5903f844e7a3b0ab19a54850d8",
+    "summary": "Alt name search highlights the matching text in every matching name. Up and Down cycle through matching rows without clearing the query. Escape, Tab and other commands clear the query and highlights."
+  },
+  {
+    "noteId": "a5794a3c5483478c8d731141f90faf02",
+    "summary": "Starting search focuses the result table. Up from the first result returns to Containing text; Down from Containing text returns to results. Other result arrows keep normal row navigation."
+  },
+  {
+    "noteId": "57ceafcb3e82417fa71d54796c8d79a7",
+    "summary": "Skipped locations have separate Reason, Path and Rule / source columns. Reason uses a short label; the source column includes the exact ignore-file path, line and rule."
+  },
+  {
+    "noteId": "8dc833c7876146a981886cd8c22d207d",
+    "summary": "Search issues use a compact table with Reason, Path and Explanation columns. Archive, access, Git and other issues have short reason labels and separate explanations."
+  },
+  {
+    "noteId": "6bc94e0dd1e241cd90b7ffefd36116b7",
+    "summary": "Double-click a skipped path or issue row to run the same query at that location in the existing search window. Folder, single-file and nested-archive roots are supported."
+  },
+  {
+    "noteId": "1ea2f5202c9844ddb80dbbf2bf144752",
+    "summary": "Contains and Whole name are choices in a compact dropdown beside File name. The name-matching mode is no longer a checkbox in the general options row."
+  },
+  {
+    "noteId": "2a9d66ab37e24d059e3d1c5cac314403",
+    "summary": "Search and Stop appear below both query fields and the options. Their placement shows that Search applies to the complete query."
   }
 ]

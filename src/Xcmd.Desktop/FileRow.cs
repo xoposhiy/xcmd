@@ -15,6 +15,14 @@ public sealed class FileRow(FileEntry entry) : INotifyPropertyChanged
     private bool current;
     private bool active;
     private bool marked;
+    public int NameMatchStart { get; private set; }
+    public int NameMatchLength { get; private set; }
+    public void SetNameMatch(int start, int length)
+    {
+        if (NameMatchStart == start && NameMatchLength == length) return;
+        NameMatchStart = start; NameMatchLength = length;
+        Changed(nameof(NameMatchStart)); Changed(nameof(NameMatchLength));
+    }
     private static readonly IBrush markColor = new SolidColorBrush(Color.Parse("#FFD278"));
     public bool IsMarked => marked;
     public string MarkGlyph => marked ? "✓" : "";

@@ -6,6 +6,24 @@ namespace Xcmd.Desktop;
 
 public sealed partial class FileViewerWindow
 {
+    public string RememberedSearch { get; set; } = "";
+    public event Action<string>? SearchTextChanged;
+
+    public async Task SearchFromResultsAsync(string text, int? codePage)
+    {
+        if (closed || slice == null || text.Length == 0) return;
+        if (codePage is > 0)
+        {
+            selectedEncoding = EncodingChoice.All.FirstOrDefault(choice => choice.CodePage == codePage)
+                ?? new EncodingChoice("Search encoding", codePage.Value);
+            await RunAsync(token => ChangeModeAsync(FileViewMode.Text, token));
+        }
+        updating = true; Search.Text = text; updating = false;
+        RememberSearch(text);
+        searchPanel.IsVisible = true;
+        await SearchAsync(0);
+    }
+
     private CancellationTokenSource? searching;
     private FileTextMatch? match;
     private bool altSearchArmed;
@@ -31,7 +49,7 @@ public sealed partial class FileViewerWindow
         if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control) { FocusSearch(); return true; }
         if (e.Key == Key.F3 || (e.Key == Key.Enter && Search.IsKeyboardFocusWithin)
             || (e.Key == Key.Tab && !string.IsNullOrEmpty(Search.Text) && e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift))
-        { _ = SearchAsync(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); return true; }
+        { if (string.IsNullOrEmpty(Search.Text)) FocusSearch(); _ = SearchAsync(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); return true; }
         return false;
     }
 
@@ -45,8 +63,12 @@ public sealed partial class FileViewerWindow
             searchStatus.Text = "";
             return;
         }
+        RememberSearch(Search.Text);
         _ = SearchAsync(0);
     }
+
+    private void RememberSearch(string text)
+    { if (text.Length > 0) { RememberedSearch = text; SearchTextChanged?.Invoke(text); } }
 
     private void ClearSearch()
     {
@@ -60,6 +82,8 @@ public sealed partial class FileViewerWindow
     private void FocusSearch()
     {
         if (Mode == FileViewMode.Image || slice == null) return;
+        if (string.IsNullOrEmpty(Search.Text) && RememberedSearch.Length > 0)
+        { updating = true; Search.Text = RememberedSearch; updating = false; }
         searchPanel.IsVisible = true;
         Search.Focus(); Search.SelectAll();
     }

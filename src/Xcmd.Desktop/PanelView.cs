@@ -42,6 +42,17 @@ public sealed class PanelView : Border
     public event Action<string>? LocationVisited;
     public event Action<PanelView>? LoadingRequested;
     public FileIconCache Icons { get; } = new();
+    private NameJump? nameSearch;
+    public void ShowNameMatches(NameJump? search)
+    {
+        nameSearch = search;
+        foreach (var row in Rows)
+        {
+            var match = row.Entry.IsParent ? null : search?.Match(row.Name);
+            row.SetNameMatch(match?.Start ?? 0, match?.Length ?? 0);
+        }
+    }
+    public static string HomeDirectory => UserDirectories.Home;
 
     public PanelState CaptureState()
     {
@@ -156,7 +167,7 @@ public sealed class PanelView : Border
             ClipToBounds = true,
             AutoScrollToSelectedItem = false,
             Focusable = true,
-            FontSize = 13,
+            FontSize = 14,
             Background = Brushes.Transparent
         };
         AutomationProperties.SetAutomationId(Table, id + ".files");
@@ -335,14 +346,14 @@ public sealed class PanelView : Border
 
     private Control MakeNameCell(FileRow row)
     {
-        var grid = new Grid { DataContext = row, MinHeight = 26, ColumnDefinitions = new ColumnDefinitions("16,22,*") };
+        var grid = new Grid { DataContext = row, MinHeight = 26, ColumnDefinitions = new ColumnDefinitions("16,32,*") };
         var mark = new TextBlock { Name = "FileMark", Foreground = new SolidColorBrush(Color.Parse("#FFD278")), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
         mark.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.MarkGlyph)));
         grid.Children.Add(mark);
         var icon = new Image { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, DataContext = row };
         AutomationProperties.SetAutomationId(icon, "file.icon");
         Grid.SetColumn(icon, 1); grid.Children.Add(icon); Icons.Bind(icon, row);
-        var text = new TextBlock
+        var text = new FileNameText
         {
             Text = row.Name,
             VerticalAlignment = VerticalAlignment.Center,
@@ -351,13 +362,15 @@ public sealed class PanelView : Border
         };
         text.Bind(IsVisibleProperty, new Binding(nameof(FileRow.IsReading)));
         text.Bind(TextBlock.ForegroundProperty, new Binding(nameof(FileRow.NameForeground)));
+        text.Bind(FileNameText.MatchStartProperty, new Binding(nameof(FileRow.NameMatchStart)));
+        text.Bind(FileNameText.MatchLengthProperty, new Binding(nameof(FileRow.NameMatchLength)));
         var editor = new TextBox
         {
             Name = "RenameEditor",
             MinHeight = 26,
             Padding = new Thickness(3, 0),
             VerticalContentAlignment = VerticalAlignment.Center,
-            FontSize = 13,
+            FontSize = 14,
             MaxLength = 255
         };
         AutomationProperties.SetAutomationId(editor, "rename.editor");
@@ -408,6 +421,7 @@ public sealed class PanelView : Border
         rangeAnchor = null;
         Rows = Session.Entries.Select(entry => { var row = new FileRow(entry); ApplyFileColor(row); row.SetMeasurement(sizes.GetValueOrDefault(entry.Name)); return row; }).ToList();
         Table.ItemsSource = Rows;
+        ShowNameMatches(nameSearch);
         Table.SelectedItems?.Clear();
         foreach (var row in Rows.Where(row => selected.Contains(row.Name, StringComparer.OrdinalIgnoreCase)))
             Table.SelectedItems?.Add(row);

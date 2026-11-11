@@ -49,6 +49,7 @@ public sealed partial class CommanderWindow
 
     private bool HandleCommandLineShortcut(KeyEventArgs e, bool ctrl, bool shift)
     {
+        if (HandleDirectoryDestinationKey(e)) { e.Handled = true; return true; }
         if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Left or Key.Right && ActivePanel.Table.IsKeyboardFocusWithin)
         {
             ResetQuickJump(); CommandLine.FocusCommand(); e.Handled = true; return true;
@@ -61,6 +62,21 @@ public sealed partial class CommanderWindow
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && directorySizes == null && !nameJump.Active)
         { if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); } e.Handled = true; return true; }
         return false;
+    }
+
+    private bool HandleDirectoryDestinationKey(KeyEventArgs e)
+    {
+        if (e.KeyModifiers != KeyModifiers.Control) return false;
+        string? destination = null;
+        if (e.Key == Key.OemBackslash || e.PhysicalKey == PhysicalKey.Backslash)
+            destination = Path.GetPathRoot(ArchivePath.PhysicalFile(ActivePanel.Session.DirectoryPath));
+        else if (e.Key == Key.OemTilde || e.PhysicalKey == PhysicalKey.Backquote || e.KeySymbol is "`" or "ё" or "Ё")
+            destination = PanelView.HomeDirectory;
+        if (string.IsNullOrEmpty(destination)) return false;
+        var panel = ActivePanel;
+        ResetQuickJump();
+        Execute(async () => { if (await panel.LoadAsync(destination)) panel.FocusCurrent(); else SetError(panel.Session.Error); });
+        return true;
     }
 
     private bool HandlePanelCommand(KeyEventArgs e, bool ctrl, bool shift)

@@ -297,7 +297,7 @@ public static class RefinementScenarios
             await c.TextAsync("st"); Equal("test", c.Window.NameSearchPrefix, "Search continues after rejecting an unmatched letter");
             Equal("test.txt", c.Window.Left.Current?.Name, "The matching file stays selected");
             Check(!c.Window.Readiness.CanRestart, "An active name search defers automatic restart.");
-            await c.KeyAsync(Key.Up); Check(!c.Window.IsNameSearchActive, "Arrow navigation ends the search.");
+            await c.KeyAsync(Key.Up); Check(c.Window.IsNameSearchActive, "Arrow navigation keeps the search and visits matching files.");
             await c.KeyAsync(Key.LeftAlt); await c.TextAsync("a"); await c.KeyAsync(Key.Escape);
             Check(!c.Window.IsNameSearchActive && c.Window.NameSearchPrefix.Length == 0, "Escape clears the search.");
             await c.TextAsync("test"); Check(!c.Window.IsNameSearchActive, "Ordinary typing cannot restart a dismissed search.");

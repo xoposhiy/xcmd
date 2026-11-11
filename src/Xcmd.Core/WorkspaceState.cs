@@ -8,7 +8,7 @@ public sealed record FeedbackInteraction(string Action, string ElementId, string
 public sealed record FeedbackNote(string Id, string Release, string ElementId, string ElementName,
     string PanelPath, string Text, DateTimeOffset CreatedAt, string? ResolvedIn = null, string? Resolution = null, FeedbackInteraction[]? Interactions = null);
 public sealed record WorkspaceState(int Version, PanelState Left, PanelState Right, string ActivePanel,
-    WindowPlacement Window, FeedbackNote[] Notes, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark")
+    WindowPlacement Window, FeedbackNote[] Notes, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark", FileSearchState? FileSearch = null)
 {
     public void Validate()
     {
@@ -21,7 +21,23 @@ public sealed record WorkspaceState(int Version, PanelState Left, PanelState Rig
         ValidateCommandLine();
         ValidateUsage();
         ValidateFavorites();
+        ValidateFileSearch();
     }
+
+    private void ValidateFileSearch()
+    {
+        if (FileSearch is not { } search) return;
+        if (search.Name == null || search.Text == null || search.Name.Length > 1024 || search.Text.Length > 1024 ||
+            new[] { search.NameHistory, search.TextHistory }.Any(history => history is { } items &&
+                (items.Length > 100 || items.Any(item => item == null || item.Length > 1024))) ||
+            !ValidSearchColumns(search.ResultColumns, 3) ||
+            !(ValidSearchColumns(search.SkippedColumns, 2) || ValidSearchColumns(search.SkippedColumns, 3)) ||
+            !ValidSearchColumns(search.FailureColumns, 3))
+            throw new InvalidDataException("The saved search history is invalid.");
+    }
+
+    private static bool ValidSearchColumns(ColumnState[]? columns, int count) => columns == null || columns.Length == count &&
+        columns.All(column => column != null && ValidSize(column.Width));
 
     private void ValidateUsage()
     {

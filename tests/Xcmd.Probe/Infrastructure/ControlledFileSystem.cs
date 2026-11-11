@@ -18,6 +18,8 @@ public sealed class ControlledFileSystem : IFileSystem, IFileOperationStore
     private ReadGate? nextRead;
     private ReadGate? nextCopy;
     private readonly HashSet<string> deniedReads = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IReadOnlyList<FileEntry>> suppliedDirectories = new(StringComparer.OrdinalIgnoreCase);
+    public void SupplyDirectory(string path, IReadOnlyList<FileEntry> entries) => suppliedDirectories[path] = entries;
     public bool ForceCopyMove { get; set; }
     public ControlledFileSystem() => operations = new LocalFileOperations(this);
     public void DenyRead(string path) => deniedReads.Add(path);
@@ -27,6 +29,7 @@ public sealed class ControlledFileSystem : IFileSystem, IFileOperationStore
     public async Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken cancellationToken)
     {
         if (deniedReads.Contains(path)) throw new UnauthorizedAccessException("Controlled directory access failure.");
+        if (suppliedDirectories.TryGetValue(path, out var supplied)) return supplied;
         if (nextRead is { } gate && path.Equals(gate.Path, StringComparison.OrdinalIgnoreCase))
         {
             nextRead = null;

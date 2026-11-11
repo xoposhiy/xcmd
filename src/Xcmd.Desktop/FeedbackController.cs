@@ -83,6 +83,8 @@ public sealed class FeedbackController
     internal static FeedbackInteraction DescribeInteraction(Control control, string action)
     {
         var id = AutomationProperties.GetAutomationId(control) ?? control.Name ?? control.GetType().Name;
+        if (control is TableViewRow && control.DataContext is not FileRow && control.GetVisualAncestors().OfType<TableView>().FirstOrDefault() is { } table)
+            id = (AutomationProperties.GetAutomationId(table) ?? table.Name ?? "table") + ".row";
         var name = control switch
         {
             MenuItem menu => menu.Header?.ToString()?.Replace("_", "", StringComparison.Ordinal) ?? id,
@@ -90,6 +92,9 @@ public sealed class FeedbackController
             Button button => button.Content?.ToString() ?? id,
             TextBlock text => text.Text ?? id,
             TableViewRow { DataContext: FileRow row } => "File row: " + row.Name,
+            TableViewRow { DataContext: FileSearchResult result } => "Search result: " + result.RelativePath,
+            TableViewRow { DataContext: DeferredSearchLocation location } => location.Reason + ": " + ArchivePath.Display(location.Path),
+            TableViewRow { DataContext: SearchFailure failure } => failure.Reason + ": " + ArchivePath.Display(failure.Path),
             _ => AutomationProperties.GetName(control) ?? id
         };
         return new(action, id, name);
@@ -99,12 +104,13 @@ public sealed class FeedbackController
     {
         var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
         var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault() ?? owner.ActivePanel;
-        var directory = source is FileViewerWindow viewer ? Path.GetDirectoryName(viewer.CurrentPath)! : panel.Session.DirectoryPath;
+        var directory = source is FileViewerWindow viewer ? Path.GetDirectoryName(viewer.CurrentPath)!
+            : source is FileSearchWindow search ? search.SearchDirectory : panel.Session.DirectoryPath;
         var target = DescribeInteraction(control, "Comment");
         var id = target.ElementId;
         var name = target.ElementName;
         if (source != owner) name = source.Title + ": " + name;
-        if (control is TableViewRow) id = panel.Id + ".files.row";
+        if (control is TableViewRow { DataContext: FileRow }) id = panel.Id + ".files.row";
         var actionPath = interactions.Length == 0 ? null : string.Join(" > ", interactions.Select(step => step.ElementName).Append(target.ElementName));
         var dialog = new CommentDialog(name, this, actionPath) { Background = owner.Background };
         comments.Add(dialog);
@@ -131,7 +137,7 @@ public sealed class FeedbackController
     public void ShowNotes()
     {
         if (IsActive || owner.HasOpenDialog || owner.IsBusy) return;
-        var list = new ListBox { ItemsSource = Notes, Name = "FeedbackNotes" };
+        var list = new ListBox { Name = "FeedbackNotes", Focusable = true };
         AutomationProperties.SetAutomationId(list, "feedback.notes");
         list.ItemTemplate = new FuncDataTemplate<FeedbackNote>((note, _) => note == null ? new Border() : new StackPanel
         {
@@ -147,10 +153,27 @@ public sealed class FeedbackController
                 new TextBlock { Text = note.Resolution ?? note.PanelPath, FontSize = 11, Foreground = Brushes.LightGray, TextWrapping = TextWrapping.Wrap }
             }
         });
+        var resolved = new ListBox { Name = "ResolvedFeedbackNotes", ItemTemplate = list.ItemTemplate, Focusable = true };
+        AutomationProperties.SetAutomationId(resolved, "feedback.resolved-notes");
+        var openTab = new TabItem { Content = list };
+        var resolvedTab = new TabItem { Content = resolved };
+        var tabs = new TabControl { Name = "FeedbackTabs", ItemsSource = new[] { openTab, resolvedTab }, SelectedIndex = 0 };
+        void RefreshNotes()
+        {
+            var selectedOpen = list.SelectedItem; var selectedResolved = resolved.SelectedItem;
+            var openNotes = Notes.Where(note => note.ResolvedIn == null).OrderByDescending(note => note.CreatedAt).ToArray();
+            var resolvedNotes = Notes.Where(note => note.ResolvedIn != null).OrderByDescending(note => note.CreatedAt).ToArray();
+            list.ItemsSource = openNotes; resolved.ItemsSource = resolvedNotes;
+            list.SelectedItem = selectedOpen; resolved.SelectedItem = selectedResolved;
+            openTab.Header = $"Open ({openNotes.Length})"; resolvedTab.Header = $"Resolved ({resolvedNotes.Length})";
+        }
+        System.Collections.Specialized.NotifyCollectionChangedEventHandler notesChanged = (_, _) => RefreshNotes();
+        Notes.CollectionChanged += notesChanged;
+        RefreshNotes();
         var remove = new Button { Content = "Remove selected", Name = "RemoveNote" };
         remove.Click += (_, _) => owner.Execute(async () =>
         {
-            if (list.SelectedItem is FeedbackNote note) { Notes.Remove(note); if (Changed != null) await Changed(); }
+            if ((tabs.SelectedIndex == 0 ? list : resolved).SelectedItem is FeedbackNote note) { Notes.Remove(note); if (Changed != null) await Changed(); }
         });
         var dialog = new Window
         {
@@ -166,7 +189,7 @@ public sealed class FeedbackController
         close.Click += (_, _) => dialog.Close();
         var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto"), RowSpacing = 8 };
         layout.Children.Add(new TextBlock { Text = "Select an element with Feedback or F12 to add a comment.", FontSize = 12, TextWrapping = TextWrapping.Wrap });
-        Grid.SetRow(list, 1); layout.Children.Add(list);
+        Grid.SetRow(tabs, 1); layout.Children.Add(tabs);
         var location = new TextBlock
         {
             Text = ListPath == null ? "Comments are kept with the session." : "Saved list: " + ListPath,
@@ -180,7 +203,7 @@ public sealed class FeedbackController
         dialog.AddHandler(InputElement.KeyDownEvent, (_, e) => { if (IsPickingIn(dialog)) return; if (e.Key == Key.Escape) { dialog.Close(); e.Handled = true; } }, RoutingStrategies.Tunnel);
         Attach(dialog);
         ActiveNotes = dialog;
-        dialog.Closed += (_, _) => { ActiveNotes = null; owner.RecordActivity(); owner.ActivePanel.FocusCurrent(); };
+        dialog.Closed += (_, _) => { Notes.CollectionChanged -= notesChanged; ActiveNotes = null; owner.RecordActivity(); owner.ActivePanel.FocusCurrent(); };
         _ = dialog.ShowDialog(owner);
         list.Focus();
     }

@@ -1,6 +1,36 @@
 # File search behavior
 
-Requirements and design proposal, 2026-11-09. This document expands UC23 and UC31 in [the use-case inventory](use-cases.md).
+This document expands UC23 and UC31 in [the use-case inventory](use-cases.md). The implementation added on 2026-11-11 covers the main search workflow; later sections retain broader design requirements.
+
+## Current implementation
+
+Open **File > Find files** or press **Alt+F7**. Search starts in the active panel's directory. Enter a name, a wildcard mask, text inside files, or both fields, then press Enter. When both fields are set, both must match. Plain names match a substring. The dropdown beside File name offers **Contains** and **Whole name**. Whole name requires the complete name. Search and Stop sit below both query fields and apply to the complete query. `*` and `?` select mask matching; **Treat * and ? as text** searches for those characters. Wildcard masks match the complete name. A name with a slash matches the path relative to the search root. Name matching ignores case.
+
+Text is literal and ignores case by default. **Match text case** and **Regex** change text matching. Regex uses the .NET syntax and runs one line at a time with a bounded match time. These controls follow the familiar literal, case and regex choices from grep; Xcmd does not accept shell command arguments in either field.
+
+Results arrive while work continues. Compact single-line rows show the path, line number and a separate preview column on the right. Drag column separators to resize them; both result and skipped-location widths are saved with the workspace. Starting search focuses results. Up from the first result focuses Containing text, and Down from Containing text returns to results. Up from Containing text focuses File name; Down from File name focuses Containing text. Alt+F selects the file-name field; Alt+T or Ctrl+F selects the text field. Alt+Down opens the focused field's history. Arrows select a previous query and Enter recalls it without starting a search. Tab reaches the result list. Enter or a double-click on a result opens the containing directory and selects the file for normal panel operations. F3 opens the viewer at the matching text, using the encoding that found the match. The result list remains available after closing the viewer. Query drafts, settings and both histories are saved with the workspace.
+
+Changing a field or checkbox keeps the current results and workers. A separate message explains that the edited settings have not been applied. Search, or Enter while a query field, checkbox or closed name-mode list has focus, starts the edited query and cancels obsolete work. Enter on a checkbox does not toggle it; Space still toggles it. Search does not restart an unchanged query while that query is running. Stop keeps existing results and labels coverage incomplete. Escape stops active work; Escape after work stops closes the search window. Closing the window cancels its workers and releases its temporary archive files.
+
+The first pass defers effective Git-ignored files and these dependency or metadata directories: `node_modules`, `.git`, `.hg`, `.svn`, `.vs`, `.venv`, and `__pycache__`. Hidden files such as `.env` stay eligible. Generic names such as `build`, `dist`, `bin`, `obj`, and `vendor` have no built-in exclusion. Git can still ignore them. Tracked files and directories with tracked descendants stay eligible. The skipped-scope summary counts known Git-ignored files, Git-ignored folder roots and standard folders separately. Expand its details to see each path, its reason, and the exact Git rule and source line when applicable. Folder contents are not counted. Skipped paths use a compact three-column table: Reason, Path and Rule / source. Reason is short; the source includes the exact ignore-file path, line and rule. Issues use Reason, Path and Explanation columns. Double-click a row in either table to apply the current query at that folder, single file or archive location and replace the current results. Tooltips explain this action. The status uses Complete, matches, checked and skipped; the Search skipped files button appears only when skipped locations exist. The button or Alt+I expands the same query, keeps earlier matches and does not repeat the ordinary scan. Expansion requested during the first pass runs after that pass.
+
+Git supplies nested ignore rules, negation, repository-local exclusions and configured user exclusions through read-only commands. A nested repository uses its own rules. A standalone `.gitignore` outside a Git working tree is not interpreted in this iteration. If Git cannot read rules, search continues and reports the failure. A deliberately selected Git-ignored root searches its files without inherited Git exclusions; built-in exclusions still apply to its descendants.
+
+Directory traversal uses breadth-first order. Within each directory, smaller files are queued first. Two workers handle files up to 1 MiB; one handles larger files; archive enumeration and archive text have separate workers. Large-file and archive work cannot occupy the small-file workers. This is scheduling, not a measured performance guarantee. Directory listings are still read as a whole, and Git classification starts a process for each directory.
+
+The text adapter reuses the existing encoding detector. Valid Unicode and confident detections use one encoding. Uncertain legacy detections, or a decoding failure, add UTF-8, Windows-1251, Windows-1252 and DOS-866 candidates. A matching file appears once. Binary detection checks the initial sample and skips binary contents; name search still finds binary files. Search reads bounded chunks and does not load whole files.
+
+Archives use the existing ZIP, RAR, TAR.GZ and other supported archive adapters. Name search reads entry metadata without extracting contents. Text search materializes eligible entries into the search's temporary cache. Ordinary-file work continues separately. Damaged, encrypted or resource-limited entries produce incomplete coverage messages. Nested archive contents are not searched in the ordinary pass. Double-click a nested-archive issue to search that archive as a new root.
+
+Safety limits are 200,000 visited entries, 20,000 results, a 100 ms regex match timeout, and the archive adapter's existing preview limits. Literal text search streams long lines with a small overlap and has no line-length limit. Regex keeps a 256 KiB line limit; its message explains that a plain text search can include the file. Links are not followed. The status reports incomplete coverage, and a collapsed details section lists affected paths and reasons. Technical details do not take space from ordinary results. Dates, file sizes and other metadata filters are outside this change.
+
+The current engine uses .NET's built-in literal string search, the existing detector and the existing archive adapter. No grep executable is required. Effective Git exclusions require Git. A ripgrep backend remains an option after measuring representative workloads; the first iteration does not claim parity with ripgrep syntax or throughput. See the [ripgrep guide](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md) and [Git ignore inspection](https://git-scm.com/docs/git-check-ignore).
+
+The headless search scenarios use real encoded files, real Git repositories, ZIP, TAR, TAR.GZ and RAR4/5 archives, actual controls and offscreen images. Controlled workers verify scheduling and cancellation without elapsed-time assumptions. The [independent usability review](evidence/search-usability-review-2026-11-11.md) records findings and resolutions. A dedicated search-result file panel and representative performance measurements remain outside this implementation.
+
+Search is a single independent, non-modal window. It does not stay above the main window or block panel commands. Alt+F7 restores the existing window and keeps its query and results. Panel navigation does not change the search root. Automatic release replacement waits until search closes. Feedback is in the bottom action row or available through F12.
+
+## Broader design requirements
 
 ## Confirmed user requirements
 
@@ -83,7 +113,7 @@ Use short product messages such as `Searching project files`, `Search ignored fi
 
 Report known deferred locations without recursively enumerating all their contents just to count them. Exact deferred-file counts are not required before showing results or offering expansion.
 
-Changing the query cancels obsolete work and prevents old matches from appearing in the new result set. Cancellation must stop archive and contents workers as well as directory traversal.
+Applying a changed query cancels obsolete work and prevents old matches from appearing in the new result set. Editing a draft alone keeps the current search. Cancellation must stop archive and contents workers as well as directory traversal.
 
 ## Acceptance examples
 

@@ -8,7 +8,7 @@ public sealed record SystemIconPixels(int Size, byte[] Bytes);
 
 public static class SystemIcons
 {
-    public static SystemIconPixels Read(string path, bool directory)
+    public static SystemIconPixels Read(string path, bool directory, int minimumSize = 16)
     {
         var initialized = CoInitializeEx(0, 0) >= 0;
         var info = new ShellFileInfo();
@@ -16,12 +16,40 @@ public static class SystemIcons
         {
             var attributesOnly = ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
             var flags = 0x100u | 1u | (attributesOnly ? 0x10u : 0);
-            var shellName = attributesOnly ? directory ? "folder" : (Path.GetExtension(path) is { Length: > 0 } extension ? extension : "file") : path;
+            var shellName = ShellName(path, directory, attributesOnly);
             if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags) == 0 || info.Icon == 0)
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
-            return Render(info.Icon, 16);
+            var size = NativeSize(info.Icon);
+            if (size < minimumSize)
+            {
+                DestroyIcon(info.Icon); info.Icon = 0;
+                if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags & ~1u) == 0 || info.Icon == 0)
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
+                size = NativeSize(info.Icon);
+            }
+            return Render(info.Icon, size);
         }
         finally { if (info.Icon != 0) DestroyIcon(info.Icon); if (initialized) CoUninitialize(); }
+    }
+
+    private static string ShellName(string path, bool directory, bool attributesOnly)
+    {
+        if (!attributesOnly) return path;
+        if (directory) return "folder";
+        return Path.GetExtension(path) is { Length: > 0 } extension ? extension : "file";
+    }
+
+    private static int NativeSize(nint icon)
+    {
+        if (!GetIconInfo(icon, out var info)) throw new Win32Exception(Marshal.GetLastWin32Error());
+        try
+        {
+            var bitmap = new NativeBitmap();
+            if (GetObject(info.Color != 0 ? info.Color : info.Mask, Marshal.SizeOf<NativeBitmap>(), ref bitmap) == 0)
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            return bitmap.Width;
+        }
+        finally { if (info.Color != 0) DeleteObject(info.Color); if (info.Mask != 0) DeleteObject(info.Mask); }
     }
 
     private static SystemIconPixels Render(nint icon, int size)
@@ -56,6 +84,14 @@ public static class SystemIcons
         public uint HeaderSize; public int Width; public int Height; public ushort Planes; public ushort Bits;
         public uint Compression; public uint ImageSize; public int XPixels; public int YPixels; public uint UsedColors; public uint ImportantColors; public uint Color;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct IconInfo { public int Icon; public uint X; public uint Y; public nint Mask; public nint Color; }
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeBitmap { public int Type; public int Width; public int Height; public int WidthBytes; public ushort Planes; public ushort Bits; public nint Data; }
+
+    [DllImport("user32.dll", SetLastError = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetIconInfo(nint icon, out IconInfo info);
+    [DllImport("gdi32.dll", EntryPoint = "GetObjectW", SetLastError = true)] private static extern int GetObject(nint bitmap, int size, ref NativeBitmap info);
 
     [DllImport("ole32.dll")] private static extern int CoInitializeEx(nint reserved, uint flags);
     [DllImport("ole32.dll")] private static extern void CoUninitialize();
