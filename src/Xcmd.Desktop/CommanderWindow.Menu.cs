@@ -22,6 +22,8 @@ public sealed partial class CommanderWindow
             {
                 new() { Header = "File", ItemsSource = new MenuItem[]
                 {
+                    Item("View file", viewing.ViewCurrent, new(Key.F3)),
+                    Item("Edit in Notepad++", () => Execute(viewing.EditCurrentAsync), new(Key.F4)),
                     Item("New folder", OpenCreateDirectoryDialog, new(Key.F7)),
                     Item("Rename", () => ActivePanel.BeginRename(), new(Key.F6, KeyModifiers.Shift)),
                     Item("Copy to other panel", CopySelected, new(Key.F5)),

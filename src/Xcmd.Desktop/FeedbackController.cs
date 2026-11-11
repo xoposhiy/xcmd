@@ -20,6 +20,7 @@ public sealed class FeedbackController
     private readonly List<CommentDialog> comments = [];
     public ObservableCollection<FeedbackNote> Notes { get; } = [];
     public bool IsPicking => surfaces.Values.Any(surface => surface.IsPicking);
+    public bool HasPendingSelection => surfaces.Values.Any(surface => surface.HasPendingSelection);
     public CommentDialog? ActiveComment => comments.LastOrDefault();
     public Window? ActiveNotes { get; private set; }
     public string ReleaseId { get; set; } = "development";
@@ -34,10 +35,14 @@ public sealed class FeedbackController
     }
 
     public bool IsPickingIn(Window window) => surfaces.TryGetValue(window, out var surface) && surface.IsPicking;
-    internal void SetHint(string text) => owner.SetUpdateMessage(text);
+    internal void SetHint(Window source, string text)
+    {
+        if (source is FileViewerWindow viewer) viewer.SetFeedbackHint(text);
+        else owner.SetUpdateMessage(text);
+    }
     internal void StopNameSearch() => owner.StopNameSearch();
 
-    public void Attach(Window window)
+    public void Attach(Window window, bool showButton = true)
     {
         if (surfaces.ContainsKey(window)) return;
         window.Icon ??= owner.Icon;
@@ -46,16 +51,20 @@ public sealed class FeedbackController
         var button = new Button { Content = "Feedback  F12", Name = "DialogFeedback", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(6), Padding = new Thickness(8, 3) };
         AutomationProperties.SetAutomationId(button, "feedback.start");
         button.Click += (_, _) => Begin(window);
-        layout.Children.Add(button);
+        if (showButton) layout.Children.Add(button);
         window.Content = null;
         if (original != null) { Grid.SetRow(original, 1); layout.Children.Add(original); }
         var root = new Grid(); root.Children.Add(layout); window.Content = root;
-        if (double.IsFinite(window.Height)) window.Height += 40;
+        if (showButton && double.IsFinite(window.Height)) window.Height += 40;
         surfaces[window] = new FeedbackSurface(this, window, root);
         window.Closed += (_, _) => surfaces.Remove(window);
     }
 
-    public void Begin(Window? window = null) => surfaces[window ?? owner].Begin();
+    public void Begin(Window? window = null)
+    {
+        foreach (var surface in surfaces.Values) surface.Cancel();
+        surfaces[window ?? owner].Begin();
+    }
     public void Cancel() { foreach (var surface in surfaces.Values) surface.Cancel(); }
 
     public void Restore(IEnumerable<FeedbackNote> notes)
@@ -67,31 +76,43 @@ public sealed class FeedbackController
     internal static Control? Target(Control? source)
     {
         var ancestors = source?.GetSelfAndVisualAncestors().OfType<Control>().ToArray() ?? [];
-        return ancestors.FirstOrDefault(control => control is Button or TextBox or TableViewRow or TableViewColumnHeader) ??
+        return ancestors.FirstOrDefault(control => control is MenuItem or Button or TextBox or TableViewRow or TableViewColumnHeader) ??
             ancestors.FirstOrDefault(control => control is TextBlock { Text.Length: > 0 } || !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(control))) ?? source;
     }
 
-    internal void OpenComment(Window source, Control control, FeedbackSurface surface)
+    internal static FeedbackInteraction DescribeInteraction(Control control, string action)
     {
-        var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
-        var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault() ?? owner.ActivePanel;
         var id = AutomationProperties.GetAutomationId(control) ?? control.Name ?? control.GetType().Name;
         var name = control switch
         {
-            TableViewRow { DataContext: FileRow row } => "File row: " + row.Name,
+            MenuItem menu => menu.Header?.ToString()?.Replace("_", "", StringComparison.Ordinal) ?? id,
             Button { Content: AccessText text } => text.Text?.Replace("_", "", StringComparison.Ordinal) ?? id,
             Button button => button.Content?.ToString() ?? id,
             TextBlock text => text.Text ?? id,
+            TableViewRow { DataContext: FileRow row } => "File row: " + row.Name,
             _ => AutomationProperties.GetName(control) ?? id
         };
+        return new(action, id, name);
+    }
+
+    internal void OpenComment(Window source, Control control, FeedbackSurface surface, FeedbackInteraction[] interactions)
+    {
+        var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
+        var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault() ?? owner.ActivePanel;
+        var directory = source is FileViewerWindow viewer ? Path.GetDirectoryName(viewer.CurrentPath)! : panel.Session.DirectoryPath;
+        var target = DescribeInteraction(control, "Comment");
+        var id = target.ElementId;
+        var name = target.ElementName;
         if (source != owner) name = source.Title + ": " + name;
         if (control is TableViewRow) id = panel.Id + ".files.row";
-        var dialog = new CommentDialog(name, this) { Background = owner.Background };
+        var actionPath = interactions.Length == 0 ? null : string.Join(" > ", interactions.Select(step => step.ElementName).Append(target.ElementName));
+        var dialog = new CommentDialog(name, this, actionPath) { Background = owner.Background };
         comments.Add(dialog);
         Attach(dialog);
         dialog.Submitted += text => owner.Execute(async () =>
         {
-            Notes.Add(new(Guid.NewGuid().ToString("N"), ReleaseId, id, name, panel.Session.DirectoryPath, text.Trim(), DateTimeOffset.UtcNow));
+            Notes.Add(new(Guid.NewGuid().ToString("N"), ReleaseId, id, name, directory, text.Trim(), DateTimeOffset.UtcNow,
+                Interactions: interactions.Append(target with { ElementId = id, ElementName = name }).ToArray()));
             dialog.Close();
             owner.SetUpdateMessage("Comment added. Open Notes to view the refinement list.");
             if (Changed != null) await Changed();
@@ -101,7 +122,7 @@ public sealed class FeedbackController
             comments.Remove(dialog); surface.Cancel(); owner.RecordActivity();
             if (source == owner)
             { if (owner.CommandLine.Editor == previousFocus) previousFocus.Focus(); else owner.ActivePanel.FocusCurrent(); }
-            else if (source.IsVisible) previousFocus?.Focus();
+            else if (source.IsVisible && previousFocus?.Focus() != true && source is FileViewerWindow sourceViewer) sourceViewer.TextContent.Focus();
         };
         _ = dialog.ShowDialog(source);
         dialog.Editor.Focus();
@@ -120,6 +141,8 @@ public sealed class FeedbackController
             {
                 new TextBlock { Text = note!.ElementName, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = note.Text, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Text = note.Interactions is { Length: > 1 } steps ? "Actions: " + string.Join(" > ", steps.Select(step => step.ElementName)) : null,
+                    IsVisible = note.Interactions is { Length: > 1 }, FontSize = 11, Foreground = Brushes.LightGray, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = note.ResolvedIn == null ? "Open · " + note.Release : "Resolved in " + note.ResolvedIn, FontSize = 11, Foreground = Brushes.LightGray },
                 new TextBlock { Text = note.Resolution ?? note.PanelPath, FontSize = 11, Foreground = Brushes.LightGray, TextWrapping = TextWrapping.Wrap }
             }
@@ -168,7 +191,7 @@ public sealed class CommentDialog : Window
     public TextBox Editor { get; } = new() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 100, MaxHeight = 180, PlaceholderText = "What should change?" };
     public event Action<string>? Submitted;
 
-    public CommentDialog(string elementName, FeedbackController? feedback = null)
+    public CommentDialog(string elementName, FeedbackController? feedback = null, string? actionPath = null)
     {
         Title = "Add a comment"; Width = 560; SizeToContent = SizeToContent.Height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -187,6 +210,7 @@ public sealed class CommentDialog : Window
             Children =
             {
                 new TextBlock { Text = "Comment on: " + elementName, FontSize = 15, TextTrimming = TextTrimming.CharacterEllipsis },
+                new TextBlock { Text = actionPath == null ? null : "Actions: " + actionPath, Name = "FeedbackActionPath", IsVisible = actionPath != null, FontSize = 12, TextWrapping = TextWrapping.Wrap },
                 Editor, new TextBlock { Text = "Ctrl+Enter adds the comment · Esc cancels", FontSize = 12 },
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { cancel, add } }
             }

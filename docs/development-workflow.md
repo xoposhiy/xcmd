@@ -6,6 +6,8 @@ Use two phases: feedback and finalization. The user decides when the feature is 
 
 Use one profile for this user's machine: Release, Windows x64 (`win-x64`), and .NET 10. Use the same profile for the application, test programs, architecture checks, and local releases. Do not build Debug, other CPU targets, other operating systems, or a configuration matrix. Keep the standalone launcher as a separate NativeAOT executable for this same profile.
 
+When a desktop agent runs tests or release builds, start the PowerShell helper with `WindowStyle Hidden` and redirect output to a log. Do not hide or change the user's existing terminal. Background application hosts must also suppress console creation; hiding their application windows does not suppress a console allocated by Windows.
+
 ## Feedback phase
 
 The goal is to get user feedback on behavior quickly. Apply this release loop to application behavior changes. Documentation and check-only changes need their relevant checks without a new application release.

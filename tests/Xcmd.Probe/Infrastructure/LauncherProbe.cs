@@ -148,6 +148,7 @@ public static class LauncherProbe
             Equal(expected.Right.DirectoryPath, state.Right.DirectoryPath, "Startup restores the right directory");
             Equal(expected.ActivePanel, state.ActivePanel, "Startup restores the active panel");
             Equal(0, report.RootElement.GetProperty("visibleApplicationWindows").GetInt32(), "The startup probe opens no visible windows");
+            Check(!report.RootElement.GetProperty("consoleAttached").GetBoolean(), "The launcher starts the console test host without creating a console");
             Check(File.Exists(reportPath + ".png"), "Startup retains the offscreen frame.");
             context.Measurements["startupProbeCompletedMs"] = timer.Elapsed.TotalMilliseconds;
         }
@@ -182,6 +183,7 @@ public static class LauncherProbe
         Equal(0, launcher.ExitCode, "The launcher exits while the application keeps running");
         await WaitAsync(() => File.Exists(Path.Combine(reports, OldId + ".json")));
         using var sourceReport = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(reports, OldId + ".json")));
+        Check(!sourceReport.RootElement.GetProperty("consoleAttached").GetBoolean(), "The launched application host has no console");
         using var source = Process.GetProcessById(sourceReport.RootElement.GetProperty("processId").GetInt32());
         try
         {
@@ -193,6 +195,7 @@ public static class LauncherProbe
             using var replacement = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(reports, NewId + ".json")));
             Check(replacement.RootElement.GetProperty("parentExited").GetBoolean(), "The replacement waits for the source application.");
             Equal(0, replacement.RootElement.GetProperty("nativeApplicationWindows").GetInt32(), "The replacement stays headless");
+            Check(!replacement.RootElement.GetProperty("consoleAttached").GetBoolean(), "The replacement application host has no console");
             var state = replacement.RootElement.GetProperty("state").Deserialize<WorkspaceState>()!;
             Equal(context.LeftPath, state.Left.DirectoryPath, "The launcher and update keep the saved workspace");
         }

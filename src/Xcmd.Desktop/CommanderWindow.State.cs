@@ -6,6 +6,7 @@ namespace Xcmd.Desktop;
 
 public sealed partial class CommanderWindow
 {
+    internal void RestoreViewerTheme(string? id) => viewing.RestoreTheme(id);
     private WindowPlacement? normalPlacement;
     private WorkspaceState? restoredState;
     private WindowState lastVisibleWindowState;
@@ -20,7 +21,7 @@ public sealed partial class CommanderWindow
                 Maximized = WindowState == WindowState.Maximized || WindowState == WindowState.Minimized && lastVisibleWindowState == WindowState.Maximized,
                 Minimized = WindowState == WindowState.Minimized,
                 Active = IsActive
-            }, Feedback.Notes.ToArray(), DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2, CommandLine.Capture());
+            }, Feedback.Notes.ToArray(), DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2, CommandLine.Capture(), ViewerThemeId);
     }
 
     public void TrackPlacement()
@@ -58,6 +59,7 @@ public sealed partial class CommanderWindow
         Feedback.Restore(state.Notes);
         Favorites.Restore(state.Favorites ?? []);
         CommandLine.Restore(state.CommandLine);
+        RestoreViewerTheme(state.ViewerThemeId);
         Activate(state.ActivePanel == "right" ? Right : Left);
         restoredState = state;
         RestoreView();

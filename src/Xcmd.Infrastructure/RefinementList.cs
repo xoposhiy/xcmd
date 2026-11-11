@@ -15,6 +15,8 @@ public static class RefinementList
             text.Append("  - Release: ").AppendLine(note.Release);
             text.Append("  - Directory: ").AppendLine(note.PanelPath);
             text.Append("  - Added: ").AppendLine(note.CreatedAt.ToString("O"));
+            foreach (var interaction in note.Interactions ?? [])
+                text.Append("  - ").Append(interaction.Action).Append(": ").Append(interaction.ElementName).Append(" (`").Append(interaction.ElementId).AppendLine("`)");
             if (note.ResolvedIn != null) text.Append("  - Resolved in ").Append(note.ResolvedIn).Append(": ").AppendLine(note.Resolution);
             text.AppendLine();
         }

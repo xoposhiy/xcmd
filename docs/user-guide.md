@@ -33,6 +33,8 @@ To open specific directories:
 
 ## Controls
 
+The main window combines menus and window controls in one title row. Drag the free title area to move the window, or double-click it to maximize or restore. Feedback and Notes are on the right of the bottom status bar.
+
 | Input | Action |
 | --- | --- |
 | Up / Down, Home / End, Ctrl+Home / Ctrl+End | Move the file cursor and keep marks |
@@ -43,6 +45,7 @@ To open specific directories:
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
 | Enter / double-click a file | Run the application or open the file through its Windows association |
+| F3 / F4 on a file | View inside Xcmd / edit in Notepad++ |
 | Plain typing / Left / Right / Ctrl+L | Focus the command line; typing inserts text |
 | Enter in the command line | Run through Windows ShellExecute from the active panel directory |
 | `cd <path>` | Change the active panel directory; relative and quoted paths work |
@@ -74,6 +77,24 @@ To open specific directories:
 | View > Reset column widths | Restore the active panel's default column widths |
 
 Sort headers accept clicks across their area; the strip at the right edge resizes a column. The final column fills remaining space and has no resize handle. Size defaults leave room for byte counts up to ten GiB. Type headings and values are centered; Size headings align with byte counts. File names have Windows system icons. The cursor uses one blue background with or without marks. The inactive panel uses a faint cursor background. Marked files keep an amber check and file name, including under the cursor. Moving the cursor does not change row size or text position. Shift+Up and Shift+Down remove an existing mark when the row is marked again. Panels have square corners. Table rows stay above the footer and outside the space reserved for scroll bars. Only a top strip marks the active panel; the sides and bottom have no outline. The executable, main window and owned dialogs use the Xcmd application icon.
+
+## File viewer prototype
+
+F3 opens the file under the cursor in an independent, read-only Xcmd window. Return to the file panels and open more viewers without closing existing ones. Each viewer keeps its own file, search and reading position. Closing one viewer leaves the others open; closing Xcmd closes its viewers. Automatic release updates wait until all viewers close. The panel cursor and marks stay in place. F4 opens that file in Notepad++, including from the viewer, and keeps the original source working directory after panel navigation. Xcmd finds Notepad++ through Windows App Paths, standard installation folders or PATH. A missing editor produces an error. Enter in the file panel keeps the normal Windows association.
+
+The viewer combines its menu, file name, reading percentage and window controls in one title row. Drag the title row to move the window; double-click its drag region to maximize or restore it. Hover over the file name for the full path. The percentage appears at the right above the scroll bar. Reading content has no accent outline. There is no action toolbar or permanent help strip. Menus list commands and shortcuts. F12 and Help > Comment on an element keep feedback available without a permanent button. Extended file information stays hidden until View > File information or Ctrl+I is used. A thin line separates the bottom status line from the content. The status line shows the current mode, text encoding, automatic/manual choice, word wrap and visible-byte count.
+
+The viewer detects text encodings with UTF.Unknown and validates UTF-8 before using a legacy guess. The Encoding menu can override the guess with UTF-8, UTF-16 LE/BE, UTF-32 LE/BE, Windows-1251, Windows-1252, DOS 866 or KOI8-R. Encoding guesses can be wrong, especially for short files. Text supports selection, copying and line wrapping. W or View > Word wrap toggles wrapping. Binary shows fixed-width ASCII rows; Hex adds byte values and offsets. Plain 1/2/3/4 selects Text/Binary/Hex/Image.
+
+Choose View > Color theme for the nine MD View palettes: Cream, GitHub, Solarized Light, Forest Light, Dark, Solarized Dark, Dracula, Nord and Forest Dark. Text, title, search and status use the selected palette. Changing colors preserves the query, selection and reading position. Open viewers share the preference, new viewers use it, and Xcmd saves it immediately with the session. The default is Dark. The palettes match MD View's `src/internal/renderer/assets/template.html`; Xcmd does not need the MD View project at runtime.
+
+Image mode disables text search, text selection and text navigation commands. Switch to Binary or Hex to inspect the image bytes. If a file cannot be read, the viewer shows the error and keeps Alt+Left/Right, F4 and Open externally available. Feedback mode temporarily shows click instructions in the active viewer's status area and restores the reading status when feedback ends.
+
+Press Alt with a letter to start searching, then release Alt and continue typing, as in the file panels. Plain typing outside search does not start a query. Ctrl+F also reveals the search row and selects the query for replacement. While the query has focus, W and digits enter query text. The first match appears after a short typing delay. F3 or Tab finds the next match; Shift+F3 or Shift+Tab finds the previous match. Enter in the search field also finds the next match. Search ignores case, wraps at the file boundary and reports when it wraps or finds no matches. Escape clears and hides search, then returns focus to the content; Escape while search is hidden closes the viewer. Tab returns to normal control navigation when the query is empty. New input cancels the previous background search. Text search uses the selected encoding; Binary and Hex search byte text rather than hexadecimal number expressions. Use F10 or the pointer to open command menus; Alt+letters belong to search.
+
+Text and byte views keep a small file window in memory. The mouse wheel, Up/Down and PageUp/PageDown load overlapping windows as needed. The vertical scroll bar spans the whole file. Home/End and Ctrl+Home/End go to the actual beginning/end, including content beyond the first read. Alt+Left/Right moves between files in the source panel's order. Progress reports the byte position at the bottom of the visible lines divided by file size; it includes text above the screen and does not count all buffered content as viewed. Optional file information identifies the loaded byte range. Search can move the displayed range to show an entire match. Previous-match searches may scan a large part of the file in the background.
+
+Image mode detects PNG, JPEG, BMP, GIF, WebP and ICO signatures and uses the bundled Skia decoder. It shows the first frame and fits the image to the window. Preview limits are 32 MiB encoded data, 40 million source pixels and 4096 decoded pixels in width. Image mode stays disabled when it cannot display the file; hover over its menu entry for the reason. The viewer prepares an image before switching modes. Unsupported or damaged image data leaves the working view unchanged, and an unavailable automatic image preview falls back to Hex. Use Open externally for unsupported formats. Audio/video playback, animation, syntax highlighting, JSON formatting and editing inside Xcmd are outside this prototype.
 
 ## File operations prototype
 
@@ -156,6 +177,8 @@ Automatic updates run only from release directories. Development builds and auto
 ## Comment on the interface
 
 Choose **Feedback** or press F12, then move the pointer to highlight an element and click it. Every application dialog has its own Feedback button and F12 shortcut. The comment window belongs to the window being annotated, so its draft, selection and workflow stay intact. This also works for the comment editor itself. Labels, status messages, errors and disabled actions can all be selected for a comment. Selection uses the visible element instead of its outer window and does not activate the underlying control. Write a comment and choose **Add comment** or press Ctrl+Enter. Escape first cancels selection; when not selecting, Escape closes the comment dialog. The selected element stays outlined while the comment dialog is open.
+
+Double-click an enabled control during selection to send one ordinary click and keep feedback mode active. For example, double-click a menu heading to open it, then single-click a menu command to comment on that command. Single-click selection waits for the system double-click interval before opening the comment form. Disabled controls remain available for comments and are never activated. The comment form and Notes show the action path. Saved notes and the Markdown checklist keep the clicked elements and final target so the steps can be reproduced.
 
 Choose **Notes** to see the refinement list. Each comment records the element, directory, release and time. Comments are saved immediately, survive updates and ordinary restarts, and are compiled into `%LOCALAPPDATA%/Xcmd/refinements.md` as an English Markdown checklist. User comments keep their original text. The Notes window shows the saved list's location and can remove a selected comment.
 

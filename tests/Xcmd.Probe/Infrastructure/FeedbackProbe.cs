@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
+using Avalonia;
+using Avalonia.Headless;
 using Xcmd.Core;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
@@ -9,6 +11,15 @@ namespace Xcmd.Probe.Infrastructure;
 public static class FeedbackProbe
 {
     public static TextBlock Text(Window window, string value) => window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == value && !text.GetVisualAncestors().OfType<TextBox>().Any());
+
+    public static async Task DoubleClickAsync(ProbeContext context, Window window, Control control)
+    {
+        window.UpdateLayout();
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
+        window.MouseMove(point);
+        for (var i = 0; i < 2; i++) { window.MouseDown(point, MouseButton.Left); window.MouseUp(point, MouseButton.Left); }
+        await context.SettleAsync();
+    }
 
     public static async Task<FeedbackNote> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
     {

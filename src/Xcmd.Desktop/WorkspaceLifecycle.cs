@@ -35,6 +35,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         window.Feedback.ListPath = Path.Combine(Path.GetDirectoryName(store.Path)!, "refinements.md");
         window.Feedback.Changed += OnFeedbackChanged;
         window.FavoritesChanged += OnFavoritesChanged;
+        window.ViewerThemeChanged += OnViewerThemeChanged;
         window.TrackPlacement();
         timer.Tick += OnTick;
     }
@@ -56,7 +57,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             var left = directories.ElementAtOrDefault(0) ?? Environment.CurrentDirectory;
             await window.InitializeAsync(left, directories.ElementAtOrDefault(1) ?? left);
-            if (state != null) { window.Feedback.Restore(state.Notes); window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); }
+            if (state != null) { window.Feedback.Restore(state.Notes); window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); }
         }
         window.Closing += OnClosing;
         if (releases != null)
@@ -85,19 +86,17 @@ public sealed class WorkspaceLifecycle : IDisposable
 
     private Task OnFeedbackChanged() => PendingWork = SaveFeedbackAsync();
     private Task OnFavoritesChanged() => PendingWork = SaveFavoritesAsync();
+    private Task OnViewerThemeChanged() => PendingWork = SavePreferenceAsync("Could not save the viewer theme. Keep the application open and try again.");
 
-    private async Task SaveFavoritesAsync()
+    private Task SaveFavoritesAsync() => SavePreferenceAsync("Could not save favorites. Keep the application open and try again.");
+
+    private Task SaveFeedbackAsync() => SavePreferenceAsync("Could not save comments. Keep the application open and try again.");
+
+    private async Task SavePreferenceAsync(string message)
     {
         try { await SaveAsync(); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        { window.SetUpdateMessage("Could not save favorites. Keep the application open and try again."); window.Trace.Add(error.ToString()); }
-    }
-
-    private async Task SaveFeedbackAsync()
-    {
-        try { await SaveAsync(); }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        { window.SetUpdateMessage("Could not save comments. Keep the application open and try again."); window.Trace.Add(error.ToString()); }
+        { window.SetUpdateMessage(message); window.Trace.Add(error.ToString()); }
     }
 
     private async void OnTick(object? sender, EventArgs e)
@@ -191,6 +190,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         lifetime.Cancel();
         window.Feedback.Changed -= OnFeedbackChanged;
         window.FavoritesChanged -= OnFavoritesChanged;
+        window.ViewerThemeChanged -= OnViewerThemeChanged;
         window.Closing -= OnClosing;
         window.Closed -= OnClosed;
     }

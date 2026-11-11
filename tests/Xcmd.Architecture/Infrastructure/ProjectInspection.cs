@@ -18,7 +18,7 @@ internal static class ProjectInspection
     private static readonly Dictionary<string, string[]> Packages = new(StringComparer.Ordinal)
     {
         ["Xcmd.Core"] = ["Microsoft.CodeAnalysis.BannedApiAnalyzers"],
-        ["Xcmd.Infrastructure"] = ["Microsoft.CodeAnalysis.BannedApiAnalyzers"],
+        ["Xcmd.Infrastructure"] = ["Microsoft.CodeAnalysis.BannedApiAnalyzers", "UTF.Unknown"],
         ["Xcmd.Desktop"] = ["Microsoft.CodeAnalysis.BannedApiAnalyzers", "Avalonia.Desktop", "Avalonia.Themes.Fluent"],
         ["Xcmd.Probe"] = ["Avalonia.Headless", "Avalonia.Skia"],
         ["Xcmd.LaunchProbe"] = [],

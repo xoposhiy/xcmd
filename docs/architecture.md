@@ -74,6 +74,7 @@ Put code in Desktop when it interprets input, controls an interaction, or maps a
 Current examples:
 
 - `CommanderWindow`, `PanelView`, dialogs, `FileRow`, and feedback controls: views and presentation state.
+- `WindowHeader` and `CommanderFrame`: shared window decoration behavior and the main title/status layout. Reader palettes belong to Desktop; the saved workspace carries only the selected theme ID.
 - Keyboard routing, focus, rename-editor lifetime, caret position, selection, layout, and render timing.
 - `DirectoryUpdates`: deciding when a filesystem result can be applied without interrupting an editor, dialog, menu, or name search.
 - `WorkspaceLifecycle`: connecting workspace snapshots, window lifetime, idle update readiness, storage, and process replacement.
@@ -90,6 +91,8 @@ Extract a Core workflow when an interaction gains substantial UI-independent dec
 
 Keep every visible label, status, error and disabled action selectable in feedback. Keep the shared transparent background for `TextBlock`; text without a hit-test surface cannot be selected reliably. Use visual hit testing for feedback so disabled actions remain selectable. Resolve the nearest meaningful element before an outer window's identifier. Exclude only decorative feedback overlays from selection. Attach every application dialog through `FeedbackController` and check new content with real pointer input.
 
+`FeedbackSurface` owns pending single-click selection and the interaction path. Wait for the platform double-click interval before opening a comment. A double-click forwards a pointer press with a single-click count and lets its release reach the control; keep selection active and save the action. Cancel the pending timer on cancellation or window close. Application popups use the overlay layer so menu contents share the window's feedback hit-test surface. `FeedbackNote` carries optional interaction records; Infrastructure keeps those records in saved sessions and the refinement list.
+
 ## State and background work
 
 Assign one live owner to each piece of state:
@@ -99,6 +102,8 @@ Assign one live owner to each piece of state:
 | Current directory, latest directory entries, sort order, history, and remembered directory cursors | `PanelSession` in Core |
 | Live panel cursor, selected rows, rename draft, applied rows, measured sizes, and scroll position | `PanelView` in Desktop |
 | Active panel, dialog lifetime, and coordination between panels | `CommanderWindow` in Desktop |
+| Independent viewer windows and their lifetime | `FileViewingController` in Desktop |
+| Viewer mode, encoding, search, loaded range and visible-file position | Each `FileViewerWindow` in Desktop |
 | Navigation rules and saved favorite/usage values | Core objects held by Desktop |
 | Native process, pipe, watcher, and transport resources | Infrastructure adapters |
 | Saved workspace | A snapshot captured by Desktop, represented by Core records, and written by Infrastructure |

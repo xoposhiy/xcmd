@@ -30,9 +30,9 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC05 | Move files and directories. | Prototype | F6 uses a same-volume move when possible and a copy-delete fallback otherwise. Delete each source only after its copy succeeds; keep skipped or failed source items. |
 | UC06 | Create a directory. | Implemented | F7 opens a name dialog. Validate a single directory name and show conflicts. Nested creation is not implemented. |
 | UC07 | Create and edit a file. | Planned | Define the editor handoff and whether Shift+F4 should start it. |
-| UC08 | Edit a file in an external editor. | Planned | Notepad++ is the existing editor preference. Confirm the F4 command and arguments before implementation. |
-| UC09 | View Markdown, CSV and images through MD View. | Planned | Integrate the existing MD View tool after defining its launch command and routing. |
-| UC10 | Inspect text or binary data and change the text encoding. | Planned | Define supported encodings, hex view and text search. |
+| UC08 | Edit a file in an external editor. | Prototype | F4 opens the current file in Notepad++ from either panel or the viewer. Detect the installed executable and pass the literal full file path. |
+| UC09 | View text and images. | Prototype | F3 opens independent, non-modal viewers with a combined menu/title row. Panels remain usable while multiple viewers are open. Detect common raster images by signature, prepare them before mode changes and disable unavailable modes. Markdown and CSV use plain text. MD View integration, audio and video, syntax highlighting and structured formatting remain deferred. |
+| UC10 | Inspect text or binary data and change the text encoding. | Prototype | Automatic/manual encodings and modes, continuous bounded reading, actual Home/End, whole-file scroll bar and visible-file progress. W toggles word wrap; 1/2/3/4 changes mode. Alt+letter or Ctrl+F starts whole-file search; F3/Tab and Shift+F3/Shift+Tab move between matches. |
 | UC11 | Preview unusual file formats. | Planned | Obtain real examples before choosing format adapters. |
 | UC12 | Calculate all child folder sizes. | Implemented | Alt+Shift+Enter calculates regular file bytes in the background. Skip links, mark incomplete totals, allow cancellation and save completed measurements. Directories keep name order. |
 | UC13 | Sort by name, extension, date or size. | Implemented | Header clicks and Ctrl+F3/F4/F5/F6 select the sort. Repeated selection reverses file order; cursor and selection stay intact. |
@@ -61,7 +61,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC36 | Identify links and junctions and inspect their targets. | Partial | Folder sizes skip links and test a real junction cycle. Target inspection, target navigation, broken links and file-operation policies remain planned. |
 | UC37 | Start agent tasks in the active directory. | Deferred | No provider, command syntax or execution policy is selected. |
 | UC38 | Restore the workspace and switch to a newer local release. | Implemented | Save panels, window state, navigation, measurements, command drafts and notes. Verify real process handoff and safe startup failure. |
-| UC39 | Comment on interface elements and keep a refinement list. | Implemented | F12 and Feedback work in the main window and dialogs. Save notes immediately, compile a checklist and support resolution records. |
+| UC39 | Comment on interface elements and keep a refinement list. | Implemented | F12 and Feedback work in the main window and dialogs. Double-click sends one normal click while selection stays active; a single click comments on the target. Save the interaction path with notes, compile a checklist and support resolution records. |
 | UC40 | Launch the latest verified release from one permanent shortcut. | Implemented | Permanent Xcmd.exe and Xcmd.lnk preserve shortcuts across releases. Share a Windows taskbar identity, keep caller arguments and working directory, and allow releases while the application runs. |
 | UC41 | Duplicate files and folders in the active panel. | Prototype | Shift+F5 confirms a new name in the active directory. A batch cannot target its source directory, and source paths cannot be replaced. The destination remains editable. |
 

@@ -64,13 +64,14 @@ for ($run = 1; $run -le $Runs; $run++) {
         }
         $report = Get-Content -Raw -LiteralPath $reportPath | ConvertFrom-Json
         if ($report.visibleApplicationWindows -ne 0) { throw 'Startup measurement opened a visible window.' }
+        if ($report.consoleAttached -ne $false) { throw 'The startup host created a console. Background test processes must not allocate consoles.' }
         if ($report.state.Left.DirectoryPath -ne $left -or $report.state.Right.DirectoryPath -ne $right -or
             $report.state.ActivePanel -ne 'right' -or $report.state.Right.Cursor -ne 'file-020.txt' -or $report.state.CommandLine.Draft -ne 'tool unfinished') {
             throw 'Startup did not restore the saved workspace.'
         }
         $readyMs = ($report.readyToShowTimestamp - $started) * 1000.0 / [System.Diagnostics.Stopwatch]::Frequency
         $frameMs = if ($Native) { $null } else { ($report.frameReadyTimestamp - $started) * 1000.0 / [System.Diagnostics.Stopwatch]::Frequency }
-        $samples += @{ run = $run; launcherExitMs = $launcherExitMs; launchToReadyToShowMs = $readyMs; launchToOffscreenFrameMs = $frameMs; phases = $report.phases }
+        $samples += @{ run = $run; launcherExitMs = $launcherExitMs; launchToReadyToShowMs = $readyMs; launchToOffscreenFrameMs = $frameMs; consoleAttached = $report.consoleAttached; phases = $report.phases }
         Write-Output ('Startup {0}: launcher {1:F0} ms; ready to show {2:F0} ms' -f $run, $launcherExitMs, $readyMs)
     }
     finally {

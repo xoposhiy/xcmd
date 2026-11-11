@@ -4,6 +4,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Threading;
+using Xcmd.Core;
 
 namespace Xcmd.Desktop;
 
@@ -14,7 +16,11 @@ internal sealed class FeedbackSurface
     private readonly FeedbackController controller;
     private readonly Window window;
     private Control? pointed;
+    private IDisposable? pending;
+    private bool passingClick;
+    private readonly List<FeedbackInteraction> interactions = [];
     public bool IsPicking { get; private set; }
+    public bool HasPendingSelection => pending != null;
 
     public FeedbackSurface(FeedbackController controller, Window window, Grid root)
     {
@@ -22,37 +28,69 @@ internal sealed class FeedbackSurface
         overlay.Children.Add(highlight); root.Children.Add(overlay);
         window.AddHandler(InputElement.KeyDownEvent, (_, e) =>
         {
-            if (e.Key == Key.F12) { if (IsPicking) Cancel(); else Begin(); e.Handled = true; }
+            if (e.Key == Key.F12) { if (IsPicking) Cancel(); else controller.Begin(window); e.Handled = true; }
             else if (IsPicking) { if (e.Key == Key.Escape) Cancel(); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
         window.AddHandler(InputElement.PointerMovedEvent, (_, e) =>
         { if (IsPicking) Highlight(Pick(e.GetPosition(window))); }, RoutingStrategies.Tunnel);
-        window.AddHandler(InputElement.PointerPressedEvent, (_, e) =>
-        {
-            if (!IsPicking) return;
-            pointed = Pick(e.GetPosition(window)); e.Handled = true;
-        }, RoutingStrategies.Tunnel);
-        window.AddHandler(InputElement.PointerReleasedEvent, (_, e) =>
-        {
-            if (!IsPicking) return;
-            e.Handled = true;
-            if (pointed is not { } selected) return;
-            IsPicking = false; Highlight(selected); controller.OpenComment(window, selected, this);
-        }, RoutingStrategies.Tunnel);
+        window.AddHandler(InputElement.PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
+        window.AddHandler(InputElement.PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Tunnel);
+        window.Closed += (_, _) => CancelPending();
     }
+
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!IsPicking || passingClick) return;
+        var selected = Pick(e.GetPosition(window));
+        if (e.ClickCount >= 2 && pending != null && selected == pointed && selected?.IsEffectivelyEnabled == true && e.Source is InputElement source)
+        {
+            CancelPending();
+            interactions.Add(FeedbackController.DescribeInteraction(selected, "Click"));
+            passingClick = true;
+            source.RaiseEvent(new PointerPressedEventArgs(e.Source, e.Pointer, window, e.GetPosition(window), e.Timestamp,
+                e.GetCurrentPoint(window).Properties, e.KeyModifiers, 1));
+            e.Handled = true;
+            return;
+        }
+        CancelPending();
+        pointed = selected; e.Handled = true;
+    }
+
+    private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (passingClick) { passingClick = false; return; }
+        if (!IsPicking) return;
+        e.Handled = true;
+        if (pointed is not { } selected) return;
+        CancelPending();
+        var delay = window.GetPlatformSettings()?.GetDoubleTapTime(e.Pointer.Type) ?? TimeSpan.FromMilliseconds(500);
+        pending = DispatcherTimer.RunOnce(() =>
+        {
+            pending = null;
+            if (!IsPicking || !window.IsVisible) return;
+            IsPicking = false; Highlight(selected);
+            controller.OpenComment(window, selected, this, interactions.ToArray());
+        }, delay);
+    }
+
+    private void CancelPending() { pending?.Dispose(); pending = null; }
 
     private Control? Pick(Point point) => FeedbackController.Target(window.GetVisualAt(point, visual => visual != overlay) as Control);
 
     public void Begin()
     {
         controller.StopNameSearch();
+        CancelPending(); interactions.Clear(); passingClick = false;
         IsPicking = true;
-        controller.SetHint("Click an element to comment. Esc cancels.");
+        controller.SetHint(window, "Click to comment. Double-click to use a control. Esc cancels.");
     }
 
     public void Cancel()
     {
-        IsPicking = false; pointed = null; highlight.IsVisible = false; controller.SetHint("");
+        CancelPending();
+        var wasPicking = IsPicking || interactions.Count > 0;
+        IsPicking = false; passingClick = false; pointed = null; interactions.Clear(); highlight.IsVisible = false; controller.SetHint(window, "");
+        if (wasPicking) foreach (var menu in window.GetVisualDescendants().OfType<Menu>().ToArray()) menu.Close();
     }
 
     private void Highlight(Control? control)

@@ -21,6 +21,14 @@ public sealed partial class CommanderWindow : Window
     private bool restarting;
     private bool pointerHeld;
     private Menu? mainMenu;
+    private readonly CommanderFrame frame;
+    public Grid TitleBar => frame.TitleBar;
+    private readonly FileViewingController viewing;
+    public FileViewerWindow? Viewer => viewing.Viewer;
+    public IReadOnlyList<FileViewerWindow> Viewers => viewing.Viewers;
+    public string ViewerThemeId => viewing.ThemeId;
+    public event Func<Task>? ViewerThemeChanged;
+    internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
     public bool IsMenuOpen => mainMenu?.IsOpen == true;
     public PanelView Left { get; }
     public PanelView Right { get; }
@@ -31,7 +39,7 @@ public sealed partial class CommanderWindow : Window
     public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null || OperationDialog != null;
     public FavoriteDirectories Favorites { get; } = new();
     public event Func<Task>? FavoritesChanged;
-    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Operations.HasPendingWork;
+    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Operations.HasPendingWork || viewing.IsBusy;
     public string? LastError { get; private set; }
     public string StatusMessage => status.Text ?? "";
     public List<string> Trace { get; } = [];
@@ -39,15 +47,16 @@ public sealed partial class CommanderWindow : Window
     public DirectoryUsageBook DirectoryUsage { get; } = new();
     private bool restoringVisits;
     public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || CommandLine.HasKeyboardFocus || Left.EditingRow != null || Right.EditingRow != null,
-        HasOpenDialog || IsMenuOpen, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
+        HasOpenDialog || IsMenuOpen || viewing.HasViewers, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
 
     public void SetUpdateMessage(string message) => updateMessage.Text = message;
     public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
-    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null)
+    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null)
     {
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
+        viewing = new FileViewingController(this, editorPath);
         fileSystem ??= new LocalFileSystem();
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
         Operations = new FileOperationQueue(new FileOperationRunner(operationStore, ResolveFileConflictAsync));
@@ -76,41 +85,33 @@ public sealed partial class CommanderWindow : Window
             panel.LocationVisited += path => { if (!restoringVisits) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(path); };
             panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
         }
-        var layout = new Grid { RowDefinitions = new RowDefinitions("32,*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
-        var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") };
-        header.Children.Add(mainMenu = BuildMenu());
-        Grid.SetColumn(updateMessage, 1); header.Children.Add(updateMessage);
-        var feedback = new Button { Content = "Feedback", Name = "StartFeedback", Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-        var notes = new Button { Content = "Notes (0)", Name = "ShowNotes", Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
-        AutomationProperties.SetAutomationId(feedback, "feedback.start");
-        AutomationProperties.SetAutomationId(notes, "feedback.show-notes");
-        Grid.SetColumn(feedback, 2); header.Children.Add(feedback);
-        Grid.SetColumn(notes, 3); header.Children.Add(notes);
-        layout.Children.Add(header);
+        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
+        frame = new CommanderFrame(this, mainMenu = BuildMenu(), status, updateMessage);
         var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") };
         panels.Children.Add(Left);
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
-        Grid.SetRow(panels, 1); layout.Children.Add(panels);
+        layout.Children.Add(panels);
         var help = BuildKeyboardHelp();
-        Grid.SetRow(OperationsView, 2); layout.Children.Add(OperationsView);
-        Grid.SetRow(CommandLine, 3); layout.Children.Add(CommandLine);
+        Grid.SetRow(OperationsView, 1); layout.Children.Add(OperationsView);
+        Grid.SetRow(CommandLine, 2); layout.Children.Add(CommandLine);
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
-        Grid.SetRow(help, 4); layout.Children.Add(help);
-        Grid.SetRow(status, 5); layout.Children.Add(status);
+        Grid.SetRow(help, 3); layout.Children.Add(help);
+        Grid.SetRow(frame.StatusBar, 4); layout.Children.Add(frame.StatusBar);
+        var applicationLayout = new Grid { RowDefinitions = new RowDefinitions("32,*") };
+        applicationLayout.Children.Add(frame.TitleBar);
+        Grid.SetRow(layout, 1); applicationLayout.Children.Add(layout);
         var root = new Grid();
-        root.Children.Add(layout);
+        root.Children.Add(applicationLayout);
         Content = root;
         Feedback = new FeedbackController(this, root);
-        feedback.Click += (_, _) => Feedback.Begin();
-        notes.Click += (_, _) => Feedback.ShowNotes();
-        Feedback.Notes.CollectionChanged += (_, _) => notes.Content = $"Notes ({Feedback.Notes.Count(note => note.ResolvedIn == null)})";
+        frame.AttachFeedback(Feedback);
         AddHandler(PointerMovedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); pointerHeld = false; }, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, (_, _) => lastInput = Stopwatch.GetTimestamp(), RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
-        Closing += (_, _) => { CancelDirectorySizes(); Operations.CancelAll(); OperationDialog?.Close(); };
+        Closing += (_, _) => { CancelDirectorySizes(); Operations.CancelAll(); OperationDialog?.Close(); viewing.CloseAll(); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
@@ -120,7 +121,7 @@ public sealed partial class CommanderWindow : Window
     private static WrapPanel BuildKeyboardHelp()
     {
         var help = new WrapPanel { Name = "KeyboardHelp" };
-        string[] hints = ["F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+        string[] hints = ["F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
         foreach (var hint in hints)
             help.Children.Add(new Border
             {
@@ -164,7 +165,7 @@ public sealed partial class CommanderWindow : Window
         finally { pendingActions--; }
     }
 
-    private void SetError(string? error)
+    internal void SetError(string? error)
     {
         LastError = error;
         status.Text = error ?? "Ready";

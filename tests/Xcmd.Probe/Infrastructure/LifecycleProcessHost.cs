@@ -15,6 +15,7 @@ public static class LifecycleProcessHost
     [STAThread]
     public static int Run(string[] args)
     {
+        var consoleAttached = ConsoleProbe.IsAttached;
         var settings = LaunchSettings.Parse(args);
         var root = Environment.GetEnvironmentVariable("XCMD_TEST_RELEASES")!;
         var reports = Environment.GetEnvironmentVariable("XCMD_TEST_REPORTS")!;
@@ -32,7 +33,7 @@ public static class LifecycleProcessHost
                 {
                     if (lifecycle.UpdateError == null) return;
                     failureWatch.Stop();
-                    var report = new { window.IsEnabled, state = window.CaptureWorkspace(), lifecycle.UpdateError };
+                    var report = new { window.IsEnabled, consoleAttached, state = window.CaptureWorkspace(), lifecycle.UpdateError };
                     await WriteReportAsync(Path.Combine(reports, id + "-failed-update.json"), report);
                     lifecycle.Dispose(); window.Close();
                 };
@@ -55,7 +56,7 @@ public static class LifecycleProcessHost
                             try { using var process = Process.GetProcessById(previous); parentExited = process.HasExited; }
                             catch (ArgumentException) { }
                         }
-                        var report = new { processId = Environment.ProcessId, parentExited, nativeApplicationWindows = 0, state = window.CaptureWorkspace() };
+                        var report = new { processId = Environment.ProcessId, parentExited, consoleAttached, nativeApplicationWindows = 0, state = window.CaptureWorkspace() };
                         await WriteReportAsync(Path.Combine(reports, id + ".json"), report);
                         if (settings.WaitForProcess != null) { lifecycle.Dispose(); window.Close(); }
                         else failureWatch.Start();

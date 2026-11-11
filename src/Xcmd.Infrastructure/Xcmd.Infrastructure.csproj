@@ -19,4 +19,7 @@
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="10.0.14" />
     <Compile Include="BootstrapProgram.cs;ReleaseFiles.cs;WindowsShortcut.cs;ShellPropertyValues.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(XcmdLauncher)' != 'true'">
+    <PackageReference Include="UTF.Unknown" Version="2.7.0" />
+  </ItemGroup>
 </Project>

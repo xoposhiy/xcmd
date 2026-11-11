@@ -196,6 +196,7 @@ public static class WorkspaceScenarios
                 using var report = JsonDocument.Parse(File.ReadAllText(Path.Combine(reports, NewId + ".json")));
                 Check(report.RootElement.GetProperty("parentExited").GetBoolean(), "The replacement opens only after the old process exits.");
                 Equal(0, report.RootElement.GetProperty("nativeApplicationWindows").GetInt32(), "The replacement uses the actual app without native windows");
+                Check(!report.RootElement.GetProperty("consoleAttached").GetBoolean(), "The replacement process has no console");
                 var actual = report.RootElement.GetProperty("state").Deserialize<WorkspaceState>()!;
                 Equal(expected.Left.DirectoryPath, actual.Left.DirectoryPath, "The new process restores the left directory");
                 Equal(expected.Left.Cursor, actual.Left.Cursor, "The new process restores the file cursor");

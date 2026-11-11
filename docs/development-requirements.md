@@ -16,6 +16,7 @@ Use the [development workflow](development-workflow.md) to choose when checks ru
 - Make background work observable: queue state, search scope, results, progress, failures, and cancellation must be available to assertions.
 - Support repeatable setup and cleanup, bounded waits, structured results, and a nonzero exit status on failure.
 - Keep normal test runs independent of the user's files, TC settings, live Git repositories, credentials, and desktop state.
+- Do not create extra console windows during tests, builds or releases. Start background console processes without a console and keep output in the existing log or terminal.
 - Let the agent create fixtures, execute the full suite, inspect failures, and rerun relevant checks without human setup or decisions.
 
 The exact command names and test-driver protocol will be chosen with the implementation. Do not document an executable command as available before it exists.

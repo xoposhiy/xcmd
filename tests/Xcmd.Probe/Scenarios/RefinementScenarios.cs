@@ -64,7 +64,8 @@ public static class RefinementScenarios
             Check(!c.Window.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "XCMD   /   FILE PANELS"), "The large title is removed.");
             await c.ClickAsync((MenuItem)menu.Items[0]!);
             Check(c.Window.IsMenuOpen && !c.Window.Readiness.CanRestart, "An open menu defers automatic updates.");
-            await c.KeyAsync(Key.Down); await c.KeyAsync(Key.Enter);
+            var file = (MenuItem)menu.Items[0]!;
+            await c.ClickAsync(file.Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == "New folder"));
             Check(c.Window.ActiveDialog != null, "The File menu opens the actual new-folder dialog.");
             await c.KeyAsync(Key.Escape, target: c.Window.ActiveDialog);
         }),

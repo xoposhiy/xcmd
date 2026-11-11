@@ -4,10 +4,11 @@ public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cu
     string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false);
 public sealed record ColumnState(double Width, bool Star);
 public sealed record WindowPlacement(int X, int Y, double Width, double Height, bool Maximized, bool Minimized = false, bool Active = true);
+public sealed record FeedbackInteraction(string Action, string ElementId, string ElementName);
 public sealed record FeedbackNote(string Id, string Release, string ElementId, string ElementName,
-    string PanelPath, string Text, DateTimeOffset CreatedAt, string? ResolvedIn = null, string? Resolution = null);
+    string PanelPath, string Text, DateTimeOffset CreatedAt, string? ResolvedIn = null, string? Resolution = null, FeedbackInteraction[]? Interactions = null);
 public sealed record WorkspaceState(int Version, PanelState Left, PanelState Right, string ActivePanel,
-    WindowPlacement Window, FeedbackNote[] Notes, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null)
+    WindowPlacement Window, FeedbackNote[] Notes, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark")
 {
     public void Validate()
     {

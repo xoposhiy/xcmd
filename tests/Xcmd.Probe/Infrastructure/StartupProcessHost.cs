@@ -15,6 +15,7 @@ public static class StartupProcessHost
     [STAThread]
     public static int Run(string[] args)
     {
+        var consoleAttached = ConsoleProbe.IsAttached;
         using var process = Process.GetCurrentProcess();
         var runtimeToMain = (DateTime.UtcNow - process.StartTime.ToUniversalTime()).TotalMilliseconds;
         var watch = Stopwatch.StartNew();
@@ -55,7 +56,7 @@ public static class StartupProcessHost
                             frameReadyTimestamp = Stopwatch.GetTimestamp();
                             frame.Save(args[0] + ".png", PngBitmapEncoderOptions.Default);
                         }
-                        var report = new { native, visibleApplicationWindows = 0, readyToShowTimestamp, frameReadyTimestamp, phases, state = window.CaptureWorkspace() };
+                        var report = new { native, consoleAttached, visibleApplicationWindows = 0, readyToShowTimestamp, frameReadyTimestamp, phases, state = window.CaptureWorkspace() };
                         await File.WriteAllTextAsync(args[0] + ".tmp", JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
                         File.Move(args[0] + ".tmp", args[0]);
                         lifecycle!.Dispose();

@@ -29,6 +29,7 @@ public static class BootstrapProgram
             var start = new ProcessStartInfo(release.Executable)
             {
                 UseShellExecute = false,
+                CreateNoWindow = true,
                 WorkingDirectory = Environment.CurrentDirectory
             };
             foreach (var argument in args) start.ArgumentList.Add(argument);

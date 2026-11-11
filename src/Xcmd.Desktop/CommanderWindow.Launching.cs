@@ -10,7 +10,7 @@ public sealed partial class CommanderWindow
     public CommandLineView CommandLine { get; } = new();
     private bool runningCommand;
 
-    private async Task LaunchExternalAsync(ExternalLaunch request)
+    internal async Task LaunchExternalAsync(ExternalLaunch request)
     {
         if (launching) throw new IOException("A program is already opening. Try again when it finishes.");
         launching = true;

@@ -178,5 +178,29 @@
   {
     "noteId": "bcd07adebc694cc9bc6315cfdfd617bd",
     "summary": "The navigation window no longer shows the obvious-keyboard hint. Static text has a shared feedback hit-test surface, visual hit testing includes disabled actions, and feedback identifies the nearest meaningful element before its outer window. The architecture documents the rule and pointer checks cover the application dialogs."
+  },
+  {
+    "summary": "Unavailable image modes stay disabled. Image decoding finishes before a mode change; unsupported, oversized or damaged images keep a working text or hex view.",
+    "noteId": "8e5bc7e225c74c2392a21755e7d1ffa1"
+  },
+  {
+    "summary": "The read-only content has no accent outline when focused or hovered.",
+    "noteId": "a0222f2546a646b6ab0673df894365f7"
+  },
+  {
+    "summary": "Reading percentage is shown at the right of the combined title and menu row, above the scroll bar. The status line keeps mode, encoding, wrapping and byte counts.",
+    "noteId": "0652e5e1bada450d98b121f61a22a49a"
+  },
+  {
+    "summary": "The viewer combines its menu, file name, percentage and window controls in one title row. The window keeps a resize border and a title-bar drag region.",
+    "noteId": "60b01cc3490e46d386c1cea12860db6a"
+  },
+  {
+    "summary": "Viewers are independent, non-modal windows. File panels remain available, multiple viewers keep separate files, and closing one viewer preserves the others. Automatic updates wait until all viewers close.",
+    "noteId": "6e11805b55f74e168f2063cd139061bf"
+  },
+  {
+    "summary": "In feedback mode a double-click sends one normal click to the selected control and keeps selection active. Menus can be opened before selecting a child item. Comments, saved sessions and the refinement list retain the click path.",
+    "noteId": "3132828621a94a4d94d41f545ce25e61"
   }
 ]

@@ -27,6 +27,9 @@ internal static class Program
     private static int RunScenarios(string[] args)
     {
         var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).Concat(FileOperationScenarios.All).Concat(OperationRefinementScenarios.All).Concat(SelectionAndDialogScenarios.All).Concat(PanelCursorScenarios.All).Concat(RangeAndFeedbackScenarios.All).Concat(OperationUsabilityScenarios.All).ToArray();
+        scenarios = scenarios.Concat(ViewerScenarios.All).ToArray();
+        scenarios = scenarios.Concat(FeedbackInteractionScenarios.All).ToArray();
+        scenarios = scenarios.Concat(AppearanceScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");
