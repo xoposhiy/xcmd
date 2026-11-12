@@ -28,7 +28,8 @@ public sealed partial class CommanderWindow
         { SetError("Archives are read-only. Use F5 to copy files out."); return; }
         ResetQuickJump();
         SetError(null);
-        var sourceDirectory = ActivePanel.Session.DirectoryPath;
+        var sourceDirectory = ActivePanel.OperationDirectory;
+        if (!samePanel && OppositePanel.IsSearchResults) { SetError("Open a destination folder in the other panel first (Escape leaves search results)."); return; }
         var targetDirectory = samePanel ? sourceDirectory : OppositePanel.Session.DirectoryPath;
         if (ArchivePath.IsEntry(targetDirectory)) { SetError("Archives are read-only. Choose a regular destination folder."); return; }
         var dialog = new FileTransferDialog(kind, selected, targetDirectory, Feedback, samePanel) { Background = Background };
@@ -58,6 +59,7 @@ public sealed partial class CommanderWindow
         if (ArchivePath.IsEntry(ActivePanel.Session.DirectoryPath)) { SetError("Archives are read-only. Entries cannot be deleted."); return; }
         var selected = SelectedOperationEntries();
         if (selected.Length == 0) return;
+        if (selected.Any(entry => ArchivePath.IsEntry(entry.FullPath))) { SetError("Archives are read-only. Entries cannot be deleted."); return; }
         ResetQuickJump();
         var request = new FileOperationRequest(permanently ? FileOperationKind.Delete : FileOperationKind.Recycle, selected);
         var dialog = new FileDeleteDialog(request, Feedback) { Background = Background };

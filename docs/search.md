@@ -26,9 +26,17 @@ Safety limits are 200,000 visited entries, 20,000 results, a 100 ms regex match 
 
 The current engine uses .NET's built-in literal string search, the existing detector and the existing archive adapter. No grep executable is required. Effective Git exclusions require Git. A ripgrep backend remains an option after measuring representative workloads; the first iteration does not claim parity with ripgrep syntax or throughput. See the [ripgrep guide](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md) and [Git ignore inspection](https://git-scm.com/docs/git-check-ignore).
 
-The headless search scenarios use real encoded files, real Git repositories, ZIP, TAR, TAR.GZ and RAR4/5 archives, actual controls and offscreen images. Controlled workers verify scheduling and cancellation without elapsed-time assumptions. The [independent usability review](evidence/search-usability-review-2026-11-11.md) records findings and resolutions. A dedicated search-result file panel and representative performance measurements remain outside this implementation.
+The headless search scenarios use real encoded files, real Git repositories, ZIP, TAR, TAR.GZ and RAR4/5 archives, actual controls and offscreen images. Controlled workers verify scheduling and cancellation without elapsed-time assumptions. The [independent usability review](evidence/search-usability-review-2026-11-11.md) records findings and resolutions. The result-panel workflow is described below. Representative performance measurements remain outside this implementation.
 
 Search is a single independent, non-modal window. It does not stay above the main window or block panel commands. Alt+F7 restores the existing window and keeps its query and results. Panel navigation does not change the search root. Automatic release replacement waits until search closes. Feedback is in the bottom action row or available through F12.
+
+## Search results in a file panel
+
+**To panel** or **Alt+P** sends a snapshot of the results found so far to the panel that opened search, keeping the selected result. The search window closes and its workers stop. Relative paths distinguish files with the same name. The panel supports selection, sorting, F3/F4 and source file operations; archive members keep their read-only restrictions. A result panel cannot be a copy/move destination: open a regular destination folder first.
+
+**Ctrl+Left/Right** from results opens the current item's containing folder in the corresponding other panel and selects that exact file or folder, including archive members. Focus remains in results. **Escape**, Backspace or Ctrl+PageUp leaves results and restores the previous folder, cursor, selection and scroll position. Opening a result directory navigates normally. Ctrl+R refreshes existing result entries without repeating the search; removed files disappear. Results and their return location are saved with the workspace.
+
+Command-line execution keeps the original panel directory shown in its prompt, even when the result cursor moves between folders. Opening or editing a result uses that file's containing directory. Rename preserves the result cursor and marks when its sort position changes.
 
 ## Broader design requirements
 

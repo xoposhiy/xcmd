@@ -73,7 +73,7 @@ internal sealed class CommanderFrame
     public static Control BuildKeyboardHelp()
     {
         var help = new WrapPanel { Name = "KeyboardHelp" };
-        string[] hints = ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "F8 / Del  Delete", "Shift+Del  Permanent", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+        string[] hints = ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
         foreach (var hint in hints)
             help.Children.Add(new Border
             {

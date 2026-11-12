@@ -53,7 +53,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC28 | Perform Git write operations. | Deferred | Stage, commit, branch, pull and push are outside the current scope. |
 | UC29 | Filter a panel while typing. | Optional | Keep separate from Alt name jumping. No implementation commitment. |
 | UC30 | Show a flat recursive file list. | Planned | Define paths, exclusions and operations on mixed-directory entries. |
-| UC31 | Work with search results in a panel. | Planned | Frequent workflow. Preserve access to file operations and viewing; define return to the normal directory. |
+| UC31 | Work with search results in a panel. | Prototype | To panel / Alt+P transfers a snapshot with relative paths, selection, sorting, viewing and source operations. Ctrl+Left/Right locates the current entry in the other panel. Escape restores the previous directory state. Results survive workspace restore. |
 | UC32 | Preview a file in the opposite panel. | Planned | Frequent workflow. Define routing, keyboard focus and panel restoration. |
 | UC33 | Queue long file operations. | Prototype | Run requests in order while panels remain usable. Capture targets at submission, count files before changes, show file and byte progress with estimated remaining time, and cancel counting, running or queued work. Pause, retry and reordering remain planned. |
 | UC34 | Resolve copy and move conflicts. | Prototype; required | Skip, Rename and Replace regular files; apply Skip or Replace to matching conflicts in the current request. Merge folders without removing destination-only contents. Compare and newer-file rules remain planned. |

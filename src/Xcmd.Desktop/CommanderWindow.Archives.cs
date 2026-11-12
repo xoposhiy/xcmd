@@ -16,7 +16,7 @@ public sealed partial class CommanderWindow
 
     private void RenameCurrent()
     {
-        if (ArchivePath.IsEntry(ActivePanel.Session.DirectoryPath)) { SetError("Archives are read-only. Entries cannot be renamed."); return; }
+        if (ArchivePath.IsEntry(ActivePanel.Current?.Entry.FullPath ?? ActivePanel.Session.DirectoryPath)) { SetError("Archives are read-only. Entries cannot be renamed."); return; }
         ActivePanel.BeginRename();
     }
 

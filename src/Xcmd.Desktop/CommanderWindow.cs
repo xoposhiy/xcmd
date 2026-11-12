@@ -196,7 +196,7 @@ public sealed partial class CommanderWindow : Window
         if (!row.Entry.IsDirectory && ArchivePath.OpensOnEnter(row.Entry.FullPath))
         { await OpenArchiveAsync(panel); return; }
         if (!row.Entry.IsDirectory)
-        { await OpenFileExternallyAsync(row.Entry.FullPath, panel.Session.DirectoryPath); return; }
+        { await OpenFileExternallyAsync(row.Entry.FullPath, panel.OperationDirectory); return; }
         await panel.LoadAsync(panel.Current.Entry.FullPath, selectName: panel.Current.Entry.IsParent ? null : "..");
         panel.FocusCurrent();
     }
@@ -215,6 +215,7 @@ public sealed partial class CommanderWindow : Window
     private void OpenCreateDirectoryDialog()
     {
         var panel = ActivePanel;
+        if (panel.IsSearchResults) { SetError("Open a folder before creating a directory (Escape leaves search results)."); return; }
         if (ArchivePath.IsEntry(panel.Session.DirectoryPath)) { SetError("Archives are read-only. Choose a regular folder."); return; }
         var dialog = new NameDialog(Feedback) { Background = Background };
         Feedback.Attach(dialog);

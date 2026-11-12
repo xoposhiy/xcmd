@@ -5,7 +5,7 @@ using Xcmd.Core;
 
 namespace Xcmd.Desktop;
 
-public sealed class FileRow(FileEntry entry) : INotifyPropertyChanged
+public sealed class FileRow(FileEntry entry, string? resultName = null) : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -44,7 +44,7 @@ public sealed class FileRow(FileEntry entry) : INotifyPropertyChanged
         Changed(nameof(IsCurrent)); Changed(nameof(RowBackground)); Changed(nameof(NameForeground));
     }
     public FileEntry Entry { get; } = entry;
-    public string Name => Entry.Name;
+    public string Name => resultName ?? Entry.Name;
     public string Kind => Entry.IsDirectory ? "DIR" : Entry.Extension.ToUpperInvariant();
     public DirectoryMeasurement? Measurement { get; private set; }
     private string EntrySize => Entry.IsParent ? "<UP>" : Entry.IsDirectory ? "<DIR>" : Entry.Size.ToString("N0");

@@ -1,5 +1,17 @@
 [
   {
+    "noteId": "80ad062599974c8f98097a5947792cd6",
+    "summary": "The bottom shortcut strip no longer includes deletion hints. Delete commands and their shortcuts remain available."
+  },
+  {
+    "noteId": "57a5bee91cab4187ad7523f428e28605",
+    "summary": "To panel uses an underlined P. Go to file has no Enter suffix and uses the primary button style while results have focus; Search is primary in query fields."
+  },
+  {
+    "noteId": "2d8a5ffe908e4391a9b6f28b036f1e86",
+    "summary": "Name columns shrink to available space. Narrow panels hide Modified, then Size, then Type, restoring them as space returns without losing column preferences, cursor or marks."
+  },
+  {
     "noteId": "bb026cf27c9c428d8397a29fdd2d5779",
     "summary": "Sort headers accept clicks across their full area while keeping resize handles usable."
   },

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -35,9 +36,10 @@ public sealed partial class FileSearchWindow : Window
     private readonly TextBlock pendingQuery = new() { Name = "SearchPendingQuery", Foreground = Brushes.LightSkyBlue, IsVisible = false, TextWrapping = TextWrapping.Wrap };
     private readonly Button start = new() { Content = "Search", Name = "SearchStart" };
     private readonly Button stop = new() { Content = "Stop", Name = "SearchStop", IsEnabled = false };
-    private readonly Button expand = new() { Content = "Search skipped files", Name = "SearchExpand", IsVisible = false };
+    private readonly Button expand = new() { Content = new AccessText { Text = "Search skipped f_iles", ShowAccessKey = true }, Name = "SearchExpand", IsVisible = false };
     private readonly Button view = new() { Content = "View · F3", Name = "SearchView", IsEnabled = false };
-    private readonly Button go = new() { Content = "Go to file · Enter", Name = "SearchGo", IsEnabled = false };
+    private readonly Button go = new() { Content = "Go to file", Name = "SearchGo", IsEnabled = false };
+    private readonly Button toPanel = new() { Content = new AccessText { Text = "To _panel", ShowAccessKey = true }, Name = "SearchToPanel", IsEnabled = false };
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(60) };
     private CancellationTokenSource? cancellation;
     private FileSearchSource? source;
@@ -57,6 +59,7 @@ public sealed partial class FileSearchWindow : Window
     public string SearchDirectory => rootIsFile ? ArchivePath.Parent(root)! : root;
     public string StatusMessage => status.Text ?? "";
     public event Action<FileSearchResult>? GoRequested;
+    public event Action<string, IReadOnlyList<FileSearchResult>, string?>? PanelRequested;
     public event Action<IReadOnlyList<FileSearchResult>, int, string>? ViewRequested;
 
     public FileSearchWindow(string root, FeedbackController feedback, FileSearchState saved, string? cacheRoot = null)
@@ -73,10 +76,10 @@ public sealed partial class FileSearchWindow : Window
         foreach (var control in new Control[] { NameEditor, TextEditor, Results, start, stop, expand, view, go, status, details, matchCase, regex, literalName, nameMode })
             AutomationProperties.SetAutomationId(control, "search." + control.Name);
         var fields = new Grid { ColumnDefinitions = new("Auto,*,Auto"), RowDefinitions = new("Auto,Auto"), ColumnSpacing = 10, RowSpacing = 8 };
-        fields.Children.Add(new TextBlock { Text = "File name", VerticalAlignment = VerticalAlignment.Center });
+        fields.Children.Add(new AccessText { Text = "_File name", ShowAccessKey = true, VerticalAlignment = VerticalAlignment.Center });
         Grid.SetColumn(NameEditor, 1); fields.Children.Add(NameEditor);
         Grid.SetColumn(nameMode, 2); fields.Children.Add(nameMode);
-        var textLabel = new TextBlock { Text = "Containing text", VerticalAlignment = VerticalAlignment.Center };
+        var textLabel = new AccessText { Text = "Containing _text", ShowAccessKey = true, VerticalAlignment = VerticalAlignment.Center };
         Grid.SetRow(textLabel, 1); fields.Children.Add(textLabel);
         Grid.SetRow(TextEditor, 1); Grid.SetColumn(TextEditor, 1); Grid.SetColumnSpan(TextEditor, 2); fields.Children.Add(TextEditor);
         var options = new WrapPanel { Orientation = Orientation.Horizontal, Children = { matchCase, regex, literalName } };
@@ -88,17 +91,20 @@ public sealed partial class FileSearchWindow : Window
         ToolTip.SetTip(expand, "Include Git-ignored files, dependency folders, environments, caches and version-control data. Keep current results. Alt+I.");
         Results.ItemsSource = results;
         ConfigureResults();
-        Results.SelectionChanged += (_, _) => { view.IsEnabled = Results.SelectedItem is FileSearchResult { Entry.IsDirectory: false }; go.IsEnabled = Results.SelectedItem != null; };
+        Results.SelectionChanged += (_, _) => { view.IsEnabled = Results.SelectedItem is FileSearchResult { Entry.IsDirectory: false }; go.IsEnabled = Results.SelectedItem != null; UpdatePrimaryAction(); };
         Results.DoubleTapped += (_, e) => { if (e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any()) Go(); };
         start.Click += (_, _) => StartSearch(); stop.Click += (_, _) => Stop();
         expand.Click += (_, _) => Expand(); view.Click += (_, _) => View(); go.Click += (_, _) => Go();
+        AutomationProperties.SetAutomationId(toPanel, "search.to-panel");
+        ToolTip.SetTip(toPanel, "Send the results found so far to the file panel. Escape in the panel returns to its previous folder.");
+        toPanel.Click += (_, _) => SendToPanel();
         var close = new Button { Content = "Close", Name = "SearchClose" }; close.Click += (_, _) => Close();
         var actions = new DockPanel { LastChildFill = false };
         DockPanel.SetDock(expand, Dock.Left); actions.Children.Add(expand);
         var feedbackButton = new Button { Content = "Feedback", Name = "SearchFeedback" };
         AutomationProperties.SetAutomationId(feedbackButton, "feedback.start"); ToolTip.SetTip(feedbackButton, "Comment on an element · F12");
         feedbackButton.Click += (_, _) => feedback.Begin(this);
-        var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { view, go, feedbackButton, close } };
+        var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { toPanel, view, go, feedbackButton, close } };
         DockPanel.SetDock(right, Dock.Right); actions.Children.Add(right);
         var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new("Auto,Auto,Auto,Auto,*,Auto,Auto,Auto"), RowSpacing = 6 };
         var queryActions = new Grid { ColumnDefinitions = new("*,Auto,Auto"), ColumnSpacing = 8 };
@@ -116,6 +122,14 @@ public sealed partial class FileSearchWindow : Window
         timer.Tick += (_, _) => Flush(); timer.Start();
         Closed += (_, _) => { closed = true; timer.Stop(); nameHistory.Close(); textHistory.Close(); _ = RetireSearchAsync(); };
         AddHandler(KeyDownEvent, HandleKey, RoutingStrategies.Tunnel);
+        AddHandler(GotFocusEvent, (_, _) => UpdatePrimaryAction());
+        AddHandler(LostFocusEvent, (_, _) => UpdatePrimaryAction());
+    }
+
+    private void UpdatePrimaryAction()
+    {
+        start.Classes.Set("primary", QueryControlHasFocus || start.IsKeyboardFocusWithin);
+        go.Classes.Set("primary", go.IsEnabled && (Results.IsKeyboardFocusWithin || go.IsKeyboardFocusWithin));
     }
 
     public void FocusQuery() { var editor = TextEditor.Text?.Length > 0 ? TextEditor : NameEditor; editor.Focus(); editor.SelectAll(); }
@@ -171,7 +185,8 @@ public sealed partial class FileSearchWindow : Window
     {
         if (invalidQuery != null && CaptureQuery() != invalidQuery) { invalidQuery = null; queryError.IsVisible = false; }
         pendingQuery.IsVisible = activeQuery != null && CaptureQuery() != activeQuery;
-        pendingQuery.Text = "Settings changed. Press Enter in the query controls, or Search, to apply them. Current results and work are kept.";
+        pendingQuery.Text = "Settings changed. Search to apply.";
+        ToolTip.SetTip(pendingQuery, "Current results and work are kept. Press Enter in the query controls or Search to apply the changed settings.");
         if (activeQuery == null) status.Text = "Enter a name or text, then press Enter.";
     }
 
@@ -221,6 +236,7 @@ public sealed partial class FileSearchWindow : Window
         if (closed) return;
         for (var index = 0; index < 300 && incoming.TryDequeue(out var result); index++) results.Add(result);
         if (Results.SelectedIndex < 0 && results.Count > 0) Results.SelectedIndex = 0;
+        toPanel.IsEnabled = results.Count > 0;
         if (search == null) return;
         IReadOnlyList<SearchFailure> failures = fatalFailure == null ? search.Failures : search.Failures.Append(fatalFailure).ToArray();
         UpdateCoverageDetails(failures);
@@ -256,6 +272,7 @@ public sealed partial class FileSearchWindow : Window
         if (e.Key == Key.Escape) { if (IsSearching) Stop(); else Close(); }
         else if (e.Key == Key.Enter && QueryControlHasFocus) StartSearch();
         else if (e.Key == Key.Enter && Results.IsKeyboardFocusWithin) Go();
+        else if (e.Key == Key.P && e.KeyModifiers == KeyModifiers.Alt) SendToPanel();
         else if (e.Key == Key.F3) View();
         else if (e.Key == Key.I && e.KeyModifiers == KeyModifiers.Alt && expand.IsEnabled && expand.IsVisible) Expand();
         else return;
@@ -278,6 +295,12 @@ public sealed partial class FileSearchWindow : Window
     }
 
     private void Go() { if (Results.SelectedItem is FileSearchResult result) GoRequested?.Invoke(result); }
+    private void SendToPanel()
+    {
+        while (incoming.TryDequeue(out var result)) results.Add(result);
+        Flush();
+        if (results.Count > 0) PanelRequested?.Invoke(SearchDirectory, results.ToArray(), (Results.SelectedItem as FileSearchResult)?.Entry.FullPath);
+    }
     private void View()
     {
         if (Results.SelectedItem is not FileSearchResult { Entry.IsDirectory: false } result) return;

@@ -52,6 +52,6 @@ public sealed partial class CommanderWindow
             Execute(async () => CommandLine.InsertArgument(await archives.Files.MaterializeAsync(row.Entry.FullPath, CancellationToken.None)));
             return;
         }
-        CommandLine.InsertArgument(fullPath ? row.Entry.FullPath : row.Name);
+        CommandLine.InsertArgument(fullPath || ActivePanel.IsSearchResults ? row.Entry.FullPath : row.Name);
     }
 }

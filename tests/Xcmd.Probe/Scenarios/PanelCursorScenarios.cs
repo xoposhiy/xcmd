@@ -83,7 +83,7 @@ public static class PanelCursorScenarios
             }
             c.Window.Left.Table.Columns[0].Width = new GridLength(900); await c.SettleAsync();
             await c.KeyAsync(Key.End); await c.KeyAsync(Key.Home);
-            HorizontalScrollAvailable(c.Window.Left);
+            NoHorizontalScroll(c.Window.Left);
         }),
         new("cursor-single-mark-session-roundtrip", "UC38; Preserve one marked file under the cursor", async c =>
         {

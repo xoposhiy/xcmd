@@ -15,7 +15,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed class PanelView : Border
+public sealed partial class PanelView : Border
 {
     private readonly TextBlock path = new() { FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly TextBlock summary = new() { FontSize = 12, Foreground = Brushes.LightGray };
@@ -56,6 +56,7 @@ public sealed class PanelView : Border
 
     public PanelState CaptureState()
     {
+        if (searchResults != null) return CaptureSearchState();
         Session.RememberCursor(Current?.Name);
         var offset = Scroll?.Offset ?? default;
         return new(Session.DirectoryPath, Session.SortOrder, Current?.Name,
@@ -78,12 +79,13 @@ public sealed class PanelView : Border
         Table.Columns[^1].Width = new GridLength(1, GridUnitType.Star);
         UpdateHeaders();
         UpdateSummary();
+        if (state.SearchResults is { } results) RestoreSearchState(results);
     }
 
     public void RestoreScroll(PanelState state)
     {
         Table.UpdateLayout();
-        if (Scroll is { } scroll) scroll.Offset = new Vector(state.ScrollX, state.ScrollY);
+        if (Scroll is { } scroll) scroll.Offset = state.SearchResults is { } results ? new Vector(results.ScrollX, results.ScrollY) : new Vector(state.ScrollX, state.ScrollY);
     }
 
     private ScrollViewer? Scroll => Table.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
@@ -101,6 +103,7 @@ public sealed class PanelView : Border
 
     public async Task<bool> RefreshAsync(Func<bool> canApply, Func<bool> canFocus)
     {
+        if (IsSearchResults) return await RefreshSearchResultsAsync(canApply);
         var directory = Session.DirectoryPath;
         var hadFocus = Table.IsKeyboardFocusWithin;
         if (!await Session.LoadAsync(directory))
@@ -194,9 +197,16 @@ public sealed class PanelView : Border
         Table.Columns.Add(Column(SortField.Size, "Size", new GridLength(88)));
         Table.Columns.Add(Column(SortField.Modified, "Modified", new GridLength(145)));
         ResetColumns();
-        Table.Loaded += (_, _) => ConfigureHeaders();
+        Table.Loaded += (_, _) => { ConfigureHeaders(); QueueColumnAdaptation(); };
         Table.TemplateApplied += (_, _) => headersConfigured = false;
         Table.LayoutUpdated += (_, _) => { if (!headersConfigured) ConfigureHeaders(); };
+        Table.SizeChanged += (_, _) => QueueColumnAdaptation();
+        foreach (var column in Table.Columns)
+            column.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == TableViewColumn.WidthProperty || e.Property == TableViewColumn.MinWidthProperty)
+                    QueueColumnAdaptation();
+            };
         Table.SelectionChanged += (_, _) => UpdateSummary();
         Table.GotFocus += (_, e) =>
         {
@@ -286,7 +296,7 @@ public sealed class PanelView : Border
         foreach (var viewer in Table.GetVisualDescendants().OfType<ScrollViewer>()) viewer.AllowAutoHide = false;
         foreach (var presenter in Table.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ScrollContentPresenter>()) presenter.ClipToBounds = true;
         var headers = Table.GetVisualDescendants().OfType<TableViewColumnHeader>().ToArray();
-        if (headers.Length < Table.Columns.Count) return;
+        if (headers.Length < Table.Columns.Count(column => column.IsVisible)) return;
         headersConfigured = true;
         foreach (var header in headers)
         {
@@ -389,11 +399,13 @@ public sealed class PanelView : Border
         CancelRename();
         if (!preserveSelection) keyboardMarks = false;
         var selected = preserveSelection ? SelectedNames() : [];
-        Session.RememberCursor(Current?.Name);
+        if (!IsSearchResults) Session.RememberCursor(Current?.Name);
         var previousPath = Session.DirectoryPath;
         var loaded = await Session.LoadAsync(directory);
         if (loaded)
         {
+            searchResults = null;
+            searchReturnState = null;
             sizes.Clear();
             ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
             path.Text = ArchivePath.Display(Session.DirectoryPath);
@@ -419,7 +431,7 @@ public sealed class PanelView : Border
     private void ApplyEntries(string[] selected, string? current)
     {
         rangeAnchor = null;
-        Rows = Session.Entries.Select(entry => { var row = new FileRow(entry); ApplyFileColor(row); row.SetMeasurement(sizes.GetValueOrDefault(entry.Name)); return row; }).ToList();
+        Rows = ResultRows();
         Table.ItemsSource = Rows;
         ShowNameMatches(nameSearch);
         Table.SelectedItems?.Clear();
@@ -544,7 +556,7 @@ public sealed class PanelView : Border
         if (Current is not { Entry.IsParent: false } row) return;
         CancelRename();
         EditingRow = row;
-        row.DraftName = row.Name;
+        row.DraftName = row.Entry.Name;
         row.IsEditing = true;
         Table.ScrollIntoView(row);
         Table.UpdateLayout();
@@ -581,7 +593,9 @@ public sealed class PanelView : Border
         {
             await Session.FileSystem.RenameAsync(row.Entry, name);
             CancelRename();
-            await LoadAsync(Session.DirectoryPath, selectName: name);
+            RenameSearchResult(row.Entry, name);
+            if (IsSearchResults) await RefreshSearchResultsAsync(() => true);
+            else await LoadAsync(Session.DirectoryPath, selectName: name);
             return null;
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
@@ -630,6 +644,6 @@ public sealed class PanelView : Border
         foreach (var row in markedRows.Except(marked)) row.SetMarked(false);
         foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
         markedRows = marked;
-        summary.Text = Session.Error ?? (ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "") + $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {SelectedNames().Length:N0} selected";
+        summary.Text = Session.Error ?? (IsSearchResults ? "Search results · Esc returns · Ctrl+←/→ locates · " : ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "") + $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {SelectedNames().Length:N0} selected";
     }
 }

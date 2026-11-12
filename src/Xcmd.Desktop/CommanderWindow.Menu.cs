@@ -63,6 +63,7 @@ public sealed partial class CommanderWindow
     private void OpenParent()
     {
         var panel = ActivePanel;
+        if (panel.IsSearchResults) { Execute(panel.ExitSearchResultsAsync); return; }
         var parent = PanelRules.ParentEntry(panel.Session.DirectoryPath);
         if (parent != null) Execute(async () => { await panel.LoadAsync(parent.FullPath); panel.FocusCurrent(); });
     }

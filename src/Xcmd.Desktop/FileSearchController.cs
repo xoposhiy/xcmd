@@ -38,6 +38,11 @@ public sealed class FileSearchController
             else owner.SetError(panel.Session.Error);
         });
         dialog.ViewRequested += viewing.ViewSearchResults;
+        dialog.PanelRequested += (root, results, selected) =>
+        {
+            panel.ShowSearchResults(root, results, selected);
+            dialog.Close(); owner.Activate(); owner.Activate(panel); panel.FocusCurrent();
+        };
         dialog.Opened += (_, _) => TaskbarIdentity.Configure(dialog, owner.Trace.Add);
         dialog.Closed += (_, _) =>
         {

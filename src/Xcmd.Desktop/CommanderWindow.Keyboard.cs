@@ -8,7 +8,11 @@ public sealed partial class CommanderWindow
     private void HandleCommandLineKey(KeyEventArgs e)
     {
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
-        { if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); } }
+        {
+            if (ActivePanel.IsSearchResults && string.IsNullOrEmpty(CommandLine.Editor.Text))
+            { Activate(ActivePanel); Execute(ActivePanel.ExitSearchResultsAsync); }
+            else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); }
+        }
         else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
             Execute(CommandLine.CopyAllAsync);
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
@@ -60,7 +64,11 @@ public sealed partial class CommanderWindow
         if (e.Key == Key.Up && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); CommandLine.BrowseHistory(true); e.Handled = true; return true; }
         if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && directorySizes == null && !nameJump.Active)
-        { if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); } e.Handled = true; return true; }
+        {
+            if (ActivePanel.IsSearchResults) Execute(ActivePanel.ExitSearchResultsAsync);
+            else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); }
+            e.Handled = true; return true;
+        }
         return false;
     }
 
@@ -135,7 +143,10 @@ public sealed partial class CommanderWindow
         if (source == destination) return;
         Execute(async () =>
         {
-            await destination.LoadAsync(source.Current?.Entry.IsDirectory == true ? source.Current.Entry.FullPath : source.Session.DirectoryPath);
+            var entry = source.Current?.Entry;
+            var locate = source.IsSearchResults && entry != null;
+            var directory = locate ? ArchivePath.Parent(entry!.FullPath)! : entry?.IsDirectory == true ? entry.FullPath : source.Session.DirectoryPath;
+            if (!await destination.LoadAsync(directory, selectName: locate ? entry!.Name : null)) SetError(destination.Session.Error);
             source.FocusCurrent();
         });
     }
@@ -145,6 +156,7 @@ public sealed partial class CommanderWindow
         var panel = ActivePanel;
         Execute(async () =>
         {
+            if (panel.IsSearchResults) { await panel.RefreshAsync(() => true, () => ActivePanel == panel); panel.FocusCurrent(); return; }
             await panel.LoadAsync(panel.Session.DirectoryPath, preserveSelection: true);
             if (ActivePanel == panel) panel.FocusCurrent();
         });

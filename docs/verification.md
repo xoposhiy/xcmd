@@ -6,6 +6,8 @@ The recorded environment on 2026-11-10 used the SDK in `global.json`, .NET runti
 
 ## Behavioral coverage
 
+The `search-panel-*` feedback smoke cases cover transfer through Alt+P, duplicate names with relative paths, opposite-panel location and focus, archive member location, sorting, watcher protection, Escape restoration, workspace JSON round-trip, viewing, inline rename, real copy/move and refresh after removal. The 2026-11-11 focused run passed all three cases with zero native application windows. Feedback release `20261111-222131-392-7c363f93` was published and installed with locked dependencies and `packageAudit: skipped-explicitly`, following the user's request to install despite the unavailable NuGet vulnerability service. This does not establish a successful package audit. Full finalization remains pending.
+
 The `search-interaction-*` cases cover the rendered Alt-query color, matching-row arrow cycles and resets, focus after Search and at the result-list boundary, grouped name mode and Search action, typed skip/issue tables, exact ignore-file locations, and real double-click search scopes for a folder, a single file and a nested ZIP. They also verify table-specific feedback IDs and scoped directories, plus compatibility with older two-column search settings.
 
 The `search-feedback-*` cases cover real pointer column resizing and JSON restoration for both search tables, whole-name and mask queries, compact skipped Path/Reason rows, removal of redundant top space and help, consistent Complete/skipped labels, independent single-window search with real panel navigation and folder creation, minimized-window reuse through Alt+F7, and Alt name ranking by match position with stable row-order ties.
@@ -111,6 +113,12 @@ The full release verification passed all 156 scenarios. An additional comparison
 The [comparison evidence](evidence/complexity-refactor-2026-11-10.json) records all 11 methods, project metrics, limits, source fingerprints and the verified release ID. Generate a fresh [code health report](automated-checks.md#code-health-report) to inspect current projects, folders, files and members. Extracting methods adds function entry points, so total cyclomatic complexity and source lines can increase while individual methods become simpler.
 
 ## Diagnostics and isolation
+
+The `open-feedback-search-actions` and `open-feedback-responsive-columns` scenarios check underlined access keys, primary action changes, disabled Go, Alt+P, responsive column ordering at normal and 150% scale, overflow, saved width preferences and cursor/mark preservation. They run through the actual controls without native windows.
+
+The [independent result-panel usability review](evidence/search-panel-usability-review-2026-11-11.md) covers result transfer, location, return, renaming, command execution and responsive presentation. `search-panel-rename-preserves-identity` and `search-panel-command-working-directory` cover the two findings fixed during finalization.
+
+`open-feedback-resize-boundaries` continuously narrows and widens the actual window at 100% and 150% scale with a fractional, manually sized Name column in the right panel. A layout-pass guard detects non-converging resizing. Before the fix this reproduced an endless layout cycle near a window width of 1231 DIP. Column adaptation now runs after size or preferred-width changes, outside layout completion; its scrollbar allowance does not depend on scrollbar visibility.
 
 The runner starts the same `App`, controls, command handlers and services as the desktop build. Avalonia.Headless replaces the window and input backend; Skia renders into memory. Every application window and dialog must have a zero-valued `STUB` handle. Test scenarios use isolated fixtures and recording launchers unless a scenario explicitly tests the real Windows adapter with a controlled windowless endpoint.
 

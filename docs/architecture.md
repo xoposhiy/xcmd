@@ -71,6 +71,8 @@ Keep an integration interface with its consumer. `IFileSystem` belongs in Core b
 
 ## Desktop
 
+Button access keys use underlined letters (`AccessText` with `ShowAccessKey = true`), never an Alt shortcut suffix in the caption. Indicate the action performed by Enter with the shared primary button style, without an Enter suffix. When Enter depends on focus, update the primary appearance with that context; do not change keyboard routing merely to style a button. Function-key hints such as F3 may remain visible.
+
 Put code in Desktop when it interprets input, controls an interaction, or maps application values to the actual UI.
 
 Current examples:

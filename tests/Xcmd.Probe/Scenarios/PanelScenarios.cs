@@ -436,10 +436,10 @@ public static class PanelScenarios
             var before = table.Columns[0].ActualWidth;
             c.Input.MovePointer(origin);
             c.Input.PressPointer(origin, MouseButton.Left);
-            c.Input.MovePointer(origin + new Vector(40, 0), RawInputModifiers.LeftMouseButton);
-            c.Input.ReleasePointer(origin + new Vector(40, 0), MouseButton.Left);
+            c.Input.MovePointer(origin - new Vector(40, 0), RawInputModifiers.LeftMouseButton);
+            c.Input.ReleasePointer(origin - new Vector(40, 0), MouseButton.Left);
             await c.SettleAsync();
-            Check(table.Columns[0].ActualWidth > before + 20, "Dragging the real column separator resizes the column.");
+            Check(table.Columns[0].ActualWidth < before - 20, "Dragging the real column separator shrinks the name column within the panel.");
         }),
         new("double-click-directory", "UC20", async c =>
         {

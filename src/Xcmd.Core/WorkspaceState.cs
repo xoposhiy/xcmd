@@ -1,7 +1,8 @@
 namespace Xcmd.Core;
 
 public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cursor, string[] Selected,
-    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false);
+    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false, SearchPanelState? SearchResults = null);
+public sealed record SearchPanelState(string Root, FileSearchResult[] Results, string? Cursor, string[] Selected, bool HasMarks, SortOrder Sort, double ScrollX, double ScrollY);
 public sealed record ColumnState(double Width, bool Star);
 public sealed record WindowPlacement(int X, int Y, double Width, double Height, bool Maximized, bool Minimized = false, bool Active = true);
 public sealed record FeedbackInteraction(string Action, string ElementId, string ElementName);
@@ -52,7 +53,19 @@ public sealed record WorkspaceState(int Version, PanelState Left, PanelState Rig
             !ValidPanelHistory(panel.History) || !ValidPanelLayout(panel))
             throw new InvalidDataException("The saved panel state is invalid.");
         ValidateDirectorySizes(panel.Sizes);
+        ValidateSearchPanel(panel.SearchResults);
     }
+
+    private static void ValidateSearchPanel(SearchPanelState? results)
+    {
+        if (results == null) return;
+        if (!ValidDirectoryPath(results.Root) || results.Results == null || results.Results.Length > 20000 || !results.Results.All(ValidSearchResult) ||
+            results.Selected == null || results.Sort == null || !Enum.IsDefined(results.Sort.Field) || !ValidOffset(results.ScrollX) || !ValidOffset(results.ScrollY))
+            throw new InvalidDataException("The saved search result panel is invalid.");
+    }
+
+    private static bool ValidSearchResult(FileSearchResult? result) => result != null && result.Entry != null &&
+        ValidDirectoryPath(result.Entry.FullPath) && !string.IsNullOrWhiteSpace(result.RelativePath);
 
     private static bool ValidDirectoryPath(string? path) =>
         !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path);

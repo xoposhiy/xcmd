@@ -33,6 +33,8 @@ To open specific directories:
 
 ## Controls
 
+File panels shrink the Name column as space decreases, then hide Modified, Size and Type in that order. Widening the panel restores those columns and retains your column width preferences. In Find files, To panel has an underlined P for Alt+P. The primary blue button follows keyboard context: Search in query fields and Go to file in results.
+
 The main window combines menus and window controls in one title row. Drag the free title area to move the window, or double-click it to maximize or restore. Feedback and Notes are on the right of the bottom status bar.
 
 | Input | Action |

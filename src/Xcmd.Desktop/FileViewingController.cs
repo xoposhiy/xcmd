@@ -62,7 +62,7 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
     {
         var panel = owner.ActivePanel;
         if (panel.Current is not { Entry.IsDirectory: false } row) { owner.SetError("Select a file to edit."); return; }
-        await EditFileAsync(row.Entry.FullPath, panel.Session.DirectoryPath);
+        await EditFileAsync(row.Entry.FullPath, panel.OperationDirectory);
     }
 
     private async Task EditFileAsync(string path, string directory)

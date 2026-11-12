@@ -32,7 +32,7 @@ public sealed class DirectoryUpdates : IDisposable
             foreach (var panel in new[] { window.Left, window.Right })
             {
                 var path = panel.Session.DirectoryPath;
-                if (ArchivePath.IsEntry(path))
+                if (panel.IsSearchResults || ArchivePath.IsEntry(path))
                 {
                     if (monitors.Remove(panel, out var old)) old.Monitor.Dispose();
                     continue;
