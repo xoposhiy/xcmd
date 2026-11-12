@@ -70,5 +70,15 @@ public static class PriorityBatchScenarios
             await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
             Equal(FileOperationState.Cancelled, c.Window.Operations.Jobs.Last().State, "Escape cancels waiting work");
         }),
+        new("priority-selected-sizes", "PANEL-01; selected files and measured folders total without traversal", async c =>
+        {
+            await c.SelectAsync("folder1"); await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
+            Check(Summary(c).Contains("incomplete", StringComparison.Ordinal), "Unknown folder sizes are explicit");
+            c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 0, 0), DateTimeOffset.UtcNow));
+            Check(Summary(c).Contains("42 bytes", StringComparison.Ordinal), "Calculated folder bytes contribute immediately");
+            c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 1, 0), DateTimeOffset.UtcNow));
+            Check(Summary(c).Contains("≥ 42", StringComparison.Ordinal), "Partial measurements remain lower bounds");
+            Check(!c.Window.IsCalculatingDirectorySizes, "Selection never starts a scan");
+        }),
     ];
 }
