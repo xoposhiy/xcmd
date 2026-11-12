@@ -8,13 +8,13 @@ public sealed record SystemIconPixels(int Size, byte[] Bytes);
 
 public static class SystemIcons
 {
-    public static SystemIconPixels Read(string path, bool directory, int minimumSize = 16)
+    public static SystemIconPixels Read(string path, bool directory, int minimumSize = 16, bool useFileAttributes = false)
     {
         var initialized = CoInitializeEx(0, 0) >= 0;
         var info = new ShellFileInfo();
         try
         {
-            var attributesOnly = ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
+            var attributesOnly = useFileAttributes || ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
             var flags = 0x100u | 1u | (attributesOnly ? 0x10u : 0);
             var shellName = ShellName(path, directory, attributesOnly);
             if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags) == 0 || info.Icon == 0)
@@ -25,9 +25,10 @@ public static class SystemIcons
                 DestroyIcon(info.Icon); info.Icon = 0;
                 if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags & ~1u) == 0 || info.Icon == 0)
                     throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
-                size = NativeSize(info.Icon);
             }
-            return Render(info.Icon, size);
+            // Shell sizes are discrete (often 16 or 32). Render to the requested
+            // physical size without changing the icon's 16-DIP layout slot.
+            return Render(info.Icon, minimumSize);
         }
         finally { if (info.Icon != 0) DestroyIcon(info.Icon); if (initialized) CoUninitialize(); }
     }

@@ -132,6 +132,8 @@ These checks use the actual production styles and controls. The implementation i
 
 ## Limits
 
+`remarks-native-icons-and-directory-shortcuts` changes the same headless window through 100%, 125%, 150%, 200%, 150% and 100% scaling. Both file panels use real Windows shell icons. Every image must keep a 16-DIP width and height while its bitmap has exactly the physical pixel size required by the current scale. The check captures 100% and 150% offscreen images. It covers scale-change handling without requiring visible windows; native monitor movement and Windows message delivery retain the limits below.
+
 - Headless checks do not prove native Windows keyboard delivery, AltGr, IME, clipboard integration, Explorer drag-and-drop, shell-extension menus, GPU rendering, native monitor placement or focus during monitor changes.
 - Native keyboard-layout translation and Windows system-icon retrieval have direct integration checks. This does not replace native input-backend coverage.
 - External program appearance and interactive behavior remain outside application offscreen checks. Native launch tests prove the application's Windows Shell contract with a controlled endpoint.

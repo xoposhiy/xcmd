@@ -23,22 +23,28 @@ public static class FeedbackRemarksProbe
 
     public static async Task CheckNativeIconsAsync(ProbeContext context)
     {
-        await context.Window.Left.Icons.Completion;
-        var icons = context.Window.Left.Table.GetVisualDescendants().OfType<Image>().Where(image => image.Source is WriteableBitmap).ToArray();
+        var panels = new[] { context.Window.Left, context.Window.Right };
+        foreach (var panel in panels) await panel.Icons.Completion;
+        var icons = panels.SelectMany(panel => panel.Table.GetVisualDescendants().OfType<Image>()).Where(image => image.Source is WriteableBitmap).ToArray();
         Check(icons.Length > 0, "Real Windows icons are loaded");
-        foreach (var scale in new[] { 1d, 1.5d })
+        foreach (var scale in new[] { 1d, 1.25d, 1.5d, 2d, 1.5d, 1d })
         {
-            context.Window.SetScaleForTest(scale); await context.SettleAsync(); await context.Window.Left.Icons.Completion; await context.SettleAsync();
+            context.Window.SetScaleForTest(scale); await context.SettleAsync();
+            foreach (var panel in panels) await panel.Icons.Completion;
+            await context.SettleAsync();
             foreach (var image in icons)
             {
                 var bitmap = (WriteableBitmap)image.Source!;
-                Check(bitmap.PixelSize.Width >= Math.Ceiling(16 * scale), "Icons use a native source large enough for the display scale");
-                Check(Math.Abs(image.Width * scale - bitmap.PixelSize.Width) < 0.01, "Icons use one source pixel per display pixel");
-                Check(Math.Abs(image.Height * scale - bitmap.PixelSize.Height) < 0.01, "Icon height keeps its native pixel size");
+                Equal(16d, image.Width, "DPI changes preserve the logical icon width");
+                Equal(16d, image.Height, "DPI changes preserve the logical icon height");
+                Equal(16d, image.Bounds.Width, "The actual icon layout stays inside its slot");
+                Equal(16d, image.Bounds.Height, "The actual icon height stays inside its row");
+                Equal((int)Math.Ceiling(16 * scale), bitmap.PixelSize.Width, "Windows renders the exact physical width for the display scale");
+                Equal((int)Math.Ceiling(16 * scale), bitmap.PixelSize.Height, "Windows renders the exact physical height for the display scale");
             }
+            if (scale == 1.5) await context.ScreenshotAsync("native-icons-150");
         }
-        await context.ScreenshotAsync("native-icons-150");
-        context.Window.SetScaleForTest(1);
+        await context.ScreenshotAsync("native-icons-100");
     }
 
     public static void CheckCompactResults(FileSearchWindow window)

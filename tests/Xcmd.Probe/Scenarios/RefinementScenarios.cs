@@ -234,6 +234,31 @@ public static class RefinementScenarios
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "A second Enter returns to the directory we left");
             Equal("folder1", c.Window.Left.Current?.Name, "Returning selects the child directory");
         }),
+        new("refinement-system-icons-cache-capacity", "UC20; folder icons remain visible after browsing more than 512 paths", async c =>
+        {
+            for (var index = 0; index < 540; index++)
+                Directory.CreateDirectory(Path.Combine(c.LeftPath, $"icon-folder-{index:D4}"));
+            await c.Window.Left.LoadAsync(c.LeftPath);
+            await c.KeyAsync(Key.Home, RawInputModifiers.Control);
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var page = 0; page < 100; page++)
+            {
+                await c.Window.Left.Icons.Completion;
+                foreach (var image in c.Window.Left.Table.GetVisualDescendants().OfType<Image>().Where(image => image.DataContext is FileRow))
+                {
+                    var row = (FileRow)image.DataContext!;
+                    Check(image.Source != null, "Every realised row has an icon: " + row.Name);
+                    if (row.Entry.IsDirectory) seen.Add(row.Entry.FullPath);
+                }
+                if (c.Window.Left.Table.SelectedIndex == c.Window.Left.Rows.Count - 1) break;
+                await c.KeyAsync(Key.PageDown);
+            }
+            Check(seen.Count > 512, "Browsing exercised more unique folder icons than the cache capacity");
+            await FeedbackRemarksProbe.CheckNativeIconsAsync(c);
+            await c.Window.Left.LoadAsync(c.RightPath); await c.SettleAsync();
+            await c.Window.Left.Icons.Completion;
+            Check(c.Row("destination.txt").GetVisualDescendants().OfType<Image>().Any(image => image.Source != null), "New file types still have icons after the cache fills");
+        }),
         new("refinement-system-icons", "UC20; native integration", async c =>
         {
             var folder = await Task.Run(() => SystemIcons.Read(Path.Combine(c.LeftPath, "folder1"), true));

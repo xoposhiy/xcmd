@@ -322,5 +322,9 @@
   {
     "noteId": "2a9d66ab37e24d059e3d1c5cac314403",
     "summary": "Search and Stop appear below both query fields and the options. Their placement shows that Search applies to the complete query."
+  },
+  {
+    "noteId": "6393da3607b1494abf21917291ca66e8",
+    "summary": "File and folder icons keep a fixed 16-DIP layout size when the window changes DPI. Windows icons are rendered to the exact physical size for the current display scale, so 32-pixel shell icons no longer enlarge rows on 125% or 150% monitors. Both panels are checked through repeated 100%, 125%, 150%, 200% and return transitions."
   }
 ]

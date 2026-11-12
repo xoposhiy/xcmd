@@ -12,6 +12,7 @@ namespace Xcmd.Desktop;
 public sealed class FileIconCache : IDisposable
 {
     private readonly Dictionary<string, Task<WriteableBitmap?>> icons = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<WriteableBitmap?>> defaults = new(StringComparer.Ordinal);
     private readonly HashSet<Task> bindings = [];
     private readonly List<WriteableBitmap> loaded = [];
     private bool disposed;
@@ -50,27 +51,38 @@ public sealed class FileIconCache : IDisposable
         var key = identity + "|" + minimumSize;
         if (!icons.TryGetValue(key, out var task))
         {
-            if (icons.Count >= 512) return;
-            task = LoadAsync(entry, minimumSize); icons[key] = task;
+            // Keep path-specific shell icons bounded, but never leave later rows blank.
+            if (icons.Count >= 512) task = DefaultAsync(entry, minimumSize);
+            else { task = LoadAsync(entry, minimumSize); icons[key] = task; }
         }
         var bitmap = await task;
+        bitmap ??= await DefaultAsync(entry, minimumSize);
         if (!disposed && image.DataContext == row && minimumSize == (int)Math.Ceiling(16 * (TopLevel.GetTopLevel(image)?.RenderScaling ?? 1)))
         { image.Source = bitmap; SizeImage(image); }
     }
 
     private static void SizeImage(Image image)
     {
-        if (image.Source is not WriteableBitmap bitmap) return;
-        var scale = TopLevel.GetTopLevel(image)?.RenderScaling ?? 1;
-        image.Width = bitmap.PixelSize.Width / scale;
-        image.Height = bitmap.PixelSize.Height / scale;
+        image.Width = 16;
+        image.Height = 16;
     }
 
-    private async Task<WriteableBitmap?> LoadAsync(FileEntry entry, int minimumSize)
+    private Task<WriteableBitmap?> DefaultAsync(FileEntry entry, int minimumSize)
+    {
+        var key = (entry.IsDirectory ? "folder|" : "file|") + minimumSize;
+        if (!defaults.TryGetValue(key, out var task))
+        {
+            task = LoadAsync(entry, minimumSize, true);
+            defaults[key] = task;
+        }
+        return task;
+    }
+
+    private async Task<WriteableBitmap?> LoadAsync(FileEntry entry, int minimumSize, bool generic = false)
     {
         try
         {
-            var pixels = await Task.Run(() => SystemIcons.Read(entry.FullPath, entry.IsDirectory, minimumSize));
+            var pixels = await Task.Run(() => SystemIcons.Read(generic ? "file" : entry.FullPath, entry.IsDirectory, minimumSize, generic));
             if (disposed) return null;
             var bitmap = new WriteableBitmap(new PixelSize(pixels.Size, pixels.Size), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
             using var buffer = bitmap.Lock();
@@ -86,5 +98,6 @@ public sealed class FileIconCache : IDisposable
         disposed = true;
         foreach (var bitmap in loaded) bitmap.Dispose();
         loaded.Clear();
+        icons.Clear(); defaults.Clear();
     }
 }
