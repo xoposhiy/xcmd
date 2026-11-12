@@ -182,6 +182,8 @@ The single command row below the panels starts programs and opens files through 
 
 Plain typing from files inserts text in the command line. Left, Right and Ctrl+L focus the line. Up or Down returns focus to the active panel without moving its cursor. Escape clears the line and file marks, then returns focus to that panel without moving the cursor. Alt+Up and Alt+Down recall commands and restore an unfinished draft after the latest command. From files, Alt+Up recalls a command; Alt+Down keeps directory history. Tab from the line switches to the other panel.
 
+Ctrl+Space in the command line offers matching file and folder names at the caret, programs from PATH in the first word, and environment names after `%`. Up/Down chooses a suggestion; Enter inserts it without running the command. Escape dismisses suggestions and keeps the draft. Paths with spaces are quoted. Tab continues to switch panels. Alt+Up/Down filters command history by the original typed prefix, skips unrelated entries and restores the unfinished draft after the newest match.
+
 Ctrl+C copies selected command text. Without a selection, Ctrl+C copies the whole command and keeps the caret in place. An empty command leaves the clipboard unchanged. Long directory paths keep their right end visible; hover over the path to see the full directory. Keyboard hints use separators and wrap in narrow windows.
 
 `cd <path>` changes the active panel directory. It accepts relative paths, absolute paths, quoted paths, `cd..` and the optional `/d` form. Bare `cd` keeps the current directory. A failed directory change leaves the panel and command text available for correction. `cd` does not start an external program.

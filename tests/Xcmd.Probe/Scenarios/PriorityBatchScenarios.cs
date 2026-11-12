@@ -80,5 +80,47 @@ public static class PriorityBatchScenarios
             Check(Summary(c).Contains("≥ 42", StringComparison.Ordinal), "Partial measurements remain lower bounds");
             Check(!c.Window.IsCalculatingDirectorySizes, "Selection never starts a scan");
         }),
+        new("priority-command-completion", "CMD-01; Ctrl+Space offers quoted path choices without executing", async c =>
+        {
+            File.WriteAllText(Path.Combine(c.LeftPath, "report one.txt"), "one");
+            File.WriteAllText(Path.Combine(c.LeftPath, "report two.txt"), "two");
+            await c.KeyAsync(Key.L, RawInputModifiers.Control); await c.TextAsync("tool rep");
+            await c.KeyAsync(Key.Space, RawInputModifiers.Control);
+            Check(c.Window.CommandLine.Completions.IsOpen, "Completion choices open");
+            Equal(2, c.Window.CommandLine.Completions.Items.ItemCount, "Both matching files are offered");
+            await c.ScreenshotAsync("command-completion");
+            await c.KeyAsync(Key.Down); await c.KeyAsync(Key.Enter);
+            Equal("tool \"report two.txt\"", c.Window.CommandLine.Editor.Text, "Selected path is inserted with quotes");
+            Equal(0, c.Launcher.Requests.Count, "Accepting completion does not execute");
+            c.Window.CommandLine.Editor.Text = "tool rep"; c.Window.CommandLine.Editor.CaretIndex = 8;
+            await c.KeyAsync(Key.Space, RawInputModifiers.Control); await c.KeyAsync(Key.Escape);
+            Equal("tool rep", c.Window.CommandLine.Editor.Text, "Escape preserves the draft");
+            await c.KeyAsync(Key.Tab); Equal(c.Window.Right, c.Window.ActivePanel, "Tab still switches panels");
+            var variable = await CommandCompletions.FindAsync(CommandToken.At("%PA", 3), c.LeftPath, CancellationToken.None);
+            Check(variable.Any(item => item.Value.Equals("%PATH%", StringComparison.OrdinalIgnoreCase)), "Environment names are completed");
+        }),
+        new("priority-command-prefix-history", "CMD-02; history filters by the original prefix and restores the draft", async c =>
+        {
+            c.Window.CommandLine.AddHistory("git status"); c.Window.CommandLine.AddHistory("dotnet build"); c.Window.CommandLine.AddHistory("git diff");
+            await c.KeyAsync(Key.L, RawInputModifiers.Control); await c.TextAsync("git");
+            await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("git diff", c.Window.CommandLine.Editor.Text, "Most recent match");
+            await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("git status", c.Window.CommandLine.Editor.Text, "Unrelated command is skipped");
+            await c.KeyAsync(Key.Down, RawInputModifiers.Alt); await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
+            Equal("git", c.Window.CommandLine.Editor.Text, "Newer returns to the original draft");
+            Equal(0, c.Launcher.Requests.Count, "Browsing never launches a command");
+        }),
+        new("priority-command-directory-quotes", "CMD-01; a completed folder with spaces reaches the real Windows launcher literally", async c =>
+        {
+            Directory.CreateDirectory(Path.Combine(c.LeftPath, "report folder"));
+            var fixture = CommandProbe.Prepare(c);
+            c.Launcher.ForwardTo = new WindowsExternalLauncher(showWindows: false);
+            var command = CommandLine.FormatArgument(fixture.Executable) + " " + CommandLine.FormatArgument(fixture.Report) + " rep";
+            await c.KeyAsync(Key.L, RawInputModifiers.Control); await c.TextAsync(command);
+            await c.KeyAsync(Key.Space, RawInputModifiers.Control); await c.KeyAsync(Key.Enter);
+            Equal(0, c.Launcher.Requests.Count, "Accepting the folder does not run the command");
+            await c.KeyAsync(Key.Enter);
+            var report = await CommandProbe.ReadReportAsync(fixture.Report);
+            Equal("report folder\\", report.Arguments.Single(), "Windows receives the complete directory including its trailing separator");
+        }),
     ];
 }

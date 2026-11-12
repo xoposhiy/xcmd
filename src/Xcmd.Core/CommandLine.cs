@@ -48,8 +48,19 @@ public static class CommandLine
     public static string DirectoryPath(string target, string currentDirectory) =>
         target.Length == 0 ? currentDirectory : Path.GetFullPath(target, currentDirectory);
 
-    public static string FormatArgument(string value) => value.Any(char.IsWhiteSpace) || value.Contains('"')
-        ? "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"" : value;
+    public static string FormatArgument(string value)
+    {
+        if (!value.Any(char.IsWhiteSpace) && !value.Contains('"')) return value;
+        var quoted = new System.Text.StringBuilder("\"");
+        var slashes = 0;
+        foreach (var character in value)
+        {
+            if (character == '\\') { slashes++; continue; }
+            quoted.Append('\\', character == '"' ? slashes * 2 + 1 : slashes).Append(character);
+            slashes = 0;
+        }
+        return quoted.Append('\\', slashes * 2).Append('"').ToString();
+    }
 
     private static string Unquote(string value)
     {
@@ -81,7 +92,10 @@ public sealed class CommandHistory
     public string Browse(string current, bool older)
     {
         if (position == items.Count) draft = current;
-        position = Math.Clamp(position + (older ? -1 : 1), 0, items.Count);
+        var next = position + (older ? -1 : 1);
+        while (next >= 0 && next < items.Count && !items[next].StartsWith(draft, StringComparison.OrdinalIgnoreCase)) next += older ? -1 : 1;
+        if (next < 0) return position == items.Count ? draft : items[position];
+        position = Math.Min(next, items.Count);
         return position == items.Count ? draft : items[position];
     }
 }

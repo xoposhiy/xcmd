@@ -24,10 +24,14 @@ public sealed class CommandLineView : Border
         Padding = new Thickness(5, 2)
     };
     public bool HasKeyboardFocus => Editor.IsKeyboardFocusWithin;
+    public CommandCompletionPopup Completions { get; }
+    private string currentDirectory = "";
+    public Task CompleteAsync() => Completions.OpenAsync(currentDirectory);
     public event Action? Focused;
 
     public CommandLineView()
     {
+        Completions = new CommandCompletionPopup(Editor);
         Margin = new Thickness(0, 6, 0, 4);
         AutomationProperties.SetAutomationId(Editor, "command-line.input");
         AutomationProperties.SetName(Editor, "Command line");
@@ -41,7 +45,7 @@ public sealed class CommandLineView : Border
         Editor.TextChanging += (_, _) => { if (!browsing) history.Reset(); };
     }
 
-    public void SetDirectory(string path) { directory.Text = path + ">"; ToolTip.SetTip(directory, path); }
+    public void SetDirectory(string path) { currentDirectory = path; directory.Text = path + ">"; ToolTip.SetTip(directory, path); }
     public void FocusCommand() => Editor.Focus();
     public void Clear() { Editor.Clear(); history.Reset(); }
     public async Task CopyAllAsync()

@@ -7,7 +7,9 @@ public sealed partial class CommanderWindow
 {
     private void HandleCommandLineKey(KeyEventArgs e)
     {
-        if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
+        if (CommandLine.Completions.HandleKey(e)) { e.Handled = true; return; }
+        if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Control) Execute(CommandLine.CompleteAsync);
+        else if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
         {
             if (ActivePanel.IsSearchResults && string.IsNullOrEmpty(CommandLine.Editor.Text))
             { Activate(ActivePanel); Execute(ActivePanel.ExitSearchResultsAsync); }
