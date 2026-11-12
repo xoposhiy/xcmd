@@ -65,6 +65,7 @@ public sealed partial class FileViewerWindow
         nextPage.IsEnabled = VisibleEnd < FileLength;
         var encoding = Mode == FileViewMode.Text ? selectedEncoding.CodePage > 0 ? selectedEncoding.Label + " (Manual)" : detected.Description : "ASCII bytes";
         readingStatus.Text = $"{(IsArchiveReport ? "Archive report" : Mode.ToString())}{(automaticMode ? " (Auto)" : "")} · {encoding} · Wrap {(Mode == FileViewMode.Text && wrapLines ? "on" : "off")} · {VisibleEnd:N0}/{FileLength:N0} bytes";
+        if (IsFollowing) readingStatus.Text += " · Following";
         Progress.Text = $"{ViewedPercent:0.0}%";
         var visibleBytes = Math.Max(1, VisibleEnd - FirstVisibleByte);
         updatingScroll = true;
@@ -78,6 +79,7 @@ public sealed partial class FileViewerWindow
 
     private async Task SeekBoundaryAsync(bool end, CancellationToken token)
     {
+        PauseFollowing();
         await LoadPageAsync(end ? Math.Max(0, FileLength - FileSlice.PageSize) / 4 * 4 : 0, token);
         token.ThrowIfCancellationRequested();
         BindScrolling();
@@ -111,6 +113,7 @@ public sealed partial class FileViewerWindow
 
     private async Task MoveViewportAsync(double delta, CancellationToken token)
     {
+        if (delta < 0) PauseFollowing();
         if (Mode == FileViewMode.Image || slice == null) return;
         BindScrolling();
         if (textScroll == null) return;

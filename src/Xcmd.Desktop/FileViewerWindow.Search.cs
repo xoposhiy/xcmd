@@ -55,6 +55,7 @@ public sealed partial class FileViewerWindow
 
     private void SearchChanged()
     {
+        PauseFollowing();
         match = null;
         if (updating) return;
         if (string.IsNullOrEmpty(Search.Text))

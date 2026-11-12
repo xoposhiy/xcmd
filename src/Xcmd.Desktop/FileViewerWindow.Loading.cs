@@ -33,6 +33,7 @@ public sealed partial class FileViewerWindow
 
     private async Task LoadFileAsync(CancellationToken token)
     {
+        PauseFollowing();
         information.Text = "Loading…";
         readingStatus.Text = "Loading…"; Progress.Text = "…";
         ClearSearch();
@@ -73,6 +74,7 @@ public sealed partial class FileViewerWindow
 
     private async Task ChangeModeAsync(FileViewMode mode, CancellationToken token)
     {
+        PauseFollowing();
         if (IsArchiveReport && mode != FileViewMode.Text) return;
         if (mode == FileViewMode.Image && (!CanUseImage || !await PrepareImageAsync(token))) return;
         ClearSearch();
@@ -158,6 +160,7 @@ public sealed partial class FileViewerWindow
         wrapItem.IsEnabled = Mode == FileViewMode.Text && slice != null;
         wrapItem.IsChecked = wrapLines;
         informationItem.IsChecked = information.IsVisible;
+        followItem.IsEnabled = slice != null && text && !IsArchiveReport && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
         previousPage.IsEnabled = text && FirstVisibleByte > 0;
         nextPage.IsEnabled = text && VisibleEnd < FileLength;
@@ -168,6 +171,8 @@ public sealed partial class FileViewerWindow
     private void OnViewerKey(object? sender, KeyEventArgs e)
     {
         if (feedback.IsActive) return;
+        if (e.Key == Key.F && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
+        { ToggleFollowing(); e.Handled = true; return; }
         if (HandleSearchStart(e)) { e.Handled = true; return; }
         if (Commands.IsOpen) return;
         if (e.Key == Key.Escape) { if (IsSearchVisible) ClearSearch(); else Close(); e.Handled = true; return; }

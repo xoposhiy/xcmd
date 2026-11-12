@@ -38,6 +38,8 @@ public sealed partial class FileViewerWindow
         wrapItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(wrapItem);
         informationItem = MenuCommand("File information", "viewer.information", ToggleInformation, new(Key.I, KeyModifiers.Control));
         informationItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(informationItem);
+        followItem = MenuCommand("Follow end of file", "viewer.follow", ToggleFollowing, new(Key.F, KeyModifiers.Control | KeyModifiers.Shift));
+        followItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(followItem);
         view.Add(BuildThemeMenu());
         foreach (var choice in EncodingChoice.All)
         {
