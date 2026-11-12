@@ -42,6 +42,7 @@ public sealed partial class PanelView : Border
     public event Action<string>? LocationVisited;
     public event Action<PanelView>? LoadingRequested;
     public FileIconCache Icons { get; } = new();
+    public GitStatusView Git { get; }
     private NameJump? nameSearch;
     public void ShowNameMatches(NameJump? search)
     {
@@ -155,6 +156,7 @@ public sealed partial class PanelView : Border
     {
         this.fileTypes = fileTypes ?? FileTypeSettings.Bundled();
         Id = id;
+        Git = new GitStatusView(id);
         Name = id;
         Session = new PanelSession(fileSystem);
         Background = UiPalette.Surface;
@@ -242,10 +244,19 @@ public sealed partial class PanelView : Border
         AutomationProperties.SetAutomationId(historyButton, id + ".history");
         ToolTip.SetTip(historyButton, "Directory history (Alt+Down)");
         historyButton.Click += (_, _) => { Activated?.Invoke(this); HistoryRequested?.Invoke(this); };
-        var pathHeader = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
+        var pathHeader = new Grid { Name = id + "LocationHeader", ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 8 };
         pathHeader.Children.Add(path);
-        Grid.SetColumn(historyButton, 1);
+        Grid.SetColumn(Git, 1);
+        pathHeader.Children.Add(Git);
+        Grid.SetColumn(historyButton, 3);
         pathHeader.Children.Add(historyButton);
+        void FitLocationHeader()
+        {
+            Git.MaxWidth = Math.Clamp(pathHeader.Bounds.Width * 0.5, 120, 300);
+            path.MaxWidth = Math.Max(60, pathHeader.Bounds.Width - Git.DesiredSize.Width - historyButton.DesiredSize.Width - 24);
+        }
+        pathHeader.SizeChanged += (_, _) => FitLocationHeader();
+        Git.SizeChanged += (_, _) => FitLocationHeader();
         path.VerticalAlignment = VerticalAlignment.Center;
         var pathContainer = new Border { Padding = new Thickness(8, 0), Child = pathHeader, VerticalAlignment = VerticalAlignment.Center };
         content.Children.Add(pathContainer);
@@ -404,6 +415,7 @@ public sealed partial class PanelView : Border
             sizes.Clear();
             ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
             path.Text = ArchivePath.Display(Session.DirectoryPath);
+            Git.SetDirectory(Session.DirectoryPath);
             path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
             ToolTip.SetTip(path, path.Text);
             AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);

@@ -1,5 +1,11 @@
 # User guide
 
+## Git status
+
+A compact group beside each panel's folder path shows the repository branch and whole-repository status: + staged, ~ changed, ? untracked, − deleted, ! conflicts. A clean working tree uses a green branch name instead of a checkmark. A cloud indicates any configured remote, including without a tracking branch. Counters follow the symbols; their meanings and full values are available in the tooltip. File and selection counts and the total bytes of selected files remain in the bottom status bar. Directories contribute their already calculated sizes; unknown or partial folder sizes show an incomplete lower bound without starting a scan. Ahead/behind counts use the locally known configured upstream (↑ / ↓), showing each arrow only when its count is nonzero; Xcmd never fetches. Detached HEAD shows the short commit ID. Git must be installed and available on PATH.
+
+Status refreshes in the background every three seconds, with cancellation on navigation and a five-second query timeout. It does not block file loading or keyboard input. Git appears as a compact, noninteractive badge immediately after the path, without a fixed split of the header. The file table keeps its position while status updates. Outside a working tree, in archives, in search results, or when Git is unavailable, the Git area is empty. Git text uses 14-unit semibold Consolas on a subtle raised surface: clean branch names and staged/untracked counters are green, modifications amber, deletions/conflicts red. Long values retain their full text in tooltips.
+
 ## Run
 
 Open the permanent `Xcmd.exe` next to the `releases` folder:

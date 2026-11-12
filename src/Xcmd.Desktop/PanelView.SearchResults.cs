@@ -25,6 +25,7 @@ public sealed partial class PanelView
         var selected = searchResults.FirstOrDefault(result => result.Entry.FullPath.Equals(selectedPath, StringComparison.OrdinalIgnoreCase));
         ApplyEntries([], selected?.RelativePath);
         path.Text = "Search results · " + ArchivePath.Display(root);
+        Git.SetDirectory("");
         ToolTip.SetTip(path, path.Text + "\nEscape returns to the previous folder. Ctrl+Left/Right locates the current item.");
         AutomationProperties.SetName(Table, "Search results in " + ArchivePath.Display(root));
     }

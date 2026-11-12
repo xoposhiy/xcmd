@@ -39,6 +39,7 @@ internal static class Program
         scenarios = scenarios.Concat(SearchPanelScenarios.All).ToArray();
         scenarios = scenarios.Concat(OpenFeedbackScenarios.All).ToArray();
         scenarios = scenarios.Concat(DesignSystemScenarios.All).ToArray();
+        scenarios = scenarios.Concat(GitScenarios.All).ToArray();
         scenarios = scenarios.Concat(PriorityBatchScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
