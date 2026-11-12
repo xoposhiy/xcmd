@@ -1,6 +1,6 @@
 namespace Xcmd.Core;
 
-public enum FileOperationKind { Copy, Move, Recycle, Delete }
+public enum FileOperationKind { Copy, Move, Recycle, Delete, CreateZip }
 public enum FileOperationState { Queued, Counting, Running, WaitingForConflict, WaitingForError, Cancelling, Completed, CompletedWithSkippedItems, CompletedWithErrors, Cancelled, Failed }
 public enum FileOutcomeKind { Completed, Skipped, Failed, Partial, Cancelled, NotStarted }
 public enum ConflictAction { Skip, Rename, Replace, Cancel }
@@ -32,6 +32,8 @@ public interface IFileOperationStore
     Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken);
     Task RemoveAsync(FileEntry entry, bool recycle, CancellationToken cancellationToken);
     Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) => Task.CompletedTask;
+    Task<long> CreateZipAsync(FileEntry[] sources, string destination, IProgress<long> progress, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("Creating ZIP archives is unavailable in this location.");
 }
 
 public sealed class FileOperationJob(int id, FileOperationRequest request)

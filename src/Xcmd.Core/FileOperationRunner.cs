@@ -28,7 +28,8 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
                 await FileOperationInventory.CountAsync(job, store, changed);
                 Token.ThrowIfCancellationRequested();
                 job.State = FileOperationState.Running; changed();
-                for (; index < job.Request.Sources.Length; index++)
+                if (job.Request.Kind == FileOperationKind.CreateZip) await CreateZipAsync();
+                else for (; index < job.Request.Sources.Length; index++)
                 {
                     Token.ThrowIfCancellationRequested();
                     var source = job.Request.Sources[index];
@@ -46,6 +47,37 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
                 job.Outcomes.AddRange(job.Request.Sources.Skip(index + 1).Select(entry => new FileOutcome(entry.FullPath, null, FileOutcomeKind.NotStarted)));
             }
             changed();
+        }
+
+        private async Task CreateZipAsync()
+        {
+            var destination = Path.Combine(job.Request.Destination!, job.Request.NewName!);
+            await CheckParentsAsync(job.Request.Destination!);
+            while (true)
+            {
+                var writing = true;
+                var progress = new Progress<long>(bytes =>
+                {
+                    if (!writing || job.State != FileOperationState.Running) return;
+                    job.BytesTransferred = bytes; job.CurrentFileBytes = bytes; changed();
+                });
+                try
+                {
+                    job.CurrentPath = destination;
+                    job.BytesTransferred = await store.CreateZipAsync(job.Request.Sources, destination, progress, Token);
+                    foreach (var source in job.Request.Sources) Complete(source, destination, wholeTree: true);
+                    return;
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                {
+                    writing = false; job.CurrentFileBytes = 0; job.BytesTransferred = 0;
+                    Token.ThrowIfCancellationRequested();
+                    if (await DecideErrorAsync(job.Request.Sources[0], destination, error) == FileErrorAction.Retry) continue;
+                    foreach (var source in job.Request.Sources) job.Record(source, destination, FileOutcomeKind.Failed, error.Message, wholeTree: true);
+                    return;
+                }
+                finally { writing = false; }
+            }
         }
 
         private async Task<bool> AttemptAsync(FileEntry source, string? destination)

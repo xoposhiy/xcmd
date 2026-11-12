@@ -53,6 +53,9 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
     public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) =>
         Task.Run(() => FileCopyMetadata.Apply(source, destination), cancellationToken);
 
+    public Task<long> CreateZipAsync(FileEntry[] sources, string destination, IProgress<long> progress, CancellationToken cancellationToken) =>
+        ZipArchiveWriter.CreateAsync(sources, destination, progress, cancellationToken);
+
     private static Task<long> CopyCoreAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken)
     {
         var temporary = Path.Combine(Path.GetDirectoryName(destination)!, ".xcmd-" + Guid.NewGuid().ToString("N") + ".tmp");

@@ -92,6 +92,17 @@ public sealed partial class CommanderWindow
     private bool HandlePanelCommand(KeyEventArgs e, bool ctrl, bool shift)
     {
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.Shift) { OpenCreateFileDialog(); return true; }
+        if ((e.Key == Key.F10 && e.KeyModifiers == KeyModifiers.Shift ||
+             e.Key == Key.Down && e.KeyModifiers == KeyModifiers.Control) && ActivePanel.Table.IsKeyboardFocusWithin)
+        {
+            if (launchKeysHeld.Add(e.Key)) shell.OpenCurrentMenu();
+            return true;
+        }
+        if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Alt)
+        {
+            if (launchKeysHeld.Add(e.Key)) shell.OpenFileProperties();
+            return true;
+        }
         if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.F3 or Key.F4)
         {
             if (e.Key == Key.F3) viewing.ViewCurrent();

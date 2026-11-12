@@ -79,7 +79,8 @@ public sealed class FileOperationsView : Border
     private FileOperationJob? Current() => queue.Jobs.FirstOrDefault(job => !job.IsFinished && job.State != FileOperationState.Queued);
     private FileOperationJob? Selected() => jobs.SelectedIndex >= 0 && jobs.SelectedIndex < queue.Jobs.Count ? queue.Jobs[jobs.SelectedIndex] : null;
 
-    private static string Label(FileOperationJob job) => $"#{job.Id} {job.Request.Kind} · {State(job.State)} · {job.Request.Sources.Length} selected";
+    private static string Kind(FileOperationKind kind) => kind == FileOperationKind.CreateZip ? "Create ZIP" : kind.ToString();
+    private static string Label(FileOperationJob job) => $"#{job.Id} {Kind(job.Request.Kind)} · {State(job.State)} · {job.Request.Sources.Length} selected";
     private static string State(FileOperationState state) => state switch
     {
         FileOperationState.CompletedWithErrors => "Completed with errors",
@@ -109,7 +110,7 @@ public sealed class FileOperationsView : Border
         if (waiting > 0) extra += $" · {waiting} queued";
         var remaining = FileOperationProgress.Remaining(current, runningTime);
         var estimate = current.State == FileOperationState.Running ? remaining is { } eta ? " · " + Estimate(eta) : " · Estimating time" : "";
-        var action = current.IsFinished || current.State == FileOperationState.WaitingForConflict ? $"{current.Request.Kind} · {State(current.State)}" : current.Request.Kind.ToString();
+        var action = current.IsFinished || current.State == FileOperationState.WaitingForConflict ? $"{Kind(current.Request.Kind)} · {State(current.State)}" : Kind(current.Request.Kind);
         var attention = current.State == FileOperationState.WaitingForConflict ? " · finish the current edit or dialog" : "";
         summary.Text = $"{action} · {counts}{extra}{estimate}{attention}";
         currentPath.Text = current.CurrentPath; ToolTip.SetTip(currentPath, current.CurrentPath);

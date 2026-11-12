@@ -62,6 +62,8 @@ public static class FileOperationRules
         if (request.Kind is FileOperationKind.Recycle or FileOperationKind.Delete) return;
         if (request.Destination == null) throw new ArgumentException("Choose a destination folder.");
         if (request.NewName != null && PanelRules.ValidateName(request.NewName) is { } error) throw new ArgumentException(error);
+        if (request.Kind == FileOperationKind.CreateZip && (request.Sources.Length == 0 || request.NewName == null))
+            throw new ArgumentException("Select files and choose a name for the ZIP archive.");
         foreach (var source in request.Sources)
             ValidateTarget(source, Path.Combine(request.Destination, request.NewName ?? source.Name));
     }

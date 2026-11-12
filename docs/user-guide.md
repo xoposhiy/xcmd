@@ -53,6 +53,9 @@ The main window combines menus and window controls in one title row. Drag the fr
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
 | Enter / double-click a file | Enter a common archive, or open another file through its Windows association |
+| Right-click a file or folder | Show its native Windows Explorer context menu; Shift includes extended commands. A marked item opens the marked group's menu; an unmarked item opens its own menu and keeps the marks. Group members must come from one physical folder. |
+| Alt+Enter in a file panel | Open Windows Properties for the current file or folder |
+| Shift+F10 / Ctrl+Down in a file panel | Open the current file or folder's Windows context menu beside its row; preserve cursor and marks |
 | Ctrl+PageDown | Try to open the current file as an archive, regardless of extension |
 | F3 / F4 on a file | View inside Xcmd / edit in Notepad++ |
 | Shift+F4 | Create a new empty file and open it in Notepad++; existing files are never overwritten |
@@ -106,6 +109,12 @@ The first pass searches ordinary files and supported archives. Encoding detectio
 Editing fields and checkboxes keeps current matches and background work. Press Search, or Enter in a query field, checkbox or closed name-mode list, to apply changes. An unchanged running query is not restarted. Stop keeps current matches and marks the search incomplete. Escape stops active work; press Escape again to close. The status reports incomplete coverage, with affected paths in collapsed details. Plain text search handles long lines. See [search behavior](search.md) for the current scope and limits.
 
 ## Archive browsing prototype
+
+To create an archive, mark files or folders and right-click one of the marked items, then choose **Add to ZIP…**. Shift+F10 or Ctrl+Down opens the same menu from the keyboard. Right-clicking an unmarked item packs only that item and preserves existing marks. Choose a name in **Create ZIP**; `.zip` is added if omitted. The new archive is saved beside the selected items, includes selected folder trees and empty folders, and preserves Unicode names. Existing archives are not overwritten: choose another name.
+
+ZIP creation runs in the normal operation queue while the panels remain available. Use the operation strip to cancel, or Retry after an error. A completed archive appears after panel refresh. The writer uses temporary output and publishes only a completed ZIP; failure or cancellation removes the temporary archive and preserves all sources. Links and junctions are rejected. Passwords, other output formats and adding entries to an existing archive are not implemented yet.
+
+Xcmd hosts the classic Windows shell menu, corresponding to **Show more options** in Windows 11 Explorer. It retains the installed classic shell extensions and adds Xcmd's direct ZIP command. The compact main Windows 11 Explorer menu has a different command model and appearance.
 
 Enter or double-click a ZIP, RAR, 7z, TAR or compressed archive to browse its entries in the same panel. Folders, sorting, marks and parent navigation work as in a regular directory. The footer identifies a read-only archive. Backspace, Ctrl+PageUp or the parent row leaves a folder; at the archive root, it returns to the containing location and selects the archive. Nested archives use the same controls. Saved workspaces restore archive locations and cursors. Ctrl+R reloads archive contents; archive panels do not use the filesystem directory monitor.
 

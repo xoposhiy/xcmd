@@ -228,6 +228,7 @@ public sealed partial class PanelView : Border
             if (EditingRow == null && e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any())
                 OpenRequested?.Invoke(this);
         };
+        AttachShellInput();
         var content = new Grid { RowDefinitions = new RowDefinitions("34,*,29") };
         var historyButton = new Button
         {

@@ -31,7 +31,8 @@ public sealed partial class CommanderWindow : Window
     public string ViewerThemeId => viewing.ThemeId;
     public event Func<Task>? ViewerThemeChanged;
     internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
-    public bool IsMenuOpen => mainMenu?.IsOpen == true;
+    private readonly ShellInteractionController shell;
+    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true;
     public PanelView Left { get; }
     public PanelView Right { get; }
     public PanelView ActivePanel { get; private set; }
@@ -55,8 +56,9 @@ public sealed partial class CommanderWindow : Window
     public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
-    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null)
+    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null)
     {
+        shell = shellInteraction ?? new ShellInteractionController();
         archives = new ArchiveController(this, archiveCacheRoot, archiveContents);
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
         fileSystem ??= new LocalFileSystem();
@@ -72,7 +74,9 @@ public sealed partial class CommanderWindow : Window
             Execute(RefreshOperationPanelsAsync);
             var failure = job.Outcomes.FirstOrDefault(result => result.Kind == FileOutcomeKind.Failed);
             if (failure != null) SetError(Path.GetFileName(failure.Source) + ": " + failure.Message);
-            else status.Text = $"{job.Request.Kind}: {job.ProcessedFiles:N0}/{job.TotalFiles:N0} files · {job.SkippedFiles:N0} skipped · {job.State}";
+            else status.Text = job.Request.Kind == FileOperationKind.CreateZip && job.State == FileOperationState.Completed
+                ? $"ZIP created: {job.Request.NewName} · {job.CompletedFiles:N0} files"
+                : $"{job.Request.Kind}: {job.ProcessedFiles:N0}/{job.TotalFiles:N0} files · {job.SkippedFiles:N0} skipped · {job.State}";
         };
         Title = "Xcmd";
         Icon = ApplicationIcon.Load();
@@ -110,6 +114,7 @@ public sealed partial class CommanderWindow : Window
         root.Children.Add(applicationLayout);
         Content = root;
         Feedback = new FeedbackController(this, root);
+        shell.Attach(this, operationStore);
         frame.AttachFeedback(Feedback);
         AddHandler(PointerMovedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);

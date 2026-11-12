@@ -50,4 +50,11 @@ public sealed class ArchiveFileSystem(IFileSystem fileSystem, IArchiveContents a
 
     public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) =>
         ArchivePath.IsEntry(source) ? Task.CompletedTask : operations.CopyMetadataAsync(source, destination, cancellationToken);
+
+    public Task<long> CreateZipAsync(FileEntry[] sources, string destination, IProgress<long> progress, CancellationToken cancellationToken)
+    {
+        ArchivePath.RequireWritable(destination);
+        foreach (var source in sources) ArchivePath.RequireWritable(source.FullPath);
+        return operations.CreateZipAsync(sources, destination, progress, cancellationToken);
+    }
 }

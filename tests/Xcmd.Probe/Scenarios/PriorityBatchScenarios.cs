@@ -170,5 +170,36 @@ public static class PriorityBatchScenarios
             Equal(5L, viewer.FileLength, "Truncation resets the loaded length");
             await c.ScreenshotAsync("viewer-follow", viewer);
         }),
+        new("priority-shell-group", "PANEL-04; marked item targets the group; an unmarked item preserves marks", async c =>
+        {
+            await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
+            await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
+            var marks = c.Window.Left.SelectedNames();
+            await ShellInputProbe.RightClickAsync(c, "alpha.txt");
+            Equal(2, c.Shell.MenuGroups.Last().Length, "Marked group is passed to Windows");
+            Check(c.Shell.MenuGroups.Last().Contains(Path.Combine(c.LeftPath, "file2.log")), "Second mark is included");
+            await ShellInputProbe.RightClickAsync(c, "zeta.md");
+            Equal(Path.Combine(c.LeftPath, "zeta.md"), c.Shell.MenuGroups.Last().Single(), "Unmarked item receives a single-item menu");
+            Check(marks.SequenceEqual(c.Window.Left.SelectedNames()), "Right-click never removes existing marks");
+            await ShellInputProbe.RightClickAsync(c, "alpha.txt");
+            await c.KeyAsync(Key.F10, RawInputModifiers.Shift);
+            Equal(2, c.Shell.MenuGroups.Last().Length, "The keyboard menu also targets the marked group");
+            var native = WindowsShellInteraction.InspectMenu([Path.Combine(c.LeftPath, "alpha.txt"), Path.Combine(c.LeftPath, "file2.log")]);
+            Check(native.Verbs.Contains("copy", StringComparer.OrdinalIgnoreCase), "Real Windows group exposes copy without displaying a menu");
+        }),
+        new("priority-shell-mixed-folders", "PANEL-04; mixed-folder results explain the limitation and keep their marks", async c =>
+        {
+            var first = c.Window.Left.Rows.Single(row => row.Name == "alpha.txt").Entry;
+            var second = c.Window.Right.Rows.Single(row => row.Name == "destination.txt").Entry;
+            c.Window.Left.ShowSearchResults(c.FixturePath, [new(first, "left/alpha.txt"), new(second, "right/destination.txt")]);
+            c.Window.Left.FocusCurrent(); await c.KeyAsync(Key.A, RawInputModifiers.Control);
+            await c.KeyAsync(Key.F10, RawInputModifiers.Shift);
+            Equal(0, c.Shell.MenuGroups.Count, "Unsupported groups never reach Windows");
+            Check(c.Window.LastError?.Contains("one folder", StringComparison.Ordinal) == true, "The limitation explains the next action");
+            Equal(2, c.Window.Left.SelectedNames().Length, "The group stays marked");
+            await c.KeyAsync(Key.Escape);
+            await ShellInputProbe.RightClickAsync(c, "alpha.txt");
+            Equal(first.FullPath, c.Shell.MenuGroups.Last().Single(), "The file's ordinary folder still supports its menu");
+        })
     ];
 }
