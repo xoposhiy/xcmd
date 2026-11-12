@@ -32,6 +32,7 @@ public sealed partial class CommanderWindow : Window
     public event Func<Task>? ViewerThemeChanged;
     internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
     private readonly ShellInteractionController shell;
+    private readonly PanelClipboardController panelClipboard;
     public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true;
     public PanelView Left { get; }
     public PanelView Right { get; }
@@ -42,7 +43,7 @@ public sealed partial class CommanderWindow : Window
     public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null || OperationDialog != null;
     public FavoriteDirectories Favorites { get; } = new();
     public event Func<Task>? FavoritesChanged;
-    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Operations.HasPendingWork || viewing.IsBusy;
+    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Operations.HasPendingWork || viewing.IsBusy || panelClipboard?.IsBusy == true;
     public string? LastError { get; private set; }
     public string StatusMessage => status.Text ?? "";
     public List<string> Trace { get; } = [];
@@ -86,6 +87,7 @@ public sealed partial class CommanderWindow : Window
         Left = new PanelView("left", fileSystem, fileTypes);
         Right = new PanelView("right", fileSystem, fileTypes);
         ActivePanel = Left;
+        panelClipboard = new PanelClipboardController(this, operationStore);
         OperationsView.FilesRequested += () => ActivePanel.FocusCurrent();
         foreach (var panel in new[] { Left, Right })
         {

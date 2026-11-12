@@ -344,6 +344,10 @@
     "summary": "Ahead and behind arrows are shown independently only for nonzero counts. A synchronized branch has no arrows; a one-sided difference shows only the relevant arrow. Zero counts remain available in the detailed tooltip."
   },
   {
+    "noteId": "74880312454348a7afed3dc7ef2461cb",
+    "summary": "Ctrl+Enter and Ctrl+Shift+Enter select the inserted name or path, including necessary quotes and excluding the trailing space and existing draft. Immediate Ctrl+C copies that selection. Ctrl+Shift+C in a file panel directly copies the current full path."
+  },
+  {
     "noteId": "6393da3607b1494abf21917291ca66e8",
     "summary": "File and folder icons keep a fixed 16-DIP layout size when the window changes DPI. Windows icons are rendered to the exact physical size for the current display scale, so 32-pixel shell icons no longer enlarge rows on 125% or 150% monitors. Both panels are checked through repeated 100%, 125%, 150%, 200% and return transitions."
   }

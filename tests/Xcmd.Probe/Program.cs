@@ -41,6 +41,7 @@ internal static class Program
         scenarios = scenarios.Concat(DesignSystemScenarios.All).ToArray();
         scenarios = scenarios.Concat(ShellScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitScenarios.All).ToArray();
+        scenarios = scenarios.Concat(ClipboardScenarios.All).ToArray();
         scenarios = scenarios.Concat(PriorityBatchScenarios.All).ToArray();
         scenarios = scenarios.Concat(ZipPackingScenarios.All).ToArray();
         if (args.Contains("--list"))

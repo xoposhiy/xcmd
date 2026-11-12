@@ -15,6 +15,14 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
     private bool current;
     private bool active;
     private bool marked;
+    private bool cut;
+    public bool IsCut => cut;
+    public double ContentOpacity => cut ? 0.5 : 1;
+    public void SetCut(bool value)
+    {
+        if (cut == value) return;
+        cut = value; Changed(nameof(IsCut)); Changed(nameof(ContentOpacity));
+    }
     public int NameMatchStart { get; private set; }
     public int NameMatchLength { get; private set; }
     public void SetNameMatch(int start, int length)

@@ -43,6 +43,8 @@ File panels shrink the Name column as space decreases, then hide Modified, Size 
 
 The main window combines menus and window controls in one title row. Drag the free title area to move the window, or double-click it to maximize or restore. Feedback and Notes are on the right of the bottom status bar.
 
+File clipboard commands use Windows file-list and copy/move formats for exchange with Explorer. Copying into the source folder creates a free `name (copy)` or numbered copy; cutting and pasting into the source folder leaves the original in place. Conflicts use the existing Skip, Rename and Replace choices; a partial cut retains the remaining source items on the clipboard. Search result panels and archives are not paste destinations. Use F5 to extract archive members before putting them on the file clipboard. Text inputs retain ordinary text copy, cut and paste.
+
 | Input | Action |
 | --- | --- |
 | Up / Down, Home / End, Ctrl+Home / Ctrl+End | Move the file cursor and keep marks |
@@ -50,6 +52,9 @@ The main window combines menus and window controls in one title row. Drag the fr
 | Shift+Up / Shift+Down | Toggle the departed row and move the cursor; plain arrows keep the marks |
 | Shift+Home / End / PageUp / PageDown | Mark a range to a boundary or page; repeat a fully marked range to remove its marks |
 | Ctrl+A, Ctrl+click, Shift+click | Select all, toggle a row, select a range |
+| Ctrl+C / Ctrl+X in a file panel | Put marked files/folders (or the current item) on the Windows clipboard for copy / move; cut items are dimmed until the clipboard changes or the move completes |
+| Ctrl+V in a file panel | Paste into the folder displayed in that panel, regardless of the highlighted folder; use the operation queue and conflict choices |
+| Ctrl+Shift+C in a file panel | Copy the current item's complete path as text |
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
 | Enter / double-click a file | Enter a common archive, or open another file through its Windows association |
@@ -64,7 +69,7 @@ The main window combines menus and window controls in one title row. Drag the fr
 | `cd <path>` | Change the active panel directory; relative and quoted paths work |
 | Up / Down in the command line | Return focus to the active file panel |
 | Alt+Up / Alt+Down in the command line | Recall an older / newer command; return to the unfinished draft |
-| Ctrl+Enter / Ctrl+Shift+Enter | Insert the current file name / full path; quote spaces |
+| Ctrl+Enter / Ctrl+Shift+Enter | Insert and select the current file name / full path; quote spaces; Ctrl+C immediately copies the inserted argument |
 | Escape | Clear file marks and the command line, then focus files; editing and search keep their own first Escape action |
 | Enter / double-click on `..`, Ctrl+PageUp, Backspace | Open the parent directory and restore its cursor |
 | Alt+Down / panel History button | Open the shared navigation window with History active |

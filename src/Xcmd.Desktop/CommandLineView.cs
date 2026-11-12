@@ -72,7 +72,10 @@ public sealed class CommandLineView : Border
         var text = Editor.Text ?? "";
         var start = Math.Min(Editor.SelectionStart, Editor.SelectionEnd);
         var separator = start > 0 && !char.IsWhiteSpace(text[start - 1]) ? " " : "";
-        InsertText(separator + Core.CommandLine.FormatArgument(value) + " ");
+        var argument = Core.CommandLine.FormatArgument(value);
+        InsertText(separator + argument + " ");
+        Editor.SelectionStart = start + separator.Length;
+        Editor.SelectionEnd = Editor.SelectionStart + argument.Length;
     }
     public CommandLineState Capture() => new(Editor.Text ?? "", history.Capture(), HasKeyboardFocus,
         Editor.CaretIndex, Editor.SelectionStart, Editor.SelectionEnd);

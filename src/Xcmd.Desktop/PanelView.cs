@@ -28,6 +28,12 @@ public sealed partial class PanelView : Border
     private FileRow? currentRow;
     private bool isActive;
     private HashSet<FileRow> markedRows = [];
+    private HashSet<string> cutPaths = new(StringComparer.OrdinalIgnoreCase);
+    public void SetCutPaths(IEnumerable<string> paths)
+    {
+        cutPaths = paths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
+    }
     private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
     public PanelSession Session { get; }
     public TableView Table { get; }
@@ -440,6 +446,7 @@ public sealed partial class PanelView : Border
     {
         rangeAnchor = null;
         Rows = ResultRows();
+        foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
         Table.ItemsSource = Rows;
         ShowNameMatches(nameSearch);
         Table.SelectedItems?.Clear();

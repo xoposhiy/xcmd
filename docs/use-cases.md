@@ -26,8 +26,8 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC01 | Start a terminal in the active directory. | Implemented through quick launch | Type a program name such as `cmd`. Dedicated Git Bash, CMD and PowerShell launch actions are deferred. |
 | UC02 | Quickly run a program or open a file. | Implemented | ShellExecute uses the active panel directory. Support local cd, history, name/path insertion, editor focus keys, Escape and saved drafts. Very frequent workflow. |
 | UC03 | Jump to a file or directory by name. | Implemented | Start with Alt and a letter, release Alt and continue typing. Ignore unmatched letters. Support loaded keyboard layouts and physical keys without duplicate text. |
-| UC04 | Copy files and directories between panels. | Prototype | F5 recursively copies files and empty folders, merges folders, reports progress and failures, and supports cancellation and conflicts. Links are reported without traversal. |
-| UC05 | Move files and directories. | Prototype | F6 uses a same-volume move when possible and a copy-delete fallback otherwise. Delete each source only after its copy succeeds; keep skipped or failed source items. |
+| UC04 | Copy files and directories between panels. | Prototype | F5 recursively copies files and empty folders, merges folders, reports progress and failures, and supports cancellation and conflicts. Ctrl+C/V uses the Windows file clipboard and pastes into the displayed directory; same-folder copies get a free copy name. Links are reported without traversal. |
+| UC05 | Move files and directories. | Prototype | F6 and clipboard Ctrl+X/V use a same-volume move when possible and a copy-delete fallback otherwise. Cut keeps sources until paste and dims their rows. Delete each source only after its copy succeeds; keep skipped or failed source items available for another paste. |
 | UC06 | Create a directory. | Implemented | F7 opens a name dialog. Validate a single directory name and show conflicts. Nested creation is not implemented. |
 | UC07 | Create and edit a file. | Prototype | Shift+F4 asks for a new name, creates an empty file without overwriting, opens it in Notepad++, and selects it in the source panel. Cancel and invalid or existing names leave files unchanged. Archives and search results require a regular destination folder first. |
 | UC08 | Edit a file in an external editor. | Prototype | F4 opens the current file in Notepad++ from either panel or the viewer. Detect the installed executable and pass the literal full file path. |
@@ -69,7 +69,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 
 - Panel tabs and embedded terminals.
 - Indexed global lookup, checksum tools, SFTP and dedicated network-location support.
-- Clipboard name/path export and duplicate-content detection; neither workflow was selected.
+- Duplicate-content detection. Clipboard copy/cut/paste and full-path export were requested on 2026-11-12 and are now feedback prototypes.
 - Advanced selection by mask, inversion and restoration; basic multi-file selection stays implemented.
 - Directory synchronization and Git write operations.
 

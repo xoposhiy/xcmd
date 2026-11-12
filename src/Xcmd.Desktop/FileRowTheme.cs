@@ -22,6 +22,7 @@ internal static class FileRowTheme
             new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
             {
                 var cells = new TableViewCellsPresenter { Name = "PART_CellsPresenter" };
+                cells.Bind(Visual.OpacityProperty, new Binding(nameof(FileRow.ContentOpacity)));
                 scope.Register(cells.Name, cells);
                 var border = new Border { Name = "Border", Child = cells };
                 scope.Register(border.Name, border);

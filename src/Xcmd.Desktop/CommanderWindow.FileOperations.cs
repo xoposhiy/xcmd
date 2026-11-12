@@ -12,7 +12,7 @@ public sealed partial class CommanderWindow
     public FileOperationsView OperationsView { get; }
     public Window? OperationDialog { get; internal set; }
 
-    private FileEntry[] SelectedOperationEntries()
+    internal FileEntry[] SelectedOperationEntries()
     {
         var selected = ActivePanel.Table.SelectedItems!.OfType<FileRow>().Select(row => row.Entry).Where(entry => !entry.IsParent).ToArray();
         return selected.Length > 0 ? selected : ActivePanel.Current is { Entry.IsParent: false } current ? [current.Entry] : [];

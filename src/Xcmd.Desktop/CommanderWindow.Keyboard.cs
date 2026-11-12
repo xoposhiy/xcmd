@@ -92,6 +92,7 @@ public sealed partial class CommanderWindow
     private bool HandlePanelCommand(KeyEventArgs e, bool ctrl, bool shift)
     {
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.Shift) { OpenCreateFileDialog(); return true; }
+        if (HandleClipboardKey(e)) return true;
         if ((e.Key == Key.F10 && e.KeyModifiers == KeyModifiers.Shift ||
              e.Key == Key.Down && e.KeyModifiers == KeyModifiers.Control) && ActivePanel.Table.IsKeyboardFocusWithin)
         {
@@ -127,6 +128,20 @@ public sealed partial class CommanderWindow
             return true;
         }
         return ctrl && HandleControlPanelCommand(e.Key);
+    }
+
+    private bool HandleClipboardKey(KeyEventArgs e)
+    {
+        if (!ActivePanel.Table.IsKeyboardFocusWithin) return false;
+        if (e.Key == Key.C && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift)) panelClipboard.CopyPath();
+        else if (e.KeyModifiers == KeyModifiers.Control && e.Key is Key.C or Key.X or Key.V)
+        {
+            if (e.Key == Key.V) panelClipboard.Paste();
+            else panelClipboard.Copy(e.Key == Key.X);
+        }
+        else return false;
+        ResetQuickJump();
+        return true;
     }
 
     private bool HandleControlPanelCommand(Key key)
