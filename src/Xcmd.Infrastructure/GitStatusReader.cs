@@ -26,21 +26,38 @@ public sealed class GitStatusReader : IGitStatusReader
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
-            var output = await RunAsync(directory, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal"], timeout.Token).ConfigureAwait(false);
+            var root = WorkTreeRoot(directory);
+            if (root == null) return null;
+            var output = await RunAsync(root, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal"], timeout.Token).ConfigureAwait(false);
             if (output == null) return null;
-            var remotes = await RunAsync(directory, ["remote"], timeout.Token).ConfigureAwait(false);
+            var remotes = await RunAsync(root, ["remote"], timeout.Token).ConfigureAwait(false);
             return Parse(output) with { HasRemote = !string.IsNullOrWhiteSpace(remotes) };
         }
         catch (Exception error) when (error is Win32Exception or IOException or InvalidOperationException or OperationCanceledException)
         { return null; }
     }
 
+    // A process's working directory cannot be deleted on Windows. Running Git in the work tree root
+    // instead of the displayed directory lets the user delete or rename that directory during a read.
+    private static string? WorkTreeRoot(string directory)
+    {
+        for (var current = new DirectoryInfo(directory); current != null; current = current.Parent)
+        {
+            if (current.Name.Equals(".git", StringComparison.OrdinalIgnoreCase)) return null;
+            if (Path.Exists(Path.Combine(current.FullName, ".git"))) return current.FullName;
+        }
+        return null;
+    }
+
     private static async Task<string?> RunAsync(string directory, string[] arguments, CancellationToken cancellationToken)
     {
         var start = new ProcessStartInfo("git")
         {
-            WorkingDirectory = directory, UseShellExecute = false, CreateNoWindow = true,
-            RedirectStandardOutput = true, RedirectStandardError = true
+            WorkingDirectory = directory,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         };
         start.ArgumentList.Add("--no-optional-locks");
         foreach (var argument in arguments)
