@@ -64,7 +64,8 @@ public sealed partial class CommanderWindow : Window
         viewing = new FileViewingController(this, editorPath, archives.Files);
         FileSearch = new FileSearchController(this, viewing, archiveCacheRoot);
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
-        Operations = new FileOperationQueue(new FileOperationRunner(operationStore, ResolveFileConflictAsync));
+        var decisions = new FileOperationDecisions(this);
+        Operations = new FileOperationQueue(new FileOperationRunner(operationStore, decisions.ResolveConflictAsync, decisions.ResolveErrorAsync));
         OperationsView = new FileOperationsView(Operations);
         Operations.Finished += job =>
         {

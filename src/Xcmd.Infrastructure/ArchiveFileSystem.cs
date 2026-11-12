@@ -47,4 +47,7 @@ public sealed class ArchiveFileSystem(IFileSystem fileSystem, IArchiveContents a
 
     public Task RemoveAsync(FileEntry entry, bool recycle, CancellationToken cancellationToken)
     { ArchivePath.RequireWritable(entry.FullPath); return operations.RemoveAsync(entry, recycle, cancellationToken); }
+
+    public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) =>
+        ArchivePath.IsEntry(source) ? Task.CompletedTask : operations.CopyMetadataAsync(source, destination, cancellationToken);
 }

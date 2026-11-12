@@ -142,9 +142,13 @@ Folders with the same name merge. Destination-only files stay in place. Regular 
 
 Copies use a temporary destination file and replace the final path only after the copy finishes. A cancelled copy keeps an existing destination file. Moves use a filesystem rename when possible. The copy-delete fallback removes each source only after copying that item succeeds. A skipped or failed child keeps the remaining source folder available. Results identify partial changes and failures.
 
+Copies preserve creation, modification and access timestamps and Hidden, ReadOnly, System and Archive attributes. Newly created folders receive their source metadata after successful copying; existing merged folders keep their own metadata. Copies inherit access permissions from the destination folder instead of importing explicit source ACL entries. NTFS additional data streams are copied and their names and sizes are checked before the final destination is replaced. If the destination cannot preserve them, the copy reports an error and keeps any existing destination.
+
+A failed item offers Retry, Skip, Skip similar errors and Cancel operation. Retry repeats that item's work after its cause is fixed; recovered attempts do not count as permanent failures. Skipped failures remain visible in the operation report. Escape cancels the pending operation decision.
+
 F8 or Delete opens a short deletion question with **Recycle Bin** selected. Shift+Delete selects **Permanently** instead. The underlined **R** and **P** show the **Alt+R** and **Alt+P** access keys. Choose either mode in the same dialog, then press Enter or the highlighted **Yes** button. Escape or **Cancel** keeps the files. Windows processes each recycled tree as one item; cancellation takes effect between selected items. Recycling is limited to local fixed drives. If Windows would delete an item permanently instead, Xcmd refuses that operation. Permanent deletion checks cancellation between files.
 
-Copy and move report unsupported links and junctions without following them. Writes through linked parent directories are also rejected. Permanent deletion removes a link itself and does not traverse its target. Pause, retry, queue reordering, content comparison and newer-file conflict rules are not included in this prototype.
+Copy and move report unsupported links and junctions without following them. Writes through linked parent directories are also rejected. Permanent deletion removes a link itself and does not traverse its target. Pause, queue reordering, interactive content comparison and newer-file conflict rules are not included in this prototype.
 
 ## File colors
 

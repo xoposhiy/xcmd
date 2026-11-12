@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;
@@ -27,6 +26,7 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
         const FileAttributes metadata = FileAttributes.ReadOnly | FileAttributes.Hidden | FileAttributes.System | FileAttributes.Archive;
         if (left.Length != right.Length || File.GetLastWriteTimeUtc(source.FullPath) != File.GetLastWriteTimeUtc(destination.FullPath) ||
             (File.GetAttributes(source.FullPath) & metadata) != (File.GetAttributes(destination.FullPath) & metadata)) return false;
+        if (FileCopyMetadata.Streams(source.FullPath).Length > 0 || FileCopyMetadata.Streams(destination.FullPath).Length > 0) return false;
         var first = new byte[131072]; var second = new byte[131072];
         var remaining = left.Length;
         while (remaining > 0)
@@ -50,39 +50,27 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
     public Task<long> CopyAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken) =>
         Task.Run(() => CopyCoreAsync(source, destination, replace, progress, cancellationToken), cancellationToken);
 
-    private static async Task<long> CopyCoreAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken)
+    public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) =>
+        Task.Run(() => FileCopyMetadata.Apply(source, destination), cancellationToken);
+
+    private static Task<long> CopyCoreAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken)
     {
         var temporary = Path.Combine(Path.GetDirectoryName(destination)!, ".xcmd-" + Guid.NewGuid().ToString("N") + ".tmp");
         try
         {
-            var copied = await WriteTemporaryAsync(source, temporary, progress, cancellationToken);
-            File.SetLastWriteTimeUtc(temporary, File.GetLastWriteTimeUtc(source));
+            var copied = FileCopyMetadata.Copy(source, temporary, progress, cancellationToken);
+            FileCopyMetadata.Apply(source, temporary);
             cancellationToken.ThrowIfCancellationRequested();
             if (File.Exists(destination) && File.GetAttributes(destination).HasFlag(FileAttributes.ReparsePoint))
                 throw new IOException("The destination became a link. The operation stopped.");
             File.Move(temporary, destination, replace);
-            return copied;
+            return Task.FromResult(copied);
         }
-        finally { if (File.Exists(temporary)) File.Delete(temporary); }
-    }
-
-    private static async Task<long> WriteTemporaryAsync(string source, string temporary, IProgress<long> progress, CancellationToken cancellationToken)
-    {
-        await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        await using var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, FileOptions.Asynchronous);
-        var buffer = new byte[131072];
-        long copied = 0;
-        long reported = 0;
-        int count;
-        while ((count = await input.ReadAsync(buffer, cancellationToken)) != 0)
+        finally
         {
-            await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
-            copied += count;
-            if (reported != 0 && Stopwatch.GetElapsedTime(reported).TotalMilliseconds < 80) continue;
-            progress.Report(copied); reported = Stopwatch.GetTimestamp();
+            if (File.Exists(temporary))
+            { File.SetAttributes(temporary, FileAttributes.Normal); File.Delete(temporary); }
         }
-        await output.FlushAsync(cancellationToken);
-        return copied;
     }
 
     public Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken) => Task.Run(() =>

@@ -86,6 +86,7 @@ public sealed class FileOperationsView : Border
         FileOperationState.CompletedWithSkippedItems => "Completed with skipped items",
         FileOperationState.Counting => "Counting files",
         FileOperationState.WaitingForConflict => "Waiting for a conflict decision",
+        FileOperationState.WaitingForError => "Waiting for an error decision",
         _ => state.ToString()
     };
 

@@ -45,6 +45,7 @@ public sealed class ControlledFileSystem : IFileSystem, IFileOperationStore
     public Task<FileEntry?> InspectAsync(string path, CancellationToken cancellationToken) => operations.InspectAsync(path, cancellationToken);
     public Task<bool> AreIdenticalAsync(FileEntry source, FileEntry destination, CancellationToken cancellationToken) => operations.AreIdenticalAsync(source, destination, cancellationToken);
     public Task CreateFolderAsync(string path, CancellationToken cancellationToken) => operations.CreateFolderAsync(path, cancellationToken);
+    public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) => operations.CopyMetadataAsync(source, destination, cancellationToken);
     public Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken) =>
         ForceCopyMove ? Task.FromResult(false) : operations.TryMoveAsync(source, destination, replace, cancellationToken);
     public Task RemoveAsync(FileEntry entry, bool recycle, CancellationToken cancellationToken) => operations.RemoveAsync(entry, recycle, cancellationToken);

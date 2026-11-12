@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;
@@ -11,7 +10,7 @@ public sealed partial class CommanderWindow
     private readonly IFileOperationStore operationStore;
     public FileOperationQueue Operations { get; }
     public FileOperationsView OperationsView { get; }
-    public Window? OperationDialog { get; private set; }
+    public Window? OperationDialog { get; internal set; }
 
     private FileEntry[] SelectedOperationEntries()
     {
@@ -70,28 +69,7 @@ public sealed partial class CommanderWindow
         _ = dialog.ShowDialog(this);
     }
 
-    private async Task<ConflictDecision> ResolveFileConflictAsync(FileConflict conflict, CancellationToken cancellationToken)
-    {
-        while (HasOpenDialog || Feedback.IsActive || IsMenuOpen || Left.EditingRow != null || Right.EditingRow != null || CommandLine.HasKeyboardFocus)
-            await Task.Delay(80, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        var completion = new TaskCompletionSource<ConflictDecision>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var dialog = new FileConflictDialog(conflict, Feedback) { Background = Background };
-        OperationDialog = dialog;
-        AttachOperationDialog(dialog);
-        dialog.Decided += decision => { completion.TrySetResult(decision); dialog.Close(); };
-        dialog.Closed += (_, _) =>
-        {
-            OperationDialog = null;
-            completion.TrySetResult(new(ConflictAction.Cancel));
-            RecordActivity(); ActivePanel.FocusCurrent(scrollIntoView: false);
-        };
-        using var registration = cancellationToken.Register(() => Dispatcher.UIThread.Post(() => dialog.Close()));
-        _ = dialog.ShowDialog(this);
-        return await completion.Task.WaitAsync(cancellationToken);
-    }
-
-    private void AttachOperationDialog(Window dialog)
+    internal void AttachOperationDialog(Window dialog)
     {
         Feedback.Attach(dialog);
         dialog.AddHandler(KeyUpEvent, (_, e) => launchKeysHeld.Remove(e.Key), RoutingStrategies.Tunnel);

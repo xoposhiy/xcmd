@@ -1,16 +1,20 @@
 namespace Xcmd.Core;
 
-public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConflict, CancellationToken, Task<ConflictDecision>> resolveConflict)
+public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConflict, CancellationToken, Task<ConflictDecision>> resolveConflict,
+    Func<FileOperationError, CancellationToken, Task<FileErrorAction>>? resolveError = null)
 {
     public async Task RunAsync(FileOperationJob job, Action changed)
     {
-        var run = new Run(store, resolveConflict, job, changed);
+        var run = new Run(store, resolveConflict, resolveError, job, changed);
         await run.ExecuteAsync();
     }
 
-    private sealed class Run(IFileOperationStore store, Func<FileConflict, CancellationToken, Task<ConflictDecision>> resolveConflict, FileOperationJob job, Action changed)
+    private sealed class Run(IFileOperationStore store, Func<FileConflict, CancellationToken, Task<ConflictDecision>> resolveConflict,
+        Func<FileOperationError, CancellationToken, Task<FileErrorAction>>? resolveError, FileOperationJob job, Action changed)
     {
         private readonly Dictionary<(bool, bool), ConflictDecision> decisions = [];
+        private readonly HashSet<Type> skippedErrors = [];
+        private readonly HashSet<(string Source, string Destination)> copiedFiles = [];
         private CancellationToken Token => job.Token;
 
         public async Task ExecuteAsync()
@@ -46,29 +50,48 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
 
         private async Task<bool> AttemptAsync(FileEntry source, string? destination)
         {
+            while (true)
+            {
+                try { return await AttemptOnceAsync(source, destination); }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+                {
+                    Token.ThrowIfCancellationRequested();
+                    var action = await DecideErrorAsync(source, destination, error);
+                    if (action == FileErrorAction.Retry) continue;
+                    job.Record(source, destination, FileOutcomeKind.Failed, error.Message);
+                    changed();
+                    return false;
+                }
+            }
+        }
+
+        private async Task<FileErrorAction> DecideErrorAsync(FileEntry source, string? destination, Exception error)
+        {
+            if (resolveError == null || skippedErrors.Contains(error.GetType())) return FileErrorAction.Skip;
+            job.State = FileOperationState.WaitingForError; changed();
+            var action = await resolveError(new(source, destination, error.Message), Token);
+            if (action == FileErrorAction.Cancel) job.Cancel();
+            Token.ThrowIfCancellationRequested();
+            if (action == FileErrorAction.SkipAll) skippedErrors.Add(error.GetType());
+            job.State = FileOperationState.Running; changed();
+            return action;
+        }
+
+        private async Task<bool> AttemptOnceAsync(FileEntry source, string? destination)
+        {
             Token.ThrowIfCancellationRequested();
             job.CurrentPath = source.FullPath;
             job.CurrentFileBytes = 0;
             changed();
-            try
-            {
-                var current = await store.InspectAsync(source.FullPath, Token) ?? throw new IOException("The source no longer exists.");
-                await CheckParentsAsync(Path.GetDirectoryName(source.FullPath)!);
-                if (job.Request.Kind is FileOperationKind.Recycle or FileOperationKind.Delete)
-                    return await RemoveAsync(current);
-                if (destination == null) throw new ArgumentException("Choose a destination directory.");
-                FileOperationRules.ValidateTarget(current, destination);
-                if (current.IsLink) throw new IOException("Copying and moving links is not supported. The link was left unchanged.");
-                await CheckParentsAsync(Path.GetDirectoryName(destination)!);
-                return await TransferAsync(current, destination);
-            }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-            {
-                Token.ThrowIfCancellationRequested();
-                job.Record(source, destination, FileOutcomeKind.Failed, error.Message);
-                changed();
-                return false;
-            }
+            var current = await store.InspectAsync(source.FullPath, Token) ?? throw new IOException("The source no longer exists.");
+            await CheckParentsAsync(Path.GetDirectoryName(source.FullPath)!);
+            if (job.Request.Kind is FileOperationKind.Recycle or FileOperationKind.Delete)
+                return await RemoveAsync(current);
+            if (destination == null) throw new ArgumentException("Choose a destination directory.");
+            FileOperationRules.ValidateTarget(current, destination);
+            if (current.IsLink) throw new IOException("Copying and moving links is not supported. The link was left unchanged.");
+            await CheckParentsAsync(Path.GetDirectoryName(destination)!);
+            return await TransferAsync(current, destination);
         }
 
         private async Task CheckParentsAsync(string path)
@@ -84,9 +107,10 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
         private async Task<bool> TransferAsync(FileEntry source, string destination)
         {
             var target = await store.InspectAsync(destination, Token);
-            if (target != null && !source.IsDirectory && !target.IsDirectory && !target.IsLink &&
-                source.Size == target.Size && source.ModifiedUtc == target.ModifiedUtc && await store.AreIdenticalAsync(source, target, Token))
+            if (target != null && await MatchesAsync(source, target))
             {
+                if (job.Request.Kind == FileOperationKind.Move && copiedFiles.Contains((source.FullPath, destination)))
+                { await store.RemoveAsync(source, false, Token); Complete(source, destination); return true; }
                 job.Record(source, destination, FileOutcomeKind.Skipped, "Contents and metadata match."); changed();
                 return job.Request.Kind == FileOperationKind.Copy;
             }
@@ -112,12 +136,17 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
             return await CopyFolderAsync(source, destination, target == null);
         }
 
+        private async Task<bool> MatchesAsync(FileEntry source, FileEntry target) =>
+            !source.IsDirectory && !target.IsDirectory && !target.IsLink && source.Size == target.Size &&
+            source.ModifiedUtc == target.ModifiedUtc && await store.AreIdenticalAsync(source, target, Token);
+
         private async Task<bool> CopyFolderAsync(FileEntry source, string destination, bool create)
         {
             if (create) await store.CreateFolderAsync(destination, Token);
             var complete = true;
             foreach (var child in await store.ReadDirectoryAsync(source.FullPath, Token))
                 complete = await AttemptAsync(child, Path.Combine(destination, child.Name)) && complete;
+            if (create && complete) await store.CopyMetadataAsync(source.FullPath, destination, Token);
             if (complete && job.Request.Kind == FileOperationKind.Move) await store.RemoveAsync(source, false, Token);
             job.Record(source, destination, complete ? FileOutcomeKind.Completed : FileOutcomeKind.Partial,
                 complete ? null : "Some items were skipped or failed. Remaining source items were kept.");
@@ -136,8 +165,10 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
             });
             long copied;
             try { copied = await store.CopyAsync(source.FullPath, destination, replace, progress, Token); }
+            catch { job.BytesTransferred = before; job.CurrentFileBytes = 0; throw; }
             finally { transferring = false; }
             job.BytesTransferred = before + copied;
+            copiedFiles.Add((source.FullPath, destination));
             if (job.Request.Kind == FileOperationKind.Move) await store.RemoveAsync(source, false, Token);
             Complete(source, destination);
             return true;

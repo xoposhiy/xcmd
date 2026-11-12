@@ -1,7 +1,7 @@
 namespace Xcmd.Core;
 
 public enum FileOperationKind { Copy, Move, Recycle, Delete }
-public enum FileOperationState { Queued, Counting, Running, WaitingForConflict, Cancelling, Completed, CompletedWithSkippedItems, CompletedWithErrors, Cancelled, Failed }
+public enum FileOperationState { Queued, Counting, Running, WaitingForConflict, WaitingForError, Cancelling, Completed, CompletedWithSkippedItems, CompletedWithErrors, Cancelled, Failed }
 public enum FileOutcomeKind { Completed, Skipped, Failed, Partial, Cancelled, NotStarted }
 public enum ConflictAction { Skip, Rename, Replace, Cancel }
 
@@ -9,6 +9,8 @@ public sealed record FileOperationRequest(FileOperationKind Kind, FileEntry[] So
 public sealed record FileOutcome(string Source, string? Destination, FileOutcomeKind Kind, string? Message = null, bool IsDirectory = false);
 public sealed record FileConflict(FileEntry Source, FileEntry Destination);
 public sealed record ConflictDecision(ConflictAction Action, string? NewName = null, bool ApplyToAll = false);
+public enum FileErrorAction { Retry, Skip, SkipAll, Cancel }
+public sealed record FileOperationError(FileEntry Source, string? Destination, string Message);
 
 public static class FileOperationNames
 {
@@ -29,6 +31,7 @@ public interface IFileOperationStore
     Task<long> CopyAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken);
     Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken);
     Task RemoveAsync(FileEntry entry, bool recycle, CancellationToken cancellationToken);
+    Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 public sealed class FileOperationJob(int id, FileOperationRequest request)
@@ -76,7 +79,7 @@ public sealed class FileOperationQueue(FileOperationRunner runner)
     private bool draining;
     public IReadOnlyList<FileOperationJob> Jobs => jobs;
     public bool HasPendingWork => jobs.Any(job => !job.IsFinished);
-    public bool IsWaitingForDecision => jobs.Any(job => job.State == FileOperationState.WaitingForConflict);
+    public bool IsWaitingForDecision => jobs.Any(job => job.State is FileOperationState.WaitingForConflict or FileOperationState.WaitingForError);
     public Task Completion { get; private set; } = Task.CompletedTask;
     public event Action? Changed;
     public event Action<FileOperationJob>? Finished;
