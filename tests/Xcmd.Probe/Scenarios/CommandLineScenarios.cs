@@ -123,12 +123,12 @@ public static class CommandLineScenarios
         {
             foreach (var text in new[] { "tool first", "tool second", "tool first" })
             { await c.TextAsync(text); await c.KeyAsync(Key.Enter); }
-            await c.TextAsync("unfinished");
+            await c.TextAsync("tool");
             await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("tool first", c.Window.CommandLine.Editor.Text, "Alt+Up recalls the latest command");
             await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("tool second", c.Window.CommandLine.Editor.Text, "Older unique commands remain available");
             await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("tool second", c.Window.CommandLine.Editor.Text, "History stops at the oldest command");
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt); await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
-            Equal("unfinished", c.Window.CommandLine.Editor.Text, "Alt+Down restores the unfinished draft");
+            Equal("tool", c.Window.CommandLine.Editor.Text, "Alt+Down restores the unfinished draft");
             await c.KeyAsync(Key.Down); await c.KeyAsync(Key.Up, RawInputModifiers.Alt);
             Check(c.Window.CommandLine.HasKeyboardFocus, "Alt+Up from files opens command history.");
             Equal("tool first", c.Window.CommandLine.Editor.Text, "Panel history access recalls a command");
@@ -283,6 +283,7 @@ public static class CommandLineScenarios
             Equal("unfinished", c.Window.CommandLine.Editor.Text, "The draft is restored");
             Equal("nf", c.Window.CommandLine.Editor.SelectedText, "The text selection is restored");
             Check(c.Window.CommandLine.HasKeyboardFocus, "Command focus is restored.");
+            c.Window.CommandLine.Clear();
             await c.KeyAsync(Key.Up, RawInputModifiers.Alt); Equal("tool first", c.Window.CommandLine.Editor.Text, "Saved history is restored");
             var oldJson = JsonSerializer.Serialize(state)[..^1] + ",\"Terminal\":{\"SessionId\":\"old\"}}";
             var old = JsonSerializer.Deserialize<WorkspaceState>(oldJson)!; old.Validate();

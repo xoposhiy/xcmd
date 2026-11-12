@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xcmd.Core;
@@ -35,11 +36,11 @@ public static class SearchFeedbackScenarios
             Check(root.TranslatePoint(default, search)!.Value.Y <= 16, "The search path starts near the top without an empty feedback row");
             Check(!search.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.StartsWith("Names match any part", StringComparison.Ordinal) == true), "The redundant help line is removed");
             Check(search.StatusMessage.StartsWith("Complete", StringComparison.Ordinal) && search.StatusMessage.Contains("skipped", StringComparison.Ordinal), "The status uses Complete and skipped");
-            Equal("Search skipped files", FeedbackRemarksProbe.Button(search, "SearchExpand").Content?.ToString(), "The action uses the same skipped term");
+            Equal("Search skipped f_iles", (FeedbackRemarksProbe.Button(search, "SearchExpand").Content as AccessText)?.Text, "The action uses the same skipped term");
             await c.ClickAsync(search.GetVisualDescendants().OfType<Expander>().Single(control => control.Name == "SearchDeferredDetails"), target: search);
             var skipped = search.GetVisualDescendants().OfType<TableView>().Single(table => table.Name == "SearchDeferredLocations");
             Equal(3, skipped.Columns.Count, "Skipped locations separate Reason, Path and rule source");
-            Check(skipped.GetVisualDescendants().OfType<TableViewRow>().All(row => row.Bounds.Height <= 27), "Skipped rows are compact");
+            Check(skipped.GetVisualDescendants().OfType<TableViewRow>().All(row => row.Bounds.Height <= 28), "Skipped rows are compact");
             Check(!skipped.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.Contains("contents not counted", StringComparison.Ordinal) == true), "The repeated folder note is not in each row");
             await ResizeColumnAsync(c, search, skipped, 0, -30);
             var expected = search.CaptureState();

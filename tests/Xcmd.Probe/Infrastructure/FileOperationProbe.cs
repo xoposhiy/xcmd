@@ -75,6 +75,14 @@ public static class FileOperationProbe
         await c.ClickAsync(dialog.GetVisualDescendants().OfType<Button>().Single(control => control.Name == button), target: dialog);
     }
 
+    public static async Task SkipFileErrorAsync(ProbeContext c)
+    {
+        await WaitUntilAsync(() => c.Window.OperationDialog is FileErrorDialog);
+        var dialog = c.Window.OperationDialog!;
+        await c.ClickAsync(dialog.GetVisualDescendants().OfType<Button>().Single(control => control.Name == "FileErrorSkip"), target: dialog);
+        await WaitUntilAsync(() => LastJob(c).State >= FileOperationState.Completed);
+    }
+
     public static Task ConfirmDeleteAsync(ProbeContext c)
     {
         var dialog = c.Window.OperationDialog as FileDeleteDialog ?? throw new InvalidOperationException("Delete confirmation is open.");

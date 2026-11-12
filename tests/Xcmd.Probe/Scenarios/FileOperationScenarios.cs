@@ -177,15 +177,15 @@ public static class FileOperationScenarios
             var locked = Path.Combine(c.LeftPath, "folder1", "inside.txt");
             File.WriteAllText(Path.Combine(c.LeftPath, "folder1", "other.txt"), "copy me");
             using var handle = new FileStream(locked, FileMode.Open, FileAccess.Read, FileShare.None);
-            await c.SelectAsync("folder1"); await CopyAsync(c);
-            Equal("copy me", File.ReadAllText(Path.Combine(c.RightPath, "folder1", "other.txt")), "One failed file does not stop other items");
+            await c.SelectAsync("folder1"); await CopyAsync(c); await SkipFileErrorAsync(c);
+            Equal("copy me",File.ReadAllText(Path.Combine(c.RightPath, "folder1", "other.txt")), "One failed file does not stop other items");
             Equal(FileOperationState.CompletedWithErrors, LastJob(c).State, "The batch reports its partial failure");
             Check(LastJob(c).Outcomes.Any(result => result.Kind == FileOutcomeKind.Failed), "The report names the failed item.");
         }),
         new("operations-junction-cycle-and-safe-delete", "UC04; UC35; UC36; Links are not traversed", async c =>
         {
             await DirectorySizeProbe.CreateJunctionAsync(c);
-            await c.SelectAsync("folder1"); await CopyAsync(c);
+            await c.SelectAsync("folder1"); await CopyAsync(c); await SkipFileErrorAsync(c);
             Equal(FileOperationState.CompletedWithErrors, LastJob(c).State, "Copy reports an unsupported junction");
             Equal("Nested file", File.ReadAllText(Path.Combine(c.RightPath, "folder1", "inside.txt")), "Ordinary files still copy");
             Check(!Directory.Exists(Path.Combine(c.RightPath, "folder1", "back")), "Copy does not follow the junction cycle.");

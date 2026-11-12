@@ -31,6 +31,6 @@ public static class SearchInteractionProbe
         Equal(match, name.Substring(row.NameMatchStart, row.NameMatchLength), "The exact matching text is highlighted");
         var text = context.Row(name).GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == name);
         Check(text.TextLayout.TextLines.SelectMany(line => line.TextRuns).Any(run =>
-            run.Properties?.ForegroundBrush is ISolidColorBrush brush && brush.Color == Color.Parse("#65F0CE")), "The rendered text layout uses the match color");
+            run.Properties?.BackgroundBrush is ISolidColorBrush brush && brush.Color == Color.Parse("#355A45")), "The rendered text layout uses the match color");
     }
 }

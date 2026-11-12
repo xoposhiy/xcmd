@@ -28,7 +28,7 @@ public static class RefinementScenarios
                     var center = text.TranslatePoint(new Point(0, text.Bounds.Height / 2), header)!.Value.Y;
                     Check(Math.Abs(center - header.Bounds.Height / 2) < 1, "Each heading is vertically centered in the whole header.");
                     Check(text.FontSize >= 13, "Headings are at least as large as file names.");
-                    Equal(Color.Parse("#E5EBF5"), (text.Foreground as ISolidColorBrush)?.Color, "Heading text uses a light foreground");
+                    Equal(Color.Parse("#F1F5FA"), (text.Foreground as ISolidColorBrush)?.Color, "Heading text uses the primary text color");
                 }
             }
             await c.ScreenshotAsync("readable-sort-headings");

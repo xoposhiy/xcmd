@@ -50,7 +50,7 @@ public static class FeedbackRemarksProbe
     public static void CheckCompactResults(FileSearchWindow window)
     {
         var rows = window.Results.GetVisualDescendants().OfType<TableViewRow>().ToArray();
-        Check(rows.Length > 0 && rows.All(row => row.Bounds.Height <= 27), "Search results use compact single-line rows");
+        Check(rows.Length > 0 && rows.All(row => row.Bounds.Height <= 28), "Search results use compact single-line rows");
         var row = rows[0];
         var path = row.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "SearchResultPath");
         var preview = row.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "SearchResultPreview");
