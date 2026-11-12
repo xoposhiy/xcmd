@@ -65,6 +65,8 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
         await EditFileAsync(row.Entry.FullPath, panel.OperationDirectory);
     }
 
+    public Task<ExternalLaunch> CreateFileAsync(string path, string directory) => editor.CreateAsync(path, directory);
+
     private async Task EditFileAsync(string path, string directory)
     {
         ArchivePath.RequireWritable(path);

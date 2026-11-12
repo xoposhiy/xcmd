@@ -25,6 +25,7 @@ public sealed partial class CommanderWindow
                     Item("View file", viewing.ViewCurrent, new(Key.F3)),
                     Item("Find files", FileSearch.Open, new(Key.F7, KeyModifiers.Alt)),
                     Item("Edit in Notepad++", () => Execute(viewing.EditCurrentAsync), new(Key.F4)),
+                    Item("New file and edit", OpenCreateFileDialog, new(Key.F4, KeyModifiers.Shift)),
                     Item("New folder", OpenCreateDirectoryDialog, new(Key.F7)),
                     Item("Rename", RenameCurrent, new(Key.F6, KeyModifiers.Shift)),
                     Item("Copy to other panel", CopySelected, new(Key.F5)),

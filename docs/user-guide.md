@@ -55,6 +55,7 @@ The main window combines menus and window controls in one title row. Drag the fr
 | Enter / double-click a file | Enter a common archive, or open another file through its Windows association |
 | Ctrl+PageDown | Try to open the current file as an archive, regardless of extension |
 | F3 / F4 on a file | View inside Xcmd / edit in Notepad++ |
+| Shift+F4 | Create a new empty file and open it in Notepad++; existing files are never overwritten |
 | Plain typing / Left / Right / Ctrl+L | Focus the command line; typing inserts text |
 | Enter in the command line | Run through Windows ShellExecute from the active panel directory |
 | `cd <path>` | Change the active panel directory; relative and quoted paths work |

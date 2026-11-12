@@ -13,6 +13,23 @@ public static class PriorityBatchScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("priority-new-file", "UC07; Shift+F4 creates without overwrite and edits the literal path", async c =>
+        {
+            await c.KeyAsync(Key.F4, RawInputModifiers.Shift);
+            Equal("New file", c.Window.ActiveDialog?.Title, "Shift+F4 opens the creation dialog");
+            var dialog = c.Window.ActiveDialog!;
+            await c.TextAsync("alpha.txt", dialog); await c.KeyAsync(Key.Enter, target: dialog);
+            Check(!string.IsNullOrWhiteSpace(dialog.Error.Text), "Existing file is rejected");
+            Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "Existing contents survive");
+            dialog.Editor.Text = "new отчёт.txt";
+            await c.KeyAsync(Key.Enter, target: dialog);
+            Check(c.Window.ActiveDialog == null, "Successful creation closes the dialog");
+            Equal(0L, new FileInfo(Path.Combine(c.LeftPath, "new отчёт.txt")).Length, "A real empty file is created");
+            Equal("new отчёт.txt", c.Window.Left.Current?.Name, "New file becomes current");
+            Check(c.Launcher.Requests.Single().Arguments.Contains("new отчёт.txt", StringComparison.Ordinal), "Editor receives the literal Unicode path");
+            await c.KeyAsync(Key.F4, RawInputModifiers.Shift); await c.KeyAsync(Key.Escape, target: c.Window.ActiveDialog);
+            Equal(1, c.Launcher.Requests.Count, "Cancel never launches the editor");
+        }),
         new("priority-copy-metadata", "OPS-01; real Windows copy preserves timestamps, attributes and additional streams", async c =>
         {
             var source = Path.Combine(c.LeftPath, "alpha.txt"); var target = Path.Combine(c.RightPath, "alpha.txt");
@@ -38,6 +55,20 @@ public static class PriorityBatchScenarios
                 File.SetAttributes(source, FileAttributes.Normal);
                 if (File.Exists(target)) File.SetAttributes(target, FileAttributes.Normal);
             }
+        }),
+        new("priority-new-file-launch-failure", "UC07; an editor failure leaves the created file selected and available for retry", async c =>
+        {
+            c.Launcher.Failure = new IOException("Controlled editor failure");
+            await c.KeyAsync(Key.F4, RawInputModifiers.Shift);
+            await c.TextAsync("created.txt", c.Window.ActiveDialog);
+            await c.KeyAsync(Key.Enter, target: c.Window.ActiveDialog);
+            Check(c.Window.ActiveDialog == null, "Creation succeeds independently of editor startup");
+            Check(File.Exists(Path.Combine(c.LeftPath, "created.txt")), "The new file remains available");
+            Equal("created.txt", c.Window.Left.Current?.Name, "The new file remains selected");
+            Check(c.Window.LastError?.Contains("Controlled editor failure", StringComparison.Ordinal) == true, "Editor failure remains visible");
+            c.Launcher.Failure = null;
+            await c.KeyAsync(Key.F4);
+            Equal(2, c.Launcher.Requests.Count, "F4 retries opening the same file");
         }),
         new("priority-retry-file", "OPS-02; release a locked source and retry only the failed file", async c =>
         {

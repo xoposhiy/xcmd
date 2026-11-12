@@ -278,12 +278,13 @@ public sealed class NameDialog : Window
     public TextBox Editor { get; } = new() { Name = "DirectoryName", PlaceholderText = "Folder name" };
     public TextBlock Error { get; } = UiLayout.Error();
     public event Action<string>? Submitted;
-    public NameDialog(FeedbackController? feedback = null)
+    public NameDialog(FeedbackController? feedback = null, bool file = false)
     {
-        Title = "New folder"; Width = 440; SizeToContent = SizeToContent.Height;
+        Title = file ? "New file" : "New folder"; Width = 440; SizeToContent = SizeToContent.Height;
         CanResize = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        AutomationProperties.SetAutomationId(Editor, "new-folder.name");
-        var create = new Button { Content = "Create", Name = "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
+        AutomationProperties.SetAutomationId(Editor, file ? "new-file.name" : "new-folder.name");
+        Editor.PlaceholderText = file ? "File name" : "Folder name";
+        var create = new Button { Content = file ? "Create and edit" : "Create", Name = file ? "CreateFile" : "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
         var cancel = new Button { Content = "Cancel", Name = "CancelCreateFolder" };
         cancel.Click += (_, _) => Close();
         create.Click += (_, _) => Submitted?.Invoke(Editor.Text ?? "");
@@ -292,7 +293,7 @@ public sealed class NameDialog : Window
         {
             Margin = UiPalette.FormMargin,
             Spacing = 8,
-            Children = { new TextBlock { Text = "Folder name" }, Editor, Error, UiLayout.Actions(create, cancel) }
+            Children = { new TextBlock { Text = file ? "File name" : "Folder name" }, Editor, Error, UiLayout.Actions(create, cancel) }
         };
         AddHandler(KeyDownEvent, (_, e) =>
         {
