@@ -10,11 +10,13 @@ namespace Xcmd.Desktop;
 
 internal static class SearchTables
 {
-    public static TableViewColumn Column<T>(string header, GridLength width, double minimumWidth, Func<T?, Control> cell) where T : class => new()
+    public static TableViewColumn Column<T>(string header, GridLength width, double minimumWidth, Func<T?, Control> cell,
+        HorizontalAlignment alignment = HorizontalAlignment.Left) where T : class => new()
     {
         Header = header,
         Width = width,
         MinWidth = minimumWidth,
+        HorizontalContentAlignment = alignment,
         CellTemplate = new FuncDataTemplate<T>((item, _) => cell(item))
     };
 
@@ -24,15 +26,8 @@ internal static class SearchTables
         table.SelectionMode = SelectionMode.Single;
         table.IsTextSearchEnabled = false;
         table.AutoScrollToSelectedItem = false;
-        table.FontSize = 14;
         table.Focusable = true;
-        table.Resources["TableViewRowPadding"] = new Thickness(0);
-        table.Styles.Add(new Style(selector => selector.OfType<TableViewRow>())
-        { Setters = { new Setter(Layoutable.MinHeightProperty, 24d), new Setter(Layoutable.HeightProperty, 24d), new Setter(TemplatedControl.PaddingProperty, new Thickness(0)) } });
-        table.Styles.Add(new Style(selector => selector.OfType<TableViewCell>())
-        { Setters = { new Setter(TemplatedControl.PaddingProperty, new Thickness(6, 0)), new Setter(ContentControl.VerticalContentAlignmentProperty, VerticalAlignment.Center) } });
-        table.Styles.Add(new Style(selector => selector.OfType<TableViewColumnHeader>())
-        { Setters = { new Setter(Layoutable.MinHeightProperty, 26d), new Setter(TemplatedControl.PaddingProperty, new Thickness(6, 1)) } });
+        UiLayout.Table(table);
     }
 
     public static TextBlock Text(string? value, string? name = null) => new()

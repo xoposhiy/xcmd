@@ -27,11 +27,11 @@ public sealed partial class FileSearchWindow
             ToolTip.SetTip(text, result == null ? null : ArchivePath.Display(result.Entry.FullPath)); return text;
         }));
         Results.Columns.Add(SearchTables.Column<FileSearchResult>("Line", new(64), 40,
-            result => SearchTables.Text(result?.Match?.Line.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+            result => SearchTables.Text(result?.Match?.Line.ToString(System.Globalization.CultureInfo.InvariantCulture)), HorizontalAlignment.Right));
         Results.Columns.Add(SearchTables.Column<FileSearchResult>("Preview", new(2, GridUnitType.Star), 100, result =>
         {
-            var text = SearchTables.Text(result?.Match?.Excerpt, "SearchResultPreview"); text.FontSize = 12;
-            text.Foreground = Brushes.LightGray; text.FontFamily = new FontFamily("Consolas");
+            var text = SearchTables.Text(result?.Match?.Excerpt, "SearchResultPreview"); text.FontSize = UiPalette.MetaSize;
+            text.Foreground = UiPalette.Secondary; text.FontFamily = new FontFamily("Consolas");
             text.TextTrimming = TextTrimming.CharacterEllipsis; ToolTip.SetTip(text, result?.Match?.Excerpt); return text;
         }));
     }

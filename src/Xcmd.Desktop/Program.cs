@@ -30,26 +30,8 @@ public sealed class App : Application
     {
         RequestedThemeVariant = ThemeVariant.Dark;
         Styles.Add(new FluentTheme());
-        AddPrimaryStyle(selector => selector.OfType<Button>().PropertyEquals(Button.IsDefaultProperty, true));
-        AddPrimaryStyle(selector => selector.OfType<Button>().Class("primary"));
-        // A transparent surface keeps static text available to feedback hit testing.
-        Styles.Add(new Style(selector => selector.OfType<TextBlock>())
-        { Setters = { new Setter(TextBlock.BackgroundProperty, Brushes.Transparent) } });
-        Styles.Add(new Style(selector => selector.OfType<TemplatedControl>())
-        {
-            Setters = { new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(0)) }
-        });
+        UiStyles.Install(this);
     }
-
-    private void AddPrimaryStyle(Func<Selector?, Selector> selector) => Styles.Add(new Style(selector)
-    {
-        Setters =
-        {
-            new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.Parse("#185B92"))),
-            new Setter(Button.BorderBrushProperty, new SolidColorBrush(Color.Parse("#65B8FF"))),
-            new Setter(Button.ForegroundProperty, Brushes.White)
-        }
-    });
 
     public override void OnFrameworkInitializationCompleted()
     {

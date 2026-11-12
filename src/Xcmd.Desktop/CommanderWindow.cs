@@ -13,10 +13,10 @@ namespace Xcmd.Desktop;
 
 public sealed partial class CommanderWindow : Window
 {
-    private readonly TextBlock status = new() { Text = "Ready", FontSize = 12, Foreground = Brushes.LightGray };
+    private readonly TextBlock status = new() { Text = "Ready", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary };
     private bool altInput;
     private int pendingActions;
-    private readonly TextBlock updateMessage = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 420, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock updateMessage = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 420, TextWrapping = TextWrapping.Wrap };
     private long lastInput = Stopwatch.GetTimestamp();
     private bool restarting;
     private bool pointerHeld;
@@ -76,7 +76,7 @@ public sealed partial class CommanderWindow : Window
         Title = "Xcmd";
         Icon = ApplicationIcon.Load();
         Width = 1280; Height = 760; MinWidth = 840; MinHeight = 400;
-        Background = new SolidColorBrush(Color.Parse("#0E1420"));
+        Background = UiPalette.Canvas;
         var fileTypes = FileTypeSettings.Bundled();
         Left = new PanelView("left", fileSystem, fileTypes);
         Right = new PanelView("right", fileSystem, fileTypes);
@@ -275,7 +275,7 @@ public sealed partial class CommanderWindow : Window
 public sealed class NameDialog : Window
 {
     public TextBox Editor { get; } = new() { Name = "DirectoryName", PlaceholderText = "Folder name" };
-    public TextBlock Error { get; } = new() { Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap };
+    public TextBlock Error { get; } = UiLayout.Error();
     public event Action<string>? Submitted;
     public NameDialog(FeedbackController? feedback = null)
     {
@@ -283,13 +283,15 @@ public sealed class NameDialog : Window
         CanResize = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         AutomationProperties.SetAutomationId(Editor, "new-folder.name");
         var create = new Button { Content = "Create", Name = "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
+        var cancel = new Button { Content = "Cancel", Name = "CancelCreateFolder" };
+        cancel.Click += (_, _) => Close();
         create.Click += (_, _) => Submitted?.Invoke(Editor.Text ?? "");
-        DialogActions.FollowFocus(this, create);
+        DialogActions.FollowFocus(this, create, cancel);
         Content = new StackPanel
         {
-            Margin = new Thickness(14),
+            Margin = UiPalette.FormMargin,
             Spacing = 8,
-            Children = { new TextBlock { Text = "Folder name" }, Editor, Error, create }
+            Children = { new TextBlock { Text = "Folder name" }, Editor, Error, UiLayout.Actions(create, cancel) }
         };
         AddHandler(KeyDownEvent, (_, e) =>
         {

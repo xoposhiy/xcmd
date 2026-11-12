@@ -19,15 +19,15 @@ public sealed partial class FileViewerWindow : Window
     private readonly string[] paths;
     private readonly Func<string, Task> edit;
     private readonly Func<string, Task> open;
-    private readonly TextBlock information = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
-    private readonly TextBlock error = new() { Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
-    private readonly TextBlock searchStatus = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock readingStatus = new() { Name = "ViewerReadingStatus", FontSize = 11, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock feedbackStatus = new() { Name = "ViewerFeedbackStatus", FontSize = 11, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = false };
+    private readonly TextBlock information = new() { FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
+    private readonly TextBlock error = new() { Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
+    private readonly TextBlock searchStatus = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock readingStatus = new() { Name = "ViewerReadingStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock feedbackStatus = new() { Name = "ViewerFeedbackStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = false };
     private readonly Border statusBar = new() { Name = "ViewerStatusBar", BorderThickness = new Thickness(0, 1, 0, 0) };
     private readonly Image image = new() { Stretch = Stretch.Uniform };
     private readonly Grid viewerBody = new() { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-    private readonly Grid searchPanel = new() { ColumnDefinitions = new ColumnDefinitions("260,*"), IsVisible = false, Margin = new Thickness(8, 4) };
+    private readonly Grid searchPanel = new() { ColumnDefinitions = new ColumnDefinitions("Auto,260,*"), ColumnSpacing = 8, IsVisible = false, Margin = new Thickness(8, 4) };
     private readonly Dictionary<FileViewMode, MenuItem> modeItems = [];
     private readonly Dictionary<int, MenuItem> encodingItems = [];
     private MenuItem wrapItem = null!;
@@ -63,9 +63,9 @@ public sealed partial class FileViewerWindow : Window
     public string Information => information.Text ?? "";
     public bool HasImage => decodedImage != null;
     public string ReadingStatus => readingStatus.Text ?? "";
-    public TextBlock Progress { get; } = new() { Name = "ViewerProgress", MinWidth = 68, FontSize = 12, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) };
-    public Grid TitleBar { get; } = new() { Name = "ViewerTitleBar", Height = 32, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = new SolidColorBrush(Color.Parse("#101722")) };
-    private readonly TextBlock titlePath = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 0, 4, 0) };
+    public TextBlock Progress { get; } = new() { Name = "ViewerProgress", MinWidth = 68, FontSize = UiPalette.MetaSize, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) };
+    public Grid TitleBar { get; } = new() { Name = "ViewerTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = UiPalette.Canvas };
+    private readonly TextBlock titlePath = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 0, 4, 0) };
     public long VisibleEnd { get; private set; }
     public double ViewedPercent => FileLength == 0 ? 100 : 100d * VisibleEnd / FileLength;
     public ScrollBar FileScroll { get; } = new() { Name = "ViewerFileScroll", Orientation = Orientation.Vertical, Width = 16 };
@@ -77,7 +77,7 @@ public sealed partial class FileViewerWindow : Window
         AcceptsReturn = true,
         IsUndoEnabled = false,
         FontFamily = new FontFamily("Consolas"),
-        FontSize = 14,
+        FontSize = UiPalette.BodySize,
         TextWrapping = TextWrapping.Wrap,
         Padding = new Thickness(10, 6),
         BorderThickness = new Thickness(0),
@@ -93,8 +93,9 @@ public sealed partial class FileViewerWindow : Window
         Width = 1120; Height = 760; MinWidth = 640; MinHeight = 300;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         WindowHeader.Configure(this);
-        Background = new SolidColorBrush(Color.Parse("#101722"));
+        Background = UiPalette.Canvas;
         BuildMenu();
+        PreserveSelectionInMenus();
         ConfigureReaderAppearance();
         Content = BuildContent();
         ApplyTheme(themeId);
@@ -128,8 +129,9 @@ public sealed partial class FileViewerWindow : Window
         viewerBody.Children.Add(TextContent); viewerBody.Children.Add(image);
         Grid.SetColumn(FileScroll, 1); viewerBody.Children.Add(FileScroll);
         Grid.SetRow(viewerBody, 1); layout.Children.Add(viewerBody);
-        searchPanel.Children.Add(Search);
-        Grid.SetColumn(searchStatus, 1); searchPanel.Children.Add(searchStatus);
+        searchPanel.Children.Add(new TextBlock { Text = "Find", VerticalAlignment = VerticalAlignment.Center });
+        Grid.SetColumn(Search, 1); searchPanel.Children.Add(Search);
+        Grid.SetColumn(searchStatus, 2); searchPanel.Children.Add(searchStatus);
         Grid.SetRow(searchPanel, 2); layout.Children.Add(searchPanel);
         Grid.SetRow(error, 3); layout.Children.Add(error);
         Grid.SetRow(information, 4); layout.Children.Add(information);

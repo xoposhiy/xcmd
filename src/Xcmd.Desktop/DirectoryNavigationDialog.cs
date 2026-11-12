@@ -18,7 +18,7 @@ public sealed class DirectoryNavigationDialog : Window
 {
     private readonly FavoriteDirectories favorites;
     private readonly string currentDirectory;
-    private readonly TextBlock message = new() { Name = "NavigationMessage", FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+    private readonly TextBlock message = new() { Name = "NavigationMessage", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false };
     private readonly Button open = new() { Content = "Open", Name = "NavigationOpen", MinWidth = 80 };
     private readonly Button add = new() { Content = "Add current directory", Name = "FavoriteAdd" };
     private readonly Button rename = new() { Content = "Save name", Name = "FavoriteRename" };
@@ -59,7 +59,7 @@ public sealed class DirectoryNavigationDialog : Window
             list.IsTextSearchEnabled = false;
             KeyboardNavigation.SetTabNavigation(list, KeyboardNavigationMode.Once);
             list.Styles.Add(new Style(selector => selector.OfType<ListBoxItem>())
-            { Setters = { new Setter(PaddingProperty, new Thickness(6, 3)), new Setter(MinHeightProperty, 30d) } });
+            { Setters = { new Setter(PaddingProperty, UiPalette.CellPadding), new Setter(MinHeightProperty, UiPalette.RowHeight) } });
             list.GotFocus += (_, _) => ActivateList(list);
             list.PointerPressed += (_, _) => ActivateList(list);
             list.SelectionChanged += (_, _) =>
@@ -85,7 +85,7 @@ public sealed class DirectoryNavigationDialog : Window
             if (favorite == null) return new Border();
             var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,2*"), ColumnSpacing = 8 };
             row.Children.Add(new TextBlock { Text = favorite.Name, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
-            var path = new TextBlock { Text = favorite.Path, Foreground = Brushes.LightGray, TextTrimming = TextTrimming.PrefixCharacterEllipsis };
+            var path = new TextBlock { Text = favorite.Path, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.PrefixCharacterEllipsis };
             Grid.SetColumn(path, 1); row.Children.Add(path); ToolTip.SetTip(row, favorite.Name + "\n" + favorite.Path);
             return row;
         });
@@ -101,8 +101,8 @@ public sealed class DirectoryNavigationDialog : Window
         for (var i = 0; i < editorControls.Length; i++) { Grid.SetColumn(editorControls[i], i + 1); editorRow.Children.Add(editorControls[i]); }
         open.Click += (_, _) => OpenSelection();
         cancel.Click += (_, _) => Close();
-        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8, Children = { cancel, open } };
-        var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto"), RowSpacing = 8 };
+        var buttons = UiLayout.Actions(open, cancel);
+        var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto"), RowSpacing = 8 };
         layout.Children.Add(columns); Grid.SetRow(editorRow, 1); layout.Children.Add(editorRow);
         Grid.SetRow(message, 2); layout.Children.Add(message); Grid.SetRow(buttons, 3); layout.Children.Add(buttons);
         Content = layout; ActivateList(activeList);
@@ -216,7 +216,7 @@ public sealed class DirectoryNavigationDialog : Window
             : NameEditor.IsKeyboardFocusWithin ? rename : open;
         foreach (var action in actions) action.IsDefault = action == primary && action.IsEnabled;
     }
-    private void ShowMessage(string text, bool error = false) { Error = error ? text : null; message.Text = text; message.IsVisible = text.Length > 0; message.Foreground = error ? Brushes.Salmon : Brushes.LightGray; }
+    private void ShowMessage(string text, bool error = false) { Error = error ? text : null; message.Text = text; message.IsVisible = text.Length > 0; message.Foreground = error ? UiPalette.Error : UiPalette.Secondary; }
     private void OpenSelection()
     {
         var path = activeList.SelectedItem is FavoriteDirectory favorite ? favorite.Path : activeList.SelectedItem as string;

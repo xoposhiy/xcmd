@@ -47,15 +47,20 @@ public sealed class FeedbackController
         if (surfaces.ContainsKey(window)) return;
         window.Icon ??= owner.Icon;
         var original = window.Content as Control;
-        var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
-        var button = new Button { Content = "Feedback  F12", Name = "DialogFeedback", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(6), Padding = new Thickness(8, 3) };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
+        var button = new Button
+        {
+            Content = "Feedback  F12", Name = "DialogFeedback", HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(12, 0, 12, 8), Padding = new Thickness(6, 0), FontSize = UiPalette.MetaSize, MinHeight = 20, Height = 24
+        };
+        button.Classes.Add("quiet");
         AutomationProperties.SetAutomationId(button, "feedback.start");
         button.Click += (_, _) => Begin(window);
-        if (showButton) layout.Children.Add(button);
+        if (showButton) { Grid.SetRow(button, 1); layout.Children.Add(button); }
         window.Content = null;
-        if (original != null) { Grid.SetRow(original, 1); layout.Children.Add(original); }
+        if (original != null) layout.Children.Add(original);
         var root = new Grid(); root.Children.Add(layout); window.Content = root;
-        if (showButton && double.IsFinite(window.Height)) window.Height += 40;
+        if (showButton && double.IsFinite(window.Height)) window.Height += 32;
         surfaces[window] = new FeedbackSurface(this, window, root);
         window.Closed += (_, _) => surfaces.Remove(window);
     }
@@ -148,9 +153,9 @@ public sealed class FeedbackController
                 new TextBlock { Text = note!.ElementName, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = note.Text, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = note.Interactions is { Length: > 1 } steps ? "Actions: " + string.Join(" > ", steps.Select(step => step.ElementName)) : null,
-                    IsVisible = note.Interactions is { Length: > 1 }, FontSize = 11, Foreground = Brushes.LightGray, TextWrapping = TextWrapping.Wrap },
-                new TextBlock { Text = note.ResolvedIn == null ? "Open · " + note.Release : "Resolved in " + note.ResolvedIn, FontSize = 11, Foreground = Brushes.LightGray },
-                new TextBlock { Text = note.Resolution ?? note.PanelPath, FontSize = 11, Foreground = Brushes.LightGray, TextWrapping = TextWrapping.Wrap }
+                    IsVisible = note.Interactions is { Length: > 1 }, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Text = note.ResolvedIn == null ? "Open · " + note.Release : "Resolved in " + note.ResolvedIn, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary },
+                new TextBlock { Text = note.Resolution ?? note.PanelPath, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary, TextWrapping = TextWrapping.Wrap }
             }
         });
         var resolved = new ListBox { Name = "ResolvedFeedbackNotes", ItemTemplate = list.ItemTemplate, Focusable = true };
@@ -187,17 +192,17 @@ public sealed class FeedbackController
         };
         var close = new Button { Content = "Close" };
         close.Click += (_, _) => dialog.Close();
-        var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto"), RowSpacing = 8 };
-        layout.Children.Add(new TextBlock { Text = "Select an element with Feedback or F12 to add a comment.", FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto"), RowSpacing = 8 };
+        layout.Children.Add(new TextBlock { Text = "Select an element with Feedback or F12 to add a comment.", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap });
         Grid.SetRow(tabs, 1); layout.Children.Add(tabs);
         var location = new TextBlock
         {
             Text = ListPath == null ? "Comments are kept with the session." : "Saved list: " + ListPath,
-            FontSize = 12,
+            FontSize = UiPalette.MetaSize,
             TextWrapping = TextWrapping.Wrap
         };
         Grid.SetRow(location, 2); layout.Children.Add(location);
-        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { remove, close } };
+        var buttons = UiLayout.Actions(remove, close);
         Grid.SetRow(buttons, 3); layout.Children.Add(buttons);
         dialog.Content = layout;
         dialog.AddHandler(InputElement.KeyDownEvent, (_, e) => { if (IsPickingIn(dialog)) return; if (e.Key == Key.Escape) { dialog.Close(); e.Handled = true; } }, RoutingStrategies.Tunnel);
@@ -228,14 +233,14 @@ public sealed class CommentDialog : Window
         cancel.Click += (_, _) => Close();
         Content = new StackPanel
         {
-            Margin = new Thickness(14),
+            Margin = UiPalette.FormMargin,
             Spacing = 8,
             Children =
             {
-                new TextBlock { Text = "Comment on: " + elementName, FontSize = 15, TextTrimming = TextTrimming.CharacterEllipsis },
-                new TextBlock { Text = actionPath == null ? null : "Actions: " + actionPath, Name = "FeedbackActionPath", IsVisible = actionPath != null, FontSize = 12, TextWrapping = TextWrapping.Wrap },
-                Editor, new TextBlock { Text = "Ctrl+Enter adds the comment · Esc cancels", FontSize = 12 },
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { cancel, add } }
+                new TextBlock { Text = "Comment on: " + elementName, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                new TextBlock { Text = actionPath == null ? null : "Actions: " + actionPath, Name = "FeedbackActionPath", IsVisible = actionPath != null, FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap },
+                Editor, new TextBlock { Text = "Ctrl+Enter adds the comment · Esc cancels", FontSize = UiPalette.MetaSize },
+                UiLayout.Actions(add, cancel)
             }
         };
         AddHandler(KeyDownEvent, (_, e) =>

@@ -12,7 +12,7 @@ namespace Xcmd.Desktop;
 public sealed class FileTransferDialog : Window
 {
     public TextBox Destination { get; } = new() { Name = "TransferDestination" };
-    public TextBlock Error { get; } = new() { Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap };
+    public TextBlock Error { get; } = UiLayout.Error();
     public bool IsSubmitting { get; set; }
     public event Action<string>? Submitted;
 
@@ -37,12 +37,12 @@ public sealed class FileTransferDialog : Window
         DialogActions.FollowFocus(this, confirm, cancel);
         Content = new StackPanel
         {
-            Margin = new Thickness(14),
+            Margin = UiPalette.FormMargin,
             Spacing = 8,
             Children =
             {
                 source, Destination, Error,
-                new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Children = { confirm, cancel } }
+                UiLayout.Actions(confirm, cancel)
             }
         };
         Opened += (_, _) =>

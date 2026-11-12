@@ -19,8 +19,8 @@ public sealed class CommandLineView : Border
         Text = "",
         MaxLength = Core.CommandLine.MaximumLength,
         AcceptsReturn = false,
-        PlaceholderText = "Run a program or file · cd changes this panel's directory",
-        MinHeight = 28,
+        PlaceholderText = "Command",
+        MinHeight = UiPalette.ControlHeight,
         Padding = new Thickness(5, 2)
     };
     public bool HasKeyboardFocus => Editor.IsKeyboardFocusWithin;

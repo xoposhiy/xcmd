@@ -14,7 +14,7 @@ public sealed class FileConflictDialog : Window
 {
     public CheckBox ApplyToAll { get; } = new() { Content = "Apply to all", Name = "ConflictApplyToAll" };
     public TextBox NewName { get; } = new() { Name = "ConflictNewName" };
-    public TextBlock Error { get; } = new() { Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap };
+    public TextBlock Error { get; } = UiLayout.Error();
     public event Action<ConflictDecision>? Decided;
 
     public FileConflictDialog(FileConflict conflict, FeedbackController feedback)
@@ -38,13 +38,13 @@ public sealed class FileConflictDialog : Window
         var cancel = Choice("Cancel operation", "ConflictCancel", ConflictAction.Cancel);
         Content = new StackPanel
         {
-            Margin = new Thickness(14),
+            Margin = UiPalette.FormMargin,
             Spacing = 8,
             Children =
             {
                 new TextBlock { Text = conflict.Source.Name + " already exists", FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 comparison, ApplyToAll, nameRow, Error,
-                new WrapPanel { Orientation = Orientation.Horizontal, Children = { skip, rename, replace, cancel } }
+                UiLayout.Actions(skip, rename, replace, cancel)
             }
         };
         var choices = new[] { skip, rename, replace, cancel };
@@ -78,7 +78,7 @@ public sealed class FileConflictDialog : Window
             Spacing = 3,
             Children =
             {
-                new TextBlock { Text = label, Foreground = Brushes.LightGray }, path,
+                new TextBlock { Text = label, Foreground = UiPalette.Secondary }, path,
                 new TextBlock { Text = entry.IsDirectory ? "Folder" : $"{entry.Size:N0} bytes" },
                 new TextBlock { Text = $"{entry.ModifiedUtc.ToLocalTime():yyyy-MM-dd HH:mm:ss}" }
             }
@@ -127,13 +127,13 @@ public sealed class FileDeleteDialog : Window
         ToolTip.SetTip(selection, string.Join("\n", request.Sources.Select(entry => entry.FullPath)));
         Content = new StackPanel
         {
-            Margin = new Thickness(14),
+            Margin = UiPalette.FormMargin,
             Spacing = 10,
             Children =
             {
                 question, selection,
                 new StackPanel { Orientation = Orientation.Horizontal, Children = { Recycle, Permanently } },
-                new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Children = { confirm, cancel } }
+                UiLayout.Actions(confirm, cancel)
             }
         };
         Opened += (_, _) => confirm.Focus();

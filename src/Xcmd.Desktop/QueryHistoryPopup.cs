@@ -26,7 +26,7 @@ internal sealed class QueryHistoryPopup
             PlacementTarget = editor,
             Placement = PlacementMode.Bottom,
             IsLightDismissEnabled = true,
-            Child = new Border { Background = new SolidColorBrush(Color.Parse("#202A3A")), BorderBrush = Brushes.Gray, BorderThickness = new Thickness(1), Child = list }
+            Child = new Border { Background = UiPalette.Surface, BorderBrush = UiPalette.ControlBorder, BorderThickness = new Thickness(1), Child = list }
         };
         list.AddHandler(InputElement.PointerReleasedEvent, (_, e) =>
         { if (e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<ListBoxItem>().Any()) Accept(); }, RoutingStrategies.Bubble);

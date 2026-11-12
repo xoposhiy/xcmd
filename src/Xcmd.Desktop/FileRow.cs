@@ -23,11 +23,11 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
         NameMatchStart = start; NameMatchLength = length;
         Changed(nameof(NameMatchStart)); Changed(nameof(NameMatchLength));
     }
-    private static readonly IBrush markColor = new SolidColorBrush(Color.Parse("#FFD278"));
+    private static readonly IBrush markColor = UiPalette.Mark;
     public bool IsMarked => marked;
     public string MarkGlyph => marked ? "✓" : "";
-    private static readonly IBrush activeCursor = new SolidColorBrush(Color.Parse("#15558A"));
-    private static readonly IBrush inactiveCursor = new SolidColorBrush(Color.Parse("#1D2532"));
+    private static readonly IBrush activeCursor = UiPalette.Cursor;
+    private static readonly IBrush inactiveCursor = UiPalette.InactiveCursor;
     public bool IsCurrent => current;
     public IBrush RowBackground => current ? active ? activeCursor : inactiveCursor : Brushes.Transparent;
     public IBrush NameForeground => marked ? markColor : current ? Brushes.White : fileColor;

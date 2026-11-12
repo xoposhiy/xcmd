@@ -15,7 +15,7 @@ internal static class FileRowTheme
     {
         Setters =
         {
-            new Setter(Layoutable.MinHeightProperty, 26d),
+            new Setter(Layoutable.MinHeightProperty, UiPalette.RowHeight),
             new Setter(TemplatedControl.PaddingProperty, new Thickness(0)),
             new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(0)),
             new Setter(Control.FocusAdornerProperty, null),

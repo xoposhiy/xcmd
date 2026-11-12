@@ -26,7 +26,7 @@ public sealed partial class FileSearchWindow : Window
     private ConcurrentQueue<FileSearchResult> incoming = new();
     private readonly ObservableCollection<FileSearchResult> results = [];
     private readonly TextBlock status = new() { Name = "SearchStatus", Text = "Enter a name or text, then press Enter.", TextWrapping = TextWrapping.Wrap };
-    private readonly TextBlock details = new() { Name = "SearchDetails", Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap, MaxHeight = 100 };
+    private readonly TextBlock details = new() { Name = "SearchDetails", Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, MaxHeight = 100 };
     private readonly CheckBox matchCase = new() { Content = "Match text case", Name = "SearchMatchCase" };
     private readonly CheckBox regex = new() { Content = "Regex", Name = "SearchRegex" };
     private readonly CheckBox literalName = new() { Content = "Treat * and ? as text", Name = "SearchLiteralName" };
@@ -49,7 +49,7 @@ public sealed partial class FileSearchWindow : Window
     private bool expanded;
     private FileSearchQuery? activeQuery;
     private FileSearchQuery? invalidQuery;
-    private readonly TextBlock queryError = new() { Name = "SearchQueryError", Foreground = Brushes.Salmon, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+    private readonly TextBlock queryError = new() { Name = "SearchQueryError", Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false };
     public TextBox NameEditor { get; } = new() { Name = "SearchName", PlaceholderText = "Part of a name, *.cs, or src/*.cs", MaxLength = 1024 };
     public TextBox TextEditor { get; } = new() { Name = "SearchText", PlaceholderText = "Text inside files (optional)", MaxLength = 1024 };
     public TableView Results { get; } = new() { Name = "SearchResults" };
@@ -104,9 +104,10 @@ public sealed partial class FileSearchWindow : Window
         var feedbackButton = new Button { Content = "Feedback", Name = "SearchFeedback" };
         AutomationProperties.SetAutomationId(feedbackButton, "feedback.start"); ToolTip.SetTip(feedbackButton, "Comment on an element · F12");
         feedbackButton.Click += (_, _) => feedback.Begin(this);
-        var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { toPanel, view, go, feedbackButton, close } };
+        feedbackButton.Classes.Add("quiet");
+        var right = UiLayout.Actions(toPanel, view, go, feedbackButton, close);
         DockPanel.SetDock(right, Dock.Right); actions.Children.Add(right);
-        var layout = new Grid { Margin = new Thickness(12), RowDefinitions = new("Auto,Auto,Auto,Auto,*,Auto,Auto,Auto"), RowSpacing = 6 };
+        var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new("Auto,Auto,Auto,Auto,*,Auto,Auto,Auto"), RowSpacing = 6 };
         var queryActions = new Grid { ColumnDefinitions = new("*,Auto,Auto"), ColumnSpacing = 8 };
         queryActions.Children.Add(options); Grid.SetColumn(start, 1); queryActions.Children.Add(start); Grid.SetColumn(stop, 2); queryActions.Children.Add(stop);
         AutomationProperties.SetAutomationId(queryError, "search.query-error");

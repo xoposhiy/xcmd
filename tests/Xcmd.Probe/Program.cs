@@ -38,6 +38,7 @@ internal static class Program
         scenarios = scenarios.Concat(SearchInteractionScenarios.All).ToArray();
         scenarios = scenarios.Concat(SearchPanelScenarios.All).ToArray();
         scenarios = scenarios.Concat(OpenFeedbackScenarios.All).ToArray();
+        scenarios = scenarios.Concat(DesignSystemScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");

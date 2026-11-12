@@ -12,7 +12,7 @@ internal sealed class CommanderFrame
 {
     private readonly Button feedback = FooterButton("Feedback", "StartFeedback", "feedback.start");
     private readonly Button notes = FooterButton("Notes (0)", "ShowNotes", "feedback.show-notes");
-    public Grid TitleBar { get; } = new() { Name = "MainTitleBar", Height = 32, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = new SolidColorBrush(Color.Parse("#0E1420")) };
+    public Grid TitleBar { get; } = new() { Name = "MainTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = UiPalette.Canvas };
     public Grid StatusBar { get; } = new() { Name = "MainStatusBar", ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
 
     public CommanderFrame(CommanderWindow window, Menu menu, TextBlock status, TextBlock update)
@@ -24,7 +24,7 @@ internal sealed class CommanderFrame
         var title = new TextBlock
         {
             Text = window.Title,
-            FontSize = 12,
+            FontSize = UiPalette.MetaSize,
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis,
             Margin = new Thickness(12, 0, 4, 0)
@@ -61,7 +61,7 @@ internal sealed class CommanderFrame
             Height = 20,
             MinHeight = 0,
             Padding = new Thickness(6, 0),
-            FontSize = 11,
+            FontSize = UiPalette.MetaSize,
             VerticalAlignment = VerticalAlignment.Center,
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
@@ -78,10 +78,10 @@ internal sealed class CommanderFrame
             help.Children.Add(new Border
             {
                 BorderThickness = new Thickness(help.Children.Count == 0 ? 0 : 1, 0, 0, 0),
-                BorderBrush = new SolidColorBrush(Color.Parse("#526078")),
+                BorderBrush = UiPalette.Divider,
                 Padding = new Thickness(help.Children.Count == 0 ? 0 : 8, 0, 8, 0),
                 Margin = new Thickness(0, 3),
-                Child = new TextBlock { Text = hint, FontSize = 12, Foreground = Brushes.LightGray }
+                Child = new TextBlock { Text = hint, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }
             });
         return help;
     }

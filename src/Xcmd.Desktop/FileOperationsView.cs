@@ -14,10 +14,10 @@ public sealed class FileOperationsView : Border
 {
     private readonly FileOperationQueue queue;
     private readonly TextBlock summary = new() { TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock currentPath = new() { Name = "CurrentOperationPath", FontSize = 11, TextTrimming = TextTrimming.LeadingCharacterEllipsis, Foreground = Brushes.LightGray };
+    private readonly TextBlock currentPath = new() { Name = "CurrentOperationPath", FontSize = UiPalette.MetaSize, TextTrimming = TextTrimming.LeadingCharacterEllipsis, Foreground = UiPalette.Secondary };
     private readonly ListBox jobs = new() { Name = "FileOperationJobs", MinWidth = 260, Focusable = true };
-    private readonly TextBlock report = new() { FontSize = 12, TextWrapping = TextWrapping.Wrap };
-    private readonly Grid details = new() { ColumnDefinitions = new ColumnDefinitions("2*,3*"), Height = 144, IsVisible = false };
+    private readonly OperationDetailsView report = new();
+    private readonly Grid details = new() { ColumnDefinitions = new ColumnDefinitions("2*,3*"), Height = 168, IsVisible = false };
     private readonly Button cancelCurrent = new() { Content = "Cancel current", Name = "CancelCurrentOperation" };
     private readonly Button cancelSelected = new() { Content = "Cancel selected", Name = "CancelSelectedOperation", Margin = new Thickness(8, 0, 0, 0) };
     private readonly Button toggle = new() { Content = "Details", Name = "ToggleOperationDetails", Margin = new Thickness(8, 0, 0, 0) };
@@ -39,15 +39,14 @@ public sealed class FileOperationsView : Border
     {
         this.queue = queue;
         Name = "FileOperations"; IsVisible = false; Padding = new Thickness(8); Margin = new Thickness(0, 4, 0, 2);
-        Background = new SolidColorBrush(Color.Parse("#202B3D"));
+        Background = UiPalette.Raised;
         KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") };
-        header.Children.Add(new StackPanel { Height = 36, Spacing = 1, Children = { summary, currentPath } });
+        header.Children.Add(new StackPanel { Height = 40, Spacing = 1, Children = { summary, currentPath } });
         Grid.SetColumn(cancelCurrent, 1); header.Children.Add(cancelCurrent);
         Grid.SetColumn(cancelSelected, 2); header.Children.Add(cancelSelected);
         Grid.SetColumn(toggle, 3); header.Children.Add(toggle);
-        var text = new ScrollViewer { Content = report, Margin = new Thickness(10, 4, 0, 0) };
-        details.Children.Add(jobs); Grid.SetColumn(text, 1); details.Children.Add(text);
+        details.Children.Add(jobs); Grid.SetColumn(report, 1); details.Children.Add(report);
         Child = new StackPanel { Spacing = 6, Children = { header, Progress, details } };
         AutomationProperties.SetAutomationId(this, "file-operations");
         AutomationProperties.SetAutomationId(Progress, "file-operations.progress");
@@ -161,8 +160,6 @@ public sealed class FileOperationsView : Border
     {
         var job = Selected();
         cancelSelected.IsEnabled = job is { IsFinished: false, State: not FileOperationState.Cancelling };
-        if (job == null) { report.Text = ""; return; }
-        report.Text = $"{Label(job)}\nFiles: {job.ProcessedFiles:N0}/{job.TotalFiles:N0} · {job.CompletedFiles:N0} completed · {job.SkippedFiles:N0} skipped · {job.FailedEntries:N0} failed\nSource: {string.Join(", ", job.Request.Sources.Select(entry => entry.FullPath))}\nDestination: {job.Request.Destination ?? (job.Request.Kind == FileOperationKind.Recycle ? "Recycle Bin" : "Permanent deletion")}\n" +
-            string.Join("\n", job.Outcomes.TakeLast(100).Select(result => $"{result.Kind}: {result.Source}{(result.Destination == null ? "" : " → " + result.Destination)}{(result.Message == null ? "" : " · " + result.Message)}"));
+        report.Show(job);
     }
 }

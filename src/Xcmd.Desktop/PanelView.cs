@@ -17,8 +17,8 @@ namespace Xcmd.Desktop;
 
 public sealed partial class PanelView : Border
 {
-    private readonly TextBlock path = new() { FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock summary = new() { FontSize = 12, Foreground = Brushes.LightGray };
+    private readonly TextBlock path = new() { FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.LeadingCharacterEllipsis };
+    private readonly TextBlock summary = new() { FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary };
     private readonly Dictionary<SortField, Button> headers = [];
     private string? cursorName;
     private bool headersConfigured;
@@ -157,8 +157,8 @@ public sealed partial class PanelView : Border
         Id = id;
         Name = id;
         Session = new PanelSession(fileSystem);
-        Background = new SolidColorBrush(Color.Parse("#171E2B"));
-        BorderBrush = new SolidColorBrush(Color.Parse("#354157"));
+        Background = UiPalette.Surface;
+        BorderBrush = UiPalette.Divider;
         BorderThickness = new Thickness(0, 2, 0, 0);
         CornerRadius = new CornerRadius(0);
         ClipToBounds = true;
@@ -170,7 +170,7 @@ public sealed partial class PanelView : Border
             ClipToBounds = true,
             AutoScrollToSelectedItem = false,
             Focusable = true,
-            FontSize = 14,
+            FontSize = UiPalette.BodySize,
             Background = Brushes.Transparent
         };
         AutomationProperties.SetAutomationId(Table, id + ".files");
@@ -180,18 +180,7 @@ public sealed partial class PanelView : Border
         Table.Resources["TableViewColumnResizerMargin"] = new Thickness(0);
         Table.Resources["TableViewRowPadding"] = new Thickness(0);
         Table.ItemContainerTheme = FileRowTheme.Create();
-        Table.Styles.Add(new Style(selector => selector.OfType<TableViewCell>())
-        { Setters = { new Setter(PaddingProperty, new Thickness(8, 0)) } });
-        Table.Styles.Add(new Style(selector => selector.OfType<TableViewColumnHeader>())
-        {
-            Setters =
-            {
-                new Setter(ContentControl.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch),
-                new Setter(ContentControl.VerticalContentAlignmentProperty, VerticalAlignment.Stretch),
-                new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(Color.Parse("#263247"))),
-                new Setter(TemplatedControl.PaddingProperty, new Thickness(0))
-            }
-        });
+        UiLayout.Table(Table, fileRows: true);
         Table.Columns.Add(Column(SortField.Name, "Name", new GridLength(1, GridUnitType.Star), name: true));
         Table.Columns.Add(Column(SortField.Extension, "Type", new GridLength(64)));
         Table.Columns.Add(Column(SortField.Size, "Size", new GridLength(88)));
@@ -237,18 +226,19 @@ public sealed partial class PanelView : Border
             if (EditingRow == null && e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any())
                 OpenRequested?.Invoke(this);
         };
-        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,24") };
+        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,29") };
         var historyButton = new Button
         {
             Content = "History",
             Name = id + "History",
-            FontSize = 12,
+            FontSize = UiPalette.MetaSize,
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
-            Foreground = new SolidColorBrush(Color.Parse("#8792A4")),
+            Foreground = UiPalette.Secondary,
             Padding = new Thickness(3, 4),
             Margin = new Thickness(8, 0, 0, 0)
         };
+        historyButton.Classes.Add("quiet");
         AutomationProperties.SetAutomationId(historyButton, id + ".history");
         ToolTip.SetTip(historyButton, "Directory history (Alt+Down)");
         historyButton.Click += (_, _) => { Activated?.Invoke(this); HistoryRequested?.Invoke(this); };
@@ -261,13 +251,17 @@ public sealed partial class PanelView : Border
         content.Children.Add(pathContainer);
         Grid.SetRow(Table, 1);
         content.Children.Add(Table);
+        summary.VerticalAlignment = VerticalAlignment.Center;
+        summary.TextTrimming = TextTrimming.CharacterEllipsis;
+        summary.HorizontalAlignment = HorizontalAlignment.Right;
+        summary.Bind(ToolTip.TipProperty, new Binding(nameof(TextBlock.Text)) { Source = summary });
         var summaryContainer = new Border
         {
             Name = id + "Footer",
-            Padding = new Thickness(8, 2),
+            Padding = new Thickness(8, 0),
             Child = summary,
             Background = Background,
-            BorderBrush = new SolidColorBrush(Color.Parse("#354157")),
+            BorderBrush = UiPalette.Divider,
             BorderThickness = new Thickness(0, 1, 0, 0),
             ClipToBounds = true
         };
@@ -303,7 +297,7 @@ public sealed partial class PanelView : Border
             header.HorizontalContentAlignment = HorizontalAlignment.Stretch;
             header.VerticalContentAlignment = VerticalAlignment.Stretch;
             header.VerticalAlignment = VerticalAlignment.Stretch;
-            header.Padding = new Thickness(0); header.MinHeight = 32;
+            header.Padding = new Thickness(0); header.MinHeight = UiPalette.RowHeight;
             if (header.Column == Table.Columns[^1])
                 foreach (var thumb in header.GetVisualDescendants().OfType<Thumb>()) thumb.IsVisible = false;
         }
@@ -323,9 +317,10 @@ public sealed partial class PanelView : Border
             VerticalAlignment = VerticalAlignment.Stretch,
             VerticalContentAlignment = VerticalAlignment.Center,
             HorizontalContentAlignment = field == SortField.Size ? HorizontalAlignment.Right : field == SortField.Extension ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-            FontSize = 13,
+            FontSize = UiPalette.BodySize,
             FontWeight = FontWeight.SemiBold,
-            Foreground = new SolidColorBrush(Color.Parse("#E5EBF5"))
+            Foreground = UiPalette.Text,
+            MinHeight = UiPalette.RowHeight
         };
         AutomationProperties.SetAutomationId(button, Id + ".sort." + field.ToString().ToLowerInvariant());
         button.Click += (_, _) => { Activated?.Invoke(this); SortBy(field); FocusCurrent(); };
@@ -356,8 +351,8 @@ public sealed partial class PanelView : Border
 
     private Control MakeNameCell(FileRow row)
     {
-        var grid = new Grid { DataContext = row, MinHeight = 26, ColumnDefinitions = new ColumnDefinitions("16,32,*") };
-        var mark = new TextBlock { Name = "FileMark", Foreground = new SolidColorBrush(Color.Parse("#FFD278")), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+        var grid = new Grid { DataContext = row, MinHeight = UiPalette.RowHeight, ColumnDefinitions = new ColumnDefinitions("16,24,*") };
+        var mark = new TextBlock { Name = "FileMark", Foreground = UiPalette.Mark, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
         mark.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.MarkGlyph)));
         grid.Children.Add(mark);
         var icon = new Image { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, DataContext = row };
@@ -377,10 +372,10 @@ public sealed partial class PanelView : Border
         var editor = new TextBox
         {
             Name = "RenameEditor",
-            MinHeight = 26,
+            MinHeight = UiPalette.RowHeight,
             Padding = new Thickness(3, 0),
             VerticalContentAlignment = VerticalAlignment.Center,
-            FontSize = 14,
+            FontSize = UiPalette.BodySize,
             MaxLength = 255
         };
         AutomationProperties.SetAutomationId(editor, "rename.editor");
@@ -409,7 +404,7 @@ public sealed partial class PanelView : Border
             sizes.Clear();
             ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
             path.Text = ArchivePath.Display(Session.DirectoryPath);
-            path.TextTrimming = ArchivePath.IsEntry(Session.DirectoryPath) ? TextTrimming.LeadingCharacterEllipsis : TextTrimming.CharacterEllipsis;
+            path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
             ToolTip.SetTip(path, path.Text);
             AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);
             if (!previousPath.Equals(Session.DirectoryPath, StringComparison.OrdinalIgnoreCase)) LocationVisited?.Invoke(Session.DirectoryPath);
@@ -613,7 +608,7 @@ public sealed partial class PanelView : Border
     {
         isActive = active;
         currentRow?.SetCurrent(true, active);
-        BorderBrush = active ? new SolidColorBrush(Color.Parse("#75B9F5")) : Brushes.Transparent;
+        BorderBrush = active ? UiPalette.Focus : Brushes.Transparent;
     }
 
     private void UpdateHeaders()

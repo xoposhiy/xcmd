@@ -124,6 +124,12 @@ The runner starts the same `App`, controls, command handlers and services as the
 
 Each run writes `results.json`, state and input traces, failure details and selected PNG images under `artifacts/probe`. A published release includes its own `verification.json`. These generated files are excluded from Git. They are not inputs required for verification from a clean source checkout.
 
+## Design-system feedback implementation (2026-11-12)
+
+`design-system-shared-surfaces` checks consistent table/header geometry, square buttons, inherited readable typography and action bounds; renders panels, new-folder/transfer dialogs, navigation and narrow search at 100/150% scale. `design-system-operation-details` verifies that the operation table retains source/destination values in separate columns. `design-system-reader-contrast` switches all nine palettes through the actual menus, checks selected-text contrast and preserves the found text. The existing reader persistence scenario also remains required.
+
+These checks use the actual production styles and controls. The implementation is in the feedback phase: the focused smoke set does not replace the complete finalisation gate or independent usability review. A failed NuGet vulnerability-service lookup is a publication blocker unless the user explicitly authorises the documented feedback-only audit exception.
+
 ## Limits
 
 - Headless checks do not prove native Windows keyboard delivery, AltGr, IME, clipboard integration, Explorer drag-and-drop, shell-extension menus, GPU rendering, native monitor placement or focus during monitor changes.
