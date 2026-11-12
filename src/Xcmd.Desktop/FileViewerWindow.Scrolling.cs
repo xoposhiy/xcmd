@@ -89,6 +89,13 @@ public sealed partial class FileViewerWindow
         UpdateReadingPosition();
     }
 
+    // PauseFollowing resets the scroll bar to the current position, so the requested offset is read first.
+    private void SeekFromScrollBar(long offset)
+    {
+        PauseFollowing();
+        Run(token => SeekByteAsync(offset, token));
+    }
+
     private async Task SeekByteAsync(long offset, CancellationToken token)
     {
         if (offset >= FileScroll.Maximum) { await SeekBoundaryAsync(true, token); return; }

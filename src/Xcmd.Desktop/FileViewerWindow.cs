@@ -116,7 +116,7 @@ public sealed partial class FileViewerWindow : Window
         AddHandler(TextInputEvent, OnSearchText, RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, OnViewerWheel, RoutingStrategies.Tunnel);
         TextContent.SizeChanged += (_, _) => UpdateReadingPosition();
-        FileScroll.PropertyChanged += (_, e) => { if (e.Property == ScrollBar.ValueProperty && !updatingScroll && slice != null) { PauseFollowing(); Run(token => SeekByteAsync((long)FileScroll.Value, token)); } };
+        FileScroll.PropertyChanged += (_, e) => { if (e.Property == ScrollBar.ValueProperty && !updatingScroll && slice != null) SeekFromScrollBar((long)FileScroll.Value); };
         Search.TextChanging += (_, _) => SearchChanged();
         Closed += (_, _) => { closed = true; loading?.Cancel(); searching?.Cancel(); image.Source = null; decodedImage?.Bitmap.Dispose(); };
     }
