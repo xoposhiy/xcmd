@@ -34,10 +34,10 @@ public static class NavigationAndColorsScenarios
         new("navigation-tab-and-reverse-tab", "UC15; UC16; keyboard focus", async c =>
         {
             var dialog = await OpenHistoryAsync(c);
-            await c.KeyAsync(Key.Tab, target: dialog); Check(dialog.Suggestions.IsKeyboardFocusWithin, "Tab reaches frequent locations."); CheckOneSelection(dialog);
+            await c.KeyAsync(Key.Tab, target: dialog); Check(dialog.Favorites.IsKeyboardFocusWithin, "Tab reaches favorites and frequent locations."); CheckOneSelection(dialog);
             await c.KeyAsync(Key.Tab, RawInputModifiers.Shift, dialog); Check(dialog.Directories.IsKeyboardFocusWithin, "Shift+Tab returns to history.");
-            await c.KeyAsync(Key.Tab, target: dialog); await c.KeyAsync(Key.Tab, target: dialog);
-            Check(dialog.Favorites.IsKeyboardFocusWithin, "The next Tab reaches favorites."); CheckOneSelection(dialog);
+            await c.KeyAsync(Key.Tab, target: dialog);
+            Check(dialog.Favorites.IsKeyboardFocusWithin, "The next Tab reaches the combined list."); CheckOneSelection(dialog);
             await c.KeyAsync(Key.Tab, target: dialog); Check(dialog.NameEditor.IsFocused, "Tab continues to the favorite editor.");
             await c.KeyAsync(Key.Tab, RawInputModifiers.Shift, dialog); Check(dialog.Favorites.IsKeyboardFocusWithin, "Shift+Tab returns from the editor to favorites.");
             await c.KeyAsync(Key.Tab, target: dialog); await c.KeyAsync(Key.Tab, target: dialog);
@@ -68,14 +68,69 @@ public static class NavigationAndColorsScenarios
             Equal(2, c.Window.CaptureWorkspace().UsageVersion, "New sessions save the ranking version");
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "Ranking migration preserves panel locations");
         }),
-        new("navigation-three-column-rendering", "UC15; UC16; visual review", async c =>
+        new("navigation-two-column-rendering", "UC15; UC16; visual review", async c =>
         {
             var dialog = await OpenHistoryAsync(c);
             await c.ScreenshotAsync("navigation-history", dialog);
             await c.KeyAsync(Key.D, RawInputModifiers.Control, dialog); await c.ScreenshotAsync("navigation-favorites", dialog);
             dialog.Width = dialog.MinWidth; dialog.SetScaleForTest(1.5); await c.ScreenshotAsync("navigation-scaled", dialog);
-            Check(dialog.Favorites.Bounds.Width > 200 && dialog.Suggestions.Bounds.Width > 200, "All three lists remain usable at the minimum width.");
+            Check(dialog.Favorites.Bounds.Width > 300 && dialog.Directories.Bounds.Width > 300, "Both lists remain usable at the minimum width.");
+            Equal(2, dialog.GetVisualDescendants().OfType<ListBox>().Count(), "Navigation has exactly two lists");
             await c.KeyAsync(Key.Escape, target: dialog);
+        }),
+        new("navigation-pinned-favorites-and-type-search", "UC15; UC16; pinned favorites, deduplication and immediate substring search", async c =>
+        {
+            var favorite = c.Window.Favorites.Add(c.RightPath);
+            c.Window.Favorites.Rename(favorite.Id, "Working 日本語");
+            c.Window.DirectoryUsage.Visit(c.RightPath, DateTimeOffset.UtcNow);
+            var frequent = Path.Combine(c.LeftPath, "folder1");
+            c.Window.DirectoryUsage.Visit(frequent, DateTimeOffset.UtcNow);
+            var dialog = await FavoritesProbe.OpenAsync(c);
+            Check(dialog.Favorites.Items[0] is FavoriteDirectory { Name: "Working 日本語" }, "Pinned favorites precede frequent locations");
+            Equal(1, dialog.Favorites.Items.Cast<object>().Count(item => item is string path && path == frequent), "Frequent locations follow the pins");
+            Check(!dialog.Favorites.Items.Cast<object>().OfType<string>().Contains(c.RightPath), "Pinned paths do not repeat among frequent locations");
+            Check(dialog.Favorites.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "★"), "Pinned favorites show a star");
+            await c.TextAsync("日本語", dialog);
+            Check(dialog.Favorites.SelectedItem is FavoriteDirectory, "Typing finds a custom favorite name");
+            await c.KeyAsync(Key.Escape, target: dialog);
+            Check(dialog.IsVisible && dialog.NameSearchPrefix.Length == 0, "Escape clears the search first");
+            await c.TextAsync("folder1", dialog);
+            Equal(frequent, dialog.Favorites.SelectedItem as string, "Typing finds a frequent directory by substring");
+            Check(!dialog.NameEditor.IsEnabled && !FavoritesProbe.Button(dialog, "FavoriteRemove").IsEnabled, "Frequent locations cannot accidentally edit or remove a pin");
+            await c.TextAsync("☃", dialog);
+            Equal("folder1", dialog.NameSearchPrefix, "Unmatched input is ignored");
+            await c.KeyAsync(Key.Enter, target: dialog);
+            Equal(frequent, c.Window.Left.Session.DirectoryPath, "Enter opens the selected frequent directory");
+        }),
+        new("navigation-search-active-column-and-keyboard-layout", "UC15; UC16; first matching row, physical input and search reset", async c =>
+        {
+            var path = Path.Combine(c.LeftPath, "folder1");
+            var first = c.Window.Favorites.Add(c.RightPath); c.Window.Favorites.Rename(first.Id, "My work");
+            var second = c.Window.Favorites.Add(path); c.Window.Favorites.Rename(second.Id, "work");
+            var dialog = await OpenHistoryAsync(c);
+            await c.TextAsync("left", dialog);
+            Equal(dialog.Directories.Items[0] as string, dialog.Directories.SelectedItem as string, "Typing begins at the uppermost match in history after Alt+Down");
+            CheckOneSelection(dialog);
+            await c.KeyAsync(Key.Right, target: dialog);
+            Equal("", dialog.NameSearchPrefix, "Changing columns clears the query");
+            await c.TextAsync("work", dialog);
+            Equal(first.Id, (dialog.Favorites.SelectedItem as FavoriteDirectory)?.Id, "The uppermost substring match wins over a later prefix match");
+            await c.KeyAsync(Key.Down, target: dialog);
+            Equal(second.Id, (dialog.Favorites.SelectedItem as FavoriteDirectory)?.Id, "Down cycles through matches");
+            await c.KeyAsync(Key.Up, target: dialog);
+            Equal(first.Id, (dialog.Favorites.SelectedItem as FavoriteDirectory)?.Id, "Up cycles back through matches");
+            await c.KeyAsync(Key.Escape, target: dialog);
+            await c.KeyAsync(Key.W, target: dialog); await c.KeyAsync(Key.O, target: dialog);
+            Equal("wo", dialog.NameSearchPrefix, "Physical key input works without Alt");
+            await c.TextAsync("o", dialog);
+            Equal("wo", dialog.NameSearchPrefix, "Text from the same physical key is not appended twice");
+            await c.KeyAsync(Key.Down, RawInputModifiers.Alt, dialog);
+            Equal("", dialog.NameSearchPrefix, "The history shortcut clears the search");
+            await c.KeyAsync(Key.D, RawInputModifiers.Control, dialog);
+            await c.TextAsync("цщкл", dialog);
+            Check(dialog.Favorites.SelectedItem is FavoriteDirectory, "The installed keyboard layouts are tried for typed text");
+            Equal("цщкл", dialog.NameSearchPrefix, "Wrong-layout typing finds the Latin favorite name");
+            await c.KeyAsync(Key.Escape, target: dialog); await c.KeyAsync(Key.Escape, target: dialog);
         }),
         new("colors-source-text-and-executable-priority", "UC19; configurable file groups", async c =>
         {

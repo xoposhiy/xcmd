@@ -19,7 +19,7 @@ public static class NavigationProbe
     }
 
     public static void CheckOneSelection(DirectoryNavigationDialog dialog) => Equal(1,
-        new[] { dialog.Directories, dialog.Suggestions, dialog.Favorites }.Count(list => list.SelectedItem != null), "Only the active list has a selection");
+        new[] { dialog.Directories, dialog.Favorites }.Count(list => list.SelectedItem != null), "Only the active list has a selection");
 
     public static Color FileColor(ProbeContext context, string name)
     {

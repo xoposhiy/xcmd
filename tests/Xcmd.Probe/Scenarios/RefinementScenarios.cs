@@ -141,13 +141,13 @@ public static class RefinementScenarios
             await c.KeyAsync(Key.R, RawInputModifiers.Control);
             Equal(before, c.Window.DirectoryUsage.Capture().Sum(item => item.Visits), "Reloading does not count as another visit");
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt); var history = c.Window.ActiveNavigationDialog!;
-            Check(history.Suggestions.ItemCount > 0, "History offers shared suggested locations.");
+            Check(history.Favorites.ItemCount > 0, "History offers shared suggested locations.");
             await c.KeyAsync(Key.Right, target: history);
-            Check(history.Suggestions.IsKeyboardFocusWithin, "Right enters the suggestions column.");
+            Check(history.Favorites.IsKeyboardFocusWithin, "Right enters the suggestions column.");
             await c.KeyAsync(Key.Left, target: history);
             Check(history.Directories.IsKeyboardFocusWithin, "Left returns to this panel's history.");
             await c.KeyAsync(Key.Right, target: history);
-            var destination = (string)history.Suggestions.SelectedItem!;
+            var destination = (string)history.Favorites.SelectedItem!;
             await c.ScreenshotAsync("history-two-columns", history);
             await c.KeyAsync(Key.Enter, target: history);
             Equal(destination, c.Window.Left.Session.DirectoryPath, "Enter opens the selected suggestion in the source panel");
@@ -341,13 +341,13 @@ public static class RefinementScenarios
         {
             await c.SelectAsync("folder1"); await c.KeyAsync(Key.Enter); await c.KeyAsync(Key.Back);
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt); var dialog = c.Window.ActiveNavigationDialog!;
-            Check(dialog.Directories.SelectedIndex >= 0 && dialog.Suggestions.SelectedIndex == -1, "Only the history column starts selected.");
+            Check(dialog.Directories.SelectedIndex >= 0 && dialog.Favorites.SelectedIndex == -1, "Only the history column starts selected.");
             await c.KeyAsync(Key.Right, target: dialog);
-            Check(dialog.Directories.SelectedIndex == -1 && dialog.Suggestions.SelectedIndex >= 0, "Switching columns moves the only selection.");
+            Check(dialog.Directories.SelectedIndex == -1 && dialog.Favorites.SelectedIndex >= 0, "Switching columns moves the only selection.");
             await c.KeyAsync(Key.Left, target: dialog);
-            Check(dialog.Suggestions.SelectedIndex == -1 && dialog.Directories.SelectedIndex >= 0, "Returning restores the history cursor without a second selection.");
-            await c.ClickAsync((Control)dialog.Suggestions.ContainerFromIndex(0)!, target: dialog);
-            Check(dialog.Directories.SelectedIndex == -1 && dialog.Suggestions.SelectedIndex == 0, "Pointer selection also clears the other column.");
+            Check(dialog.Favorites.SelectedIndex == -1 && dialog.Directories.SelectedIndex >= 0, "Returning restores the history cursor without a second selection.");
+            await c.ClickAsync((Control)dialog.Favorites.ContainerFromIndex(0)!, target: dialog);
+            Check(dialog.Directories.SelectedIndex == -1 && dialog.Favorites.SelectedIndex == 0, "Pointer selection also clears the other column.");
             await c.KeyAsync(Key.Escape, target: dialog);
         }),
         new("refinement-all-window-layouts", "UC20; visual review", async c =>
@@ -358,7 +358,7 @@ public static class RefinementScenarios
             await c.SelectAsync("folder1"); await c.KeyAsync(Key.Enter); await c.KeyAsync(Key.Back);
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt); var history = c.Window.ActiveNavigationDialog!;
             await c.ScreenshotAsync("history", history);
-            Check(((Control)history.Suggestions.ContainerFromIndex(0)!).Bounds.Height <= 32, "Compact history rows fit at least twelve locations in the dialog.");
+            Check(((Control)history.Favorites.ContainerFromIndex(0)!).Bounds.Height <= 32, "Compact history rows fit at least twelve locations in the dialog.");
             await c.KeyAsync(Key.Escape, target: history);
             await c.KeyAsync(Key.F7); var folder = c.Window.ActiveDialog!;
             await c.ScreenshotAsync("new-folder", folder);

@@ -78,9 +78,7 @@ public static class HistoryScenarios
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
             var dialog = c.Window.ActiveNavigationDialog!;
             await c.KeyAsync(Key.Tab, target: dialog);
-            Check(dialog.Suggestions.IsKeyboardFocusWithin, "Tab reaches the frequent list.");
-            await c.KeyAsync(Key.Tab, target: dialog);
-            Check(dialog.Favorites.IsKeyboardFocusWithin, "Tab reaches the favorite list.");
+            Check(dialog.Favorites.IsKeyboardFocusWithin, "Tab reaches the combined favorites and frequent list.");
             var cancel = dialog.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "NavigationCancel");
             for (var i = 0; i < 8 && !cancel.IsKeyboardFocusWithin; i++) await c.KeyAsync(Key.Tab, target: dialog);
             Check(cancel.IsKeyboardFocusWithin, "Tab reaches the Cancel button.");

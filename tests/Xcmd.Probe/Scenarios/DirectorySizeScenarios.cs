@@ -14,6 +14,20 @@ public static class DirectorySizeScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("selection-size-readable-units", "UC20; readable selected-file totals and exact byte tooltip", async c =>
+        {
+            foreach (var (bytes, expected) in new[] { (0L, "0 bytes"), (1023L, "1023 bytes"), (1024L, "1 KiB"), (1024L * 1024, "1 MiB"), (1024L * 1024 * 1024, "1 GiB"), (1024L * 1024 * 1024 * 1024, "1 TiB") })
+                Equal(bytes == 1023 ? $"{bytes:N0} bytes" : expected, FileSizeText.Format(bytes), "Unit boundary at " + bytes);
+            c.AddFile("readable-size.bin", new string('x', 652956));
+            await c.KeyAsync(Key.R, RawInputModifiers.Control);
+            await c.SelectAsync("readable-size.bin");
+            var summary = c.Window.Left.GetVisualDescendants().OfType<TextBlock>().Single(text => Avalonia.Automation.AutomationProperties.GetAutomationId(text) == "left.summary");
+            Check(summary.Text!.Contains($"{637.7m:0.#} KiB", StringComparison.Ordinal), "A real file is shown in readable units");
+            Equal($"Selected: {652956:N0} bytes", ToolTip.GetTip(summary) as string, "Exact bytes remain available in the tooltip");
+            await c.ClickAsync(c.Row("alpha.txt"), RawInputModifiers.Control);
+            Equal($"Selected: {652959:N0} bytes", ToolTip.GetTip(summary) as string, "Multiple selected files are summed before formatting");
+            await c.ScreenshotAsync("readable-selection-size");
+        }),
         new("folder-size-recursive-and-empty", "UC12; recursive folder sizes", async c =>
         {
             var expected = AddNestedFiles(c); await c.SelectAsync("alpha.txt");

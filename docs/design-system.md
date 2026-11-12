@@ -8,6 +8,8 @@ The user authorised applying the complete guide on 2026-11-12. `UiPalette` now o
 
 Panels and search share 28-unit rows, aligned headings and dark surfaces. Primary data uses 14-unit Segoe UI; supplementary text uses 12. Forms share 12-unit margins and right-aligned actions. Search retains its context-sensitive primary action and underlined access keys. Dialog feedback lives in a compact bottom row instead of a separate top row. Operation outcomes use a table. Panel and command paths keep their useful tail. Reader palettes remain independent; selected text and search boundaries receive contrast checks across all nine themes.
 
+The directory chooser uses two columns, History and Favorites. Starred favorites stay above frequent locations in the right column, without duplicate paths. Plain typing selects the uppermost substring match in the active list. Selected-file totals use readable binary units; the exact byte total remains available in the tooltip.
+
 `design-system-shared-surfaces` renders panels, creation, transfer, navigation and narrow search layouts at 100/150%. `design-system-reader-contrast` checks real palette selection, selected text contrast and preservation of the found text. Existing action, responsive-column, queue and feedback scenarios remain relevant. This is feedback-phase validation, not the full finalisation gate.
 
 ## Evidence and scope

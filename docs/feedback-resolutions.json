@@ -350,5 +350,13 @@
   {
     "noteId": "6393da3607b1494abf21917291ca66e8",
     "summary": "File and folder icons keep a fixed 16-DIP layout size when the window changes DPI. Windows icons are rendered to the exact physical size for the current display scale, so 32-pixel shell icons no longer enlarge rows on 125% or 150% monitors. Both panels are checked through repeated 100%, 125%, 150%, 200% and return transitions."
+  },
+  {
+    "noteId": "377ec35b3d0246f68338bee38f923d6e",
+    "summary": "Directory navigation has two columns: History and Favorites. Starred favorites are pinned above frequent directories, with duplicate paths removed. Typing immediately selects the uppermost substring match in the active list, including favorite labels and loaded keyboard layouts. Up/Down cycle matches; Escape clears the query before closing. Alt+Down starts in History and Ctrl+D starts in Favorites."
+  },
+  {
+    "noteId": "22de5d5ad9ff49e68121d8d46456104d",
+    "summary": "Selected-file totals use readable bytes, KiB, MiB, GiB and larger units with up to one decimal place. The tooltip retains the exact byte count, and incomplete folder totals keep their warning."
   }
 ]

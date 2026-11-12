@@ -659,10 +659,25 @@ public sealed partial class PanelView : Border
         foreach (var row in markedRows.Except(marked)) row.SetMarked(false);
         foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
         markedRows = marked;
+        UpdateSelectionTotal();
+    }
+
+    private void UpdateSelectionTotal()
+    {
         var selectedNames = SelectedNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
         var selectedRows = Rows.Where(row => selectedNames.Contains(row.Name) && !row.Entry.IsParent).ToArray();
         var selectedBytes = selectedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
-        var incomplete = selectedRows.Any(row => row.Entry.IsDirectory && (row.Measurement == null || row.Measurement.Size.Incomplete));
-        summary.Text = Session.Error ?? (IsSearchResults ? "Search results · Esc returns · Ctrl+←/→ locates · " : ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "") + $"{Rows.Count(row => !row.Entry.IsParent):N0} items    {selectedNames.Count:N0} selected · {(incomplete ? "≥ " : "")}{selectedBytes:N0} bytes{(incomplete ? " (incomplete)" : "")}";
+        var incomplete = selectedRows.Any(IsIncompleteDirectory);
+        var total = (incomplete ? "≥ " : "") + FileSizeText.Format(selectedBytes) + IncompleteNote(incomplete);
+        summary.Text = Session.Error ?? $"{LocationPrefix()}{Rows.Count(row => !row.Entry.IsParent):N0} items    {selectedNames.Count:N0} selected · {total}";
+        ToolTip.SetTip(summary, Session.Error == null ? $"Selected: {selectedBytes:N0} bytes{IncompleteNote(incomplete)}" : null);
+    }
+
+    private static bool IsIncompleteDirectory(FileRow row) => row.Entry.IsDirectory && (row.Measurement == null || row.Measurement.Size.Incomplete);
+    private static string IncompleteNote(bool incomplete) => incomplete ? " (incomplete)" : "";
+    private string LocationPrefix()
+    {
+        if (IsSearchResults) return "Search results · Esc returns · Ctrl+←/→ locates · ";
+        return ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "";
     }
 }

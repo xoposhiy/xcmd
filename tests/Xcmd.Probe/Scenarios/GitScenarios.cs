@@ -41,7 +41,7 @@ public static class GitScenarios
             Equal(c.Window.Left.Table.Bounds.Y, c.Window.Right.Table.Bounds.Y, "Panel tables stay aligned");
             await c.KeyAsync(Key.A, RawInputModifiers.Control);
             var selectedBytes = c.Window.Left.Rows.Where(row => !row.Entry.IsDirectory && !row.Entry.IsParent).Sum(row => row.Entry.Size);
-            Check(c.Window.Left.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.Contains($"{selectedBytes:N0} bytes", StringComparison.Ordinal) == true), "Selection summary totals regular-file bytes without counting directories");
+            Check(c.Window.Left.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.Contains(FileSizeText.Format(selectedBytes), StringComparison.Ordinal) == true), "Selection summary totals regular-file sizes without counting directories");
             await c.SelectAsync("folder1");
             await c.KeyAsync(Key.Enter);
             await view.PendingWork;

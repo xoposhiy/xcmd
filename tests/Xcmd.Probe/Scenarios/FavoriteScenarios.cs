@@ -17,7 +17,7 @@ public static class FavoriteScenarios
         new("favorites-add-rename-and-remove", "UC16; keyboard workflow", async c =>
         {
             var dialog = await OpenAsync(c);
-            Equal(0, dialog.Favorites.ItemCount, "A new profile has no sample favorites");
+            Equal(0, dialog.Favorites.Items.OfType<FavoriteDirectory>().Count(), "A new profile has no sample favorites");
             await c.ScreenshotAsync("empty-favorites", dialog);
             await c.KeyAsync(Key.Insert, target: dialog);
             Equal(c.LeftPath, c.Window.Favorites.Items.Single().Path, "Insert adds the current directory");
@@ -49,7 +49,7 @@ public static class FavoriteScenarios
             await c.KeyAsync(Key.Back); dialog = await OpenAsync(c); await c.KeyAsync(Key.Enter, target: dialog);
             Equal("inside.txt", c.Window.Left.Current?.Name, "Returning through favorites restores the directory cursor");
             await c.KeyAsync(Key.Tab); dialog = await OpenAsync(c);
-            Equal(1, dialog.Favorites.ItemCount, "Both panels share the same favorite list");
+            Equal(1, dialog.Favorites.Items.OfType<FavoriteDirectory>().Count(), "Both panels share the same favorite list");
             await c.ClickAsync(Button(dialog, "NavigationOpen"), target: dialog);
             Equal(Path.Combine(c.LeftPath, "folder1"), c.Window.Right.Session.DirectoryPath, "A favorite opens in the panel that requested it");
             Check(c.Window.Right.Table.IsKeyboardFocusWithin && c.Window.ActivePanel == c.Window.Right, "The source panel keeps keyboard focus.");
