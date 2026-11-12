@@ -144,6 +144,18 @@ public sealed partial class FileViewerWindow
 
     private void UpdateControls()
     {
+        UpdateModeItems();
+        UpdateEncodingItems();
+        var text = Mode != FileViewMode.Image;
+        UpdateTextItems(text);
+        previousPage.IsEnabled = text && FirstVisibleByte > 0;
+        nextPage.IsEnabled = text && VisibleEnd < FileLength;
+        previousFile.IsEnabled = index > 0; nextFile.IsEnabled = index + 1 < paths.Length;
+        UpdateWrapping();
+    }
+
+    private void UpdateModeItems()
+    {
         foreach (var pair in modeItems)
         {
             pair.Value.IsChecked = pair.Key == Mode;
@@ -152,8 +164,16 @@ public sealed partial class FileViewerWindow
         }
         modeItems[FileViewMode.Image].IsEnabled = CanUseImage;
         Avalonia.Controls.ToolTip.SetTip(modeItems[FileViewMode.Image], imageUnavailable);
-        foreach (var pair in encodingItems) { pair.Value.IsChecked = pair.Key == selectedEncoding.CodePage; pair.Value.IsEnabled = Mode == FileViewMode.Text && slice != null && !IsArchiveReport; }
-        var text = Mode != FileViewMode.Image;
+    }
+
+    private void UpdateEncodingItems()
+    {
+        var enabled = Mode == FileViewMode.Text && slice != null && !IsArchiveReport;
+        foreach (var pair in encodingItems) { pair.Value.IsChecked = pair.Key == selectedEncoding.CodePage; pair.Value.IsEnabled = enabled; }
+    }
+
+    private void UpdateTextItems(bool text)
+    {
         foreach (var item in textCommands) item.IsEnabled = text && slice != null;
         TextContent.IsVisible = text; image.IsVisible = !text;
         FileScroll.IsVisible = text;
@@ -162,10 +182,6 @@ public sealed partial class FileViewerWindow
         informationItem.IsChecked = information.IsVisible;
         followItem.IsEnabled = slice != null && text && !IsArchiveReport && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
-        previousPage.IsEnabled = text && FirstVisibleByte > 0;
-        nextPage.IsEnabled = text && VisibleEnd < FileLength;
-        previousFile.IsEnabled = index > 0; nextFile.IsEnabled = index + 1 < paths.Length;
-        UpdateWrapping();
     }
 
     private void OnViewerKey(object? sender, KeyEventArgs e)

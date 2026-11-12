@@ -11,26 +11,34 @@ public static class SystemIcons
     public static SystemIconPixels Read(string path, bool directory, int minimumSize = 16, bool useFileAttributes = false)
     {
         var initialized = CoInitializeEx(0, 0) >= 0;
-        var info = new ShellFileInfo();
+        nint icon = 0;
         try
         {
-            var attributesOnly = useFileAttributes || ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
+            var attributesOnly = useFileAttributes || UsesTypeIcon(path, directory);
             var flags = 0x100u | 1u | (attributesOnly ? 0x10u : 0);
             var shellName = ShellName(path, directory, attributesOnly);
-            if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags) == 0 || info.Icon == 0)
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
-            var size = NativeSize(info.Icon);
-            if (size < minimumSize)
+            icon = ShellIcon(shellName, directory, flags);
+            if (NativeSize(icon) < minimumSize)
             {
-                DestroyIcon(info.Icon); info.Icon = 0;
-                if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags & ~1u) == 0 || info.Icon == 0)
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
+                DestroyIcon(icon); icon = 0;
+                icon = ShellIcon(shellName, directory, flags & ~1u);
             }
             // Shell sizes are discrete (often 16 or 32). Render to the requested
             // physical size without changing the icon's 16-DIP layout slot.
-            return Render(info.Icon, minimumSize);
+            return Render(icon, minimumSize);
         }
-        finally { if (info.Icon != 0) DestroyIcon(info.Icon); if (initialized) CoUninitialize(); }
+        finally { if (icon != 0) DestroyIcon(icon); if (initialized) CoUninitialize(); }
+    }
+
+    private static bool UsesTypeIcon(string path, bool directory) =>
+        ArchivePath.IsEntry(path) || !directory && Path.GetExtension(path).ToLowerInvariant() is not (".exe" or ".lnk" or ".ico");
+
+    private static nint ShellIcon(string shellName, bool directory, uint flags)
+    {
+        var info = new ShellFileInfo();
+        if (SHGetFileInfo(shellName, directory ? 0x10u : 0x80u, ref info, (uint)Marshal.SizeOf<ShellFileInfo>(), flags) == 0 || info.Icon == 0)
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not read the system icon.");
+        return info.Icon;
     }
 
     private static string ShellName(string path, bool directory, bool attributesOnly)

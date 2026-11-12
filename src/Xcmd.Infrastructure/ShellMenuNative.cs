@@ -31,19 +31,19 @@ internal static class ShellMenuNative
     [ComImport, Guid("000214F4-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IContextMenu2
     {
-        [PreserveSig] int QueryContextMenu(nint menu, uint index, uint first, uint last, uint flags);
-        [PreserveSig] int InvokeCommand(in InvokeInfo info);
-        [PreserveSig] int GetCommandString(nuint command, uint flags, nint reserved, [Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder text, uint size);
+        void QueryContextMenu();
+        void InvokeCommand();
+        void GetCommandString();
         [PreserveSig] int HandleMenuMsg(uint message, nint wParam, nint lParam);
     }
 
     [ComImport, Guid("BCFCE0A0-EC17-11D0-8D10-00A0C90F2719"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IContextMenu3
     {
-        [PreserveSig] int QueryContextMenu(nint menu, uint index, uint first, uint last, uint flags);
-        [PreserveSig] int InvokeCommand(in InvokeInfo info);
-        [PreserveSig] int GetCommandString(nuint command, uint flags, nint reserved, [Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder text, uint size);
-        [PreserveSig] int HandleMenuMsg(uint message, nint wParam, nint lParam);
+        void QueryContextMenu();
+        void InvokeCommand();
+        void GetCommandString();
+        void HandleMenuMsg();
         [PreserveSig] int HandleMenuMsg2(uint message, nint wParam, nint lParam, out nint result);
     }
 

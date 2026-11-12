@@ -92,25 +92,7 @@ public sealed partial class CommanderWindow
     private bool HandlePanelCommand(KeyEventArgs e, bool ctrl, bool shift)
     {
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.Shift) { OpenCreateFileDialog(); return true; }
-        if (HandleClipboardKey(e)) return true;
-        if ((e.Key == Key.F10 && e.KeyModifiers == KeyModifiers.Shift ||
-             e.Key == Key.Down && e.KeyModifiers == KeyModifiers.Control) && ActivePanel.Table.IsKeyboardFocusWithin)
-        {
-            if (launchKeysHeld.Add(e.Key)) shell.OpenCurrentMenu();
-            return true;
-        }
-        if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Alt)
-        {
-            if (launchKeysHeld.Add(e.Key)) shell.OpenFileProperties();
-            return true;
-        }
-        if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.F3 or Key.F4)
-        {
-            if (e.Key == Key.F3) viewing.ViewCurrent();
-            else if (launchKeysHeld.Add(e.Key)) Execute(viewing.EditCurrentAsync);
-            return true;
-        }
-        if (HandleDirectorySizeShortcut(e, shift)) return true;
+        if (HandleClipboardKey(e) || HandleShellKey(e) || HandleViewOrEditKey(e) || HandleDirectorySizeShortcut(e, shift)) return true;
         if (e.Key == Key.Tab)
         {
             Activate(OppositePanel);
@@ -128,6 +110,27 @@ public sealed partial class CommanderWindow
             return true;
         }
         return ctrl && HandleControlPanelCommand(e.Key);
+    }
+
+    private bool HandleShellKey(KeyEventArgs e)
+    {
+        var menuKey = e.Key == Key.F10 && e.KeyModifiers == KeyModifiers.Shift || e.Key == Key.Down && e.KeyModifiers == KeyModifiers.Control;
+        if (menuKey && ActivePanel.Table.IsKeyboardFocusWithin)
+        {
+            if (launchKeysHeld.Add(e.Key)) shell.OpenCurrentMenu();
+            return true;
+        }
+        if (e.Key != Key.Enter || e.KeyModifiers != KeyModifiers.Alt) return false;
+        if (launchKeysHeld.Add(e.Key)) shell.OpenFileProperties();
+        return true;
+    }
+
+    private bool HandleViewOrEditKey(KeyEventArgs e)
+    {
+        if (e.KeyModifiers != KeyModifiers.None || e.Key is not (Key.F3 or Key.F4)) return false;
+        if (e.Key == Key.F3) viewing.ViewCurrent();
+        else if (launchKeysHeld.Add(e.Key)) Execute(viewing.EditCurrentAsync);
+        return true;
     }
 
     private bool HandleClipboardKey(KeyEventArgs e)
