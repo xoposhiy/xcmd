@@ -1,5 +1,6 @@
 param(
-    [Parameter(Mandatory)][string]$Filter
+    [Parameter(Mandatory)][string]$Filter,
+    [switch]$SkipPackageAudit
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,7 +15,12 @@ try {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
     $env:DOTNET_GENERATE_ASPNET_CERTIFICATE = 'false'
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
-    dotnet build tests/Xcmd.Probe/Xcmd.Probe.csproj -c Release -r win-x64 -p:RestoreLockedMode=true -m:1 -p:UseSharedCompilation=false -v minimal
+    $auditArguments = @()
+    if ($SkipPackageAudit) {
+        Write-Output 'Package vulnerability audit explicitly skipped for this feedback build. Locked dependency restore and smoke checks still run.'
+        $auditArguments = @('-p:NuGetAudit=false')
+    }
+    dotnet build tests/Xcmd.Probe/Xcmd.Probe.csproj -c Release -r win-x64 -p:RestoreLockedMode=true -m:1 -p:UseSharedCompilation=false -v minimal @auditArguments
     if ($LASTEXITCODE -ne 0) { throw 'The feedback build failed. The current release was not changed.' }
     & tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.exe --filter $Filter --output $outputPath
     if ($LASTEXITCODE -ne 0) { throw 'The feedback smoke check failed. The current release was not changed.' }
@@ -24,10 +30,11 @@ try {
     $timer.Stop()
     $results | Add-Member -NotePropertyName verificationPhase -NotePropertyValue 'feedback-smoke'
     $results | Add-Member -NotePropertyName fullVerification -NotePropertyValue $false
+    $results | Add-Member -NotePropertyName packageAudit -NotePropertyValue $(if ($SkipPackageAudit) { 'skipped-explicitly' } else { 'passed' })
     $results | Add-Member -NotePropertyName verificationElapsedSeconds -NotePropertyValue $timer.Elapsed.TotalSeconds
     if ($timer.Elapsed.TotalSeconds -gt 60) { Write-Output ('Feedback verification exceeded 60 seconds: ' + $timer.Elapsed.TotalSeconds) }
 
-    dotnet publish src/Xcmd.Desktop/Xcmd.Desktop.csproj -c Release -r win-x64 --no-self-contained -p:PublishReadyToRun=true -p:RestoreLockedMode=true --output $releasePath -m:1 -p:UseSharedCompilation=false -v minimal
+    dotnet publish src/Xcmd.Desktop/Xcmd.Desktop.csproj -c Release -r win-x64 --no-self-contained -p:PublishReadyToRun=true -p:RestoreLockedMode=true --output $releasePath -m:1 -p:UseSharedCompilation=false -v minimal @auditArguments
     if ($LASTEXITCODE -ne 0) { throw 'Publishing failed. The current release was not changed.' }
     $executable = Join-Path $releasePath 'Xcmd.Desktop.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published executable is missing.' }
