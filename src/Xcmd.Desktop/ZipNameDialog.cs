@@ -30,7 +30,8 @@ public sealed class ZipNameDialog : Window
         DialogActions.FollowFocus(this, create, cancel);
         Content = new StackPanel
         {
-            Margin = UiPalette.FormMargin, Spacing = 8,
+            Margin = UiPalette.FormMargin,
+            Spacing = 8,
             Children = { new TextBlock { Text = $"Add {count:N0} selected item(s) to a new ZIP in:" }, destination,
                 new TextBlock { Text = "Archive name" }, Editor, Error, UiLayout.Actions(create, cancel) }
         };

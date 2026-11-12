@@ -16,8 +16,12 @@ public sealed class GitStatusView : Border
     private readonly TextBlock state = new() { LineHeight = 18, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly PathIcon remote = new()
     {
-        Width = 14, Height = 14, Margin = new Thickness(0, 0, 6, 0), Foreground = UiPalette.Secondary,
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, IsVisible = false,
+        Width = 14,
+        Height = 14,
+        Margin = new Thickness(0, 0, 6, 0),
+        Foreground = UiPalette.Secondary,
+        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+        IsVisible = false,
         Data = Geometry.Parse("M 5,15 C 0,15 0,8 4,8 C 4,1 14,0 16,7 C 22,5 25,15 18,15 Z")
     };
     private string statusText = "";

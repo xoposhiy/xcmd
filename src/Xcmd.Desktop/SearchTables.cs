@@ -12,13 +12,13 @@ internal static class SearchTables
 {
     public static TableViewColumn Column<T>(string header, GridLength width, double minimumWidth, Func<T?, Control> cell,
         HorizontalAlignment alignment = HorizontalAlignment.Left) where T : class => new()
-    {
-        Header = header,
-        Width = width,
-        MinWidth = minimumWidth,
-        HorizontalContentAlignment = alignment,
-        CellTemplate = new FuncDataTemplate<T>((item, _) => cell(item))
-    };
+        {
+            Header = header,
+            Width = width,
+            MinWidth = minimumWidth,
+            HorizontalContentAlignment = alignment,
+            CellTemplate = new FuncDataTemplate<T>((item, _) => cell(item))
+        };
 
     public static void Configure(TableView table)
     {

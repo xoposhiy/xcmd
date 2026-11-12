@@ -50,8 +50,14 @@ public sealed class FeedbackController
         var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
         var button = new Button
         {
-            Content = "Feedback  F12", Name = "DialogFeedback", HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(12, 0, 12, 8), Padding = new Thickness(6, 0), FontSize = UiPalette.MetaSize, MinHeight = 20, Height = 24
+            Content = "Feedback  F12",
+            Name = "DialogFeedback",
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(12, 0, 12, 8),
+            Padding = new Thickness(6, 0),
+            FontSize = UiPalette.MetaSize,
+            MinHeight = 20,
+            Height = 24
         };
         button.Classes.Add("quiet");
         AutomationProperties.SetAutomationId(button, "feedback.start");

@@ -26,7 +26,8 @@ public sealed class FileErrorDialog : Window
         ToolTip.SetTip(path, failure.Source.FullPath);
         Content = new StackPanel
         {
-            Margin = UiPalette.FormMargin, Spacing = 8,
+            Margin = UiPalette.FormMargin,
+            Spacing = 8,
             Children =
             {
                 path,

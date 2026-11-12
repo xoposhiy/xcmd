@@ -25,9 +25,16 @@ public sealed class CommandCompletionPopup
         AutomationProperties.SetAutomationId(Items, "command-line.completions");
         popup = new Popup
         {
-            PlacementTarget = editor, Placement = PlacementMode.Top, IsLightDismissEnabled = true,
-            Child = new Border { Background = UiPalette.Surface, BorderBrush = UiPalette.ControlBorder,
-                BorderThickness = new Avalonia.Thickness(1), Child = Items }
+            PlacementTarget = editor,
+            Placement = PlacementMode.Top,
+            IsLightDismissEnabled = true,
+            Child = new Border
+            {
+                Background = UiPalette.Surface,
+                BorderBrush = UiPalette.ControlBorder,
+                BorderThickness = new Avalonia.Thickness(1),
+                Child = Items
+            }
         };
         editor.TextChanging += (_, _) => Close();
         editor.DetachedFromVisualTree += (_, _) => Close();

@@ -30,12 +30,12 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
                 job.State = FileOperationState.Running; changed();
                 if (job.Request.Kind == FileOperationKind.CreateZip) await CreateZipAsync();
                 else for (; index < job.Request.Sources.Length; index++)
-                {
-                    Token.ThrowIfCancellationRequested();
-                    var source = job.Request.Sources[index];
-                    var destination = job.Request.Destination == null ? null : Path.Combine(job.Request.Destination, job.Request.NewName ?? source.Name);
-                    await AttemptAsync(source, destination);
-                }
+                    {
+                        Token.ThrowIfCancellationRequested();
+                        var source = job.Request.Sources[index];
+                        var destination = job.Request.Destination == null ? null : Path.Combine(job.Request.Destination, job.Request.NewName ?? source.Name);
+                        await AttemptAsync(source, destination);
+                    }
                 Token.ThrowIfCancellationRequested();
                 job.State = job.FailedEntries > 0 ? FileOperationState.CompletedWithErrors
                     : job.Outcomes.Any(result => result.Kind == FileOutcomeKind.Partial) ? FileOperationState.CompletedWithSkippedItems : FileOperationState.Completed;
