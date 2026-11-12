@@ -12,6 +12,68 @@ public static class ArchiveInteractionScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("archive-other-panel-both-directions", "UC21; Ctrl+Left/Right opens archive contents in the other panel and preserves source focus", async c =>
+        {
+            var leftArchive = Path.Combine(c.LeftPath, "sample.zip");
+            var rightArchive = Path.Combine(c.RightPath, "other.zip");
+            ArchiveProbe.Zip(leftArchive, ("left.txt", "Left archive"));
+            ArchiveProbe.Zip(rightArchive, ("right.txt", "Right archive"));
+            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("sample.zip");
+            await c.KeyAsync(Key.Right, RawInputModifiers.Control);
+            Equal(ArchivePath.Root(leftArchive), c.Window.Right.Session.DirectoryPath, "Ctrl+Right enters the archive in the right panel");
+            Check(c.Window.Right.Rows.Any(row => row.Name == "left.txt"), "The right panel shows actual archive entries");
+            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The left source directory stays unchanged");
+            Equal("sample.zip", c.Window.Left.Current?.Name, "The source archive stays current");
+            Check(c.Window.ActivePanel == c.Window.Left && c.Window.Left.Table.IsKeyboardFocusWithin, "Focus stays in the left source panel");
+            await c.Window.Right.LoadAsync(c.RightPath); await c.SelectAsync("other.zip", c.Window.Right);
+            await c.KeyAsync(Key.Left, RawInputModifiers.Control);
+            Equal(ArchivePath.Root(rightArchive), c.Window.Left.Session.DirectoryPath, "Ctrl+Left enters the archive in the left panel");
+            Check(c.Window.Left.Rows.Any(row => row.Name == "right.txt"), "The left panel shows actual archive entries");
+            Check(c.Window.ActivePanel == c.Window.Right && c.Window.Right.Table.IsKeyboardFocusWithin, "Focus stays in the right source panel");
+            Equal(0, c.Launcher.Requests.Count, "The shortcut never launches an external archive program");
+        }),
+        new("archive-other-panel-nested-and-search", "UC21; nested archives and archive search results open their contents in the other panel", async c =>
+        {
+            var archive = Path.Combine(c.LeftPath, "outer.zip");
+            ArchiveProbe.Nested(archive);
+            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("outer.zip"); await c.KeyAsync(Key.Enter);
+            await c.SelectAsync("inner.zip");
+            var inner = c.Window.Left.Current!.Entry;
+            await c.KeyAsync(Key.Right, RawInputModifiers.Control);
+            Equal(ArchivePath.Root(inner.FullPath), c.Window.Right.Session.DirectoryPath, "A nested archive opens in the other panel");
+            Check(c.Window.Right.Rows.Any(row => row.Name == "nested.txt"), "Nested archive contents are readable");
+            Equal(ArchivePath.Root(archive), c.Window.Left.Session.DirectoryPath, "The outer archive remains open in the source");
+            var result = (await c.FileSystem.InspectAsync(archive, CancellationToken.None))!;
+            c.Window.Left.ShowSearchResults(c.LeftPath, [new(result, "outer.zip")]);
+            c.Window.Left.FocusCurrent();
+            await c.KeyAsync(Key.Right, RawInputModifiers.Control);
+            Equal(ArchivePath.Root(archive), c.Window.Right.Session.DirectoryPath, "An archive result opens its contents");
+            Check(c.Window.Left.IsSearchResults, "Source search results remain available");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Focus stays in source results");
+        }),
+        new("archive-other-panel-error-and-cancel", "UC21; broken archives and cancelled opposite-panel reads preserve both panels", async c =>
+        {
+            File.WriteAllText(Path.Combine(c.LeftPath, "broken.zip"), "Invalid ZIP data");
+            var archive = Path.Combine(c.LeftPath, "sample.zip");
+            ArchiveProbe.Zip(archive, ("notes.txt", "Archived text"));
+            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("broken.zip");
+            await c.KeyAsync(Key.Right, RawInputModifiers.Control);
+            Check(!string.IsNullOrWhiteSpace(c.Window.LastError), "A broken archive reports its error");
+            Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "A failed open keeps the previous destination");
+            Equal("broken.zip", c.Window.Left.Current?.Name, "A failed open preserves the source cursor");
+            await c.SelectAsync("sample.zip");
+            var gate = c.Archives.PauseNextRead(ArchivePath.Root(archive));
+            c.Window.CommandLine.Editor.Text = "unfinished command";
+            c.PressKey(Key.Right, RawInputModifiers.Control); await WaitUntilAsync(() => gate.Entered.Task.IsCompleted);
+            c.PressKey(Key.Escape); await c.SettleAsync();
+            Check(gate.WasCancelled, "Escape cancels the destination archive read");
+            Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "Cancellation keeps the destination directory");
+            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "Cancellation keeps the source directory");
+            Equal("unfinished command", c.Window.CommandLine.Editor.Text, "Cancellation preserves the command draft");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Cancellation keeps source focus");
+            gate.Release.TrySetResult(); await c.SettleAsync();
+            Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "A late result cannot replace the destination");
+        }),
         new("archive-empty-tar-and-zero-binary-detection", "UC09; UC21; empty archives and binary files keep distinct views", async c =>
         {
             ArchiveProbe.EmptyTar(Path.Combine(c.LeftPath, "empty.tar"));

@@ -1,5 +1,7 @@
 # Verification coverage
 
+The `archive-other-panel-*` feedback cases drive actual Ctrl+Left/Right in both directions. Real ZIP and nested-ZIP contents open in the destination while source directories, search results and keyboard focus remain intact. Broken archives and cancelled reads retain the previous destination; Escape preserves the command draft and late results cannot replace the panel. Existing result-location scenarios retain coverage for ordinary files.
+
 Run `./scripts/Test-Xcmd.ps1` for the complete finalization path or `./scripts/Release-Xcmd.ps1` to verify and publish a final build. Both commands run architecture checks, analyzer self-checks, formatting, code metrics and headless behavior checks. The GitHub Actions workflow uses the same verification path on Windows. Active feedback iterations use the smaller checks described in the [development workflow](development-workflow.md).
 
 The recorded environment on 2026-11-10 used the SDK in `global.json`, .NET runtime 10.0.2, Avalonia 12.1.6 and Windows 10.0.26300. That historical run passed all 168 scenarios with no build warnings and zero native application windows. Compiled architecture rules, evaluated project/package policies in Debug and Release, the isolated launcher build policy, 14 deliberate analyzer violations, formatting and Lizard metrics passed. New checks use only Release / win-x64 / x64; historical evidence files remain unchanged.

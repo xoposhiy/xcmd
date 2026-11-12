@@ -144,6 +144,11 @@ public sealed partial class CommanderWindow
         Execute(async () =>
         {
             var entry = source.Current?.Entry;
+            if (entry is { IsDirectory: false } && ArchivePath.OpensOnEnter(entry.FullPath))
+            {
+                await archives.OpenAsync(destination, entry);
+                return;
+            }
             var locate = source.IsSearchResults && entry != null;
             var directory = locate ? ArchivePath.Parent(entry!.FullPath)! : entry?.IsDirectory == true ? entry.FullPath : source.Session.DirectoryPath;
             if (!await destination.LoadAsync(directory, selectName: locate ? entry!.Name : null)) SetError(destination.Session.Error);

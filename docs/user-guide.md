@@ -59,7 +59,7 @@ The main window combines menus and window controls in one title row. Drag the fr
 | Enter / double-click on `..`, Ctrl+PageUp, Backspace | Open the parent directory and restore its cursor |
 | Alt+Down / panel History button | Open the shared navigation window with History active |
 | Ctrl+D | Open the same navigation window with Favorites active; Insert adds the current directory, F2 edits its label, Delete removes the favorite |
-| Ctrl+Left / Ctrl+Right | Open the pointed directory in the specified other panel; use the current directory when pointing at a file |
+| Ctrl+Left / Ctrl+Right | Open the pointed directory or archive contents in the specified other panel, keeping source focus; use the current directory for an ordinary file |
 | Alt+first letter, then letters | Jump by name; release Alt and continue typing. Ignore unmatched letters. Navigation or Escape ends the search |
 | Header click | Sort; click again to reverse the direction |
 | Ctrl+F3 / F4 / F5 / F6 | Sort by name / extension / modified date / size |

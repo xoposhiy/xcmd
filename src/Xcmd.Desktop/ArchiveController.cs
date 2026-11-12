@@ -16,17 +16,18 @@ internal sealed class ArchiveController(CommanderWindow owner, string? cacheDire
         return true;
     }
 
-    public async Task OpenAsync(PanelView panel)
+    public async Task OpenAsync(PanelView panel, FileEntry? entry = null)
     {
         if (opening.Contains(panel)) return;
-        if (panel.Current is not { Entry.IsDirectory: false } row)
+        entry ??= panel.Current?.Entry;
+        if (entry is not { IsDirectory: false })
         { owner.SetError("Select a file to open as an archive."); return; }
         var hadFocus = panel.Table.IsKeyboardFocusWithin;
         opening.Add(panel);
-        owner.SetStatusMessage("Opening archive: " + row.Name + " · Escape cancels");
+        owner.SetStatusMessage("Opening archive: " + entry.Name + " · Escape cancels");
         try
         {
-            var loaded = await panel.LoadAsync(ArchivePath.Root(row.Entry.FullPath), selectName: "..");
+            var loaded = await panel.LoadAsync(ArchivePath.Root(entry.FullPath), selectName: "..");
             owner.SetError(panel.Session.Error);
             if (!loaded && panel.Session.Error == null) owner.SetStatusMessage("Archive opening cancelled.");
             if (owner.ActivePanel == panel && hadFocus && !owner.CommandLine.HasKeyboardFocus && !owner.HasOpenDialog) panel.FocusCurrent();
