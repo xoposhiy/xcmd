@@ -11,7 +11,7 @@ internal sealed class ZipPackingController(CommanderWindow owner, IFileOperation
         var stem = sources.Length == 1 ? sources[0].IsDirectory || sources[0].Name.LastIndexOf('.') <= 0
             ? sources[0].Name : Path.GetFileNameWithoutExtension(sources[0].Name) : Path.GetFileName(Path.TrimEndingDirectorySeparator(directory));
         var dialog = new ZipNameDialog(directory, sources.Length, (string.IsNullOrEmpty(stem) ? "Archive" : stem) + ".zip", owner.Feedback)
-        { Background = owner.Background };
+        { Background = owner.Background }.WithFeedbackId("ZipPackingController.dialog");
         owner.OperationDialog = dialog;
         owner.AttachOperationDialog(dialog);
         var submitting = false;

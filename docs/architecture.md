@@ -53,7 +53,10 @@ Archive locations use `ArchivePath` values with a physical source and entry path
 Current examples:
 
 - `LocalFileSystem` and `DirectoryMonitor`: filesystem operations, enumeration, and change notifications.
-- `SessionStore`, `FileTypeSettings`, `FeedbackResolutions`, and `RefinementList`: file formats, storage, and atomic file replacement.
+- `SessionStore` and `FileTypeSettings`: session/settings formats and atomic replacement.
+- `IssueStore`, `IssueDatabase`, and `IssueCli`: the independent repository SQLite
+  tracker, parameterized SQL, transactional claims and command-line access. The
+  native SQLite adapter uses Windows' documented `winsqlite3.dll` interface.
 - `WindowsExternalLauncher`, `KeyboardLayouts`, and `SystemIcons`: Windows integration.
 - `WindowsLaunchEnvironment`: read the current Windows user/system environment with [CreateEnvironmentBlock](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createenvironmentblock) and apply a serialized temporary override around ShellExecute. Restore the Xcmd environment after launch; keep process-only variables and track removed persistent names from launcher construction.
 - `ReleaseCatalog`, `RestartProcess`, and `StartupDiagnostics`: release files, process handoff, and startup diagnostics.
@@ -80,6 +83,12 @@ Current examples:
 - `CommanderWindow`, `PanelView`, dialogs, `FileRow`, and feedback controls: views and presentation state.
 - `WindowHeader` and `CommanderFrame`: shared window decoration behavior and the main title/status layout. Reader palettes belong to Desktop; the saved workspace carries only the selected theme ID.
 - Keyboard routing, focus, rename-editor lifetime, caret position, selection, layout, and render timing.
+- `GitStatusProjection` and `GitRowStatus`: map the header's single Git snapshot
+  to file cells and descendant-folder status cells, with independent staged and
+  working-tree states. Ignored paths and collapsed untracked directories are
+  handled without per-file Git processes. `FileNameCell` owns the shared name,
+  native Windows icon and rename-editor template and preserves its stable
+  feedback IDs. Git does not replace or recolour directory icons.
 - `DirectoryUpdates`: deciding when a filesystem result can be applied without interrupting an editor, dialog, menu, or name search.
 - `WorkspaceLifecycle`: connecting workspace snapshots, window lifetime, idle update readiness, storage, and process replacement.
 - `CommandLineView`: command input, history presentation, name/path insertion, and saved editor state. Core owns command parsing and history rules; Infrastructure performs Windows ShellExecute.
@@ -95,7 +104,24 @@ Extract a Core workflow when an interaction gains substantial UI-independent dec
 
 Keep every visible label, status, error and disabled action selectable in feedback. Keep the shared transparent background for `TextBlock`; text without a hit-test surface cannot be selected reliably. Use visual hit testing for feedback so disabled actions remain selectable. Resolve the nearest meaningful element before an outer window's identifier. Exclude only decorative feedback overlays from selection. Attach every application dialog through `FeedbackController` and check new content with real pointer input.
 
-`FeedbackSurface` owns pending single-click selection and the interaction path. Wait for the platform double-click interval before opening a comment. A double-click forwards a pointer press with a single-click count and lets its release reach the control; keep selection active and save the action. Cancel the pending timer on cancellation or window close. Application popups use the overlay layer so menu contents share the window's feedback hit-test surface. `FeedbackNote` carries optional interaction records; Infrastructure keeps those records in saved sessions and the refinement list.
+`FeedbackSurface` owns pending single-click selection and the transient interaction
+path shown in the comment form. Wait for the platform double-click interval before
+opening a comment. A double-click forwards a pointer press with a single-click
+count and lets its release reach the control; keep selection active. Cancel the
+pending timer on cancellation or window close. Application popups use the overlay
+layer so menu contents share the window's feedback hit-test surface.
+
+`FeedbackTarget` supplies stable literal IDs at source creation sites. The
+build-time `tools/UiChecks` Roslyn analyzer requires them on application controls
+and rejects duplicate declarations. It is tooling, not a fourth production layer,
+and is referenced as an analyzer without a runtime dependency. Reused templates
+share a source identity; target names distinguish clicked instances.
+
+`FeedbackIssue` is the compact tracker value. `FeedbackController.Notes` is a UI
+projection of `IssueStore`, not a second persistence owner. Add/remove operations
+change individual rows and refresh the projection; workspace saves cannot replace
+tracker state. `FeedbackNote` remains only as a legacy session import DTO.
+New snapshots omit `WorkspaceState.Notes`. See [the issue workflow](../issues/README.md).
 
 ## State and background work
 

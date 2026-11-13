@@ -9,7 +9,7 @@ public sealed partial class DirectoryNavigationDialog
 {
     private readonly NameJump nameSearch = new();
     private readonly List<KeyboardLayouts.Stroke> searchStrokes = [];
-    private readonly TextBlock searchHint = new() { Text = "Type to find · ←/→ columns", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary };
+    private readonly TextBlock searchHint = new TextBlock() { Text = "Type to find · ←/→ columns", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("DirectoryNavigationDialog.Search.searchHint");
     private bool physicalSearch = true;
     private bool suppressSearchText;
     public string NameSearchPrefix => nameSearch.Prefix;

@@ -39,8 +39,7 @@ try {
     $executable = Join-Path $releasePath 'Xcmd.Desktop.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published executable is missing.' }
     $results | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath (Join-Path $releasePath 'verification.json')
-    Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/feedback-resolutions.json') -Destination (Join-Path $releasePath 'feedback-resolutions.json')
-    @{ id = $releaseId; restartProtocol = 1; verificationPhase = 'feedback-smoke' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releasePath 'release.json')
+    @{ id = $releaseId; restartProtocol = 1; issueProtocol = 1; verificationPhase = 'feedback-smoke' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releasePath 'release.json')
     & (Join-Path $PSScriptRoot 'Install-Launcher.ps1') -IconPath (Join-Path $releasePath 'app.ico')
     if ($LASTEXITCODE -ne 0) { throw 'Launcher setup failed. The current release was not changed.' }
     $marker = Join-Path $projectRoot 'releases/latest.txt'

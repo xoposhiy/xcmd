@@ -23,7 +23,7 @@ public static class SearchPanelScenarios
                 await c.SelectAsync(Path.Combine(folder, "command.txt"));
                 var label = c.Window.CommandLine.GetVisualDescendants().OfType<TextBlock>()
                     .Single(text => AutomationProperties.GetAutomationId(text) == "command-line.directory");
-                Equal(c.LeftPath, ToolTip.GetTip(label) as string, "Prompt displays the search origin");
+                Equal(char.ToLowerInvariant(c.LeftPath[0]) + c.LeftPath[1..], ToolTip.GetTip(label) as string, "Prompt displays the search origin with a lowercase drive letter");
                 await c.TextAsync("tool relative.txt");
                 await c.KeyAsync(Key.Enter);
                 Equal(c.LeftPath, c.Launcher.Requests[^1].WorkingDirectory, "Relative command runs in the displayed folder");

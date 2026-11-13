@@ -9,7 +9,7 @@ namespace Xcmd.Desktop;
 
 public sealed class ZipNameDialog : Window
 {
-    public TextBox Editor { get; } = new() { Name = "ZipName" };
+    public TextBox Editor { get; } = new TextBox() { Name = "ZipName" }.WithFeedbackId("ZipNameDialog.Editor");
     public TextBlock Error { get; } = UiLayout.Error();
     public event Action<string>? Submitted;
 
@@ -19,10 +19,10 @@ public sealed class ZipNameDialog : Window
         CanResize = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         Editor.Text = name;
         AutomationProperties.SetAutomationId(Editor, "zip.name");
-        var destination = new TextBlock { Text = directory, TextTrimming = TextTrimming.LeadingCharacterEllipsis };
+        var destination = new TextBlock { Text = directory, TextTrimming = TextTrimming.LeadingCharacterEllipsis }.WithFeedbackId("ZipNameDialog.destination");
         ToolTip.SetTip(destination, directory);
-        var create = new Button { Content = new AccessText { Text = "_Create ZIP", ShowAccessKey = true }, Name = "CreateZip", IsDefault = true };
-        var cancel = new Button { Content = new AccessText { Text = "Ca_ncel", ShowAccessKey = true }, Name = "CancelZip" };
+        var create = new Button { Content = new AccessText { Text = "_Create ZIP", ShowAccessKey = true }.WithFeedbackId("ZipNameDialog.create"), Name = "CreateZip", IsDefault = true }.WithFeedbackId("ZipNameDialog.create.2");
+        var cancel = new Button { Content = new AccessText { Text = "Ca_ncel", ShowAccessKey = true }.WithFeedbackId("ZipNameDialog.cancel"), Name = "CancelZip" }.WithFeedbackId("ZipNameDialog.cancel.2");
         AutomationProperties.SetAutomationId(create, "zip.create");
         AutomationProperties.SetAutomationId(cancel, "zip.cancel");
         create.Click += (_, _) => Submitted?.Invoke(Editor.Text ?? "");
@@ -32,9 +32,9 @@ public sealed class ZipNameDialog : Window
         {
             Margin = UiPalette.FormMargin,
             Spacing = 8,
-            Children = { new TextBlock { Text = $"Add {count:N0} selected item(s) to a new ZIP in:" }, destination,
-                new TextBlock { Text = "Archive name" }, Editor, Error, UiLayout.Actions(create, cancel) }
-        };
+            Children = { new TextBlock { Text = $"Add {count:N0} selected item(s) to a new ZIP in:" }.WithFeedbackId("ZipNameDialog.content"), destination,
+                new TextBlock { Text = "Archive name" }.WithFeedbackId("ZipNameDialog.content.2"), Editor, Error, UiLayout.Actions(create, cancel) }
+        }.WithFeedbackId("ZipNameDialog.content.3");
         Opened += (_, _) => { Editor.Focus(); Editor.SelectionStart = 0; Editor.SelectionEnd = name.Length - 4; };
         AddHandler(KeyDownEvent, (_, e) =>
         {

@@ -1,5 +1,36 @@
 # Verification coverage
 
+`git-rows-*` uses isolated real repositories and commits to cover staged and
+working-tree changes on the same file, additions, untracked paths, rename paths
+with spaces and Unicode, deletion-only folders, real merge conflicts, ignored
+paths, descendants of collapsed untracked directories, unchanged native folder
+icons before and after commit, old column-state migration and narrow renders at 100/150%.
+
+`rename-printable-key-input` checks the actual routed key-down result before
+delivering text, then commits a name with letters and a space to the filesystem.
+Vertical editor keys keep the file cursor in place. Command-line checks cover
+focus returning after successful launch and `cd`, correction after failure, and
+preservation of a newer draft or a panel chosen during a pending launch.
+`operations-shift-f8-permanent-deletion` checks all four deletion shortcuts,
+their confirmation defaults and cancellation, then confirms permanent deletion
+of an isolated fixture tree through Shift+F8.
+
+`accumulated-cd-home-and-path-display` drives `cd ~`, both home-subfolder separator
+forms, quoted names, lowercase displayed drive letters and unchanged UNC paths.
+`accumulated-startup-age` checks the explicit English `Uptime: 9 min.` title text and its
+space in a narrow window. Existing command-line navigation, layout and workspace
+handoff scenarios cover the surrounding workflow.
+
+The 2026-11-13 folder feedback iteration checks exact totals excluding link
+entries and preservation of unaffected sizes during live refresh. Repository
+folder recolouring was removed at the user's request; Git column cells retain
+file and descendant status indicators.
+The full finalization run passes `folder-size-native-junction-cycle`, including
+exact totals, refresh retention and zero-byte junction measurements. The
+`folder-size-excluded-links` scenario also checks supplied link entries.
+Measurement retention accounts for cached Windows directory timestamps while
+later changes still invalidate stale totals.
+
 The `archive-other-panel-*` feedback cases drive actual Ctrl+Left/Right in both directions. Real ZIP and nested-ZIP contents open in the destination while source directories, search results and keyboard focus remain intact. Broken archives and cancelled reads retain the previous destination; Escape preserves the command draft and late results cannot replace the panel. Existing result-location scenarios retain coverage for ordinary files.
 
 The `zip-*` feedback scenarios check the actual native menu's ZIP label alongside Windows verbs; marked-group and single-item routing; keyboard invocation; name validation, collision and cancel; real ZIP contents, selected folders, empty directories and Unicode paths; queue progress counts and preserved source marks; atomic cleanup after a locked-source error, Retry, and cancellation during the production writer's progress callback. The Create ZIP dialog is rendered and checked at 100% and 150%. Native menu discovery uses the production Windows shell objects without displaying a menu; interactive third-party native menus retain the limits below.
@@ -57,7 +88,7 @@ Run a focused check against a built driver with `Xcmd.Probe.exe --filter operati
 | UC03: name jumping | `alt-prefix-*`, `refinement-alt-*`, `refinement-search-*` | Actual input routes, Alt release, unmatched letters, physical keys with and without text events, duplicate suppression and loaded keyboard layouts. |
 | UC23 and part of UC31: file search feedback | `search-name-*`, `search-text-*`, `search-archive-*`, `search-git-*`, `search-query-*`, `search-scheduling-*` | Real keyboard search and panel navigation, ZIP, TAR, TAR.GZ and RAR4/5 entry names and text, UTF-8/16/32 and Windows-1251/Windows-1252/DOS-866 samples, binary skip, F3 match preview, actual Git ignore rules and tracked exceptions, explicit ignored roots, expansion, query replacement, regex and case, incomplete coverage and offscreen layout. Controlled blocked archive and large-file workers verify ordinary results and cancellation. A dedicated search-result panel and representative performance measurements remain open. |
 | UC04, UC06: current file operations | `copy-*`, `new-folder-*` | Real individual file copies, contents and no-overwrite errors; real folder creation, input validation, conflicts, actual dialog focus and cancellation. Recursive copy and conflict choices are not implemented. |
-| UC12 and part of UC36: folder sizes | `folder-size-*` | Recursive byte totals, empty folders, rendered cells, cancellation, responsive input, partial reads, a real Windows junction cycle, sorting, refresh, persistence and navigation/close cancellation. |
+| UC12 and part of UC36: folder sizes | `folder-size-*` | Recursive byte totals, empty folders, rendered cells, cancellation, responsive input, partial reads, exact totals excluding a real Windows junction cycle, zero for links, preserving unaffected measurements on live refresh, sorting, persistence and navigation/close cancellation. |
 | UC13: sorting | `sort-*`, `natural-name-*`, `parent-row-*`, `refinement-readable-sort-headings` | Actual header clicks and shortcuts; name, extension, size and date; both directions; directories first; natural number order; cursor and selection preservation; centered, larger, light heading text. |
 | UC14, UC15: navigation and history | `opposite-panel-*`, `history-*`, `navigation-*`, `parent-row-*`, `ctrl-page-up-*` | Opposite-panel navigation and file fallback, parent navigation, cursor restoration, unique bounded histories, source-panel focus, cancellation, empty history, unavailable directories, obsolete and pending reads, keyboard and pointer input, long paths and scaled layout. |
 | UC16: favorites | `favorites-*`, `navigation-*` | Add, rename and remove through actual controls; shared lists, source-panel focus, cursor restoration, validation and retry, pending-read cancellation, immediate saves, older sessions, real process handoff and modal feedback. |
@@ -65,7 +96,8 @@ Run a focused check against a built driver with `Xcmd.Probe.exe --filter operati
 | UC19: file colors | `colors-*` | Ordered JSON rules, source/script priority, settings reload, invalid settings, selection contrast and renamed file types. |
 | UC20: panels and interface | `real-directory-*`, `arrow-*`, `shift-*`, `ctrl-a-*`, `mouse-*`, `tab-*`, `refresh-*`, `resize-*`, `column-*`, `double-click-*`, `dpi-*`, `layout-*`, `refinement-*` | Actual controls, ranges, multi-selection, focus, automatic directory monitoring, missing-directory recovery, sorting, sizing, native system icons, compact dialogs and offscreen rendering at normal and 150% scale. |
 | UC38: persistence and local release updates | `workspace-*` | JSON state, cursors, selection, directories, history, columns, scroll, window state, measurements, favorites and command drafts. Real process checks prove source exit, replacement restore, readiness order and safe startup failure. |
-| UC39: element feedback | `workspace-feedback-*`, `refinement-feedback-*`, `refinement-resolution-*` | Pointer selection without activation, editor focus, nonempty and multiline comments, cancellation, removal, immediate JSON/Markdown saves, dialog drafts, resolution records and real process handoff. |
+| UC39: element feedback | `issues-*`, `workspace-feedback-*`, `refinement-feedback-*`, `refinement-resolution-*` | Pointer selection without activation, editor focus, multiline comments, cancellation, removal, immediate SQLite saves, legacy migration, transactional work claims, real CLI process competition, dialog drafts and process handoff. |
+| Accumulated UI feedback | `accumulated-*`, `git-commit-*` | Space folder measurements, physical Home shortcuts from command focus, readable type width/session persistence, title age/fresh-update message, real clean/dirty folder repositories, bounded background work/cancellation and AI commit launch arguments. |
 | Background reads and large directories | `background-read-*`, `obsolete-read-*`, `large-directory-*` | Controlled pauses around the real filesystem adapter prove input remains usable and newer reads cancel obsolete work. A fixture with 10,009 real entries checks virtualization, recycled-row rename, sorting and rendering. |
 | Rules and input precedence | `rules-*` | Seven scenarios check numeric name runs and ties, Windows device names, validation error order, command targets and raw arguments, saved panel constraints, favorite identity, combined keyboard modifiers and editor confirmation priority. |
 | UC40: permanent launch and taskbar identity | `launcher-*` | Eight scenarios run the actual self-contained NativeAOT launcher and real Windows shortcuts, preserve arguments and working directory, reject invalid release trees, defer replacement of a locked launcher, read native taskbar properties and complete a headless application update after the launcher exits. Reinstall an existing shortcut with changed icon pixels and compare the actual Windows shell pixels. Preserve the previous icon and reuse the path when pixels do not change. Record launcher exit latency. Native shell properties use one invisible fixture window; all application windows remain headless. See [release evidence](evidence/stable-launcher-2026-11-10.json). |
@@ -147,6 +179,14 @@ Each run writes `results.json`, state and input traces, failure details and sele
 `design-system-shared-surfaces` checks consistent table/header geometry, square buttons, inherited readable typography and action bounds; renders panels, new-folder/transfer dialogs, navigation and narrow search at 100/150% scale. `design-system-operation-details` verifies that the operation table retains source/destination values in separate columns. `design-system-reader-contrast` switches all nine palettes through the actual menus, checks selected-text contrast and preserves the found text. The existing reader persistence scenario also remains required.
 
 These checks use the actual production styles and controls. The implementation is in the feedback phase: the focused smoke set does not replace the complete finalisation gate or independent usability review. A failed NuGet vulnerability-service lookup is a publication blocker unless the user explicitly authorises the documented feedback-only audit exception.
+
+## Feedback finalization (2026-11-13)
+
+The [finalization evidence](evidence/feedback-finalization-2026-11-13.md) records
+337 passing scenarios out of 337 and a passing full gate, including the NativeAOT
+launcher, architecture, analyzers, formatting, metrics and native integration
+checks. The independent usability review is complete. Folder icons use their
+ordinary Windows appearance; Git changes remain in the dedicated column.
 
 ## Limits
 

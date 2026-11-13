@@ -17,8 +17,8 @@ namespace Xcmd.Desktop;
 
 public sealed partial class PanelView : Border
 {
-    private readonly TextBlock path = new() { FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.LeadingCharacterEllipsis };
-    private readonly TextBlock summary = new() { FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary };
+    private readonly TextBlock path = new TextBlock() { FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.LeadingCharacterEllipsis }.WithFeedbackId("PanelView.path");
+    private readonly TextBlock summary = new TextBlock() { FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("PanelView.summary");
     private readonly Dictionary<SortField, Button> headers = [];
     private string? cursorName;
     private bool headersConfigured;
@@ -36,6 +36,7 @@ public sealed partial class PanelView : Border
     }
     private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
     public PanelSession Session { get; }
+    public string DisplayPath => PathText.Display(Session.DirectoryPath);
     public TableView Table { get; }
     public List<FileRow> Rows { get; private set; } = [];
     public FileRow? EditingRow { get; private set; }
@@ -81,9 +82,7 @@ public sealed partial class PanelView : Border
         keyboardMarks = state.HasMarks || state.Selected.Length > 1 || state.Selected.Length > 0 && !state.Selected.Contains(state.Cursor, StringComparer.OrdinalIgnoreCase);
         ApplyEntries(state.Selected, state.Cursor);
         if (state.Selected.Length == 0) Table.SelectedItems?.Clear();
-        for (var i = 0; i < Math.Min(Table.Columns.Count, state.Columns.Length); i++)
-            Table.Columns[i].Width = new GridLength(state.Columns[i].Width, state.Columns[i].Star ? GridUnitType.Star : GridUnitType.Pixel);
-        Table.Columns[^1].Width = new GridLength(1, GridUnitType.Star);
+        RestoreColumnWidths(state.Columns);
         UpdateHeaders();
         UpdateSummary();
         if (state.SearchResults is { } results) RestoreSearchState(results);
@@ -124,7 +123,10 @@ public sealed partial class PanelView : Border
 
     private void ApplyRefreshedEntries()
     {
-        if (!Rows.Select(row => row.Entry).SequenceEqual(Session.Entries)) sizes.Clear();
+        var previous = Rows.ToDictionary(row => row.Entry.FullPath, row => row.Entry, StringComparer.OrdinalIgnoreCase);
+        var unchanged = Session.Entries.Where(entry => previous.TryGetValue(entry.FullPath, out var old) && CanKeepMeasurement(entry, old))
+            .Select(entry => entry.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in sizes.Keys.Where(name => !unchanged.Contains(name)).ToArray()) sizes.Remove(name);
         var selected = CaptureRowSelection();
         var current = Current?.Name;
         var index = Current == null ? 0 : Rows.IndexOf(Current);
@@ -138,6 +140,14 @@ public sealed partial class PanelView : Border
         if (focused) FocusCurrent(scrollIntoView: false);
         if (Scroll is { } restored) restored.Offset = offset;
         UpdateSummary();
+    }
+
+    private bool CanKeepMeasurement(FileEntry entry, FileEntry previous)
+    {
+        if (entry == previous) return true;
+        // Windows can refresh a directory's cached timestamp after its contents were measured.
+        return sizes.TryGetValue(entry.Name, out var measurement) && entry.ModifiedUtc <= measurement.MeasuredAt.UtcDateTime &&
+            entry with { ModifiedUtc = previous.ModifiedUtc } == previous;
     }
 
     private async Task<bool> RecoverDirectoryAsync(string directory, bool hadFocus, Func<bool> canApply, Func<bool> canFocus)
@@ -162,7 +172,7 @@ public sealed partial class PanelView : Border
     {
         this.fileTypes = fileTypes ?? FileTypeSettings.Bundled();
         Id = id;
-        Git = new GitStatusView(id);
+        Git = new GitStatusView(id).WithFeedbackId("PanelView.Git");
         Name = id;
         Session = new PanelSession(fileSystem);
         Background = UiPalette.Surface;
@@ -180,7 +190,7 @@ public sealed partial class PanelView : Border
             Focusable = true,
             FontSize = UiPalette.BodySize,
             Background = Brushes.Transparent
-        };
+        }.WithFeedbackId("PanelView.Table");
         AutomationProperties.SetAutomationId(Table, id + ".files");
         Table.IsTextSearchEnabled = false;
         ScrollViewer.SetBringIntoViewOnFocusChange(Table, false);
@@ -192,18 +202,16 @@ public sealed partial class PanelView : Border
         Table.Columns.Add(Column(SortField.Name, "Name", new GridLength(1, GridUnitType.Star), name: true));
         Table.Columns.Add(Column(SortField.Extension, "Type", new GridLength(64)));
         Table.Columns.Add(Column(SortField.Size, "Size", new GridLength(88)));
+        Table.Columns.Add(MakeGitColumn());
         Table.Columns.Add(Column(SortField.Modified, "Modified", new GridLength(145)));
+        Git.StatusChanged += ApplyGitStatus;
         ResetColumns();
         Table.Loaded += (_, _) => { ConfigureHeaders(); QueueColumnAdaptation(); };
         Table.TemplateApplied += (_, _) => headersConfigured = false;
         Table.LayoutUpdated += (_, _) => { if (!headersConfigured) ConfigureHeaders(); };
         Table.SizeChanged += (_, _) => QueueColumnAdaptation();
         foreach (var column in Table.Columns)
-            column.PropertyChanged += (_, e) =>
-            {
-                if (e.Property == TableViewColumn.WidthProperty || e.Property == TableViewColumn.MinWidthProperty)
-                    QueueColumnAdaptation();
-            };
+            column.PropertyChanged += OnColumnChanged;
         Table.SelectionChanged += (_, _) => UpdateSummary();
         Table.GotFocus += (_, e) =>
         {
@@ -235,7 +243,7 @@ public sealed partial class PanelView : Border
                 OpenRequested?.Invoke(this);
         };
         AttachShellInput();
-        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,29") };
+        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,29") }.WithFeedbackId("PanelView.content");
         var historyButton = new Button
         {
             Content = "History",
@@ -246,12 +254,12 @@ public sealed partial class PanelView : Border
             Foreground = UiPalette.Secondary,
             Padding = new Thickness(3, 4),
             Margin = new Thickness(8, 0, 0, 0)
-        };
+        }.WithFeedbackId("PanelView.historyButton");
         historyButton.Classes.Add("quiet");
         AutomationProperties.SetAutomationId(historyButton, id + ".history");
         ToolTip.SetTip(historyButton, "Directory history (Alt+Down)");
         historyButton.Click += (_, _) => { Activated?.Invoke(this); HistoryRequested?.Invoke(this); };
-        var pathHeader = new Grid { Name = id + "LocationHeader", ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 8 };
+        var pathHeader = new Grid { Name = id + "LocationHeader", ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 8 }.WithFeedbackId("PanelView.pathHeader");
         pathHeader.Children.Add(path);
         Grid.SetColumn(Git, 1);
         pathHeader.Children.Add(Git);
@@ -265,7 +273,7 @@ public sealed partial class PanelView : Border
         pathHeader.SizeChanged += (_, _) => FitLocationHeader();
         Git.SizeChanged += (_, _) => FitLocationHeader();
         path.VerticalAlignment = VerticalAlignment.Center;
-        var pathContainer = new Border { Padding = new Thickness(8, 0), Child = pathHeader, VerticalAlignment = VerticalAlignment.Center };
+        var pathContainer = new Border { Padding = new Thickness(8, 0), Child = pathHeader, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("PanelView.pathContainer");
         content.Children.Add(pathContainer);
         Grid.SetRow(Table, 1);
         content.Children.Add(Table);
@@ -282,7 +290,7 @@ public sealed partial class PanelView : Border
             BorderBrush = UiPalette.Divider,
             BorderThickness = new Thickness(0, 1, 0, 0),
             ClipToBounds = true
-        };
+        }.WithFeedbackId("PanelView.summaryContainer");
         AutomationProperties.SetAutomationId(summary, id + ".summary");
         Grid.SetRow(summaryContainer, 2);
         content.Children.Add(summaryContainer);
@@ -294,12 +302,14 @@ public sealed partial class PanelView : Border
     {
         headersConfigured = false;
         Table.Columns[0].Width = new GridLength(3, GridUnitType.Star);
-        Table.Columns[1].Width = new GridLength(64);
+        Table.Columns[1].Width = new GridLength(88);
+        Table.Columns[1].MinWidth = 72;
         Table.Columns[2].Width = new GridLength(128);
         Table.Columns[2].MinWidth = 112;
-        Table.Columns[3].Width = new GridLength(1, GridUnitType.Star);
-        Table.Columns[3].MinWidth = 150;
-        Table.Columns[3].CanUserResize = false;
+        Table.Columns[GitColumnIndex].Width = new GridLength(56);
+        Table.Columns[^1].Width = new GridLength(1, GridUnitType.Star);
+        Table.Columns[^1].MinWidth = 150;
+        Table.Columns[^1].CanUserResize = false;
         ConfigureHeaders();
     }
 
@@ -339,13 +349,13 @@ public sealed partial class PanelView : Border
             FontWeight = FontWeight.SemiBold,
             Foreground = UiPalette.Text,
             MinHeight = UiPalette.RowHeight
-        };
+        }.WithFeedbackId("PanelView.button");
         AutomationProperties.SetAutomationId(button, Id + ".sort." + field.ToString().ToLowerInvariant());
         button.Click += (_, _) => { Activated?.Invoke(this); SortBy(field); FocusCurrent(); };
         headers[field] = button;
         var column = new TableViewColumn { Header = button, Width = width, MinWidth = name ? 90 : 45 };
         if (name)
-            column.CellTemplate = new FuncDataTemplate<FileRow>((row, _) => row == null ? new Border() : MakeNameCell(row));
+            column.CellTemplate = new FuncDataTemplate<FileRow>((row, _) => row == null ? new Border().WithFeedbackId("PanelView.empty") : FileNameCell.Create(row, Icons));
         else column.CellTemplate = new FuncDataTemplate<FileRow>((row, _) => MakeValueCell(row, field));
         if (field == SortField.Size) column.HorizontalContentAlignment = HorizontalAlignment.Right;
         if (field == SortField.Extension) column.HorizontalContentAlignment = HorizontalAlignment.Center;
@@ -361,49 +371,12 @@ public sealed partial class PanelView : Border
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = field == SortField.Size ? HorizontalAlignment.Right : field == SortField.Extension ? HorizontalAlignment.Center : HorizontalAlignment.Left,
             TextTrimming = TextTrimming.CharacterEllipsis
-        };
+        }.WithFeedbackId("PanelView.text");
         if (field == SortField.Size)
         { text.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.DisplaySize))); text.Bind(ToolTip.TipProperty, new Binding(nameof(FileRow.SizeDescription))); }
+        if (field == SortField.Extension)
+        { text.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.Kind))); text.Bind(ToolTip.TipProperty, new Binding(nameof(FileRow.Kind))); }
         return text;
-    }
-
-    private Control MakeNameCell(FileRow row)
-    {
-        var grid = new Grid { DataContext = row, MinHeight = UiPalette.RowHeight, ColumnDefinitions = new ColumnDefinitions("16,24,*") };
-        var mark = new TextBlock { Name = "FileMark", Foreground = UiPalette.Mark, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
-        mark.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.MarkGlyph)));
-        grid.Children.Add(mark);
-        var icon = new Image { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, DataContext = row };
-        AutomationProperties.SetAutomationId(icon, "file.icon");
-        Grid.SetColumn(icon, 1); grid.Children.Add(icon); Icons.Bind(icon, row);
-        var text = new FileNameText
-        {
-            Text = row.Name,
-            VerticalAlignment = VerticalAlignment.Center,
-            TextTrimming = TextTrimming.CharacterEllipsis,
-            FontWeight = row.Entry.IsDirectory ? FontWeight.SemiBold : FontWeight.Normal
-        };
-        text.Bind(IsVisibleProperty, new Binding(nameof(FileRow.IsReading)));
-        text.Bind(TextBlock.ForegroundProperty, new Binding(nameof(FileRow.NameForeground)));
-        text.Bind(FileNameText.MatchStartProperty, new Binding(nameof(FileRow.NameMatchStart)));
-        text.Bind(FileNameText.MatchLengthProperty, new Binding(nameof(FileRow.NameMatchLength)));
-        var editor = new TextBox
-        {
-            Name = "RenameEditor",
-            MinHeight = UiPalette.RowHeight,
-            Padding = new Thickness(3, 0),
-            VerticalContentAlignment = VerticalAlignment.Center,
-            FontSize = UiPalette.BodySize,
-            MaxLength = 255
-        };
-        AutomationProperties.SetAutomationId(editor, "rename.editor");
-        editor.Bind(IsVisibleProperty, new Binding(nameof(FileRow.IsEditing)));
-        editor.Bind(TextBox.TextProperty, new Binding(nameof(FileRow.DraftName)) { Mode = BindingMode.TwoWay });
-        // Unhandled editor keys must not reach the table's row navigation.
-        editor.KeyDown += (_, e) => e.Handled = true;
-        Grid.SetColumn(text, 2); grid.Children.Add(text);
-        Grid.SetColumn(editor, 2); grid.Children.Add(editor);
-        return grid;
     }
 
     public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null)
@@ -421,7 +394,7 @@ public sealed partial class PanelView : Border
             searchReturnState = null;
             sizes.Clear();
             ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
-            path.Text = ArchivePath.Display(Session.DirectoryPath);
+            path.Text = DisplayPath;
             Git.SetDirectory(Session.DirectoryPath);
             path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
             ToolTip.SetTip(path, path.Text);
@@ -448,6 +421,7 @@ public sealed partial class PanelView : Border
         Rows = ResultRows();
         foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
         Table.ItemsSource = Rows;
+        ApplyGitStatus();
         ShowNameMatches(nameSearch);
         Table.SelectedItems?.Clear();
         foreach (var row in Rows.Where(row => selected.Contains(row.Name, StringComparer.OrdinalIgnoreCase)))

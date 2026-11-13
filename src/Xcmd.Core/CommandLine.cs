@@ -45,8 +45,12 @@ public static class CommandLine
         return separator < 0 ? new(command, "", false) : new(command[..separator], command[(separator + 1)..].TrimStart(), false);
     }
 
-    public static string DirectoryPath(string target, string currentDirectory) =>
-        target.Length == 0 ? currentDirectory : Path.GetFullPath(target, currentDirectory);
+    public static string DirectoryPath(string target, string currentDirectory, string homeDirectory)
+    {
+        if (target == "~" || target.StartsWith("~/", StringComparison.Ordinal) || target.StartsWith("~\\", StringComparison.Ordinal))
+            target = homeDirectory + target[1..];
+        return target.Length == 0 ? currentDirectory : Path.GetFullPath(target, currentDirectory);
+    }
 
     public static string FormatArgument(string value)
     {

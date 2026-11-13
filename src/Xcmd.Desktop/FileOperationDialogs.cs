@@ -12,8 +12,8 @@ namespace Xcmd.Desktop;
 
 public sealed class FileConflictDialog : Window
 {
-    public CheckBox ApplyToAll { get; } = new() { Content = "Apply to all", Name = "ConflictApplyToAll" };
-    public TextBox NewName { get; } = new() { Name = "ConflictNewName" };
+    public CheckBox ApplyToAll { get; } = new CheckBox() { Content = "Apply to all", Name = "ConflictApplyToAll" }.WithFeedbackId("FileOperationDialogs.ApplyToAll");
+    public TextBox NewName { get; } = new TextBox() { Name = "ConflictNewName" }.WithFeedbackId("FileOperationDialogs.NewName");
     public TextBlock Error { get; } = UiLayout.Error();
     public event Action<ConflictDecision>? Decided;
 
@@ -25,12 +25,12 @@ public sealed class FileConflictDialog : Window
         NewName.Text = FileOperationNames.CopyName(conflict.Source);
         AutomationProperties.SetAutomationId(NewName, "file-conflict.new-name");
         ToolTip.SetTip(ApplyToAll, "Apply Skip or Replace to matching conflicts in this operation.");
-        var comparison = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*") };
+        var comparison = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*") }.WithFeedbackId("FileOperationDialogs.comparison");
         comparison.Children.Add(Describe("Source", conflict.Source));
         var target = Describe("Destination", conflict.Destination); target.Margin = new Thickness(12, 0, 0, 0);
         Grid.SetColumn(target, 1); comparison.Children.Add(target);
-        var nameRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
-        nameRow.Children.Add(new TextBlock { Text = "New name", Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center });
+        var nameRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") }.WithFeedbackId("FileOperationDialogs.nameRow");
+        nameRow.Children.Add(new TextBlock { Text = "New name", Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("FileOperationDialogs.content"));
         Grid.SetColumn(NewName, 1); nameRow.Children.Add(NewName);
         var skip = Choice("Skip", "ConflictSkip", ConflictAction.Skip);
         var replace = Choice("Replace", "ConflictReplace", ConflictAction.Replace); replace.IsEnabled = replaceAllowed;
@@ -42,11 +42,11 @@ public sealed class FileConflictDialog : Window
             Spacing = 8,
             Children =
             {
-                new TextBlock { Text = conflict.Source.Name + " already exists", FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                new TextBlock { Text = conflict.Source.Name + " already exists", FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FileOperationDialogs.content.2"),
                 comparison, ApplyToAll, nameRow, Error,
                 UiLayout.Actions(skip, rename, replace, cancel)
             }
-        };
+        }.WithFeedbackId("FileOperationDialogs.content.3");
         var choices = new[] { skip, rename, replace, cancel };
         void Default(Button selected) { foreach (var button in choices) button.IsDefault = button == selected; }
         Default(skip);
@@ -62,7 +62,7 @@ public sealed class FileConflictDialog : Window
 
         Button Choice(string label, string name, ConflictAction action)
         {
-            var button = new Button { Content = label, Name = name, Margin = new Thickness(0, 0, 8, 4) };
+            var button = new Button { Content = label, Name = name, Margin = new Thickness(0, 0, 8, 4) }.WithFeedbackId("FileOperationDialogs.button");
             AutomationProperties.SetAutomationId(button, "file-conflict." + action.ToString().ToLowerInvariant());
             button.Click += (_, _) => Decide(action);
             return button;
@@ -71,18 +71,18 @@ public sealed class FileConflictDialog : Window
 
     private static StackPanel Describe(string label, FileEntry entry)
     {
-        var path = new TextBlock { Text = Path.GetDirectoryName(entry.FullPath), TextTrimming = TextTrimming.LeadingCharacterEllipsis };
+        var path = new TextBlock { Text = Path.GetDirectoryName(entry.FullPath), TextTrimming = TextTrimming.LeadingCharacterEllipsis }.WithFeedbackId("FileOperationDialogs.path");
         ToolTip.SetTip(path, entry.FullPath);
         return new StackPanel
         {
             Spacing = 3,
             Children =
             {
-                new TextBlock { Text = label, Foreground = UiPalette.Secondary }, path,
-                new TextBlock { Text = entry.IsDirectory ? "Folder" : $"{entry.Size:N0} bytes" },
-                new TextBlock { Text = $"{entry.ModifiedUtc.ToLocalTime():yyyy-MM-dd HH:mm:ss}" }
+                new TextBlock { Text = label, Foreground = UiPalette.Secondary }.WithFeedbackId("FileOperationDialogs.Describe"), path,
+                new TextBlock { Text = entry.IsDirectory ? "Folder" : $"{entry.Size:N0} bytes" }.WithFeedbackId("FileOperationDialogs.Describe.2"),
+                new TextBlock { Text = $"{entry.ModifiedUtc.ToLocalTime():yyyy-MM-dd HH:mm:ss}" }.WithFeedbackId("FileOperationDialogs.Describe.3")
             }
-        };
+        }.WithFeedbackId("FileOperationDialogs.Describe.4");
     }
 
     private void Decide(ConflictAction action)
@@ -95,9 +95,9 @@ public sealed class FileConflictDialog : Window
 
 public sealed class FileDeleteDialog : Window
 {
-    public RadioButton Recycle { get; } = new() { Content = new AccessText { Text = "_Recycle Bin", ShowAccessKey = true }, Name = "DeleteToRecycleBin", GroupName = "DeleteMode" };
-    public RadioButton Permanently { get; } = new() { Content = new AccessText { Text = "_Permanently", ShowAccessKey = true }, Name = "DeletePermanently", GroupName = "DeleteMode", Margin = new Thickness(16, 0, 0, 0) };
-    private readonly TextBlock question = new() { FontWeight = FontWeight.SemiBold };
+    public RadioButton Recycle { get; } = new RadioButton() { Content = new AccessText { Text = "_Recycle Bin", ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.Recycle"), Name = "DeleteToRecycleBin", GroupName = "DeleteMode" }.WithFeedbackId("FileOperationDialogs.Recycle.2");
+    public RadioButton Permanently { get; } = new RadioButton() { Content = new AccessText { Text = "_Permanently", ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.Permanently"), Name = "DeletePermanently", GroupName = "DeleteMode", Margin = new Thickness(16, 0, 0, 0) }.WithFeedbackId("FileOperationDialogs.Permanently.2");
+    private readonly TextBlock question = new TextBlock() { FontWeight = FontWeight.SemiBold }.WithFeedbackId("FileOperationDialogs.question");
     public FileOperationKind SelectedKind => Permanently.IsChecked == true ? FileOperationKind.Delete : FileOperationKind.Recycle;
     public event Action<FileOperationKind>? Confirmed;
 
@@ -117,13 +117,13 @@ public sealed class FileDeleteDialog : Window
             Name = "ConfirmFileDelete",
             IsDefault = true,
             Margin = new Thickness(0, 0, 8, 0)
-        };
-        var cancel = new Button { Content = "Cancel", Name = "CancelFileDelete" };
+        }.WithFeedbackId("FileOperationDialogs.confirm");
+        var cancel = new Button { Content = "Cancel", Name = "CancelFileDelete" }.WithFeedbackId("FileOperationDialogs.cancel");
         DialogActions.FollowFocus(this, confirm, cancel);
         AutomationProperties.SetAutomationId(confirm, "file-delete.confirm");
         confirm.Click += (_, _) => Confirmed?.Invoke(SelectedKind);
         cancel.Click += (_, _) => Close();
-        var selection = new TextBlock { Text = request.Sources.Length == 1 ? request.Sources[0].Name : $"{request.Sources.Length} items", TextTrimming = TextTrimming.CharacterEllipsis };
+        var selection = new TextBlock { Text = request.Sources.Length == 1 ? request.Sources[0].Name : $"{request.Sources.Length} items", TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FileOperationDialogs.selection");
         ToolTip.SetTip(selection, string.Join("\n", request.Sources.Select(entry => entry.FullPath)));
         Content = new StackPanel
         {
@@ -132,10 +132,10 @@ public sealed class FileDeleteDialog : Window
             Children =
             {
                 question, selection,
-                new StackPanel { Orientation = Orientation.Horizontal, Children = { Recycle, Permanently } },
+                new StackPanel { Orientation = Orientation.Horizontal, Children = { Recycle, Permanently } }.WithFeedbackId("FileOperationDialogs.content.4"),
                 UiLayout.Actions(confirm, cancel)
             }
-        };
+        }.WithFeedbackId("FileOperationDialogs.content.5");
         Opened += (_, _) => confirm.Focus();
         AddHandler(KeyDownEvent, (_, e) =>
         {

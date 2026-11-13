@@ -102,18 +102,18 @@ public static class FeedbackRemarksScenarios
         }),
         new("remarks-feedback-open-and-resolved-tabs", "UC39; open notes first, resolved notes in a separate tab", async c =>
         {
-            var added = DateTimeOffset.UtcNow;
-            c.Window.Feedback.Notes.Add(new("closed", "test", "closed", "Closed item", c.LeftPath, "Closed comment", added, "fixed", "Resolved"));
-            c.Window.Feedback.Notes.Add(new("open", "test", "open", "Open item", c.LeftPath, "Open comment", added));
+            await c.Window.Feedback.Store!.AddAsync(new("closed", FeedbackIssue.Closed, "Closed comment", new("closed", "Closed item"), "test"));
+            await c.Window.Feedback.Store.AddAsync(new("open", FeedbackIssue.New, "Open comment", new("open", "Open item"), "test"));
+            await c.Window.Feedback.RefreshAsync();
             c.Window.Feedback.ShowNotes(); await c.SettleAsync();
             var window = c.Window.Feedback.ActiveNotes!;
             var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
             Equal(0, tabs.SelectedIndex, "Notes starts in the Open tab");
             var list = window.GetVisualDescendants().OfType<ListBox>().Single();
-            Equal("open", list.ItemsSource!.Cast<FeedbackNote>().Single().Id, "Open notes do not contain resolved comments");
+            Equal("open", list.ItemsSource!.Cast<FeedbackIssue>().Single().Id, "Open notes do not contain resolved comments");
             tabs.SelectedIndex = 1; await c.SettleAsync();
             list = window.GetVisualDescendants().OfType<ListBox>().Single();
-            Equal("closed", list.ItemsSource!.Cast<FeedbackNote>().Single().Id, "Resolved comments have their own tab");
+            Equal("closed", list.ItemsSource!.Cast<FeedbackIssue>().Single().Id, "Resolved comments have their own tab");
             list.SelectedIndex = 0; await c.ClickAsync(Button(window, "RemoveNote"), target: window);
             Check(c.Window.Feedback.Notes.All(note => note.Id != "closed"), "Remove applies to the selected tab");
             await c.ScreenshotAsync("feedback-tabs", window);

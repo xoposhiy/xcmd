@@ -34,7 +34,7 @@ public sealed partial class FileViewerWindow
             item.ToggleType = MenuItemToggleType.Radio; item.GroupName = "reader-theme";
             themeItems[theme.Id] = item;
         }
-        return new MenuItem { Header = "Color theme", Name = "ViewerThemes", ItemsSource = themeItems.Values };
+        return new MenuItem { Header = "Color theme", Name = "ViewerThemes", ItemsSource = themeItems.Values }.WithFeedbackId("FileViewerWindow.Themes.BuildThemeMenu");
     }
 
     private void SelectTheme(string id)

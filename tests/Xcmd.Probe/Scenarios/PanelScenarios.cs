@@ -173,6 +173,24 @@ public static class PanelScenarios
             Check(c.Window.Left.EditingRow == null && c.Window.Left.Table.IsKeyboardFocusWithin, "Rename exits and restores focus.");
             Check(c.Window.Left.Rows.FindIndex(row => row.Name == "renamed.txt") > c.Window.Left.Rows.FindIndex(row => row.Name == "file10.bin"), "The renamed item moves into sort order.");
         }),
+        new("rename-printable-key-input", "UC17; rename does not consume printable key-down events before text input", async c =>
+        {
+            await c.BeginRenameAsync("alpha.txt");
+            foreach (var key in new[] { Key.Up, Key.Down, Key.PageUp, Key.PageDown }) await c.KeyAsync(key);
+            Equal("alpha.txt", c.Window.Left.Current?.Name, "Vertical editor keys do not move the file cursor");
+            Check(c.Window.Left.RenameEditor?.IsFocused == true, "The editor retains keyboard focus");
+            await c.KeyAsync(Key.A, RawInputModifiers.Control);
+            Check(c.Input.TypeKey(Key.R, PhysicalKey.R, "r"), "Letter key-down remains available for text input");
+            Check(c.Input.TypeKey(Key.Space, PhysicalKey.Space, " "), "Space remains available for text input");
+            Check(c.Input.TypeKey(Key.R, PhysicalKey.R, "r"), "Further letters also reach the editor");
+            await c.TextAsync(".txt");
+            Equal("r r.txt", c.Window.Left.EditingRow?.DraftName, "Typing replaces the selected name and edits its draft");
+            Equal("", c.Window.CommandLine.Editor.Text, "Rename input never becomes a command");
+            await c.KeyAsync(Key.Enter);
+            Check(File.Exists(Path.Combine(c.LeftPath, "r r.txt")), "The typed name is committed to the real filesystem");
+            Equal("r r.txt", c.Window.Left.Current?.Name, "The renamed file remains current");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Committing returns focus to the file panel");
+        }),
         new("rename-escape", "UC17", async c =>
         {
             await c.BeginRenameAsync("alpha.txt");
@@ -392,7 +410,7 @@ public static class PanelScenarios
             c.Window.Width = 1000; c.Window.Height = 500;
             c.Window.Left.Table.Columns[0].Width = new GridLength(180);
             await c.SettleAsync();
-            Check(c.Window.Left.Table.Columns.All(column => double.IsFinite(column.ActualWidth) && column.ActualWidth > 0), "All columns have finite positive widths after resize.");
+            Check(c.Window.Left.Table.Columns.Where(column => column.IsVisible).All(column => double.IsFinite(column.ActualWidth) && column.ActualWidth > 0), "Visible columns have finite positive widths after resize.");
             await c.ScreenshotAsync("compact-panels");
             await c.BeginRenameAsync("alpha.txt");
             Check(c.Window.Left.RenameEditor!.Bounds.Width > 20, "The inline editor remains usable in a narrow panel.");

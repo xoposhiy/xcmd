@@ -77,7 +77,7 @@ public static class OpenFeedbackScenarios
                     panel.Width = width;
                     await c.SettleAsync();
                     Equal(visible, panel.Table.Columns.Count(column => column.IsVisible), "Columns hide from the right at width " + width);
-                    Check(panel.Table.Columns.Take(visible).All(column => column.IsVisible), "Visible columns remain a prefix");
+                    Check(panel.Table.Columns.Where((_, index) => index != 3).Take(visible).All(column => column.IsVisible), "Available columns hide from the right");
                     var scroll = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
                     Check(scroll.Extent.Width <= scroll.Viewport.Width + 1, "No horizontal overflow while the name minimum fits");
                     Equal(cursor, panel.Current?.Name, "Resize preserves cursor");

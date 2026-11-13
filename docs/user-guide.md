@@ -6,7 +6,39 @@ A compact group beside each panel's folder path shows the repository branch and 
 
 Status refreshes in the background every three seconds, with cancellation on navigation and a five-second query timeout. It does not block file loading or keyboard input. Git appears as a compact menu button immediately after the path, without a fixed split of the header. The file table keeps its position while status updates. Outside a working tree, in archives, in search results, or when Git is unavailable, the Git area is empty. Git text uses 14-unit semibold Consolas on a subtle raised surface: clean branch names and staged/untracked counters are green, modifications amber, deletions/conflicts red. Long values retain their full text in tooltips.
 
-Click the Git status and choose **Commit** to open installed Claude Code in its ordinary interactive console at the repository root, including when the panel shows a subfolder. Xcmd supplies Sonnet, medium effort and the initial prompt `Commit all changes.`. Claude uses its normal login, settings and project instructions, can ask questions and request permissions, and keeps its result and follow-up conversation in the same console. File-manager panels remain available; the console has an independent lifetime. Git status follows changes through its normal refresh. Install the native Windows Claude Code executable and sign in before using this command. Launch failures appear in Xcmd's status line.
+Click the Git status and choose **Commit with AI** to open installed Claude Code in its ordinary interactive console at the repository root, including when the panel shows a subfolder. Xcmd supplies Sonnet, medium effort and the initial prompt `Commit all changes.`. Claude uses its normal login, settings and project instructions, can ask questions and request permissions, and keeps its result and follow-up conversation in the same console. File-manager panels remain available; the console has an independent lifetime. Git status follows changes through its normal refresh. Install the native Windows Claude Code executable and sign in before using this command. Launch failures appear in Xcmd's status line.
+
+Drive-letter casing is normalized when launching Claude so entering a repository
+through `c:` and `C:` does not create different launch paths. Workspace trust is
+still managed by Claude Code. Its interactive CLI has no documented trust-only
+bypass flag; Xcmd does not disable all permissions or edit Claude's account/state
+file. See [Claude's workspace trust documentation](https://code.claude.com/docs/en/permissions#project-allow-rules-and-workspace-trust).
+
+All directories, including repository roots and subfolders, keep their native
+Windows folder icons and the `DIR` type. Git status appears only in the Git
+column and the repository header; no separate per-folder Git queries run.
+
+Inside a working tree, the compact **Git** column shows staged changes on the
+left and working-tree changes on the right. Clean entries are blank. Hover the
+column heading for the legend, or a cell for its current status.
+
+| Icon | Meaning |
+| --- | --- |
+| Green ✓ | Staged modification |
+| + | Added file (green when staged) |
+| Amber ● | Modified in the working tree |
+| Blue ? | Untracked |
+| → | Renamed or copied |
+| Red − | Deleted |
+| Red ! | Unresolved conflict |
+
+A file can show both a staged icon and a working-tree icon. Folder statuses
+include descendants, including deleted children and both sides of a rename.
+Folder icons stay unchanged before and after commits. Ignored folders have empty
+Git cells. The Git column hides outside a working tree and inside
+ignored directories without reported tracked changes. Status comes from the
+existing background repository refresh. Four-column saved sessions keep their
+previous column widths when the new column is added.
 
 ## Run
 
@@ -27,6 +59,15 @@ Create other shortcuts with `Xcmd.exe` as the target. Set the shortcut's **Start
 
 Each release has a separate directory. Running a release does not lock development build files or prevent the next release. Existing releases are never overwritten. `releases/latest.txt` contains the latest completed release ID.
 
+The main title bar shows whole minutes since this application process started,
+labelled **Uptime: 9 min.** (for example).
+The age has its own compact field, so it remains visible in a narrow window.
+An automatic replacement shows **Just updated · new version** until user input or
+another status message replaces it.
+
+Current paths in the panel heading and command prompt use a lowercase drive
+letter, such as `c:\Users\Pavel`. Folder names keep their original case.
+
 The launcher does not wait for the application to close and does not keep a release marker open. New releases can be published while Xcmd runs. A failed verification or publication keeps the previous launch target. If no valid release is available, the launcher shows an error instead of guessing a version from folder names. A release-specific executable remains available for direct launch.
 
 The application opens the working directory in both panels. File operations change real files in the displayed locations.
@@ -42,6 +83,9 @@ To open specific directories:
 ## Controls
 
 File panels shrink the Name column as space decreases, then hide Modified, Size and Type in that order. Widening the panel restores those columns and retains your column width preferences. In Find files, To panel has an underlined P for Alt+P. The primary blue button follows keyboard context: Search in query fields and Go to file in results.
+
+Navigate > Home folder and Navigate > Drive root expose the same destinations
+as Ctrl+backquote and Ctrl+backslash. These commands preserve the command draft.
 
 The main window combines menus and window controls in one title row. Drag the free title area to move the window, or double-click it to maximize or restore. Feedback and Notes are on the right of the bottom status bar.
 
@@ -86,6 +130,7 @@ File clipboard commands use Windows file-list and copy/move formats for exchange
 | Tab in the rename editor | Commit rename and switch panels on success |
 | Ctrl+R | Optional immediate reload; normal directory updates are automatic |
 | Alt+Shift+Enter | Calculate all child folder sizes in the active panel; press again or Escape to cancel |
+| Space on a folder | Calculate that folder's size without moving the cursor |
 | F7 | Open the new-folder dialog |
 | Alt+F7 | Find files by name, mask or text below the active directory |
 | Ctrl+Backslash | Open the active panel's drive root |
@@ -94,10 +139,15 @@ File clipboard commands use Windows file-list and copy/move formats for exchange
 | Shift+F5 | Confirm a copy in the active panel |
 | F6 | Confirm moving selected files and folders to the other panel |
 | F8 / Delete | Open deletion confirmation with Recycle Bin selected |
-| Shift+Delete | Open the same confirmation with permanent deletion selected |
+| Shift+F8 / Shift+Delete | Open the same confirmation with permanent deletion selected |
 | F12 / Feedback button | Highlight an interface element and add a comment, including inside application dialogs |
 | Notes button | View the saved refinement list and remove comments |
 | View > Reset column widths | Restore the active panel's default column widths |
+
+The Home shortcut also works with command-line focus and with Ctrl+Shift+Backquote
+(`~` on a US layout). It preserves the command draft and returns focus to files.
+The Type column leaves room for `CONFIG` and similar extensions. Drag its divider
+for longer types; hovering shows the full type without drawing into the Size cell.
 
 Sort headers accept clicks across their area; the strip at the right edge resizes a column. The final column fills remaining space and has no resize handle. Size defaults leave room for byte counts up to ten GiB. Type headings and values are centered; Size headings align with byte counts. File names have Windows system icons at their native pixel size, with a source large enough for the display scale and no resampling. Panel text uses a larger font. The cursor uses one blue background with or without marks. The inactive panel uses a faint cursor background. Marked files keep an amber check and file name, including under the cursor. Moving the cursor does not change row size or text position. Shift+Up and Shift+Down remove an existing mark when the row is marked again. Panels have square corners. Table rows stay above the footer and outside the space reserved for scroll bars. Only a top strip marks the active panel; the sides and bottom have no outline. The executable, main window and owned dialogs use the Xcmd application icon.
 
@@ -171,7 +221,7 @@ Copies preserve creation, modification and access timestamps and Hidden, ReadOnl
 
 A failed item offers Retry, Skip, Skip similar errors and Cancel operation. Retry repeats that item's work after its cause is fixed; recovered attempts do not count as permanent failures. Skipped failures remain visible in the operation report. Escape cancels the pending operation decision.
 
-F8 or Delete opens a short deletion question with **Recycle Bin** selected. Shift+Delete selects **Permanently** instead. The underlined **R** and **P** show the **Alt+R** and **Alt+P** access keys. Choose either mode in the same dialog, then press Enter or the highlighted **Yes** button. Escape or **Cancel** keeps the files. Windows processes each recycled tree as one item; cancellation takes effect between selected items. Recycling is limited to local fixed drives. If Windows would delete an item permanently instead, Xcmd refuses that operation. Permanent deletion checks cancellation between files.
+F8 or Delete opens a short deletion question with **Recycle Bin** selected. Shift+F8 or Shift+Delete selects **Permanently** instead. The underlined **R** and **P** show the **Alt+R** and **Alt+P** access keys. Choose either mode in the same dialog, then press Enter or the highlighted **Yes** button. Escape or **Cancel** keeps the files. Windows processes each recycled tree as one item; cancellation takes effect between selected items. Recycling is limited to local fixed drives. If Windows would delete an item permanently instead, Xcmd refuses that operation. Permanent deletion checks cancellation between files.
 
 Copy and move report unsupported links and junctions without following them. Writes through linked parent directories are also rejected. Permanent deletion removes a link itself and does not traverse its target. Pause, queue reordering, interactive content comparison and newer-file conflict rules are not included in this prototype.
 
@@ -205,7 +255,12 @@ Ctrl+Space in the command line offers matching file and folder names at the care
 
 Ctrl+C copies selected command text. Without a selection, Ctrl+C copies the whole command and keeps the caret in place. An empty command leaves the clipboard unchanged. Long directory paths keep their right end visible; hover over the path to see the full directory. Keyboard hints use separators and wrap in narrow windows.
 
-`cd <path>` changes the active panel directory. It accepts relative paths, absolute paths, quoted paths, `cd..` and the optional `/d` form. Bare `cd` keeps the current directory. A failed directory change leaves the panel and command text available for correction. `cd` does not start an external program.
+`cd <path>` changes the active panel directory. It accepts relative paths, absolute paths, quoted paths, `cd..` and the optional `/d` form. `cd ~` opens your home folder; `cd ~/subfolder` and `cd ~\subfolder` open folders below it (quote paths containing spaces). Bare `cd` keeps the current directory. A failed directory change leaves the panel and command text available for correction. `cd` does not start an external program.
+
+After a successful command or `cd`, the command line clears and focus returns to
+the active file panel. A failed command keeps its text and focus for correction.
+If you edit another draft or switch panels while a launch is pending, completion
+preserves that newer input and focus.
 
 Ctrl+Enter inserts the current file name from the active panel. Ctrl+Shift+Enter inserts the full path. Names with spaces use quotes. Insertion replaces selected text, adds a trailing space and does not execute the command. Rename arrows and Alt name search stay in their own controls; Ctrl+Left/Right keeps opposite-panel navigation.
 
@@ -223,11 +278,14 @@ Both panels monitor external file creation, deletion, rename, size, timestamp an
 
 ## Folder sizes
 
+Press Space on a folder to calculate only that folder, keeping the cursor and
+focus in place. One size scan runs at a time. Escape cancels an active scan.
+
 Press Alt+Shift+Enter or choose View > Calculate folder sizes. The application totals regular file bytes recursively for every child directory in the active panel. Results appear in Size as each folder completes. Directory order stays alphabetical. The status line reports progress; Escape or the same shortcut cancels. Keyboard navigation and panel switches remain available. Leaving the source directory or closing the application cancels its scan. A running scan delays release changes and automatic directory refresh.
 
-Links and junctions are skipped rather than followed. Unreadable directories do not stop other results. A `≥` prefix marks a lower bound when links or unreadable directories were excluded. The size tooltip shows measurement time, file count, skipped links and unreadable-directory count. These are measured logical file bytes, not allocated disk space or a live filesystem snapshot.
+Links and junctions contribute zero bytes and are never followed. Skipping links gives an exact total for regular files, without a `≥` prefix. Unreadable directories do not stop other results; only reading errors make the total a lower bound marked `≥`. The size tooltip shows measurement time, file count, skipped links and unreadable-directory count. These are measured logical file bytes, not allocated disk space or a live filesystem snapshot.
 
-Sorting and session restore keep completed measurements, including automatic release changes. An unchanged monitor refresh preserves them. A changed directory listing or explicit Ctrl+R clears measurements for recalculation. Files can change below a folder after measurement; use the timestamp and recalculate when needed.
+Sorting and session restore keep completed measurements, including automatic release changes. Automatic refresh keeps sizes of unchanged folder entries; an unrelated file change no longer clears all measurements. Removed or changed folder entries lose only their own measurements. Explicit Ctrl+R clears all measurements for recalculation. Files can change below a folder after measurement; use the timestamp and recalculate when needed.
 
 ## Session restore and automatic updates
 
@@ -243,11 +301,21 @@ Automatic updates run only from release directories. Development builds and auto
 
 Choose **Feedback** or press F12, then move the pointer to highlight an element and click it. Every application dialog has its own Feedback button and F12 shortcut. The comment window belongs to the window being annotated, so its draft, selection and workflow stay intact. This also works for the comment editor itself. Labels, status messages, errors and disabled actions can all be selected for a comment. Selection uses the visible element instead of its outer window and does not activate the underlying control. Write a comment and choose **Add comment** or press Ctrl+Enter. Escape first cancels selection; when not selecting, Escape closes the comment dialog. The selected element stays outlined while the comment dialog is open.
 
-Double-click an enabled control during selection to send one ordinary click and keep feedback mode active. For example, double-click a menu heading to open it, then single-click a menu command to comment on that command. Single-click selection waits for the system double-click interval before opening the comment form. Disabled controls remain available for comments and are never activated. The comment form and Notes show the action path. Saved notes and the Markdown checklist keep the clicked elements and final target so the steps can be reproduced.
+Double-click an enabled control during selection to send one ordinary click and keep feedback mode active. For example, double-click a menu heading to open it, then single-click a menu command to comment on that command. Single-click selection waits for the system double-click interval before opening the comment form. Disabled controls remain available for comments and are never activated. The comment form shows the transient action path; only the final target is stored.
 
-Choose **Notes** to see the refinement list. The Open tab appears first; resolved comments have a separate Resolved tab. Both tabs show counts and put newer comments first. Each comment records the element, directory, release and time. Comments are saved immediately, survive updates and ordinary restarts, and are compiled into `%LOCALAPPDATA%/Xcmd/refinements.md` as an English Markdown checklist. User comments keep their original text. The Notes window shows the saved list's location and can remove a comment from the selected tab.
+Choose **Notes** to see issues. The Open tab contains new and in-progress issues;
+closed issues have a separate Closed tab. Both tabs show counts and put newer
+comments first. Comments are saved immediately to `issues/issues.db` in the Xcmd
+repository, independently of window/panel sessions. Each issue keeps only ID,
+status, original user text, target ID/name and application release. The Notes
+window shows the store location and can remove a selected issue unless it is in
+progress. Failed saves keep the comment editor open.
 
-A release can include `feedback-resolutions.json`. On startup it marks matching comments as resolved, preserving their text and recording the release and an English explanation. Unrelated comments remain open. The Notes button counts open comments; the list keeps resolved comments and the Markdown checklist marks them complete.
+Agents use `scripts/Issues.ps1 list`, `start ID...`, `close ID...`, `release ID...`
+and `reopen ID...`. A new work batch cannot start while any issue is in progress.
+Changes appear in the running application without publishing a release. Older
+session comments are imported by ID at startup; subsequent session snapshots do
+not contain feedback. See [the issue workflow](../issues/README.md).
 
 Current defaults: select the full name for rename, keep focus in the source panel after Ctrl+Left/Right, cancel an uncommitted rename when clicking another row or panel, sort directories by ascending name before files, and use natural numeric name order. These are the current defaults. Future requirements are listed in [the use cases](use-cases.md).
 

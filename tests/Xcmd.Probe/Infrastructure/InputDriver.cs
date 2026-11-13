@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Xcmd.Probe.Infrastructure;
 
@@ -10,6 +11,24 @@ public sealed class InputDriver(TopLevel window)
     public void KeyDown(Key key, RawInputModifiers modifiers, PhysicalKey physical, string? symbol) => window.KeyPress(key, modifiers, physical, symbol);
     public void KeyUp(Key key, RawInputModifiers modifiers, PhysicalKey physical, string? symbol) => window.KeyRelease(key, modifiers, physical, symbol);
     public void Text(string text) => window.KeyTextInput(text);
+    public bool TypeKey(Key key, PhysicalKey physical, string text)
+    {
+        KeyEventArgs? pressed = null;
+        EventHandler<KeyEventArgs> observe = (_, e) => pressed = e;
+        window.AddHandler(InputElement.KeyDownEvent, observe, RoutingStrategies.Bubble, handledEventsToo: true);
+        try
+        {
+            KeyDown(key, RawInputModifiers.None, physical, text);
+            if (pressed == null) throw new InvalidOperationException("The key did not reach the window input route.");
+            if (!pressed.Handled) Text(text);
+            return !pressed.Handled;
+        }
+        finally
+        {
+            KeyUp(key, RawInputModifiers.None, physical, text);
+            window.RemoveHandler(InputElement.KeyDownEvent, observe);
+        }
+    }
     public void MovePointer(Point point, RawInputModifiers modifiers = RawInputModifiers.None) => window.MouseMove(point, modifiers);
     public void PressPointer(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None) => window.MouseDown(point, button, modifiers);
     public void ReleasePointer(Point point, MouseButton button, RawInputModifiers modifiers = RawInputModifiers.None) => window.MouseUp(point, button, modifiers);

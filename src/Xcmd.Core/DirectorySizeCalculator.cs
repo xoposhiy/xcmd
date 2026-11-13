@@ -2,7 +2,7 @@ namespace Xcmd.Core;
 
 public sealed record DirectorySize(long Bytes, long Files, int SkippedLinks, int Errors)
 {
-    public bool Incomplete => SkippedLinks > 0 || Errors > 0;
+    public bool Incomplete => Errors > 0;
 }
 public sealed record DirectoryMeasurement(string Name, DirectorySize Size, DateTimeOffset MeasuredAt);
 

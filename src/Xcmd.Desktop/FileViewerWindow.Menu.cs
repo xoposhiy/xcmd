@@ -18,7 +18,7 @@ public sealed partial class FileViewerWindow
 
     private MenuItem MenuCommand(string title, string id, Action action, KeyGesture? gesture = null)
     {
-        var item = new MenuItem { Header = title, Name = id, InputGesture = gesture };
+        var item = new MenuItem { Header = title, Name = id, InputGesture = gesture }.WithFeedbackId("FileViewerWindow.Menu.item");
         AutomationProperties.SetAutomationId(item, id);
         item.Click += (_, _) => action();
         return item;
@@ -53,31 +53,31 @@ public sealed partial class FileViewerWindow
         nextFile = MenuCommand("Next file", "viewer.next-file", () => RunExternal(() => NavigateAsync(1)), new(Key.Right, KeyModifiers.Alt));
         Commands.ItemsSource = new MenuItem[]
         {
-            new() { Header = "File", ItemsSource = new MenuItem[]
+            new MenuItem() { Header = "File", ItemsSource = new MenuItem[]
             {
                 MenuCommand("Edit in Notepad++", "viewer.edit", () => RunExternal(() => edit(CurrentPath)), new(Key.F4)),
                 MenuCommand("Open externally", "viewer.open", () => RunExternal(() => open(CurrentPath)), new(Key.Enter, KeyModifiers.Control)),
                 TextCommand("Copy selection", "viewer.copy", TextContent.Copy, new(Key.C, KeyModifiers.Control)),
                 TextCommand("Select all", "viewer.select-all", () => { TextContent.Focus(); TextContent.SelectAll(); }, new(Key.A, KeyModifiers.Control)),
                 MenuCommand("Close", "viewer.close", Close, new(Key.Escape))
-            } },
-            new() { Header = "View", ItemsSource = view },
-            new() { Header = "Encoding", ItemsSource = encodingItems.Values },
-            new() { Header = "Search", ItemsSource = new MenuItem[]
+            } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu"),
+            new MenuItem() { Header = "View", ItemsSource = view }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.2"),
+            new MenuItem() { Header = "Encoding", ItemsSource = encodingItems.Values }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.3"),
+            new MenuItem() { Header = "Search", ItemsSource = new MenuItem[]
             {
                 TextCommand("Find (also Alt+letter)", "viewer.find", FocusSearch, new(Key.F, KeyModifiers.Control)),
                 TextCommand("Next match (also Tab)", "viewer.find-next", () => RunExternal(() => SearchAsync(1)), new(Key.F3)),
                 TextCommand("Previous match (also Shift+Tab)", "viewer.find-previous", () => RunExternal(() => SearchAsync(-1)), new(Key.F3, KeyModifiers.Shift)),
                 TextCommand("Clear search", "viewer.clear-search", ClearSearch, new(Key.Escape))
-            } },
-            new() { Header = "Navigate", ItemsSource = new MenuItem[]
+            } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.4"),
+            new MenuItem() { Header = "Navigate", ItemsSource = new MenuItem[]
             {
                 previousPage, nextPage,
                 TextCommand("Beginning of file", "viewer.first-page", () => Run(token => SeekBoundaryAsync(false, token)), new(Key.Home)),
                 TextCommand("End of file", "viewer.last-page", () => Run(token => SeekBoundaryAsync(true, token)), new(Key.End)),
                 previousFile, nextFile
-            } },
-            new() { Header = "Help", ItemsSource = new[] { MenuCommand("Comment on an element", "viewer.feedback", () => feedback.Begin(this), new(Key.F12)) } }
+            } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.5"),
+            new MenuItem() { Header = "Help", ItemsSource = new[] { MenuCommand("Comment on an element", "viewer.feedback", () => feedback.Begin(this), new(Key.F12)) } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.6")
         };
     }
 

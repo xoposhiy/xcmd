@@ -94,7 +94,15 @@ Run process integration checks with the real `App`, lifecycle controller, sessio
 
 Automatic release changes must keep the command draft, history, caret and selection without executing the draft. Command-line focus delays automatic updates. Programs opened through Windows ShellExecute have their own lifetime.
 
-UC39 feedback comments must identify the element, directory and release. Save comments immediately with the session and compile `refinements.md` next to it. Comment mode must not activate the selected control. Verify comment entry, cancellation, removal, disk persistence and preservation during a real process handoff.
+UC39 feedback uses the independent repository SQLite store `issues/issues.db`.
+Keep only ID, status, original user text, target ID/name and application release.
+Save immediately through a transaction; new session snapshots do not contain
+feedback. Import legacy session notes by ID without overwriting existing statuses.
+The CLI lists open work and atomically claims a batch only when no other work is
+in progress. Comment mode must not activate the selected control. Verify comment
+entry, cancellation, removal, disk persistence, concurrent claims and preservation
+during a real process handoff. Literal source IDs are enforced during compilation;
+framework-generated controls resolve to an identified application ancestor.
 
 Run the application against the user's chosen directories. Do not generate demonstration directories. Automated tests still use isolated fixtures.
 

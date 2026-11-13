@@ -52,7 +52,7 @@ public static class CommandLineScenarios
                     await c.ScreenshotAsync($"command-layout-{width}-{scale * 100}");
                     var visible = string.Concat(label.TextLayout.TextLines.SelectMany(line => line.TextRuns).OfType<ShapedTextRun>().Select(run => run.Text.ToString()));
                     Check(visible.StartsWith('…') && visible.EndsWith(@"\日本語\runtimes>", StringComparison.Ordinal), "A long path shows an ellipsis followed by its unchanged tail.");
-                    Equal(path, ToolTip.GetTip(label), "Hover help keeps the full directory path");
+                    Equal(char.ToLowerInvariant(path[0]) + path[1..], ToolTip.GetTip(label), "Hover help keeps the full directory path with a lowercase drive letter");
                     Check(c.Window.CommandLine.Editor.Bounds.Width >= 300, "The editor remains usable beside a long path.");
                     Check(width != 1280 || label.Bounds.Width is >= 490 and <= 510, "The directory can use the wider 510-pixel limit.");
                     var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
@@ -97,6 +97,7 @@ public static class CommandLineScenarios
             Equal(c.RightPath, request.WorkingDirectory, "The active panel supplies the working directory");
             Equal("", c.Window.CommandLine.Editor.Text, "A successful launch clears the command");
             Equal("right", c.Window.ActivePanel.Id, "Launching keeps the active panel");
+            Check(c.Window.Right.Table.IsKeyboardFocusWithin, "A successful launch returns focus to the active file panel");
             await c.TextAsync("cmd"); await c.KeyAsync(Key.Enter);
             Equal("cmd", c.Launcher.Requests.Last().Target, "A terminal name follows the ordinary Shell launch path");
             Equal(c.RightPath, c.Launcher.Requests.Last().WorkingDirectory, "A terminal command uses the current panel directory");
@@ -107,6 +108,7 @@ public static class CommandLineScenarios
             Equal(Path.Combine(c.LeftPath, "folder1"), c.Window.Left.Session.DirectoryPath, "cd changes the active panel");
             Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "cd keeps the other panel directory");
             Equal(0, c.Launcher.Requests.Count, "cd does not start a program");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "A successful cd returns focus to the file panel");
             await c.TextAsync("cd.."); await c.KeyAsync(Key.Enter);
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "cd.. opens the parent");
             var target = Path.Combine(c.LeftPath, "space 日本語"); Directory.CreateDirectory(target);
@@ -116,6 +118,7 @@ public static class CommandLineScenarios
             Equal(target, c.Window.Left.Session.DirectoryPath, "A failed cd keeps the directory");
             Equal("cd missing", c.Window.CommandLine.Editor.Text, "A failed cd keeps the input for correction");
             Check(c.Window.LastError != null, "A failed cd shows an error.");
+            Check(c.Window.CommandLine.HasKeyboardFocus, "A failed cd keeps command focus for correction");
             await c.KeyAsync(Key.Escape); await c.TextAsync("cd"); await c.KeyAsync(Key.Enter);
             Equal(target, c.Window.Left.Session.DirectoryPath, "Bare cd keeps the current directory");
         }),
@@ -164,6 +167,19 @@ public static class CommandLineScenarios
             c.Input.Text(" changed");
             c.Launcher.Pause.SetResult(); await c.SettleAsync();
             Equal("missing-tool changed", c.Window.CommandLine.Editor.Text, "Completion preserves input edited while launching");
+            Check(c.Window.CommandLine.HasKeyboardFocus, "Completion does not interrupt editing a new draft");
+        }),
+        new("command-line-pending-launch-preserves-panel-choice", "UC02; late launch completion keeps the panel selected in the meantime", async c =>
+        {
+            c.Launcher.Pause = new();
+            await c.TextAsync("tool"); c.PressKey(Key.Enter);
+            Check(c.Window.IsBusy, "The controlled launch is still pending");
+            c.PressKey(Key.Tab);
+            Equal("right", c.Window.ActivePanel.Id, "The user can switch panels during launch");
+            c.Launcher.Pause.SetResult(); await c.SettleAsync();
+            Equal("right", c.Window.ActivePanel.Id, "Late completion preserves the chosen panel");
+            Check(c.Window.Right.Table.IsKeyboardFocusWithin, "Late completion leaves focus in the chosen panel");
+            Equal(c.LeftPath, c.Launcher.Requests.Single().WorkingDirectory, "The captured launch directory is unaffected");
         }),
         new("command-line-native-quoted-exe-and-raw-arguments", "UC02; actual Windows ShellExecute", async c =>
         {

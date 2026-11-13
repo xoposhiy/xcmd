@@ -12,7 +12,7 @@ public sealed class CommandCompletionPopup
 {
     private readonly TextBox editor;
     private readonly Popup popup;
-    public ListBox Items { get; } = new() { Name = "CommandCompletionItems", MaxHeight = 240, IsTextSearchEnabled = false };
+    public ListBox Items { get; } = new ListBox() { Name = "CommandCompletionItems", MaxHeight = 240, IsTextSearchEnabled = false }.WithFeedbackId("CommandCompletionPopup.Items");
     private CancellationTokenSource? request;
     private string original = "";
     private CommandToken? token;
@@ -34,8 +34,8 @@ public sealed class CommandCompletionPopup
                 BorderBrush = UiPalette.ControlBorder,
                 BorderThickness = new Avalonia.Thickness(1),
                 Child = Items
-            }
-        };
+            }.WithFeedbackId("CommandCompletionPopup.content")
+        }.WithFeedbackId("CommandCompletionPopup.content.2");
         editor.TextChanging += (_, _) => Close();
         editor.DetachedFromVisualTree += (_, _) => Close();
         Items.AddHandler(InputElement.PointerReleasedEvent, (_, _) => Accept(), RoutingStrategies.Bubble);

@@ -10,10 +10,10 @@ namespace Xcmd.Desktop;
 
 public sealed class CommandLineView : Border
 {
-    private readonly TextBlock directory = new() { MaxWidth = 510, TextTrimming = TextTrimming.LeadingCharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock directory = new TextBlock() { MaxWidth = 510, TextTrimming = TextTrimming.LeadingCharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("CommandLineView.directory");
     private readonly CommandHistory history = new();
     private bool browsing;
-    public TextBox Editor { get; } = new()
+    public TextBox Editor { get; } = new TextBox()
     {
         Name = "CommandLine",
         Text = "",
@@ -22,7 +22,7 @@ public sealed class CommandLineView : Border
         PlaceholderText = "Command",
         MinHeight = UiPalette.ControlHeight,
         Padding = new Thickness(5, 2)
-    };
+    }.WithFeedbackId("CommandLineView.Editor");
     public bool HasKeyboardFocus => Editor.IsKeyboardFocusWithin;
     public CommandCompletionPopup Completions { get; }
     private string currentDirectory = "";
@@ -36,7 +36,7 @@ public sealed class CommandLineView : Border
         AutomationProperties.SetAutomationId(Editor, "command-line.input");
         AutomationProperties.SetName(Editor, "Command line");
         AutomationProperties.SetAutomationId(directory, "command-line.directory");
-        var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+        var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") }.WithFeedbackId("CommandLineView.layout");
         directory.Margin = new Thickness(0, 0, 8, 0);
         layout.Children.Add(directory); Grid.SetColumn(Editor, 1); layout.Children.Add(Editor); Child = layout;
         ToolTip.SetTip(Editor, "Enter: run through Windows Shell in this directory · cd <path>: change directory · Esc: clear and return to files · Ctrl+C: copy selection or the whole command · Up/Down: files · Alt+Up/Down: command history · Ctrl+Enter: name · Ctrl+Shift+Enter: full path");
@@ -45,7 +45,12 @@ public sealed class CommandLineView : Border
         Editor.TextChanging += (_, _) => { if (!browsing) history.Reset(); };
     }
 
-    public void SetDirectory(string path) { currentDirectory = path; directory.Text = path + ">"; ToolTip.SetTip(directory, path); }
+    public void SetDirectory(string path)
+    {
+        currentDirectory = path;
+        var display = PathText.Display(path);
+        directory.Text = display + ">"; ToolTip.SetTip(directory, display);
+    }
     public void FocusCommand() => Editor.Focus();
     public void Clear() { Editor.Clear(); history.Reset(); }
     public async Task CopyAllAsync()

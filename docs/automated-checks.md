@@ -59,6 +59,7 @@ The adapters use Core contracts and state values. Desktop can call them and own 
 | Async code | Production code cannot block on task results, task wait overloads, awaiter results, or thread sleeps. CA2016 requires forwarding an available cancellation token. |
 | String comparisons | CA1309 rejects culture-based comparison calls where ordinal comparison is required. File identity and UI display order remain separate policies. |
 | Formatting | `.editorconfig` and `dotnet format whitespace --verify-no-changes` check C# whitespace across all projects in `Xcmd.slnx`. Compiler/analyzer diagnostics run during the build. |
+| Feedback identity | The SDK-matched Roslyn analyzer in `tools/UiChecks` runs in every Desktop compilation. XCMDUI001 requires literal source IDs for authored controls; XCMDUI002 rejects duplicate definitions; XCMDUI003 rejects empty/nonliteral IDs. Compiler fixture self-checks also run from `Test-Architecture.ps1`. This tool has no production runtime dependency or external packages. |
 | Code metrics | CA1502, CA1505, and CA1506 fail the production build. Lizard 1.25.1 checks every production C# file, excluding build output. |
 | Check self-tests | Compiled sample violations test the dependency rules and cycle detection. A real compiler fixture tests allowed paths/awaits and forbidden I/O, process, native, clock, blocking, comparison, cancellation, and complexity cases. |
 

@@ -11,8 +11,8 @@ namespace Xcmd.Desktop;
 
 internal sealed class FeedbackSurface
 {
-    private readonly Canvas overlay = new() { IsHitTestVisible = false };
-    private readonly Border highlight = new() { BorderBrush = Brushes.Gold, BorderThickness = new Thickness(2), IsVisible = false };
+    private readonly Canvas overlay = new Canvas() { IsHitTestVisible = false }.WithFeedbackId("FeedbackSurface.overlay");
+    private readonly Border highlight = new Border() { BorderBrush = Brushes.Gold, BorderThickness = new Thickness(2), IsVisible = false }.WithFeedbackId("FeedbackSurface.highlight");
     private readonly FeedbackController controller;
     private readonly Window window;
     private Control? pointed;

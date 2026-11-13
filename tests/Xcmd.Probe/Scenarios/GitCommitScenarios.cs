@@ -28,6 +28,7 @@ public static class GitCommitScenarios
                     GitHeaderProbe.CheckAlignment(c.Window.Left);
                     await c.ClickAsync(c.Window.Left.Git.ActionsButton);
                     Check(c.Window.IsMenuOpen && c.Window.Left.Git.CommitCommand.IsVisible, "Git actions open on a normal left click");
+                    Equal("_Commit with AI", c.Window.Left.Git.CommitCommand.Header as string, "The command describes AI-assisted commit");
                     GitHeaderProbe.CheckMenuPlacement(c.Window.Left, c.Window);
                     await c.ScreenshotAsync("commit-menu-" + scale * 100);
                     await c.KeyAsync(Key.Escape);
@@ -86,7 +87,7 @@ public static class GitCommitScenarios
             {
                 var fixture = CommandProbe.Prepare(c);
                 File.WriteAllText(Path.Combine(fixture.Directory, "editor-probe.mode"), "");
-                var launch = await new ClaudeCommitLauncher(fixture.Executable).PrepareAsync(nested);
+                var launch = await new ClaudeCommitLauncher(fixture.Executable).PrepareAsync(char.ToLowerInvariant(nested[0]) + nested[1..]);
                 await new WindowsExternalLauncher(showWindows: false).LaunchAsync(launch);
                 var report = await CommandProbe.ReadReportAsync(fixture.Report);
                 Equal(root, report.WorkingDirectory, "The native child starts at the literal repository root");

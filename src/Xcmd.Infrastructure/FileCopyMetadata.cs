@@ -22,7 +22,7 @@ internal static class FileCopyMetadata
             { progress.Report(transferred); reported = Stopwatch.GetTimestamp(); }
             return 0;
         };
-        if (!CopyFileExW(source, temporary, callback, 0, 0, 1))
+        if (!CopyFileExW(NativePath(source), NativePath(temporary), callback, 0, 0, 1))
         {
             var error = Marshal.GetLastWin32Error();
             token.ThrowIfCancellationRequested();
@@ -52,7 +52,7 @@ internal static class FileCopyMetadata
 
     public static string[] Streams(string path)
     {
-        var handle = FindFirstStreamW(path, 0, out var data, 0);
+        var handle = FindFirstStreamW(NativePath(path), 0, out var data, 0);
         if (handle == -1)
         {
             var error = Marshal.GetLastWin32Error();
@@ -69,6 +69,13 @@ internal static class FileCopyMetadata
             return streams.Order(StringComparer.Ordinal).ToArray();
         }
         finally { FindClose(handle); }
+    }
+
+    private static string NativePath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        if (fullPath.StartsWith(@"\\?\", StringComparison.Ordinal)) return fullPath;
+        return fullPath.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + fullPath[2..] : @"\\?\" + fullPath;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

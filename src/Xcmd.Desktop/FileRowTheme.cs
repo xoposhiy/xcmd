@@ -21,11 +21,11 @@ internal static class FileRowTheme
             new Setter(Control.FocusAdornerProperty, null),
             new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
             {
-                var cells = new TableViewCellsPresenter { Name = "PART_CellsPresenter" };
+                var cells = new TableViewCellsPresenter { Name = "PART_CellsPresenter" }.WithFeedbackId("FileRowTheme.cells");
                 cells.Bind(Visual.OpacityProperty, new Binding(nameof(FileRow.ContentOpacity)));
-                scope.Register(cells.Name, cells);
-                var border = new Border { Name = "Border", Child = cells };
-                scope.Register(border.Name, border);
+                scope.Register("PART_CellsPresenter", cells);
+                var border = new Border { Name = "Border", Child = cells }.WithFeedbackId("FileRowTheme.border");
+                scope.Register("Border", border);
                 border.Bind(Border.BackgroundProperty, new Binding(nameof(FileRow.RowBackground)));
                 return border;
             }))

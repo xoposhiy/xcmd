@@ -53,13 +53,19 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
     }
     public FileEntry Entry { get; } = entry;
     public string Name => resultName ?? Entry.Name;
+    public GitRowStatus Git { get; private set; } = GitRowStatus.Empty;
     public string Kind => Entry.IsDirectory ? "DIR" : Entry.Extension.ToUpperInvariant();
+    public void SetGitStatus(GitRowStatus status)
+    {
+        if (Git == status) return;
+        Git = status; Changed(nameof(Git));
+    }
     public DirectoryMeasurement? Measurement { get; private set; }
     private string EntrySize => Entry.IsParent ? "<UP>" : Entry.IsDirectory ? "<DIR>" : Entry.Size.ToString("N0");
     public string DisplaySize => Measurement is { } measurement ? (measurement.Size.Incomplete ? "≥ " : "") + measurement.Size.Bytes.ToString("N0") : EntrySize;
     public string SizeDescription => Measurement is { } measurement
         ? $"Measured {measurement.MeasuredAt.ToLocalTime():yyyy-MM-dd HH:mm:ss} · Files: {measurement.Size.Files:N0} · Links skipped: {measurement.Size.SkippedLinks:N0} · Unreadable directories: {measurement.Size.Errors:N0}"
-        : Entry.IsDirectory ? "Alt+Shift+Enter calculates folder sizes." : EntrySize + " bytes";
+        : Entry.IsDirectory ? "Space calculates this folder. Alt+Shift+Enter calculates all folders." : EntrySize + " bytes";
     public void SetMeasurement(DirectoryMeasurement? measurement) { Measurement = measurement; Changed(nameof(DisplaySize)); Changed(nameof(SizeDescription)); }
     public string DisplayDate => Entry.IsParent ? "" : Entry.ModifiedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
     public bool IsEditing

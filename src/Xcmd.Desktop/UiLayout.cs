@@ -12,7 +12,7 @@ internal static class UiLayout
 {
     public static TextBlock Error()
     {
-        var text = new TextBlock { Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+        var text = new TextBlock { Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false }.WithFeedbackId("UiLayout.text");
         text.PropertyChanged += (_, change) =>
         {
             if (change.Property == TextBlock.TextProperty) text.IsVisible = !string.IsNullOrEmpty(text.Text);
@@ -22,7 +22,7 @@ internal static class UiLayout
 
     public static WrapPanel Actions(params Control[] actions)
     {
-        var row = new WrapPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        var row = new WrapPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right }.WithFeedbackId("UiLayout.row");
         foreach (var action in actions)
         {
             action.Margin = new Thickness(8, 0, 0, 4);

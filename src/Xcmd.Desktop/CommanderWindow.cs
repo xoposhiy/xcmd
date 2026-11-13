@@ -13,11 +13,13 @@ namespace Xcmd.Desktop;
 
 public sealed partial class CommanderWindow : Window
 {
-    private readonly TextBlock status = new() { Text = "Ready", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary };
+    private readonly TextBlock status = new TextBlock() { Text = "Ready", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("CommanderWindow.status");
     private bool altInput;
     private int pendingActions;
-    private readonly TextBlock updateMessage = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 420, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock updateMessage = new TextBlock() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 420, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("CommanderWindow.updateMessage");
     private long lastInput = Stopwatch.GetTimestamp();
+    private readonly Stopwatch runningTime = Stopwatch.StartNew();
+    private bool freshRelease;
     private bool restarting;
     private bool pointerHeld;
     private Menu? mainMenu;
@@ -53,8 +55,23 @@ public sealed partial class CommanderWindow : Window
     public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || CommandLine.HasKeyboardFocus || Left.EditingRow != null || Right.EditingRow != null,
         HasOpenDialog || FileSearch.IsOpen || IsMenuOpen || viewing.HasViewers, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
 
-    public void SetUpdateMessage(string message) => updateMessage.Text = message;
-    public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
+    public string UpdateMessage => updateMessage.Text ?? "";
+    public void SetUpdateMessage(string message) { freshRelease = false; updateMessage.Text = message; }
+    public void ShowUpdatedMessage() { SetUpdateMessage("Just updated · new version"); freshRelease = true; }
+    public void RecordActivity()
+    {
+        lastInput = Stopwatch.GetTimestamp();
+        if (freshRelease) { freshRelease = false; updateMessage.Text = ""; }
+    }
+    public void RefreshUptime() => UpdateUptime(runningTime.Elapsed);
+    public string UptimeText { get; private set; } = "Uptime: 0 min.";
+    public string ReleaseCaption => Feedback?.ReleaseId is { } release && release != "development" ? "Xcmd · " + release : "Xcmd";
+    public void UpdateUptime(TimeSpan elapsed)
+    {
+        UptimeText = $"Uptime: {Math.Max(0, (long)elapsed.TotalMinutes)} min.";
+        var title = ReleaseCaption + " · " + UptimeText;
+        if (Title != title) Title = title;
+    }
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
     public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null)
@@ -69,7 +86,7 @@ public sealed partial class CommanderWindow : Window
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
         var decisions = new FileOperationDecisions(this);
         Operations = new FileOperationQueue(new FileOperationRunner(operationStore, decisions.ResolveConflictAsync, decisions.ResolveErrorAsync));
-        OperationsView = new FileOperationsView(Operations);
+        OperationsView = new FileOperationsView(Operations).WithFeedbackId("CommanderWindow.content");
         Operations.Finished += job =>
         {
             Execute(RefreshOperationPanelsAsync);
@@ -84,8 +101,8 @@ public sealed partial class CommanderWindow : Window
         Width = 1280; Height = 760; MinWidth = 840; MinHeight = 400;
         Background = UiPalette.Canvas;
         var fileTypes = FileTypeSettings.Bundled();
-        Left = new PanelView("left", fileSystem, fileTypes);
-        Right = new PanelView("right", fileSystem, fileTypes);
+        Left = new PanelView("left", fileSystem, fileTypes).WithFeedbackId("CommanderWindow.content.2");
+        Right = new PanelView("right", fileSystem, fileTypes).WithFeedbackId("CommanderWindow.content.3");
         ActivePanel = Left;
         panelClipboard = new PanelClipboardController(this, operationStore);
         OperationsView.FilesRequested += () => ActivePanel.FocusCurrent();
@@ -97,9 +114,9 @@ public sealed partial class CommanderWindow : Window
             panel.LocationVisited += path => { if (!restoringVisits && !ArchivePath.IsEntry(path)) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(ArchivePath.WorkingDirectory(path)); };
             panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
         }
-        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) }.WithFeedbackId("CommanderWindow.layout");
         frame = new CommanderFrame(this, mainMenu = BuildMenu(), status, updateMessage);
-        var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") };
+        var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") }.WithFeedbackId("CommanderWindow.panels");
         panels.Children.Add(Left);
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
         layout.Children.Add(panels);
@@ -109,20 +126,20 @@ public sealed partial class CommanderWindow : Window
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
         Grid.SetRow(help, 3); layout.Children.Add(help);
         Grid.SetRow(frame.StatusBar, 4); layout.Children.Add(frame.StatusBar);
-        var applicationLayout = new Grid { RowDefinitions = new RowDefinitions("32,*") };
+        var applicationLayout = new Grid { RowDefinitions = new RowDefinitions("32,*") }.WithFeedbackId("CommanderWindow.applicationLayout");
         applicationLayout.Children.Add(frame.TitleBar);
         Grid.SetRow(layout, 1); applicationLayout.Children.Add(layout);
-        var root = new Grid();
+        var root = new Grid().WithFeedbackId("CommanderWindow.root");
         root.Children.Add(applicationLayout);
         Content = root;
         Feedback = new FeedbackController(this, root);
         GitCommitController.Attach(this, claudeExecutable);
         shell.Attach(this, operationStore);
         frame.AttachFeedback(Feedback);
-        AddHandler(PointerMovedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
-        AddHandler(PointerPressedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
-        AddHandler(PointerReleasedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); pointerHeld = false; }, RoutingStrategies.Tunnel);
-        AddHandler(KeyDownEvent, (_, _) => lastInput = Stopwatch.GetTimestamp(), RoutingStrategies.Tunnel);
+        AddHandler(PointerMovedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
+        AddHandler(PointerPressedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
+        AddHandler(PointerReleasedEvent, (_, _) => { RecordActivity(); pointerHeld = false; }, RoutingStrategies.Tunnel);
+        AddHandler(KeyDownEvent, (_, _) => RecordActivity(), RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
         Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
@@ -131,6 +148,7 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
         Left.SetActive(true);
+        RefreshUptime();
     }
 
     public async Task InitializeAsync(string left, string right)
@@ -227,7 +245,7 @@ public sealed partial class CommanderWindow : Window
         var panel = ActivePanel;
         if (panel.IsSearchResults) { SetError("Open a folder before creating a directory (Escape leaves search results)."); return; }
         if (ArchivePath.IsEntry(panel.Session.DirectoryPath)) { SetError("Archives are read-only. Choose a regular folder."); return; }
-        var dialog = new NameDialog(Feedback) { Background = Background };
+        var dialog = new NameDialog(Feedback) { Background = Background }.WithFeedbackId("CommanderWindow.dialog");
         Feedback.Attach(dialog);
         ActiveDialog = dialog;
         dialog.Submitted += name => Execute(async () =>
@@ -256,7 +274,7 @@ public sealed partial class CommanderWindow : Window
         ResetQuickJump();
         altInput = false;
         var suggestions = DirectoryUsage.Suggest(panel.Session.DirectoryPath, DateTimeOffset.UtcNow);
-        var dialog = new DirectoryNavigationDialog(panel.Session.PreviousDirectories, suggestions, Favorites, panel.Session.DirectoryPath, initial, Feedback) { Background = Background };
+        var dialog = new DirectoryNavigationDialog(panel.Session.PreviousDirectories, suggestions, Favorites, panel.Session.DirectoryPath, initial, Feedback) { Background = Background }.WithFeedbackId("CommanderWindow.dialog.2");
         Feedback.Attach(dialog);
         ActiveNavigationDialog = dialog;
         dialog.Changed += () => Execute(async () => { if (FavoritesChanged != null) await FavoritesChanged(); });
@@ -284,7 +302,7 @@ public sealed partial class CommanderWindow : Window
 
 public sealed class NameDialog : Window
 {
-    public TextBox Editor { get; } = new() { Name = "DirectoryName", PlaceholderText = "Folder name" };
+    public TextBox Editor { get; } = new TextBox() { Name = "DirectoryName", PlaceholderText = "Folder name" }.WithFeedbackId("CommanderWindow.Editor");
     public TextBlock Error { get; } = UiLayout.Error();
     public event Action<string>? Submitted;
     public NameDialog(FeedbackController? feedback = null, bool file = false)
@@ -293,8 +311,8 @@ public sealed class NameDialog : Window
         CanResize = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         AutomationProperties.SetAutomationId(Editor, file ? "new-file.name" : "new-folder.name");
         Editor.PlaceholderText = file ? "File name" : "Folder name";
-        var create = new Button { Content = file ? "Create and edit" : "Create", Name = file ? "CreateFile" : "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
-        var cancel = new Button { Content = "Cancel", Name = "CancelCreateFolder" };
+        var create = new Button { Content = file ? "Create and edit" : "Create", Name = file ? "CreateFile" : "CreateFolder", IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right }.WithFeedbackId("CommanderWindow.create");
+        var cancel = new Button { Content = "Cancel", Name = "CancelCreateFolder" }.WithFeedbackId("CommanderWindow.cancel");
         cancel.Click += (_, _) => Close();
         create.Click += (_, _) => Submitted?.Invoke(Editor.Text ?? "");
         DialogActions.FollowFocus(this, create, cancel);
@@ -302,8 +320,8 @@ public sealed class NameDialog : Window
         {
             Margin = UiPalette.FormMargin,
             Spacing = 8,
-            Children = { new TextBlock { Text = file ? "File name" : "Folder name" }, Editor, Error, UiLayout.Actions(create, cancel) }
-        };
+            Children = { new TextBlock { Text = file ? "File name" : "Folder name" }.WithFeedbackId("CommanderWindow.content.4"), Editor, Error, UiLayout.Actions(create, cancel) }
+        }.WithFeedbackId("CommanderWindow.content.5");
         AddHandler(KeyDownEvent, (_, e) =>
         {
             if (feedback?.IsPickingIn(this) == true) return;

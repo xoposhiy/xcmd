@@ -19,7 +19,7 @@ internal static class WindowHeader
 
     public static StackPanel CaptionButtons(Window window, string prefix)
     {
-        var buttons = new StackPanel { Orientation = Orientation.Horizontal };
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal }.WithFeedbackId("WindowHeader.buttons");
         buttons.Children.Add(Button("—", "Minimize", prefix + "Minimize", WindowDecorationsElementRole.MinimizeButton, () => window.WindowState = WindowState.Minimized));
         buttons.Children.Add(Button("□", "Maximize or restore", prefix + "Maximize", WindowDecorationsElementRole.MaximizeButton,
             () => window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized));
@@ -44,7 +44,7 @@ internal static class WindowHeader
             BorderThickness = new Thickness(0),
             FontSize = 16,
             Focusable = false
-        };
+        }.WithFeedbackId("WindowHeader.button");
         AutomationProperties.SetAutomationId(button, name);
         AutomationProperties.SetName(button, label);
         ToolTip.SetTip(button, label);

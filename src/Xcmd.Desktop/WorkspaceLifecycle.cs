@@ -26,14 +26,14 @@ public sealed class WorkspaceLifecycle : IDisposable
     public string? UpdateError { get; private set; }
     public event Action? Initialized;
 
-    public WorkspaceLifecycle(CommanderWindow window, SessionStore store, ReleaseCatalog? releases, RestartProcess? restart = null)
+    public WorkspaceLifecycle(CommanderWindow window, SessionStore store, ReleaseCatalog? releases, RestartProcess? restart = null, IssueStore? issues = null)
     {
         this.window = window; this.store = store; this.releases = releases; this.restart = restart ?? new RestartProcess();
         directoryUpdates = new DirectoryUpdates(window);
         window.Feedback.ReleaseId = releases?.CurrentId ?? "development";
-        if (releases != null) window.Title = "Xcmd · " + releases.CurrentId;
-        window.Feedback.ListPath = Path.Combine(Path.GetDirectoryName(store.Path)!, "refinements.md");
-        window.Feedback.Changed += OnFeedbackChanged;
+        window.RefreshUptime();
+        window.Feedback.Store = issues ?? new IssueStore(Path.Combine(Path.GetDirectoryName(store.Path)!, "issues"));
+        window.Feedback.ListPath = window.Feedback.Store.DatabasePath;
         window.FavoritesChanged += OnFavoritesChanged;
         window.ViewerThemeChanged += OnViewerThemeChanged;
         window.TrackPlacement();
@@ -57,16 +57,14 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             var left = directories.ElementAtOrDefault(0) ?? Environment.CurrentDirectory;
             await window.InitializeAsync(left, directories.ElementAtOrDefault(1) ?? left);
-            if (state != null) { window.Feedback.Restore(state.Notes); window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); window.FileSearch.Restore(state.FileSearch); }
+            if (state != null) { window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); window.FileSearch.Restore(state.FileSearch); }
         }
         window.Closing += OnClosing;
-        if (releases != null)
-        {
-            var path = Path.Combine(releases.CurrentDirectory, "feedback-resolutions.json");
-            window.Feedback.Restore(await FeedbackResolutions.ApplyAsync(window.Feedback.Notes, path, releases.CurrentId));
-        }
+        if (state?.Notes is { } legacy) await window.Feedback.Store!.ImportAsync(legacy, once: true);
+        await window.Feedback.RefreshAsync();
         window.Closed += OnClosed;
         await SaveAsync();
+        if (requireSavedSession && window.UpdateMessage.Length == 0) window.ShowUpdatedMessage();
         timer.Start();
         directoryUpdates.Start();
         Initialized?.Invoke();
@@ -79,18 +77,15 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             var state = window.CaptureWorkspace();
             await store.SaveAsync(state);
-            await RefinementList.SaveAsync(window.Feedback.ListPath!, state.Notes);
         }
         finally { saving.Release(); }
     }
 
-    private Task OnFeedbackChanged() => PendingWork = SaveFeedbackAsync();
     private Task OnFavoritesChanged() => PendingWork = SaveFavoritesAsync();
     private Task OnViewerThemeChanged() => PendingWork = SavePreferenceAsync("Could not save the viewer theme. Keep the application open and try again.");
 
     private Task SaveFavoritesAsync() => SavePreferenceAsync("Could not save favorites. Keep the application open and try again.");
 
-    private Task SaveFeedbackAsync() => SavePreferenceAsync("Could not save comments. Keep the application open and try again.");
 
     private async Task SavePreferenceAsync(string message)
     {
@@ -108,10 +103,14 @@ public sealed class WorkspaceLifecycle : IDisposable
     public async Task PollAsync()
     {
         if (checking || disposed || allowClose) return;
+        window.RefreshUptime();
         ObserveDirectoryAttention();
         checking = true;
         try
         {
+            try { await window.Feedback.RefreshAsync(); }
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
+            { window.SetUpdateMessage("Could not read issues. Existing feedback has been kept."); window.Trace.Add(error.ToString()); }
             if (closeRequested)
             {
                 if (!window.IsBusy && !window.Left.IsCommitting && !window.Right.IsCommitting) await SaveAndCloseAsync();
@@ -188,7 +187,6 @@ public sealed class WorkspaceLifecycle : IDisposable
         timer.Stop();
         directoryUpdates.Dispose();
         lifetime.Cancel();
-        window.Feedback.Changed -= OnFeedbackChanged;
         window.FavoritesChanged -= OnFavoritesChanged;
         window.ViewerThemeChanged -= OnViewerThemeChanged;
         window.Closing -= OnClosing;

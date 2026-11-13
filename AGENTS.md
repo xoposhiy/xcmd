@@ -1,5 +1,21 @@
 # Agent orientation
 
+- Keep all application-authored UI text in English. The language used in chat
+  does not change the language of the interface.
+
+- For in-app feedback, use `scripts/Issues.ps1 list`, then claim the entire batch
+  with `scripts/Issues.ps1 start ID...` before implementation. Stop if another
+  batch is in progress; coordinate instead of bypassing the guard. Close finished
+  work through the CLI or release unfinished claims. Do not edit `issues/issues.db`
+  directly. See [the issue workflow](issues/README.md).
+  Before finishing a feedback batch, list issues again and handle newly arrived
+  feedback. Claim each additional batch through the same guard. To expand an
+  unfinished batch, release only this session's own claims and claim the enlarged
+  batch; stop if the guard detects other work. Do not leave new feedback unnoticed.
+- Every application-authored control needs a unique literal `.WithFeedbackId("...")`
+  at its creation site. The Desktop build enforces this. Keep IDs stable when
+  changing layout, and search a reported target ID to locate its source definition.
+
 - Read [the technology decision](docs/technology-decision.md) and [development requirements](docs/development-requirements.md) before changing application behavior.
 - Use [the code architecture](docs/architecture.md) for responsibilities, dependency direction, and state ownership. Keep the three production projects; there is no planned four-project migration.
 - For UI work, read [the design system](docs/design-system.md) and its [visual examples](docs/design-system.html). Apply confirmed feedback rules across analogous controls; proposed tokens and backlog items remain proposals until reviewed. Do not turn visual changes into unrequested behavior changes.

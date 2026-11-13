@@ -21,7 +21,7 @@ public sealed partial class CommanderWindow
                 Maximized = WindowState == WindowState.Maximized || WindowState == WindowState.Minimized && lastVisibleWindowState == WindowState.Maximized,
                 Minimized = WindowState == WindowState.Minimized,
                 Active = IsActive
-            }, Feedback.Notes.ToArray(), DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2, CommandLine.Capture(), ViewerThemeId, FileSearch.Capture());
+            }, null, DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2, CommandLine.Capture(), ViewerThemeId, FileSearch.Capture());
     }
 
     public void TrackPlacement()
@@ -56,7 +56,6 @@ public sealed partial class CommanderWindow
         finally { restoringVisits = false; }
         DirectoryUsage.Restore(state.UsageVersion >= 2 ? state.Usage ?? [] : []);
         DirectoryUsage.Seed(state.Left.History.Concat(state.Right.History).Append(state.Left.DirectoryPath).Append(state.Right.DirectoryPath));
-        Feedback.Restore(state.Notes);
         Favorites.Restore(state.Favorites ?? []);
         CommandLine.Restore(state.CommandLine);
         RestoreViewerTheme(state.ViewerThemeId);

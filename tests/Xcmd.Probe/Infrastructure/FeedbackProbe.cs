@@ -21,7 +21,7 @@ public static class FeedbackProbe
         await context.SettleAsync();
     }
 
-    public static async Task<FeedbackNote> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
+    public static async Task<FeedbackIssue> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
     {
         await context.KeyAsync(Key.F12, target: window);
         await context.ClickAsync(element, target: window);
@@ -30,7 +30,8 @@ public static class FeedbackProbe
         await context.TextAsync("Feedback selection check", comment);
         await context.KeyAsync(Key.Enter, RawInputModifiers.Control, comment);
         var note = context.Window.Feedback.Notes.Last();
-        Equal(expectedName, note.ElementName, "Feedback identifies the clicked element instead of its window");
+        Equal(expectedName, note.Target.Name, "Feedback identifies the clicked element instead of its window");
+        Check(!string.IsNullOrWhiteSpace(note.Target.Id), "Every clicked target has a searchable source identity.");
         return note;
     }
 }

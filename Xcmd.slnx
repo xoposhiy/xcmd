@@ -5,6 +5,7 @@
   <Project Path="src/Xcmd.Core/Xcmd.Core.csproj" />
   <Project Path="src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj" />
   <Project Path="src/Xcmd.Desktop/Xcmd.Desktop.csproj" />
+  <Project Path="tools/UiChecks/UiChecks.csproj" />
   <Project Path="tests/Xcmd.Probe/Xcmd.Probe.csproj" />
   <Project Path="tests/Xcmd.LaunchProbe/Xcmd.LaunchProbe.csproj" />
   <Project Path="tests/Xcmd.Architecture/Xcmd.Architecture.csproj" />

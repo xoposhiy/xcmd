@@ -135,6 +135,29 @@ public static class FileOperationScenarios
             Check(!Directory.Exists(Path.Combine(c.LeftPath, "folder1")), "Confirmed permanent deletion removes the selected tree.");
             Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Deletion returns focus to the panel.");
         }),
+        new("operations-shift-f8-permanent-deletion", "UC35; F8 selects recycling and Shift+F8 selects permanent deletion", async c =>
+        {
+            await c.SelectAsync("folder1");
+            foreach (var (key, modifiers, kind) in new[]
+            {
+                (Key.F8, RawInputModifiers.None, FileOperationKind.Recycle),
+                (Key.F8, RawInputModifiers.Shift, FileOperationKind.Delete),
+                (Key.Delete, RawInputModifiers.Shift, FileOperationKind.Delete),
+                (Key.Delete, RawInputModifiers.None, FileOperationKind.Recycle)
+            })
+            {
+                await c.KeyAsync(key, modifiers);
+                Check(c.Window.OperationDialog is FileDeleteDialog, "The shortcut always opens a confirmation");
+                Equal(kind, ((FileDeleteDialog)c.Window.OperationDialog!).SelectedKind, "The shortcut selects the requested deletion mode");
+                Check(Directory.Exists(Path.Combine(c.LeftPath, "folder1")), "Opening confirmation does not remove the tree");
+                await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
+                Check(Directory.Exists(Path.Combine(c.LeftPath, "folder1")), "Cancel keeps the selected tree");
+            }
+            await c.KeyAsync(Key.F8, RawInputModifiers.Shift); await ConfirmDeleteAsync(c);
+            Equal(FileOperationKind.Delete, LastJob(c).Request.Kind, "Confirming Shift+F8 queues permanent deletion");
+            Check(!Directory.Exists(Path.Combine(c.LeftPath, "folder1")), "Confirmed Shift+F8 removes the selected fixture tree");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Deletion returns focus to the panel");
+        }),
         new("operations-native-recycle-retains-contents", "UC35; Real Windows Recycle Bin", async c =>
         {
             var name = "xcmd-recycle-" + Guid.NewGuid().ToString("N") + ".txt";
@@ -282,6 +305,8 @@ public static class FileOperationScenarios
             c.Window.UpdateLayout();
             Equal(height, c.Window.OperationsView.Bounds.Height, "Longer names do not change the strip height");
             secondGate.Release.TrySetResult(); await c.SettleAsync();
+            Equal(FileOperationState.Completed, LastJob(c).State, "The long-path copy completes rather than waiting for an error decision");
+            Equal(second.Size, new FileInfo(Path.Combine(c.RightPath, second.Name)).Length, "The long file name and contents reach the destination");
             await WaitUntilAsync(() => !c.Window.OperationsView.IsVisible);
             c.Window.OperationsView.ToggleDetails(); await c.SettleAsync();
             Check(c.Window.OperationsView.IsVisible, "The operation history remains available on request.");

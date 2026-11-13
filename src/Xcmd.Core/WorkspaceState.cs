@@ -9,12 +9,12 @@ public sealed record FeedbackInteraction(string Action, string ElementId, string
 public sealed record FeedbackNote(string Id, string Release, string ElementId, string ElementName,
     string PanelPath, string Text, DateTimeOffset CreatedAt, string? ResolvedIn = null, string? Resolution = null, FeedbackInteraction[]? Interactions = null);
 public sealed record WorkspaceState(int Version, PanelState Left, PanelState Right, string ActivePanel,
-    WindowPlacement Window, FeedbackNote[] Notes, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark", FileSearchState? FileSearch = null)
+    WindowPlacement Window, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] FeedbackNote[]? Notes = null, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark", FileSearchState? FileSearch = null)
 {
     public void Validate()
     {
-        if (Version != 1 || Left == null || Right == null || Window == null || Notes == null ||
-            Notes.Any(note => note == null || string.IsNullOrWhiteSpace(note.Text) || note.Id == null || note.ElementId == null || note.Release == null))
+        if (Version != 1 || Left == null || Right == null || Window == null ||
+            Notes is { } notes && notes.Any(note => note == null || string.IsNullOrWhiteSpace(note.Text) || note.Id == null || note.ElementId == null || note.Release == null))
             throw new InvalidDataException("The saved session format is not supported.");
         ValidatePanel(Left);
         ValidatePanel(Right);

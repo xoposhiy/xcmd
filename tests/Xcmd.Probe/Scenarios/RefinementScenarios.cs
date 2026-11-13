@@ -23,8 +23,9 @@ public static class RefinementScenarios
             {
                 foreach (var header in panel.Table.GetVisualDescendants().OfType<TableViewColumnHeader>())
                 {
-                    var button = header.GetVisualDescendants().OfType<Button>().First(item => item.Name?.Contains("Sort", StringComparison.Ordinal) == true);
-                    var text = button.GetVisualDescendants().OfType<TextBlock>().Single();
+                    if (!header.IsVisible || header.Bounds.Width == 0) continue;
+                    var button = header.GetVisualDescendants().OfType<Button>().FirstOrDefault(item => item.Name?.Contains("Sort", StringComparison.Ordinal) == true);
+                    var text = (button?.GetVisualDescendants() ?? header.GetVisualDescendants()).OfType<TextBlock>().First();
                     var center = text.TranslatePoint(new Point(0, text.Bounds.Height / 2), header)!.Value.Y;
                     Check(Math.Abs(center - header.Bounds.Height / 2) < 1, "Each heading is vertically centered in the whole header.");
                     Check(text.FontSize >= 13, "Headings are at least as large as file names.");
@@ -82,7 +83,7 @@ public static class RefinementScenarios
             await c.TextAsync("Keep this history readable.", target: comment);
             await c.KeyAsync(Key.Enter, RawInputModifiers.Control, comment);
             Equal(selected, history.Directories.SelectedItem, "Commenting does not change the modal selection");
-            Check(c.Window.Feedback.Notes.Single().ElementName.StartsWith("Go to directory:"), "The comment records its window context.");
+            Check(c.Window.Feedback.Notes.Single().Target.Name.StartsWith("Go to directory:"), "The comment records its window context.");
             await c.KeyAsync(Key.Enter, target: history);
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The original modal action still works after a comment");
         }),
@@ -377,17 +378,18 @@ public static class RefinementScenarios
         new("refinement-resolution-keeps-original-comment", "UC39; feedback resolution", async c =>
         {
             var root = Path.Combine(c.FixturePath, "releases"); AddRelease(root, NewId, false);
-            File.WriteAllText(Path.Combine(root, NewId, "feedback-resolutions.json"), "[{\"noteId\":\"known\",\"summary\":\"The header accepts clicks across its area.\"}]");
-            c.Window.Feedback.Notes.Add(new("known", OldId, "left.sort.name", "Name", c.LeftPath, "Original feedback text", DateTimeOffset.UtcNow));
-            c.Window.Feedback.Notes.Add(new("unrelated", OldId, "left.files", "Files", c.LeftPath, "Keep this open", DateTimeOffset.UtcNow));
+            var issues = new IssueStore(Path.Combine(c.FixturePath, "issues"));
+            issues.Add(new("known", FeedbackIssue.New, "Original feedback text", new("left.sort.name", "Name"), OldId));
+            issues.Add(new("unrelated", FeedbackIssue.New, "Keep this open", new("left.files", "Files"), OldId));
+            issues.Change("start", ["known"]); issues.Change("close", ["known"]);
             var store = new SessionStore(Path.Combine(c.FixturePath, "session.json")); await store.SaveAsync(c.Window.CaptureWorkspace());
             using var lifecycle = new WorkspaceLifecycle(c.Window, store, new ReleaseCatalog(root, NewId, "Xcmd.Probe.exe"));
             await lifecycle.InitializeAsync([]);
-            var notes = (await store.ReadAsync())!.Notes;
-            Equal("Original feedback text", notes[0].Text, "Resolution keeps the original comment text");
-            Equal(NewId, notes[0].ResolvedIn, "The comment records the release that resolved it");
-            Equal<string?>(null, notes[1].ResolvedIn, "Other comments remain open");
-            Check(File.ReadAllText(c.Window.Feedback.ListPath!).Contains("- [x] Original feedback text"), "Resolved feedback is checked in the refinement list.");
+            var notes = await issues.ReadAsync();
+            Equal("Original feedback text", notes.Single(item => item.Id == "known").Text, "Resolution keeps the original comment text");
+            Equal(FeedbackIssue.Closed, notes.Single(item => item.Id == "known").Status, "Closing does not depend on launching a new release");
+            Equal(FeedbackIssue.New, notes.Single(item => item.Id == "unrelated").Status, "Other comments remain new");
+            Equal("Original feedback text", issues.Read().Single(item => item.Id == "known").Text, "Closed issues keep original feedback.");
         })
     ];
 }

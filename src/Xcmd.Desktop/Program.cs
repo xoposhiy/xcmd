@@ -15,6 +15,7 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args is ["issues", ..]) return IssueCli.Run(args[1..], Console.Out, Console.Error);
         TaskbarIdentity.ConfigureProcess();
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
@@ -39,8 +40,8 @@ public sealed class App : Application
         {
             var args = desktop.Args ?? [];
             var settings = LaunchSettings.Parse(args);
-            var window = new CommanderWindow();
-            var lifecycle = LifecycleFactory?.Invoke(window, settings) ?? new WorkspaceLifecycle(window, new SessionStore(settings.SessionPath), ReleaseCatalog.ForApplication());
+            var window = new CommanderWindow().WithFeedbackId("Program.window");
+            var lifecycle = LifecycleFactory?.Invoke(window, settings) ?? new WorkspaceLifecycle(window, new SessionStore(settings.SessionPath), ReleaseCatalog.ForApplication(), issues: IssueStore.ForApplication());
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Dispatcher.UIThread.Post(async () =>
             {

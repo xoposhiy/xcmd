@@ -7,6 +7,7 @@ public sealed partial class CommanderWindow
 {
     private void HandleCommandLineKey(KeyEventArgs e)
     {
+        if (HandleDirectoryDestinationKey(e)) { e.Handled = true; return; }
         if (CommandLine.Completions.HandleKey(e)) { e.Handled = true; return; }
         if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Control) Execute(CommandLine.CompleteAsync);
         else if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
@@ -76,12 +77,17 @@ public sealed partial class CommanderWindow
 
     private bool HandleDirectoryDestinationKey(KeyEventArgs e)
     {
-        if (e.KeyModifiers != KeyModifiers.Control) return false;
+        if (e.KeyModifiers is not (KeyModifiers.Control or (KeyModifiers.Control | KeyModifiers.Shift))) return false;
         string? destination = null;
-        if (e.Key == Key.OemBackslash || e.PhysicalKey == PhysicalKey.Backslash)
+        if (e.KeyModifiers == KeyModifiers.Control && (e.Key == Key.OemBackslash || e.PhysicalKey == PhysicalKey.Backslash))
             destination = Path.GetPathRoot(ArchivePath.PhysicalFile(ActivePanel.Session.DirectoryPath));
-        else if (e.Key == Key.OemTilde || e.PhysicalKey == PhysicalKey.Backquote || e.KeySymbol is "`" or "ё" or "Ё")
+        else if (e.Key == Key.OemTilde || e.PhysicalKey == PhysicalKey.Backquote || e.KeySymbol is "`" or "~" or "ё" or "Ё")
             destination = PanelView.HomeDirectory;
+        return OpenDirectoryDestination(destination);
+    }
+
+    private bool OpenDirectoryDestination(string? destination)
+    {
         if (string.IsNullOrEmpty(destination)) return false;
         var panel = ActivePanel;
         ResetQuickJump();
@@ -227,7 +233,7 @@ public sealed partial class CommanderWindow
                 else DeleteSelected(false);
             }
         }
-        else if (e.Key == Key.Delete && e.KeyModifiers == KeyModifiers.Shift)
+        else if (e.Key is Key.Delete or Key.F8 && e.KeyModifiers == KeyModifiers.Shift)
         { if (launchKeysHeld.Add(e.Key)) DeleteSelected(true); }
         else if (e.Key == Key.F5 && e.KeyModifiers == KeyModifiers.Shift)
         { if (launchKeysHeld.Add(e.Key)) TransferSelected(FileOperationKind.Copy, samePanel: true); }

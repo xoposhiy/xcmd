@@ -10,7 +10,7 @@ internal sealed class FileOperationDecisions(CommanderWindow owner)
     {
         await WaitForInteractionAsync(cancellationToken);
         var completion = new TaskCompletionSource<ConflictDecision>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var dialog = new FileConflictDialog(conflict, owner.Feedback) { Background = owner.Background };
+        var dialog = new FileConflictDialog(conflict, owner.Feedback) { Background = owner.Background }.WithFeedbackId("FileOperationDecisions.dialog");
         dialog.Decided += decision => { completion.TrySetResult(decision); dialog.Close(); };
         return await ShowAsync(dialog, completion, new(ConflictAction.Cancel), cancellationToken);
     }
@@ -19,7 +19,7 @@ internal sealed class FileOperationDecisions(CommanderWindow owner)
     {
         await WaitForInteractionAsync(cancellationToken);
         var completion = new TaskCompletionSource<FileErrorAction>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var dialog = new FileErrorDialog(failure, owner.Feedback) { Background = owner.Background };
+        var dialog = new FileErrorDialog(failure, owner.Feedback) { Background = owner.Background }.WithFeedbackId("FileOperationDecisions.dialog.2");
         dialog.Decided += action => { completion.TrySetResult(action); dialog.Close(); };
         return await ShowAsync(dialog, completion, FileErrorAction.Cancel, cancellationToken);
     }

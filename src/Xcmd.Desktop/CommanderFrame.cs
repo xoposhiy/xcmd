@@ -12,8 +12,8 @@ internal sealed class CommanderFrame
 {
     private readonly Button feedback = FooterButton("Feedback", "StartFeedback", "feedback.start");
     private readonly Button notes = FooterButton("Notes (0)", "ShowNotes", "feedback.show-notes");
-    public Grid TitleBar { get; } = new() { Name = "MainTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = UiPalette.Canvas };
-    public Grid StatusBar { get; } = new() { Name = "MainStatusBar", ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
+    public Grid TitleBar { get; } = new Grid() { Name = "MainTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto,Auto"), Background = UiPalette.Canvas }.WithFeedbackId("CommanderFrame.TitleBar");
+    public Grid StatusBar { get; } = new Grid() { Name = "MainStatusBar", ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") }.WithFeedbackId("CommanderFrame.StatusBar");
 
     public CommanderFrame(CommanderWindow window, Menu menu, TextBlock status, TextBlock update)
     {
@@ -23,21 +23,31 @@ internal sealed class CommanderFrame
         TitleBar.Children.Add(menu);
         var title = new TextBlock
         {
-            Text = window.Title,
+            Text = window.ReleaseCaption,
             FontSize = UiPalette.MetaSize,
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis,
             Margin = new Thickness(12, 0, 4, 0)
-        };
+        }.WithFeedbackId("CommanderFrame.title");
+        var uptime = new TextBlock
+        {
+            Text = window.UptimeText,
+            FontSize = UiPalette.MetaSize,
+            Foreground = UiPalette.Secondary,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 0, 4, 0)
+        }.WithFeedbackId("CommanderFrame.uptime");
+        ToolTip.SetTip(uptime, "Time since this application started");
         ToolTip.SetTip(title, window.Title);
-        window.PropertyChanged += (_, e) => { if (e.Property == Window.TitleProperty) { title.Text = window.Title; ToolTip.SetTip(title, window.Title); } };
+        window.PropertyChanged += (_, e) => { if (e.Property == Window.TitleProperty) { title.Text = window.ReleaseCaption; uptime.Text = window.UptimeText; ToolTip.SetTip(title, window.Title); } };
         Grid.SetColumn(title, 1); TitleBar.Children.Add(title);
+        Grid.SetColumn(uptime, 2); TitleBar.Children.Add(uptime);
         update.MaxWidth = 280; update.TextWrapping = TextWrapping.NoWrap; update.TextTrimming = TextTrimming.CharacterEllipsis;
         update.Margin = new Thickness(8, 0);
         update.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) ToolTip.SetTip(update, update.Text); };
-        Grid.SetColumn(update, 2); TitleBar.Children.Add(update);
+        Grid.SetColumn(update, 3); TitleBar.Children.Add(update);
         var caption = WindowHeader.CaptionButtons(window, "Main");
-        Grid.SetColumn(caption, 3); TitleBar.Children.Add(caption);
+        Grid.SetColumn(caption, 4); TitleBar.Children.Add(caption);
         status.TextTrimming = TextTrimming.CharacterEllipsis; status.VerticalAlignment = VerticalAlignment.Center;
         status.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) ToolTip.SetTip(status, status.Text); };
         StatusBar.Children.Add(status);
@@ -49,7 +59,7 @@ internal sealed class CommanderFrame
     {
         feedback.Click += (_, _) => controller.Begin();
         notes.Click += (_, _) => controller.ShowNotes();
-        controller.Notes.CollectionChanged += (_, _) => notes.Content = $"Notes ({controller.Notes.Count(note => note.ResolvedIn == null)})";
+        controller.Notes.CollectionChanged += (_, _) => notes.Content = $"Notes ({controller.Notes.Count(note => note.Status != Xcmd.Core.FeedbackIssue.Closed)})";
     }
 
     private static Button FooterButton(string label, string name, string id)
@@ -66,13 +76,13 @@ internal sealed class CommanderFrame
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
             Margin = new Thickness(6, 0, 0, 0)
-        };
+        }.WithFeedbackId("CommanderFrame.button");
         AutomationProperties.SetAutomationId(button, id);
         return button;
     }
     public static Control BuildKeyboardHelp()
     {
-        var help = new WrapPanel { Name = "KeyboardHelp" };
+        var help = new WrapPanel { Name = "KeyboardHelp" }.WithFeedbackId("CommanderFrame.help");
         string[] hints = ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
         foreach (var hint in hints)
             help.Children.Add(new Border
@@ -81,8 +91,8 @@ internal sealed class CommanderFrame
                 BorderBrush = UiPalette.Divider,
                 Padding = new Thickness(help.Children.Count == 0 ? 0 : 8, 0, 8, 0),
                 Margin = new Thickness(0, 3),
-                Child = new TextBlock { Text = hint, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }
-            });
+                Child = new TextBlock { Text = hint, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("CommanderFrame.BuildKeyboardHelp")
+            }.WithFeedbackId("CommanderFrame.BuildKeyboardHelp.2"));
         return help;
     }
 

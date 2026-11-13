@@ -27,7 +27,7 @@ public sealed class FileSearchController
         }
         if (owner.HasOpenDialog) return;
         var panel = owner.ActivePanel;
-        var dialog = new FileSearchWindow(panel.Session.DirectoryPath, owner.Feedback, state, cacheRoot) { Background = owner.Background };
+        var dialog = new FileSearchWindow(panel.Session.DirectoryPath, owner.Feedback, state, cacheRoot) { Background = owner.Background }.WithFeedbackId("FileSearchController.dialog");
         Window = dialog;
         owner.Feedback.Attach(dialog, showButton: false);
         dialog.GoRequested += result => owner.Execute(async () =>

@@ -11,7 +11,7 @@ namespace Xcmd.Desktop;
 
 public sealed class FileTransferDialog : Window
 {
-    public TextBox Destination { get; } = new() { Name = "TransferDestination" };
+    public TextBox Destination { get; } = new TextBox() { Name = "TransferDestination" }.WithFeedbackId("FileTransferDialog.Destination");
     public TextBlock Error { get; } = UiLayout.Error();
     public bool IsSubmitting { get; set; }
     public event Action<string>? Submitted;
@@ -29,10 +29,10 @@ public sealed class FileTransferDialog : Window
         {
             Text = $"{Title} {(sources.Length == 1 ? sources[0].Name : $"{sources.Length} items")} to:",
             TextTrimming = TextTrimming.CharacterEllipsis
-        };
+        }.WithFeedbackId("FileTransferDialog.source");
         ToolTip.SetTip(source, string.Join("\n", sources.Select(entry => entry.FullPath)));
-        var confirm = new Button { Content = Title, Name = "ConfirmFileTransfer", IsDefault = true };
-        var cancel = new Button { Content = "Cancel", Name = "CancelFileTransfer", Margin = new Thickness(8, 0, 0, 0) };
+        var confirm = new Button { Content = Title, Name = "ConfirmFileTransfer", IsDefault = true }.WithFeedbackId("FileTransferDialog.confirm");
+        var cancel = new Button { Content = "Cancel", Name = "CancelFileTransfer", Margin = new Thickness(8, 0, 0, 0) }.WithFeedbackId("FileTransferDialog.cancel");
         confirm.Click += (_, _) => Submit(); cancel.Click += (_, _) => Close();
         DialogActions.FollowFocus(this, confirm, cancel);
         Content = new StackPanel
@@ -44,7 +44,7 @@ public sealed class FileTransferDialog : Window
                 source, Destination, Error,
                 UiLayout.Actions(confirm, cancel)
             }
-        };
+        }.WithFeedbackId("FileTransferDialog.content");
         Opened += (_, _) =>
         {
             Destination.Focus();

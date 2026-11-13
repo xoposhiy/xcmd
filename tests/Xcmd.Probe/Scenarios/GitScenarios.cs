@@ -35,7 +35,7 @@ public static class GitScenarios
             Equal(1, view.Status?.Untracked, "Untracked file");
             await c.ScreenshotAsync("git-status");
             var header = view.GetVisualAncestors().OfType<Grid>().First(control => control.Name == c.Window.Left.Id + "LocationHeader");
-            Check(header.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.Contains(c.LeftPath, StringComparison.Ordinal) == true), "Git and path share the location header");
+            Check(header.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text?.Contains(c.Window.Left.DisplayPath, StringComparison.Ordinal) == true), "Git and path share the location header");
             Check(view.Summary.Contains("+1 ~1 ?1", StringComparison.Ordinal), "Staged, changed and untracked counters use compact symbols");
             Equal(initialTableBounds, c.Window.Left.Table.Bounds, "Git result does not move or resize the file table");
             Equal(c.Window.Left.Table.Bounds.Y, c.Window.Right.Table.Bounds.Y, "Panel tables stay aligned");

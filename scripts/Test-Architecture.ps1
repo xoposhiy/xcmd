@@ -13,6 +13,8 @@ try {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     dotnet tests/Xcmd.Architecture/bin/Release/net10.0/win-x64/Xcmd.Architecture.dll $projectRoot
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    dotnet tools/UiChecks/bin/Release/net10.0/win-x64/UiChecks.dll --self-test
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     dotnet format whitespace Xcmd.slnx --no-restore --verify-no-changes
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Write-Output 'PASS C# formatting'

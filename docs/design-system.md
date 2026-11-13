@@ -22,6 +22,10 @@ Inspected actual headless renders of the panel at 150%, search query/results and
 
 ## Confirmed principles
 
+All application-authored interface text is English, including labels, tooltips,
+dialogs and errors. The language of development conversations does not determine
+the interface language. User-entered text and file names keep their own language.
+
 1. Use square corners. Spend space on content and readable type, not decorative padding.
 2. Align table headings with values; vertically centre every cell. Use a real table for repeated structured records.
 3. Keep geometry stable across hover, cursor, marking and focus. Never introduce a border, font weight or scrollbar merely because a row became current.

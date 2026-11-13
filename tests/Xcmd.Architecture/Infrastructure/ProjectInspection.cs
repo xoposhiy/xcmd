@@ -9,7 +9,7 @@ internal static class ProjectInspection
     {
         ["Xcmd.Core"] = [],
         ["Xcmd.Infrastructure"] = ["Xcmd.Core"],
-        ["Xcmd.Desktop"] = ["Xcmd.Core", "Xcmd.Infrastructure"],
+        ["Xcmd.Desktop"] = ["Xcmd.Core", "Xcmd.Infrastructure", "UiChecks"],
         ["Xcmd.Probe"] = ["Xcmd.Desktop", "Xcmd.LaunchProbe"],
         ["Xcmd.LaunchProbe"] = [],
         ["Xcmd.Architecture"] = ["Xcmd.Core", "Xcmd.Infrastructure", "Xcmd.Desktop", "Xcmd.Probe"]

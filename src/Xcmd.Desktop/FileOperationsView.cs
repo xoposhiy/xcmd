@@ -13,14 +13,14 @@ namespace Xcmd.Desktop;
 public sealed class FileOperationsView : Border
 {
     private readonly FileOperationQueue queue;
-    private readonly TextBlock summary = new() { TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock currentPath = new() { Name = "CurrentOperationPath", FontSize = UiPalette.MetaSize, TextTrimming = TextTrimming.LeadingCharacterEllipsis, Foreground = UiPalette.Secondary };
-    private readonly ListBox jobs = new() { Name = "FileOperationJobs", MinWidth = 260, Focusable = true };
-    private readonly OperationDetailsView report = new();
-    private readonly Grid details = new() { ColumnDefinitions = new ColumnDefinitions("2*,3*"), Height = 168, IsVisible = false };
-    private readonly Button cancelCurrent = new() { Content = "Cancel current", Name = "CancelCurrentOperation" };
-    private readonly Button cancelSelected = new() { Content = "Cancel selected", Name = "CancelSelectedOperation", Margin = new Thickness(8, 0, 0, 0) };
-    private readonly Button toggle = new() { Content = "Details", Name = "ToggleOperationDetails", Margin = new Thickness(8, 0, 0, 0) };
+    private readonly TextBlock summary = new TextBlock() { TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FileOperationsView.summary");
+    private readonly TextBlock currentPath = new TextBlock() { Name = "CurrentOperationPath", FontSize = UiPalette.MetaSize, TextTrimming = TextTrimming.LeadingCharacterEllipsis, Foreground = UiPalette.Secondary }.WithFeedbackId("FileOperationsView.currentPath");
+    private readonly ListBox jobs = new ListBox() { Name = "FileOperationJobs", MinWidth = 260, Focusable = true }.WithFeedbackId("FileOperationsView.jobs");
+    private readonly OperationDetailsView report = new OperationDetailsView().WithFeedbackId("FileOperationsView.report");
+    private readonly Grid details = new Grid() { ColumnDefinitions = new ColumnDefinitions("2*,3*"), Height = 168, IsVisible = false }.WithFeedbackId("FileOperationsView.details");
+    private readonly Button cancelCurrent = new Button() { Content = "Cancel current", Name = "CancelCurrentOperation" }.WithFeedbackId("FileOperationsView.cancelCurrent");
+    private readonly Button cancelSelected = new Button() { Content = "Cancel selected", Name = "CancelSelectedOperation", Margin = new Thickness(8, 0, 0, 0) }.WithFeedbackId("FileOperationsView.cancelSelected");
+    private readonly Button toggle = new Button() { Content = "Details", Name = "ToggleOperationDetails", Margin = new Thickness(8, 0, 0, 0) }.WithFeedbackId("FileOperationsView.toggle");
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private long runningSince;
     private long finishedAt;
@@ -30,7 +30,7 @@ public sealed class FileOperationsView : Border
     private long measuredAt;
     private bool timingRunning;
     private TimeSpan runningTime;
-    public ProgressBar Progress { get; } = new() { Name = "FileOperationProgress", Minimum = 0, Maximum = 100, Height = 5 };
+    public ProgressBar Progress { get; } = new ProgressBar() { Name = "FileOperationProgress", Minimum = 0, Maximum = 100, Height = 5 }.WithFeedbackId("FileOperationsView.Progress");
     public string ProgressSummary => summary.Text ?? "";
     public bool DetailsVisible => details.IsVisible;
     public event Action? FilesRequested;
@@ -41,13 +41,13 @@ public sealed class FileOperationsView : Border
         Name = "FileOperations"; IsVisible = false; Padding = new Thickness(8); Margin = new Thickness(0, 4, 0, 2);
         Background = UiPalette.Raised;
         KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
-        var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") };
-        header.Children.Add(new StackPanel { Height = 40, Spacing = 1, Children = { summary, currentPath } });
+        var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto") }.WithFeedbackId("FileOperationsView.header");
+        header.Children.Add(new StackPanel { Height = 40, Spacing = 1, Children = { summary, currentPath } }.WithFeedbackId("FileOperationsView.content"));
         Grid.SetColumn(cancelCurrent, 1); header.Children.Add(cancelCurrent);
         Grid.SetColumn(cancelSelected, 2); header.Children.Add(cancelSelected);
         Grid.SetColumn(toggle, 3); header.Children.Add(toggle);
         details.Children.Add(jobs); Grid.SetColumn(report, 1); details.Children.Add(report);
-        Child = new StackPanel { Spacing = 6, Children = { header, Progress, details } };
+        Child = new StackPanel { Spacing = 6, Children = { header, Progress, details } }.WithFeedbackId("FileOperationsView.content.2");
         AutomationProperties.SetAutomationId(this, "file-operations");
         AutomationProperties.SetAutomationId(Progress, "file-operations.progress");
         cancelCurrent.Click += (_, _) => { if (Current() is { } job) queue.Cancel(job); };

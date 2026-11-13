@@ -19,18 +19,18 @@ public sealed partial class DirectoryNavigationDialog : Window
     private readonly FavoriteDirectories favorites;
     private readonly string[] suggestions;
     private readonly string currentDirectory;
-    private readonly TextBlock message = new() { Name = "NavigationMessage", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false };
-    private readonly Button open = new() { Content = "Open", Name = "NavigationOpen", MinWidth = 80 };
-    private readonly Button add = new() { Content = "Add current directory", Name = "FavoriteAdd" };
-    private readonly Button rename = new() { Content = "Save name", Name = "FavoriteRename" };
-    private readonly Button remove = new() { Content = "Remove", Name = "FavoriteRemove" };
-    private readonly Button cancel = new() { Content = "Cancel", Name = "NavigationCancel", MinWidth = 80 };
+    private readonly TextBlock message = new TextBlock() { Name = "NavigationMessage", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false }.WithFeedbackId("DirectoryNavigationDialog.message");
+    private readonly Button open = new Button() { Content = "Open", Name = "NavigationOpen", MinWidth = 80 }.WithFeedbackId("DirectoryNavigationDialog.open");
+    private readonly Button add = new Button() { Content = "Add current directory", Name = "FavoriteAdd" }.WithFeedbackId("DirectoryNavigationDialog.add");
+    private readonly Button rename = new Button() { Content = "Save name", Name = "FavoriteRename" }.WithFeedbackId("DirectoryNavigationDialog.rename");
+    private readonly Button remove = new Button() { Content = "Remove", Name = "FavoriteRemove" }.WithFeedbackId("DirectoryNavigationDialog.remove");
+    private readonly Button cancel = new Button() { Content = "Cancel", Name = "NavigationCancel", MinWidth = 80 }.WithFeedbackId("DirectoryNavigationDialog.cancel");
     private readonly Grid editorRow;
     private readonly Dictionary<ListBox, int> cursors = [];
     private ListBox activeList;
-    public ListBox Directories { get; } = new() { Name = "HistoryDirectories", Focusable = true };
-    public ListBox Favorites { get; } = new() { Name = "FavoriteDirectories", Focusable = true };
-    public TextBox NameEditor { get; } = new() { Name = "FavoriteName", PlaceholderText = "Favorite name", MaxLength = 100 };
+    public ListBox Directories { get; } = new ListBox() { Name = "HistoryDirectories", Focusable = true }.WithFeedbackId("DirectoryNavigationDialog.Directories");
+    public ListBox Favorites { get; } = new ListBox() { Name = "FavoriteDirectories", Focusable = true }.WithFeedbackId("DirectoryNavigationDialog.Favorites");
+    public TextBox NameEditor { get; } = new TextBox() { Name = "FavoriteName", PlaceholderText = "Favorite name", MaxLength = 100 }.WithFeedbackId("DirectoryNavigationDialog.NameEditor");
     public DirectoryList ActiveList => activeList == Directories ? DirectoryList.History : DirectoryList.Favorites;
     public bool IsOpening { get; private set; }
     public string? Error { get; private set; }
@@ -50,7 +50,7 @@ public sealed partial class DirectoryNavigationDialog : Window
         AutomationProperties.SetAutomationId(Directories, "history.directories");
         AutomationProperties.SetAutomationId(Favorites, "favorites.directories");
         AutomationProperties.SetAutomationId(NameEditor, "favorites.name");
-        var columns = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), ColumnSpacing = 12 };
+        var columns = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), ColumnSpacing = 12 }.WithFeedbackId("DirectoryNavigationDialog.columns");
         var lists = new[] { Directories, Favorites };
         var headings = new[] { "History", "Favorites" };
         for (var i = 0; i < lists.Length; i++)
@@ -72,8 +72,8 @@ public sealed partial class DirectoryNavigationDialog : Window
                 if (e.Source is Control source && source.GetSelfAndVisualAncestors().OfType<ListBoxItem>().Any())
                 { ActivateList(list); OpenSelection(); }
             };
-            var column = new Grid { RowDefinitions = new RowDefinitions("Auto,*"), RowSpacing = 8 };
-            var heading = new TextBlock { Text = headings[i], FontWeight = FontWeight.SemiBold };
+            var column = new Grid { RowDefinitions = new RowDefinitions("Auto,*"), RowSpacing = 8 }.WithFeedbackId("DirectoryNavigationDialog.column");
+            var heading = new TextBlock { Text = headings[i], FontWeight = FontWeight.SemiBold }.WithFeedbackId("DirectoryNavigationDialog.heading");
             if (list == Favorites) ToolTip.SetTip(heading, "Starred favorites stay at the top. Below them are frequent directories: locations used for at least ten active seconds. Roots and quick pass-through visits are excluded. Weight halves every three days. Type to find a name or path.");
             column.Children.Add(heading); Grid.SetRow(list, 1); column.Children.Add(list);
             Grid.SetColumn(column, i); columns.Children.Add(column);
@@ -82,11 +82,11 @@ public sealed partial class DirectoryNavigationDialog : Window
         Favorites.ItemTemplate = new FuncDataTemplate<object>((item, _) =>
         {
             if (item is not FavoriteDirectory favorite) return PathLabel(item as string, reserveStar: true);
-            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("20,*,2*"), ColumnSpacing = 8 };
-            row.Children.Add(new TextBlock { Text = "★", Foreground = UiPalette.Mark, VerticalAlignment = VerticalAlignment.Center });
-            var name = new TextBlock { Text = favorite.Name, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("20,*,2*"), ColumnSpacing = 8 }.WithFeedbackId("DirectoryNavigationDialog.row");
+            row.Children.Add(new TextBlock { Text = "★", Foreground = UiPalette.Mark, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("DirectoryNavigationDialog.empty"));
+            var name = new TextBlock { Text = favorite.Name, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("DirectoryNavigationDialog.name");
             Grid.SetColumn(name, 1); row.Children.Add(name);
-            var path = new TextBlock { Text = favorite.Path, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.PrefixCharacterEllipsis };
+            var path = new TextBlock { Text = favorite.Path, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.PrefixCharacterEllipsis }.WithFeedbackId("DirectoryNavigationDialog.path");
             Grid.SetColumn(path, 2); row.Children.Add(path); ToolTip.SetTip(row, favorite.Name + "\n" + favorite.Path);
             return row;
         });
@@ -95,14 +95,14 @@ public sealed partial class DirectoryNavigationDialog : Window
         NameEditor.TextChanged += (_, _) => UpdateActions();
         ToolTip.SetTip(add, currentDirectory);
         add.Click += (_, _) => AddCurrent(); rename.Click += (_, _) => RenameSelection(); remove.Click += (_, _) => RemoveSelection();
-        editorRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto,Auto"), ColumnSpacing = 8 };
-        editorRow.Children.Add(new TextBlock { Text = "Favorite name", VerticalAlignment = VerticalAlignment.Center });
+        editorRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto,Auto"), ColumnSpacing = 8 }.WithFeedbackId("DirectoryNavigationDialog.content");
+        editorRow.Children.Add(new TextBlock { Text = "Favorite name", VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("DirectoryNavigationDialog.content.2"));
         var editorControls = new Control[] { NameEditor, rename, add, remove };
         for (var i = 0; i < editorControls.Length; i++) { Grid.SetColumn(editorControls[i], i + 1); editorRow.Children.Add(editorControls[i]); }
         open.Click += (_, _) => OpenSelection();
         cancel.Click += (_, _) => Close();
         var buttons = UiLayout.Actions(open, cancel);
-        var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,Auto"), RowSpacing = 8 };
+        var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,Auto"), RowSpacing = 8 }.WithFeedbackId("DirectoryNavigationDialog.layout");
         layout.Children.Add(columns); Grid.SetRow(editorRow, 1); layout.Children.Add(editorRow);
         Grid.SetRow(searchHint, 2); layout.Children.Add(searchHint);
         Grid.SetRow(message, 3); layout.Children.Add(message); Grid.SetRow(buttons, 4); layout.Children.Add(buttons);
@@ -167,7 +167,7 @@ public sealed partial class DirectoryNavigationDialog : Window
 
     private static Control PathLabel(string? path, bool reserveStar = false)
     {
-        var label = new TextBlock { Text = path, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.PrefixCharacterEllipsis, MinHeight = 22, Margin = new Thickness(reserveStar ? 28 : 0, 0, 0, 0) };
+        var label = new TextBlock { Text = path, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.PrefixCharacterEllipsis, MinHeight = 22, Margin = new Thickness(reserveStar ? 28 : 0, 0, 0, 0) }.WithFeedbackId("DirectoryNavigationDialog.label");
         ToolTip.SetTip(label, path); return label;
     }
 

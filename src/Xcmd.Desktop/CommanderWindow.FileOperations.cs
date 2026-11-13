@@ -31,7 +31,7 @@ public sealed partial class CommanderWindow
         if (!samePanel && OppositePanel.IsSearchResults) { SetError("Open a destination folder in the other panel first (Escape leaves search results)."); return; }
         var targetDirectory = samePanel ? sourceDirectory : OppositePanel.Session.DirectoryPath;
         if (ArchivePath.IsEntry(targetDirectory)) { SetError("Archives are read-only. Choose a regular destination folder."); return; }
-        var dialog = new FileTransferDialog(kind, selected, targetDirectory, Feedback, samePanel) { Background = Background };
+        var dialog = new FileTransferDialog(kind, selected, targetDirectory, Feedback, samePanel) { Background = Background }.WithFeedbackId("CommanderWindow.FileOperations.dialog");
         OperationDialog = dialog;
         AttachOperationDialog(dialog);
         dialog.Submitted += text => Execute(async () =>
@@ -61,7 +61,7 @@ public sealed partial class CommanderWindow
         if (selected.Any(entry => ArchivePath.IsEntry(entry.FullPath))) { SetError("Archives are read-only. Entries cannot be deleted."); return; }
         ResetQuickJump();
         var request = new FileOperationRequest(permanently ? FileOperationKind.Delete : FileOperationKind.Recycle, selected);
-        var dialog = new FileDeleteDialog(request, Feedback) { Background = Background };
+        var dialog = new FileDeleteDialog(request, Feedback) { Background = Background }.WithFeedbackId("CommanderWindow.FileOperations.dialog.2");
         OperationDialog = dialog;
         AttachOperationDialog(dialog);
         dialog.Confirmed += kind => { dialog.Close(); SetError(null); Operations.Enqueue(request with { Kind = kind }); };

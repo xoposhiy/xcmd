@@ -7,7 +7,7 @@ public sealed partial class CommanderWindow
     private readonly IExternalLauncher externalLauncher;
     private bool launching;
     private readonly HashSet<Avalonia.Input.Key> launchKeysHeld = [];
-    public CommandLineView CommandLine { get; } = new();
+    public CommandLineView CommandLine { get; } = new CommandLineView().WithFeedbackId("CommanderWindow.Launching.CommandLine");
     private bool runningCommand;
 
     internal async Task LaunchExternalAsync(ExternalLaunch request)
@@ -31,14 +31,18 @@ public sealed partial class CommanderWindow
             status.Text = command.ChangesDirectory ? "Opening directory: " + command.Target : "Opening: " + text.Trim();
             if (command.ChangesDirectory)
             {
-                var path = Core.CommandLine.DirectoryPath(command.Target, directory);
+                var path = Core.CommandLine.DirectoryPath(command.Target, directory, PanelView.HomeDirectory);
                 if (!await panel.LoadAsync(path)) throw new IOException(panel.Session.Error ?? "The directory could not be opened.");
             }
             else await LaunchExternalAsync(LaunchPlans.RunCommand(command, directory));
             CommandLine.AddHistory(text.Trim());
-            if (CommandLine.Editor.Text == text) CommandLine.Clear();
+            if (CommandLine.Editor.Text == text)
+            {
+                CommandLine.Clear();
+                if (ActivePanel == panel && CommandLine.HasKeyboardFocus && !HasOpenDialog && !IsMenuOpen) panel.FocusCurrent(scrollIntoView: false);
+            }
             SetError(null);
-            status.Text = command.ChangesDirectory ? "Directory: " + panel.Session.DirectoryPath : "Opened: " + text.Trim();
+            status.Text = command.ChangesDirectory ? "Directory: " + panel.DisplayPath : "Opened: " + text.Trim();
         }
         finally { runningCommand = false; }
     }

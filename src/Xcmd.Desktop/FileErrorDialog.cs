@@ -22,7 +22,7 @@ public sealed class FileErrorDialog : Window
         var skip = Choice("_Skip", FileErrorAction.Skip);
         var skipAll = Choice("Skip similar _errors", FileErrorAction.SkipAll);
         var cancel = Choice("_Cancel operation", FileErrorAction.Cancel);
-        var path = new TextBlock { Text = failure.Source.FullPath, TextTrimming = TextTrimming.LeadingCharacterEllipsis };
+        var path = new TextBlock { Text = failure.Source.FullPath, TextTrimming = TextTrimming.LeadingCharacterEllipsis }.WithFeedbackId("FileErrorDialog.path");
         ToolTip.SetTip(path, failure.Source.FullPath);
         Content = new StackPanel
         {
@@ -31,10 +31,10 @@ public sealed class FileErrorDialog : Window
             Children =
             {
                 path,
-                new TextBlock { Text = "Error: " + failure.Message, Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Text = "Error: " + failure.Message, Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("FileErrorDialog.content"),
                 UiLayout.Actions(retry, skip, skipAll, cancel)
             }
-        };
+        }.WithFeedbackId("FileErrorDialog.content.2");
         DialogActions.FollowFocus(this, retry, skip, skipAll, cancel);
         Opened += (_, _) => retry.Focus();
         AddHandler(KeyDownEvent, (_, e) =>
@@ -45,7 +45,7 @@ public sealed class FileErrorDialog : Window
 
         Button Choice(string label, FileErrorAction action)
         {
-            var button = new Button { Content = new AccessText { Text = label, ShowAccessKey = true }, Name = "FileError" + action };
+            var button = new Button { Content = new AccessText { Text = label, ShowAccessKey = true }.WithFeedbackId("FileErrorDialog.button"), Name = "FileError" + action }.WithFeedbackId("FileErrorDialog.button.2");
             AutomationProperties.SetAutomationId(button, "file-error." + action.ToString().ToLowerInvariant());
             button.Click += (_, _) => Decided?.Invoke(action);
             return button;

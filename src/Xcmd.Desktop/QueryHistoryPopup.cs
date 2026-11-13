@@ -13,7 +13,7 @@ internal sealed class QueryHistoryPopup
 {
     private readonly TextBox editor;
     private readonly CommandHistory history = new();
-    private readonly ListBox list = new() { Name = "QueryHistoryItems", MaxHeight = 220, IsTextSearchEnabled = false };
+    private readonly ListBox list = new ListBox() { Name = "QueryHistoryItems", MaxHeight = 220, IsTextSearchEnabled = false }.WithFeedbackId("QueryHistoryPopup.list");
     public Popup Popup { get; }
 
     public QueryHistoryPopup(TextBox editor, string[]? entries)
@@ -26,8 +26,8 @@ internal sealed class QueryHistoryPopup
             PlacementTarget = editor,
             Placement = PlacementMode.Bottom,
             IsLightDismissEnabled = true,
-            Child = new Border { Background = UiPalette.Surface, BorderBrush = UiPalette.ControlBorder, BorderThickness = new Thickness(1), Child = list }
-        };
+            Child = new Border { Background = UiPalette.Surface, BorderBrush = UiPalette.ControlBorder, BorderThickness = new Thickness(1), Child = list }.WithFeedbackId("QueryHistoryPopup.content")
+        }.WithFeedbackId("QueryHistoryPopup.content.2");
         list.AddHandler(InputElement.PointerReleasedEvent, (_, e) =>
         { if (e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<ListBoxItem>().Any()) Accept(); }, RoutingStrategies.Bubble);
         ToolTip.SetTip(editor, "Alt+Down: query history · Up/Down: switch query fields");

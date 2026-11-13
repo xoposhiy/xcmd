@@ -35,8 +35,11 @@ public sealed class ClaudeCommitLauncher(string? executable = null)
         {
             var start = new ProcessStartInfo("git")
             {
-                WorkingDirectory = directory, UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardOutput = true, RedirectStandardError = true
+                WorkingDirectory = directory,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             start.ArgumentList.Add("rev-parse"); start.ArgumentList.Add("--show-toplevel");
             foreach (var key in start.Environment.Keys.Where(key => key.StartsWith("GIT_", StringComparison.Ordinal)).ToArray())
@@ -52,7 +55,8 @@ public sealed class ClaudeCommitLauncher(string? executable = null)
                 var diagnostic = (await error.ConfigureAwait(false)).Trim();
                 if (process.ExitCode != 0 || root.Length == 0)
                     throw new IOException("Cannot open the Git repository. " + diagnostic);
-                return Path.GetFullPath(root);
+                var fullPath = Path.GetFullPath(root);
+                return fullPath.Length > 1 && fullPath[1] == ':' ? char.ToUpperInvariant(fullPath[0]) + fullPath[1..] : fullPath;
             }
             finally
             {

@@ -9,8 +9,8 @@ namespace Xcmd.Desktop;
 
 internal sealed class OperationDetailsView : Grid
 {
-    private readonly TextBlock summary = new() { FontSize = UiPalette.MetaSize, TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TableView outcomes = new() { Name = "OperationOutcomes", SelectionMode = SelectionMode.Single, IsTextSearchEnabled = false };
+    private readonly TextBlock summary = new TextBlock() { FontSize = UiPalette.MetaSize, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("OperationDetailsView.summary");
+    private readonly TableView outcomes = new TableView() { Name = "OperationOutcomes", SelectionMode = SelectionMode.Single, IsTextSearchEnabled = false }.WithFeedbackId("OperationDetailsView.outcomes");
     private FileOperationJob? shown;
     private int outcomeCount = -1;
 

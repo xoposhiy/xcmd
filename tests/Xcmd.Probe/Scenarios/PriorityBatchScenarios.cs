@@ -107,7 +107,10 @@ public static class PriorityBatchScenarios
             Check(Summary(c).Contains("incomplete", StringComparison.Ordinal), "Unknown folder sizes are explicit");
             c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 0, 0), DateTimeOffset.UtcNow));
             Check(Summary(c).Contains("42 bytes", StringComparison.Ordinal), "Calculated folder bytes contribute immediately");
+            c.Window.Left.SetDirectorySize(new("folder2", new(0, 0, 0, 0), DateTimeOffset.UtcNow));
             c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 1, 0), DateTimeOffset.UtcNow));
+            Check(!Summary(c).Contains("≥", StringComparison.Ordinal), "Excluded links contribute zero without making the total incomplete");
+            c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 0, 1), DateTimeOffset.UtcNow));
             Check(Summary(c).Contains("≥ 42", StringComparison.Ordinal), "Partial measurements remain lower bounds");
             Check(!c.Window.IsCalculatingDirectorySizes, "Selection never starts a scan");
         }),

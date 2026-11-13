@@ -68,6 +68,21 @@ public static class DirectorySizeScenarios
             await c.KeyAsync(Key.Tab); await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
             Check(c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement != null, "A canceled measurement can be started again.");
         }),
+        new("folder-size-live-refresh-keeps-other-measurements", "UC12; UC20; unrelated updates preserve measured folder sizes", async c =>
+        {
+            var expected = AddNestedFiles(c);
+            await c.KeyAsync(Key.R, RawInputModifiers.Control);
+            await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
+            using var updates = new DirectoryUpdates(c.Window); updates.Start();
+            c.AddFile("unrelated.txt", "An external change beside the measured folders");
+            await WaitAsync(() => c.Window.Left.Rows.Any(row => row.Name == "unrelated.txt"));
+            Equal(expected, c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement?.Size.Bytes, "An unrelated new file preserves the recursive measurement");
+            Equal("0", c.Window.Left.Rows.Single(row => row.Name == "folder2").DisplaySize, "Other measured folders keep their sizes too");
+            var changed = ChangeEmptyFolder(c);
+            await WaitAsync(() => c.Window.Left.Rows.Any(row => row.Name == "folder2" && row.Entry.ModifiedUtc == changed));
+            Check(c.Window.Left.Rows.Single(row => row.Name == "folder2").Measurement == null, "A changed folder loses only its own stale measurement");
+            Equal(expected, c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement?.Size.Bytes, "An update to another folder does not clear this measurement");
+        }),
         new("folder-size-navigation-cancels-old-results", "UC12; navigation during background work", async c =>
         {
             var gate = c.FileSystem.PauseNextRead(Path.Combine(c.LeftPath, "folder1"));
@@ -87,14 +102,35 @@ public static class DirectorySizeScenarios
             Check(folder.DisplaySize.StartsWith("≥ ") && folder.SizeDescription.Contains("Unreadable directories: 1"), "Incomplete totals are marked in the cell and tooltip.");
             Equal("0", c.Window.Left.Rows.Single(row => row.Name == "folder2").DisplaySize, "A partial result does not stop other folders");
         }),
+        new("folder-size-excluded-links", "UC12; regular-file totals exclude link entries without becoming incomplete", async c =>
+        {
+            await SupplyExcludedLinksAsync(c);
+            await c.KeyAsync(Key.R, RawInputModifiers.Control);
+            await c.SelectAsync("folder1"); await c.KeyAsync(Key.Space);
+            var folder = c.Window.Left.Current!;
+            Equal("11", folder.DisplaySize, "Only regular file bytes contribute to the exact total");
+            Equal(2, folder.Measurement!.Size.SkippedLinks, "Both directory and file links are excluded");
+            Equal(0, folder.Measurement.Size.Errors, "The excluded directory link is never read");
+            Equal(1L, folder.Measurement.Size.Files, "Link entries do not count as regular files");
+            await c.SelectAsync("root-link"); await c.KeyAsync(Key.Space);
+            Equal("0", c.Window.Left.Current!.DisplaySize, "Measuring a directory link itself returns zero");
+        }),
         new("folder-size-native-junction-cycle", "UC12; native reparse point integration", async c =>
         {
             await CreateJunctionAsync(c);
-            await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift);
-            var size = c.Window.Left.Rows.Single(row => row.Name == "folder1").Measurement!.Size;
+            await c.KeyAsync(Key.R, RawInputModifiers.Control);
+            await c.SelectAsync("folder1"); await c.KeyAsync(Key.Space);
+            var folder = c.Window.Left.Current!;
+            var size = folder.Measurement!.Size;
             Equal(11L, size.Bytes, "A junction cycle cannot duplicate file bytes");
             Equal(1, size.SkippedLinks, "Native junctions are detected and skipped");
-            Check(size.Incomplete, "The result reports the excluded link.");
+            Check(!size.Incomplete && folder.DisplaySize == "11", "Excluded links leave an exact regular-file total without a lower-bound prefix");
+            using var updates = new DirectoryUpdates(c.Window); updates.Start();
+            c.AddFile("unrelated.txt", "A later refresh");
+            await WaitAsync(() => c.Window.Left.Rows.Any(row => row.Name == "unrelated.txt"));
+            Equal("11", c.Window.Left.Rows.Single(row => row.Name == "folder1").DisplaySize, "The linked folder's size survives an unrelated automatic refresh");
+            await c.KeyAsync(Key.Enter); await c.SelectAsync("back"); await c.KeyAsync(Key.Space);
+            Equal("0", c.Window.Left.Current!.DisplaySize, "Space on the junction itself reports zero without following it");
         }),
         new("folder-size-close-cancels-scan", "UC12; UC38; close during background work", async c =>
         {

@@ -11,10 +11,10 @@ namespace Xcmd.Desktop;
 public sealed partial class FileSearchWindow
 {
     private const string LocationSearchHint = "Double-click a row to search only that location and replace current results.";
-    private readonly Expander deferredDetails = new() { Name = "SearchDeferredDetails", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0) };
-    private readonly Expander failureDetails = new() { Name = "SearchFailureDetails", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0) };
-    private readonly TableView deferredList = new() { Name = "SearchDeferredLocations", MaxHeight = 180 };
-    private readonly TableView failureList = new() { Name = "SearchFailedLocations", MaxHeight = 180 };
+    private readonly Expander deferredDetails = new Expander() { Name = "SearchDeferredDetails", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0) }.WithFeedbackId("FileSearchWindow.Results.deferredDetails");
+    private readonly Expander failureDetails = new Expander() { Name = "SearchFailureDetails", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0) }.WithFeedbackId("FileSearchWindow.Results.failureDetails");
+    private readonly TableView deferredList = new TableView() { Name = "SearchDeferredLocations", MaxHeight = 180 }.WithFeedbackId("FileSearchWindow.Results.deferredList");
+    private readonly TableView failureList = new TableView() { Name = "SearchFailedLocations", MaxHeight = 180 }.WithFeedbackId("FileSearchWindow.Results.failureList");
     private int deferredShown = -1;
     private int failuresShown = -1;
 
@@ -53,7 +53,7 @@ public sealed partial class FileSearchWindow
         failureList.DoubleTapped += (_, e) =>
         { if (IsTableRow(e) && failureList.SelectedItem is SearchFailure failure) SearchLocation(failure.Path, !failure.Directory); };
         deferredDetails.Content = deferredList; failureDetails.Content = failureList;
-        return new StackPanel { Spacing = 2, Children = { details, deferredDetails, failureDetails } };
+        return new StackPanel { Spacing = 2, Children = { details, deferredDetails, failureDetails } }.WithFeedbackId("FileSearchWindow.Results.BuildCoverageDetails");
     }
 
     private TextBlock LocationCell(string? path)

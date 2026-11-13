@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Xcmd.Core;
 
 namespace Xcmd.Probe.Infrastructure;
 
@@ -9,6 +10,26 @@ public static class DirectorySizeProbe
         var nested = Path.Combine(context.LeftPath, "folder1", "nested"); Directory.CreateDirectory(nested);
         File.WriteAllBytes(Path.Combine(nested, "data.bin"), new byte[7]);
         return new FileInfo(Path.Combine(context.LeftPath, "folder1", "inside.txt")).Length + 7;
+    }
+
+    public static DateTime ChangeEmptyFolder(ProbeContext context)
+    {
+        var path = Path.Combine(context.LeftPath, "folder2");
+        var changed = Directory.GetLastWriteTimeUtc(path).AddMinutes(1);
+        File.WriteAllText(Path.Combine(path, "new.txt"), "Changed folder contents");
+        Directory.SetLastWriteTimeUtc(path, changed);
+        return Directory.GetLastWriteTimeUtc(path);
+    }
+
+    public static async Task SupplyExcludedLinksAsync(ProbeContext context)
+    {
+        var folder = Path.Combine(context.LeftPath, "folder1");
+        var entries = await context.FileSystem.ReadDirectoryAsync(folder, CancellationToken.None);
+        var link = new FileEntry(Path.Combine(folder, "back"), "back", true, 0, DateTime.UtcNow, IsLink: true);
+        context.FileSystem.SupplyDirectory(folder, [.. entries, link, link with { Name = "file-link", FullPath = Path.Combine(folder, "file-link"), IsDirectory = false, Size = 999 }]);
+        context.FileSystem.DenyRead(link.FullPath);
+        var rootEntries = await context.FileSystem.ReadDirectoryAsync(context.LeftPath, CancellationToken.None);
+        context.FileSystem.SupplyDirectory(context.LeftPath, [.. rootEntries, link with { Name = "root-link", FullPath = Path.Combine(context.LeftPath, "root-link") }]);
     }
 
     public static async Task CreateJunctionAsync(ProbeContext context)

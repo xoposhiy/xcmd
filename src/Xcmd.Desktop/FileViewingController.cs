@@ -45,7 +45,7 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
     {
         var viewer = new FileViewerWindow(paths, index, files, owner.Feedback,
             path => EditFileAsync(path, directory),
-            path => owner.OpenFileExternallyAsync(path, directory), ThemeId);
+            path => owner.OpenFileExternallyAsync(path, directory), ThemeId).WithFeedbackId("FileViewingController.viewer");
         viewers.Add(viewer);
         viewer.RememberedSearch = lastSearch;
         viewer.SearchTextChanged += text => { lastSearch = text; foreach (var openViewer in viewers) openViewer.RememberedSearch = text; };

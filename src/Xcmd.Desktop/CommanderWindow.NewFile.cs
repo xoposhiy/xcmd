@@ -12,7 +12,7 @@ public sealed partial class CommanderWindow
         if (panel.IsSearchResults || ArchivePath.IsEntry(directory))
         { SetError("Open a regular destination folder before creating a file."); return; }
         ResetQuickJump();
-        var dialog = new NameDialog(Feedback, file: true) { Background = Background };
+        var dialog = new NameDialog(Feedback, file: true) { Background = Background }.WithFeedbackId("CommanderWindow.NewFile.dialog");
         Feedback.Attach(dialog);
         ActiveDialog = dialog;
         var submitting = false;

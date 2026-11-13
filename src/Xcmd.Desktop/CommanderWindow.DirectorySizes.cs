@@ -13,6 +13,11 @@ public sealed partial class CommanderWindow
     private bool HandleDirectorySizeShortcut(KeyEventArgs e, bool shift)
     {
         if (e.Key == Key.Escape && directorySizes != null) CancelDirectorySizes();
+        else if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.None && ActivePanel.Current is { Entry: { IsDirectory: true, IsParent: false } } row)
+        {
+            var panel = ActivePanel;
+            if (launchKeysHeld.Add(e.Key) && directorySizes == null) Execute(() => MeasureDirectoriesAsync(panel, [row.Entry]));
+        }
         else if (e.Key == Key.Enter && altInput && shift) Execute(CalculateDirectorySizesAsync);
         else return false;
         return true;
@@ -22,9 +27,14 @@ public sealed partial class CommanderWindow
     {
         if (directorySizes != null) { CancelDirectorySizes(); return; }
         var panel = ActivePanel;
-        var directory = panel.Session.DirectoryPath;
         var entries = panel.Rows.Select(row => row.Entry).Where(entry => entry.IsDirectory && !entry.IsParent).ToArray();
         if (entries.Length == 0) { status.Text = "No child directories to measure."; return; }
+        await MeasureDirectoriesAsync(panel, entries);
+    }
+
+    private async Task MeasureDirectoriesAsync(PanelView panel, FileEntry[] entries)
+    {
+        var directory = panel.Session.DirectoryPath;
         using var cancellation = new CancellationTokenSource();
         directorySizes = cancellation; sizePanel = panel;
         var calculator = new DirectorySizeCalculator(panel.Session.FileSystem);

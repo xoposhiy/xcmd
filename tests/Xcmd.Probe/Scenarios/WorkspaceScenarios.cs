@@ -181,7 +181,8 @@ public static class WorkspaceScenarios
             var oldExe = AddRelease(root, OldId, true); AddRelease(root, NewId, true);
             var sessionPath = Path.Combine(c.FixturePath, "session.json");
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.Enter, RawInputModifiers.Alt | RawInputModifiers.Shift); await c.KeyAsync(Key.Tab);
-            c.Window.Feedback.Notes.Add(new("note", OldId, "left.files", "File list", c.LeftPath, "Keep the active file visible.", DateTimeOffset.UtcNow));
+            var issues = new IssueStore(Path.Combine(c.FixturePath, "issues"));
+            await issues.AddAsync(new("note", FeedbackIssue.New, "Keep the active file visible.", new("left.files", "File list"), OldId));
             var favorite = c.Window.Favorites.Add(c.LeftPath); c.Window.Favorites.Rename(favorite.Id, "Working files");
             c.Window.CommandLine.Restore(new("tool unfinished", ["tool first", "tool second"], Caret: 4, SelectionStart: 4, SelectionEnd: 4));
             var expected = c.Window.CaptureWorkspace(); await new SessionStore(sessionPath).SaveAsync(expected);
@@ -201,7 +202,8 @@ public static class WorkspaceScenarios
                 Equal(expected.Left.DirectoryPath, actual.Left.DirectoryPath, "The new process restores the left directory");
                 Equal(expected.Left.Cursor, actual.Left.Cursor, "The new process restores the file cursor");
                 Equal("right", actual.ActivePanel, "The new process restores the active panel");
-                Equal("Keep the active file visible.", actual.Notes.Single().Text, "Comments survive a real process update");
+                Equal("Keep the active file visible.", (await issues.ReadAsync()).Single().Text, "Comments survive a real process update in their independent store");
+                Check(actual.Notes == null, "The replacement session does not duplicate issues");
                 Equal("Working files", actual.Favorites!.Single().Name, "Named favorites survive a real process update");
                 Equal(c.LeftPath, actual.Favorites!.Single().Path, "The replacement keeps the favorite directory");
                 Equal(11L, actual.Left.Sizes!.Single(item => item.Name == "folder1").Size.Bytes, "Folder sizes survive a real process update");
@@ -227,8 +229,8 @@ public static class WorkspaceScenarios
             await c.ScreenshotAsync("feedback-comment", dialog);
             await c.KeyAsync(Key.Enter, RawInputModifiers.Control, dialog);
             Equal(1, c.Window.Feedback.Notes.Count, "The comment is added once");
-            Equal("left.files.row", c.Window.Feedback.Notes[0].ElementId, "The comment records its element");
-            Check(c.Window.Feedback.Notes[0].ElementName.Contains("folder1"), "The selected row is identified.");
+            Check(c.Window.Feedback.Notes[0].Target.Id.StartsWith("FileRowTheme.", StringComparison.Ordinal), "Clicking row background records its source-defined template control");
+            Check(c.Window.Feedback.Notes[0].Target.Name.Contains("folder1"), "The selected row is identified.");
             await c.ClickAsync(Button(c.Window, "ShowNotes"));
             await c.ScreenshotAsync("refinement-list", c.Window.Feedback.ActiveNotes);
             await c.KeyAsync(Key.Escape, target: c.Window.Feedback.ActiveNotes);
@@ -250,8 +252,7 @@ public static class WorkspaceScenarios
             await c.ClickAsync(list.ContainerFromIndex(0)!, target: notes);
             await c.ClickAsync(notes.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "RemoveNote"), target: notes);
             Equal(0, c.Window.Feedback.Notes.Count, "The selected comment is removed");
-            Equal(0, (await store.ReadAsync())!.Notes.Length, "Removing a comment updates the saved session");
-            Check(!File.ReadAllText(c.Window.Feedback.ListPath!).Contains("Clarify the file name."), "Removing a comment updates the compiled refinement list.");
+            Equal(0, (await c.Window.Feedback.Store!.ReadAsync()).Length, "Removing a comment updates the independent store");
             await c.KeyAsync(Key.Escape, target: notes);
         }),
         new("workspace-feedback-cancel-and-persist", "UC39; Element feedback; session restore", async c =>
@@ -266,12 +267,10 @@ public static class WorkspaceScenarios
             await c.TextAsync("Show a clearer sort direction.\nKeep the label short.", target: dialog);
             await c.KeyAsync(Key.Enter, RawInputModifiers.Control, dialog);
             await lifecycle.PendingWork;
-            var restored = (await new SessionStore(sessionPath).ReadAsync())!;
-            Equal(1, restored.Notes.Length, "Comments are saved immediately with the session");
-            var list = File.ReadAllText(c.Window.Feedback.ListPath!);
-            Check(list.Contains("- [ ] Show a clearer sort direction.") && list.Contains("left.sort.size"), "Comments compile into a Markdown refinement list with element context.");
-            c.Window.Feedback.Restore([]); await c.Window.RestoreWorkspaceAsync(restored);
-            Equal(restored.Notes[0].Text, c.Window.Feedback.Notes[0].Text, "Comments survive a session restore");
+            var restored = (await c.Window.Feedback.Store!.ReadAsync()).Single();
+            Equal("Show a clearer sort direction.\nKeep the label short.", restored.Text, "Comments are saved immediately without a session save");
+            c.Window.Feedback.Restore([]); await c.Window.Feedback.RefreshAsync();
+            Equal(restored.Text, c.Window.Feedback.Notes[0].Text, "Comments restore from the independent store");
         })
     ];
 }

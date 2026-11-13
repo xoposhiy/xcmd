@@ -24,8 +24,7 @@ try {
     $executable = Join-Path $releasePath 'Xcmd.Desktop.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published executable is missing.' }
     Copy-Item -LiteralPath $resultsPath -Destination (Join-Path $releasePath 'verification.json')
-    Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/feedback-resolutions.json') -Destination (Join-Path $releasePath 'feedback-resolutions.json')
-    @{ id = $releaseId; restartProtocol = 1 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releasePath 'release.json')
+    @{ id = $releaseId; restartProtocol = 1; issueProtocol = 1 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $releasePath 'release.json')
     $startupOutput = Join-Path $projectRoot ('artifacts/startup/release-' + $releaseId)
     & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Test-Startup.ps1') -ApplicationPath $releasePath -OutputPath $startupOutput -Native
     if ($LASTEXITCODE -ne 0) { throw 'Published startup verification failed. The current release was not changed.' }

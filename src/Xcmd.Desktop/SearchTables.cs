@@ -30,13 +30,13 @@ internal static class SearchTables
         UiLayout.Table(table);
     }
 
-    public static TextBlock Text(string? value, string? name = null) => new()
+    public static TextBlock Text(string? value, string? name = null) => new TextBlock()
     {
         Name = name,
         Text = value,
         VerticalAlignment = VerticalAlignment.Center,
         TextTrimming = Avalonia.Media.TextTrimming.LeadingCharacterEllipsis
-    };
+    }.WithFeedbackId("SearchTables.Text");
 
     public static ColumnState[] Capture(TableView table) => table.Columns.Select(column => new ColumnState(column.Width.Value, column.Width.IsStar)).ToArray();
 

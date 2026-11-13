@@ -81,8 +81,7 @@ public static class SearchInteractionScenarios
             await DoubleClickRowAsync(c, search, skipped, ignored);
             Equal("inside.txt", SearchProbe.Results(search).Single().Entry.Name, "Double-click searches inside the selected ignored folder");
             var note = await FeedbackProbe.CommentAsync(c, search, search.Results.ContainerFromIndex(0)!, "Find files: Search result: inside.txt");
-            Equal("search.SearchResults.row", note.ElementId, "Search table feedback does not use the main panel row identifier");
-            Equal(ignored.Path, note.PanelPath, "Search feedback records the scoped search directory");
+            Check(note.Target.Id.StartsWith("FileSearchWindow", StringComparison.Ordinal), "Search feedback identifies its source control");
             search.SearchLocation(c.LeftPath, false); await c.SettleAsync(); skippedExpander.IsExpanded = true; await c.SettleAsync();
             var file = search.Session!.DeferredLocations.Single(item => item.Path.EndsWith("hidden.tmp", StringComparison.Ordinal));
             await DoubleClickRowAsync(c, search, skipped, file);

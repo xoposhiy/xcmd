@@ -13,6 +13,9 @@ public sealed record GitStatus(string Branch, int Staged, int Changed, int Untra
     public int Deleted { get; init; }
     public bool HasRemote { get; init; }
     public string? Upstream { get; init; }
+    public string? Root { get; init; }
+    public GitPathStatus[] Paths { get; init; } = [];
+    public string[] IgnoredPaths { get; init; } = [];
 }
 
 public sealed class GitStatusReader : IGitStatusReader
@@ -20,7 +23,7 @@ public sealed class GitStatusReader : IGitStatusReader
     public Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken) =>
         Task.Run(() => ReadBackgroundAsync(directory, cancellationToken), cancellationToken);
 
-    private static async Task<GitStatus?> ReadBackgroundAsync(string directory, CancellationToken cancellationToken)
+    private async Task<GitStatus?> ReadBackgroundAsync(string directory, CancellationToken cancellationToken)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
@@ -28,10 +31,13 @@ public sealed class GitStatusReader : IGitStatusReader
         {
             var root = WorkTreeRoot(directory);
             if (root == null) return null;
-            var output = await RunAsync(root, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal"], timeout.Token).ConfigureAwait(false);
+            var output = await RunAsync(root, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal", "--ignored=matching"], timeout.Token).ConfigureAwait(false);
             if (output == null) return null;
             var remotes = await RunAsync(root, ["remote"], timeout.Token).ConfigureAwait(false);
-            return Parse(output) with { HasRemote = !string.IsNullOrWhiteSpace(remotes) };
+            var records = output.Split('\0');
+            var status = Parse(records) with { HasRemote = !string.IsNullOrWhiteSpace(remotes), Root = root };
+            var paths = GitStatusPaths.Parse(records);
+            return status with { Paths = paths.Changes, IgnoredPaths = paths.Ignored };
         }
         catch (Exception error) when (error is Win32Exception or IOException or InvalidOperationException or OperationCanceledException)
         { return null; }
@@ -82,12 +88,11 @@ public sealed class GitStatusReader : IGitStatusReader
         }
     }
 
-    private static GitStatus Parse(string output)
+    private static GitStatus Parse(string[] records)
     {
         var branch = ""; var oid = "";
         string? upstream = null;
         int staged = 0, changed = 0, untracked = 0, conflicts = 0, ahead = 0, behind = 0, deleted = 0;
-        var records = output.Split('\0');
         for (var i = 0; i < records.Length; i++)
         {
             var line = records[i];

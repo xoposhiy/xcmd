@@ -19,15 +19,15 @@ public sealed partial class FileViewerWindow : Window
     private readonly string[] paths;
     private readonly Func<string, Task> edit;
     private readonly Func<string, Task> open;
-    private readonly TextBlock information = new() { FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
-    private readonly TextBlock error = new() { Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) };
-    private readonly TextBlock searchStatus = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock readingStatus = new() { Name = "ViewerReadingStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock feedbackStatus = new() { Name = "ViewerFeedbackStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = false };
-    private readonly Border statusBar = new() { Name = "ViewerStatusBar", BorderThickness = new Thickness(0, 1, 0, 0) };
-    private readonly Image image = new() { Stretch = Stretch.Uniform };
-    private readonly Grid viewerBody = new() { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-    private readonly Grid searchPanel = new() { ColumnDefinitions = new ColumnDefinitions("Auto,260,*"), ColumnSpacing = 8, IsVisible = false, Margin = new Thickness(8, 4) };
+    private readonly TextBlock information = new TextBlock() { FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) }.WithFeedbackId("FileViewerWindow.information");
+    private readonly TextBlock error = new TextBlock() { Foreground = UiPalette.Error, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(10, 4) }.WithFeedbackId("FileViewerWindow.error");
+    private readonly TextBlock searchStatus = new TextBlock() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FileViewerWindow.searchStatus");
+    private readonly TextBlock readingStatus = new TextBlock() { Name = "ViewerReadingStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FileViewerWindow.readingStatus");
+    private readonly TextBlock feedbackStatus = new TextBlock() { Name = "ViewerFeedbackStatus", FontSize = UiPalette.MetaSize, Margin = new Thickness(8, 2), TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = false }.WithFeedbackId("FileViewerWindow.feedbackStatus");
+    private readonly Border statusBar = new Border() { Name = "ViewerStatusBar", BorderThickness = new Thickness(0, 1, 0, 0) }.WithFeedbackId("FileViewerWindow.statusBar");
+    private readonly Image image = new Image() { Stretch = Stretch.Uniform }.WithFeedbackId("FileViewerWindow.image");
+    private readonly Grid viewerBody = new Grid() { ColumnDefinitions = new ColumnDefinitions("*,Auto") }.WithFeedbackId("FileViewerWindow.viewerBody");
+    private readonly Grid searchPanel = new Grid() { ColumnDefinitions = new ColumnDefinitions("Auto,260,*"), ColumnSpacing = 8, IsVisible = false, Margin = new Thickness(8, 4) }.WithFeedbackId("FileViewerWindow.searchPanel");
     private readonly Dictionary<FileViewMode, MenuItem> modeItems = [];
     private readonly Dictionary<int, MenuItem> encodingItems = [];
     private MenuItem wrapItem = null!;
@@ -63,14 +63,14 @@ public sealed partial class FileViewerWindow : Window
     public string Information => information.Text ?? "";
     public bool HasImage => decodedImage != null;
     public string ReadingStatus => readingStatus.Text ?? "";
-    public TextBlock Progress { get; } = new() { Name = "ViewerProgress", MinWidth = 68, FontSize = UiPalette.MetaSize, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) };
-    public Grid TitleBar { get; } = new() { Name = "ViewerTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = UiPalette.Canvas };
-    private readonly TextBlock titlePath = new() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 0, 4, 0) };
+    public TextBlock Progress { get; } = new TextBlock() { Name = "ViewerProgress", MinWidth = 68, FontSize = UiPalette.MetaSize, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) }.WithFeedbackId("FileViewerWindow.Progress");
+    public Grid TitleBar { get; } = new Grid() { Name = "ViewerTitleBar", Height = UiPalette.TitleHeight, ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Background = UiPalette.Canvas }.WithFeedbackId("FileViewerWindow.TitleBar");
+    private readonly TextBlock titlePath = new TextBlock() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(12, 0, 4, 0) }.WithFeedbackId("FileViewerWindow.titlePath");
     public long VisibleEnd { get; private set; }
     public double ViewedPercent => FileLength == 0 ? 100 : 100d * VisibleEnd / FileLength;
-    public ScrollBar FileScroll { get; } = new() { Name = "ViewerFileScroll", Orientation = Orientation.Vertical, Width = 16 };
-    public Menu Commands { get; } = new() { Name = "ViewerMenu", MinHeight = 24 };
-    public TextBox TextContent { get; } = new()
+    public ScrollBar FileScroll { get; } = new ScrollBar() { Name = "ViewerFileScroll", Orientation = Orientation.Vertical, Width = 16 }.WithFeedbackId("FileViewerWindow.FileScroll");
+    public Menu Commands { get; } = new Menu() { Name = "ViewerMenu", MinHeight = 24 }.WithFeedbackId("FileViewerWindow.Commands");
+    public TextBox TextContent { get; } = new TextBox()
     {
         Name = "ViewerContent",
         IsReadOnly = true,
@@ -82,8 +82,8 @@ public sealed partial class FileViewerWindow : Window
         Padding = new Thickness(10, 6),
         BorderThickness = new Thickness(0),
         Background = Brushes.Transparent
-    };
-    public TextBox Search { get; } = new() { Name = "ViewerSearch", PlaceholderText = "Find", MaxLength = 1024, Margin = new Thickness(0, 0, 12, 0) };
+    }.WithFeedbackId("FileViewerWindow.TextContent");
+    public TextBox Search { get; } = new TextBox() { Name = "ViewerSearch", PlaceholderText = "Find", MaxLength = 1024, Margin = new Thickness(0, 0, 12, 0) }.WithFeedbackId("FileViewerWindow.Search");
 
     public FileViewerWindow(string[] paths, int index, IViewerFiles files, FeedbackController feedback,
         Func<string, Task> edit, Func<string, Task> open, string themeId = "dark")
@@ -123,20 +123,20 @@ public sealed partial class FileViewerWindow : Window
 
     private Grid BuildContent()
     {
-        var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto,Auto,Auto") };
+        var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto,Auto,Auto") }.WithFeedbackId("FileViewerWindow.layout");
         layout.Children.Add(BuildTitleBar());
         ScrollViewer.SetHorizontalScrollBarVisibility(TextContent, ScrollBarVisibility.Auto);
         ScrollViewer.SetVerticalScrollBarVisibility(TextContent, ScrollBarVisibility.Hidden);
         viewerBody.Children.Add(TextContent); viewerBody.Children.Add(image);
         Grid.SetColumn(FileScroll, 1); viewerBody.Children.Add(FileScroll);
         Grid.SetRow(viewerBody, 1); layout.Children.Add(viewerBody);
-        searchPanel.Children.Add(new TextBlock { Text = "Find", VerticalAlignment = VerticalAlignment.Center });
+        searchPanel.Children.Add(new TextBlock { Text = "Find", VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("FileViewerWindow.BuildContent"));
         Grid.SetColumn(Search, 1); searchPanel.Children.Add(Search);
         Grid.SetColumn(searchStatus, 2); searchPanel.Children.Add(searchStatus);
         Grid.SetRow(searchPanel, 2); layout.Children.Add(searchPanel);
         Grid.SetRow(error, 3); layout.Children.Add(error);
         Grid.SetRow(information, 4); layout.Children.Add(information);
-        statusBar.Child = new Grid { Children = { readingStatus, feedbackStatus } };
+        statusBar.Child = new Grid { Children = { readingStatus, feedbackStatus } }.WithFeedbackId("FileViewerWindow.BuildContent.2");
         Grid.SetRow(statusBar, 5); layout.Children.Add(statusBar);
         return layout;
     }

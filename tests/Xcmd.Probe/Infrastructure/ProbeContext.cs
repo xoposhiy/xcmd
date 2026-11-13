@@ -32,6 +32,8 @@ public sealed class ProbeContext : IDisposable
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
         Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
         OutputPath = outputPath;
+        Window.Feedback.Store = new Xcmd.Infrastructure.IssueStore(Path.Combine(outputPath, "issues"));
+        Window.Feedback.ListPath = Window.Feedback.Store.DatabasePath;
         FixturePath = Path.Combine(outputPath, "fixture");
         Directory.CreateDirectory(LeftPath);
         Directory.CreateDirectory(RightPath);
@@ -91,7 +93,7 @@ public sealed class ProbeContext : IDisposable
             if (Window.Feedback.ActiveNotes is { } notes) VerifyHeadlessWindow(notes);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             if (watch.Elapsed > TimeSpan.FromSeconds(20)) throw new TimeoutException("The application did not become idle.");
-        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.FileSearch.Window?.IsSearching == true || Window.Feedback.HasPendingSelection);
+        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.FileSearch.Window?.IsSearching == true || Window.Feedback.HasPendingSelection || Window.Feedback.IsSaving);
     }
 
     private void VerifyHeadlessWindow(Window window)
