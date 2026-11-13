@@ -16,15 +16,25 @@ file. See [Claude's workspace trust documentation](https://code.claude.com/docs/
 
 All directories, including repository roots and subfolders, keep their native
 Windows folder icons and the `DIR` type. Git status appears only in the Git
-column and the repository header; no separate per-folder Git queries run.
+column and the repository header.
 
-Inside a working tree, the compact **Git** column shows staged changes on the
-left and working-tree changes on the right. Clean entries are blank. Hover the
-column heading for the legend, or a cell for its current status.
+The compact **Git** column stays available in ordinary filesystem folders,
+including outside a working tree. It shows staged changes on the left and
+working-tree changes on the right. Inside a repository, clean files and ordinary
+subfolders are blank. Hover the column heading for the legend, or a cell for its
+current status.
+
+A direct child folder with its own Git repository shows the state of that whole
+repository. A clean repository has a green checkmark on the right. Its tooltip
+shows the branch and change counts. Git worktrees with a `.git` file are also
+supported. Ordinary folders outside Git have empty cells. Child repository
+queries run in the background, with at most four queries at once. The current
+repository header is available before child queries finish.
 
 | Icon | Meaning |
 | --- | --- |
-| Green ✓ | Staged modification |
+| Green ✓ on the left | Staged modification |
+| Green ✓ on the right | Clean child repository |
 | + | Added file (green when staged) |
 | Amber ● | Modified in the working tree |
 | Blue ? | Untracked |
@@ -35,9 +45,9 @@ column heading for the legend, or a cell for its current status.
 A file can show both a staged icon and a working-tree icon. Folder statuses
 include descendants, including deleted children and both sides of a rename.
 Folder icons stay unchanged before and after commits. Ignored folders have empty
-Git cells. The Git column hides outside a working tree and inside
-ignored directories without reported tracked changes. Status comes from the
-existing background repository refresh. Four-column saved sessions keep their
+Git cells unless the folder has its own repository. The Git column stays
+available in ignored folders and hides in archives and search results. Status
+comes from the background repository refresh. Four-column saved sessions keep their
 previous column widths when the new column is added.
 
 ## Run
@@ -117,7 +127,7 @@ File clipboard commands use Windows file-list and copy/move formats for exchange
 | Alt+Up / Alt+Down in the command line | Recall an older / newer command; return to the unfinished draft |
 | Ctrl+Enter / Ctrl+Shift+Enter | Insert and select the current file name / full path; quote spaces; Ctrl+C immediately copies the inserted argument |
 | Escape | Clear file marks and the command line, then focus files; editing and search keep their own first Escape action |
-| Enter / double-click on `..`, Ctrl+PageUp, Backspace | Open the parent directory and restore its cursor |
+| Enter / double-click on `..`, Ctrl+PageUp, Backspace | Open the parent directory and select the folder or archive just left |
 | Alt+Down / panel History button | Open the shared navigation window with History active |
 | Ctrl+D | Open the same navigation window with Favorites active; Insert adds the current directory, F2 edits its label, Delete removes the favorite |
 | Ctrl+Left / Ctrl+Right | Open the pointed directory or archive contents in the specified other panel, keeping source focus; use the current directory for an ordinary file |

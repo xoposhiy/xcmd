@@ -1,10 +1,33 @@
 # Verification coverage
 
+`history-parent-selects-exited-folder` opens a folder through History while its
+parent remembers a different cursor, then checks Ctrl+PageUp, Backspace and Enter
+on `..`. Each parent command selects the exited folder, so Enter returns to the
+same location. `rules-parent-cursor-name` covers ordinary folders, archive roots
+and nested archive sources. Existing parent and archive scenarios cover the
+surrounding navigation paths.
+
 `git-rows-*` uses isolated real repositories and commits to cover staged and
 working-tree changes on the same file, additions, untracked paths, rename paths
 with spaces and Unicode, deletion-only folders, real merge conflicts, ignored
 paths, descendants of collapsed untracked directories, unchanged native folder
 icons before and after commit, old column-state migration and narrow renders at 100/150%.
+
+`git-rows-child-repositories` checks a real non-Git parent, clean and modified
+child repositories, independent staged and working-tree states, ordinary-folder
+empty cells, navigation cleanup and 100/150% renders. `git-rows-child-worktrees`
+checks a real linked worktree with a `.git` file and a detached HEAD.
+`git-child-background-navigation` delays child results to check that the current
+header appears first and navigation discards obsolete child statuses.
+
+`operations-delete-large-tree` deletes 1,200 real small files through the actual
+queue with its details visible, records elapsed time and render intervals, and
+checks that the tree disappears while neighbouring files remain.
+`operations-delete-large-tree-cancel` clicks Cancel current after ten real file
+deletions and checks that all 1,190 unstarted files remain. Existing
+deletion, junction, cancellation, queue, conflict and native Recycle Bin scenarios
+cover shared operation behavior. Full regression checks run only on explicit
+user request.
 
 `rename-printable-key-input` checks the actual routed key-down result before
 delivering text, then commits a name with letters and a space to the filesystem.
@@ -37,7 +60,7 @@ The `zip-*` feedback scenarios check the actual native menu's ZIP label alongsid
 
 The `clipboard-*` feedback scenarios cover actual panel Ctrl+C/X/V, Windows file/effect data through Avalonia's headless clipboard, marked files and folder trees, Unicode paths, insertion into the displayed folder with a different folder highlighted, cut dimming across both panels and reload, move conflicts and retries, safe same-folder copy names, captured destinations, pending-cut repeat protection, preservation of newer clipboard data, direct full-path export and immediate copying of selected command arguments. Real fixture contents and resulting paths are asserted. Native Explorer appearance and a live desktop clipboard round-trip are not covered by these headless checks.
 
-Before a feature commit, run `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'`. Select the changed features and affected shared behavior from the mapping below. The command runs architecture checks, analyzer self-checks, formatting, code metrics and only the selected behavior scenarios. Run the unfiltered command separately after commits or for full verification. `./scripts/Release-Xcmd.ps1` and GitHub Actions keep the complete gate. Active feedback iterations use the smaller checks described in the [development workflow](development-workflow.md).
+Before a feature commit, run `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'`. Select the changed features and affected shared behavior from the mapping below. The command runs architecture checks, analyzer self-checks, formatting, code metrics and only the selected behavior scenarios. Run the unfiltered command only when the user explicitly requests full regression checks. The same restriction applies to `./scripts/Release-Xcmd.ps1` and the manual full-regression CI workflow. Automatic CI runs static checks. Active feedback iterations use the smaller checks described in the [development workflow](development-workflow.md).
 
 The recorded environment on 2026-11-10 used the SDK in `global.json`, .NET runtime 10.0.2, Avalonia 12.1.6 and Windows 10.0.26300. That historical run passed all 168 scenarios with no build warnings and zero native application windows. Compiled architecture rules, evaluated project/package policies in Debug and Release, the isolated launcher build policy, 14 deliberate analyzer violations, formatting and Lizard metrics passed. New checks use only Release / win-x64 / x64; historical evidence files remain unchanged.
 
@@ -126,7 +149,7 @@ The reading-layout check verifies that content fills the space between the compa
 
 The viewer feedback scenarios inspect the actual content border, combined header and top-right percentage, exercise maximize/restore/close controls, and retain a working mode for unsupported, oversized and damaged image samples. Pointer input returns to the main panel, navigates into a directory, opens another independent viewer and closes each viewer separately. The launch request keeps the first viewer's original working directory. Main-window close clears all remaining viewers, and open viewers defer release handoff. Header checks cover the drag role and resize-border configuration under Headless; native desktop dragging and Windows Snap remain outside this smoke evidence.
 
-The native editor check uses the production editor launch plan and Windows ShellExecute adapter with a windowless reporting executable. It verifies one literal Unicode file argument and the source working directory. It does not launch Notepad++ or prove that editor's appearance. Viewer evidence remains smoke-check evidence until user acceptance, full regression checks and independent usability review.
+The native editor check uses the production editor launch plan and Windows ShellExecute adapter with a windowless reporting executable. It verifies one literal Unicode file argument and the source working directory. It does not launch Notepad++ or prove that editor's appearance. Viewer finalization requires user acceptance, affected scenarios, static checks and independent usability review. Full regression checks require an explicit user request.
 
 `feedback-double-click-*` checks real pointer input through feedback selection. Double-click opens a menu without a comment, single-click selects a command without running it, and a forwarded command runs once while feedback remains active. The comment form shows its action path. Real session JSON and refinement Markdown retain that path. Existing label, disabled-action, dialog-draft and resolution checks cover single-click compatibility.
 

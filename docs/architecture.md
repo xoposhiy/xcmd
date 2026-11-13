@@ -83,9 +83,11 @@ Current examples:
 - `CommanderWindow`, `PanelView`, dialogs, `FileRow`, and feedback controls: views and presentation state.
 - `WindowHeader` and `CommanderFrame`: shared window decoration behavior and the main title/status layout. Reader palettes belong to Desktop; the saved workspace carries only the selected theme ID.
 - Keyboard routing, focus, rename-editor lifetime, caret position, selection, layout, and render timing.
-- `GitStatusProjection` and `GitRowStatus`: map the header's single Git snapshot
-  to file cells and descendant-folder status cells, with independent staged and
-  working-tree states. Ignored paths and collapsed untracked directories are
+- `GitStatusProjection` and `GitRowStatus`: map the current repository and direct
+  child repository snapshots to file cells and folder status cells, with
+  independent staged and working-tree states. Infrastructure discovers child
+  repositories and bounds concurrent Git processes. The header applies before
+  child reads finish. Ignored paths and collapsed untracked directories are
   handled without per-file Git processes. `FileNameCell` owns the shared name,
   native Windows icon and rename-editor template and preserves its stable
   feedback IDs. Git does not replace or recolour directory icons.

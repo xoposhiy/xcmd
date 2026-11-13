@@ -4,7 +4,7 @@ Confirmed cross-cutting requirement, 2026-11-09: the agent must be able to test 
 
 These requirements apply to [all user workflows](use-cases.md), including [search](search.md). They are a condition for architecture and framework choices, not a later testing improvement.
 
-Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Before committing, run the affected feature scenarios and static quality checks, and complete the independent usability review for changed workflows. Run the complete regression suite separately after commits. Final releases still require the full gate. Use only Release / Windows x64 for this user's machine.
+Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Before committing, run the affected feature scenarios and static quality checks, and complete the independent usability review for changed workflows. Run the complete regression suite only when the user explicitly requests it. Commits and final releases do not require a full regression run. Use only Release / Windows x64 for this user's machine.
 
 ## Required capabilities
 
@@ -17,7 +17,7 @@ Use the [development workflow](development-workflow.md) to choose when checks ru
 - Support repeatable setup and cleanup, bounded waits, structured results, and a nonzero exit status on failure.
 - Keep normal test runs independent of the user's files, TC settings, live Git repositories, credentials, and desktop state.
 - Do not create extra console windows during tests, builds or releases. Start background console processes without a console and keep output in the existing log or terminal.
-- Let the agent create fixtures, execute the full suite, inspect failures, and rerun relevant checks without human setup or decisions.
+- Let the agent create fixtures, execute requested checks, inspect failures, and rerun relevant checks without human setup or decisions. Keep the full suite available for explicit user requests.
 
 The exact command names and test-driver protocol will be chosen with the implementation. Do not document an executable command as available before it exists.
 
@@ -78,9 +78,9 @@ On failure, retain useful diagnostics such as command/state traces, fixture path
 
 ## Deliver a ready build for review
 
-Build the current Release executable and finish the checks required by the current development phase before asking the user for feedback. Label a feedback build as smoke-checked and a final build as fully verified only after the full gate passes. Give the user the path to the ready executable. Do not require the user to restore dependencies, build the application, run tests or use a launch script.
+Build the current Release executable and finish the checks required by the current development phase before asking the user for feedback. State whether the build received smoke checks, targeted checks or a requested full gate. Use the label fully verified only after the full gate passes; publishing a final build does not require that gate. Give the user the path to the ready executable. Do not require the user to restore dependencies, build the application, run tests or use a launch script.
 
-Use `scripts/Release-Xcmd.ps1` for fully verified final releases. Feedback builds follow the shorter path in the development workflow and have separate smoke-check evidence. Publish each build into a new `releases/<release-id>` directory and include all published dependencies. Never give the user a development `bin` executable or overwrite an existing release. The user must be able to keep the previous release open while development builds and new releases continue. Update `releases/latest.txt` only after the phase-specific checks and installation succeed; keep the previous release available if either fails.
+Use `scripts/Release-Xcmd.ps1` only when the user explicitly requests a full regression run with the release. Otherwise publish through the selected-check path in the development workflow and retain its actual verification label. Publish each build into a new `releases/<release-id>` directory and include all published dependencies. Never give the user a development `bin` executable or overwrite an existing release. The user must be able to keep the previous release open while development builds and new releases continue. Update `releases/latest.txt` only after the phase-specific checks and installation succeed; keep the previous release available if either fails.
 
 Publish the desktop application with ReadyToRun for Windows x64. Use software rendering for the Windows list-based interface and retain paging measurements at normal and 150% scale. Generate JSON metadata for saved sessions and file-type settings at build time. Load bundled file-type settings once for both panels.
 

@@ -23,11 +23,16 @@ public sealed partial class PanelView
             projectedGitStatus = Git.Status;
             gitProjection = new(projectedGitStatus);
         }
-        showGitColumn = !IsSearchResults && !ArchivePath.IsEntry(Session.DirectoryPath) && Session.DirectoryPath.Length > 0 && gitProjection.Contains(Session.DirectoryPath);
+        showGitColumn = !IsSearchResults && !ArchivePath.IsEntry(Session.DirectoryPath) && Session.DirectoryPath.Length > 0;
+        var repositories = Git.ChildRepositories.Where(status => status.Root != null)
+            .ToDictionary(status => status.Root!, status => new GitStatusProjection(status).For(status.Root!) with { Repository = status }, StringComparer.OrdinalIgnoreCase);
         foreach (var row in Rows)
         {
-            var contained = showGitColumn && !row.Entry.IsParent && gitProjection.Contains(row.Entry.FullPath);
-            row.SetGitStatus(contained ? gitProjection.For(row.Entry.FullPath) : GitRowStatus.Empty);
+            var status = GitRowStatus.Empty;
+            if (showGitColumn && !row.Entry.IsParent)
+                status = repositories.GetValueOrDefault(row.Entry.FullPath) ??
+                    (gitProjection.Contains(row.Entry.FullPath) ? gitProjection.For(row.Entry.FullPath) : GitRowStatus.Empty);
+            row.SetGitStatus(status);
         }
         QueueColumnAdaptation();
     }
@@ -42,7 +47,7 @@ public sealed partial class PanelView
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         }.WithFeedbackId("PanelView.gitHeader");
-        ToolTip.SetTip(header, "Left: staged · Right: working tree\n✓ staged · ● modified · + added · ? untracked · → renamed/copied · − deleted · ! conflict\nClean items are blank. Folder statuses include descendants.");
+        ToolTip.SetTip(header, "Left: staged · Right: working tree\n✓ staged · ● modified · + added · ? untracked · → renamed/copied · − deleted · ! conflict\nClean files are blank. A green ✓ on the right marks a clean repository. Folder statuses include descendants.");
         return new TableViewColumn
         {
             Header = header,

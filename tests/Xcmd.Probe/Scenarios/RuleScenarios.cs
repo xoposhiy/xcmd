@@ -10,6 +10,15 @@ public static class RuleScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("rules-parent-cursor-name", "UC15; Parent cursor names identify folders and nested archive sources", c =>
+        {
+            Equal("folder", PanelRules.ParentCursorName(@"C:\work\folder"), "An ordinary folder keeps its name");
+            Equal("sample.zip", PanelRules.ParentCursorName(@"C:\work\sample.zip|"), "Leaving an archive selects its physical source");
+            Equal("nested", PanelRules.ParentCursorName(@"C:\work\sample.zip|nested"), "Leaving an archive folder selects that folder");
+            Equal("inner.zip", PanelRules.ParentCursorName(@"C:\work\outer.zip|inner.zip|"), "Leaving a nested archive selects its inner source");
+            Equal("inner.zip", PanelRules.ParentCursorName(@"C:\work\outer.zip|folder/inner.zip|"), "A nested archive source can be in an archive folder");
+            return Task.CompletedTask;
+        }),
         new("rules-natural-order-number-runs", "UC13; numeric ordering and stable ties", _ =>
         {
             (string Left, string Right, int Order)[] pairs =

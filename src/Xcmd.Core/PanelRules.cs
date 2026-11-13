@@ -12,6 +12,14 @@ public sealed record SortOrder(SortField Field = SortField.Name, bool Descending
 
 public static class PanelRules
 {
+    public static string ParentCursorName(string directoryPath)
+    {
+        var child = ArchivePath.IsEntry(directoryPath) && ArchivePath.EntryName(directoryPath).Length == 0
+            ? ArchivePath.Source(directoryPath) : directoryPath;
+        var name = ArchivePath.IsEntry(child) ? ArchivePath.EntryName(child) : child;
+        return Path.GetFileName(Path.TrimEndingDirectorySeparator(name.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
     public static FileEntry? ParentEntry(string directoryPath)
     {
         var parent = ArchivePath.Parent(directoryPath);

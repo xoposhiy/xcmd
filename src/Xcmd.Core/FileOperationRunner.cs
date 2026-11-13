@@ -126,15 +126,7 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
             return await TransferAsync(current, destination);
         }
 
-        private async Task CheckParentsAsync(string path)
-        {
-            for (string? current = path; current != null; current = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(current)))
-            {
-                var entry = await store.InspectAsync(current, Token);
-                if (entry == null || !entry.IsDirectory) throw new IOException("The destination directory is unavailable.");
-                if (entry.IsLink) throw new IOException("Writing through links or junctions is not supported.");
-            }
-        }
+        private Task CheckParentsAsync(string path) => store.ValidateDirectoryAsync(path, Token);
 
         private async Task<bool> TransferAsync(FileEntry source, string destination)
         {

@@ -30,6 +30,9 @@ public sealed class FileOperationsView : Border
     private long measuredAt;
     private bool timingRunning;
     private TimeSpan runningTime;
+    private FileOperationJob? refreshedJob;
+    private FileOperationState refreshedState;
+    private int refreshedJobCount;
     public ProgressBar Progress { get; } = new ProgressBar() { Name = "FileOperationProgress", Minimum = 0, Maximum = 100, Height = 5 }.WithFeedbackId("FileOperationsView.Progress");
     public string ProgressSummary => summary.Text ?? "";
     public bool DetailsVisible => details.IsVisible;
@@ -54,7 +57,7 @@ public sealed class FileOperationsView : Border
         cancelSelected.Click += (_, _) => { if (Selected() is { } job) queue.Cancel(job); };
         toggle.Click += (_, _) => ToggleDetails();
         jobs.SelectionChanged += (_, _) => ShowReport();
-        queue.Changed += Refresh;
+        queue.Changed += OnQueueChanged;
         timer.Tick += (_, _) => Refresh();
         AttachedToVisualTree += (_, _) => timer.Start();
         DetachedFromVisualTree += (_, _) => timer.Stop();
@@ -99,6 +102,7 @@ public sealed class FileOperationsView : Border
         UpdateVisibility();
         if (queue.Jobs.Count == 0) return;
         var current = Current() ?? queue.Jobs[^1];
+        refreshedJob = current; refreshedState = current.State; refreshedJobCount = queue.Jobs.Count;
         TrackRunningTime(current);
         if (!IsVisible) return;
         var waiting = queue.Jobs.Count(job => job.State == FileOperationState.Queued);
@@ -120,6 +124,12 @@ public sealed class FileOperationsView : Border
         cancelCurrent.IsEnabled = Current() is { State: not FileOperationState.Cancelling };
         cancelSelected.IsVisible = details.IsVisible;
         if (details.IsVisible) RefreshJobs(focusedJobs, focusedCurrent, focusedSelected);
+    }
+
+    private void OnQueueChanged()
+    {
+        var current = Current() ?? queue.Jobs.LastOrDefault();
+        if (current != refreshedJob || current?.State != refreshedState || queue.Jobs.Count != refreshedJobCount) Refresh();
     }
 
     private void RefreshJobs(bool focusedJobs, bool focusedCurrent, bool focusedSelected)

@@ -11,6 +11,28 @@ public static class HistoryScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("history-parent-selects-exited-folder", "UC15; Parent navigation selects the exited folder after opening it from history", async c =>
+        {
+            foreach (var key in new[] { Key.PageUp, Key.Back, Key.Enter })
+            {
+                await c.Window.Left.LoadAsync(Path.Combine(c.LeftPath, "folder1"));
+                await c.SelectAsync("inside.txt");
+                await c.Window.Left.LoadAsync(c.LeftPath);
+                await c.SelectAsync("folder2");
+                await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
+                var dialog = c.Window.ActiveNavigationDialog!;
+                Equal(Path.Combine(c.LeftPath, "folder1"), dialog.Directories.SelectedItem, "History offers the folder with its own remembered cursor");
+                await c.KeyAsync(Key.Enter, target: dialog);
+                Equal("inside.txt", c.Window.Left.Current?.Name, "History restores the child folder's cursor");
+                if (key == Key.Enter) await c.SelectAsync("..");
+                await c.KeyAsync(key, key == Key.PageUp ? RawInputModifiers.Control : RawInputModifiers.None);
+                Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The parent command leaves the child folder");
+                Equal("folder1", c.Window.Left.Current?.Name, "Parent navigation selects the exited folder instead of the parent's old cursor");
+                await c.KeyAsync(Key.Enter);
+                Equal(Path.Combine(c.LeftPath, "folder1"), c.Window.Left.Session.DirectoryPath, "Enter reopens the same folder after going up");
+                Check(c.Window.Left.Table.IsKeyboardFocusWithin, "The round trip keeps keyboard focus in the panel");
+            }
+        }),
         new("history-recent-unique-and-bounded", "UC15", c =>
         {
             var history = new DirectoryHistory();

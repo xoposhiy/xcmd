@@ -116,6 +116,26 @@ public static class GitScenarios
             }
             finally { GitFixture.AllowCleanup(c.LeftPath); }
         }),
+        new("git-child-background-navigation", "A delayed child read does not hide the current repository or survive navigation", async c =>
+        {
+            var children = new TaskCompletionSource<GitStatus[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var reader = new DelayedGitReader { Children = children };
+            var view = new GitStatusView("child-probe", reader);
+            view.SetDirectory(c.LeftPath);
+            var previous = view.PendingWork;
+            reader.Requests[0].SetResult(new("ready", 0, 0, 0, 0, 0, 0) { Root = c.LeftPath });
+            await FileOperationProbe.WaitUntilAsync(() => reader.ChildReadStarted.Task.IsCompleted);
+            Equal("ready", view.Status?.Branch, "The current repository is visible while child statuses are pending");
+            Check(view.IsVisible && !view.PendingWork.IsCompleted, "The current header does not wait for a slow child repository");
+            reader.Children = null;
+            view.SetDirectory(c.RightPath);
+            reader.Requests[1].SetResult(null);
+            await view.PendingWork;
+            children.SetResult([new("obsolete", 1, 0, 0, 0, 0, 0) { Root = c.LeftPath }]);
+            await previous;
+            Equal(0, view.ChildRepositories.Length, "Navigation discards obsolete child repository statuses");
+            Check(view.Status == null && !view.IsVisible, "A non-repository directory keeps its header empty");
+        }),
         new("git-background-navigation", "Slow Git work never blocks keyboard input; overlapping refreshes coalesce and obsolete results are discarded", async c =>
         {
             var reader = new DelayedGitReader();

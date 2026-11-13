@@ -35,6 +35,18 @@ public sealed class ArchiveFileSystem(IFileSystem fileSystem, IArchiveContents a
     public Task CreateFolderAsync(string path, CancellationToken cancellationToken)
     { ArchivePath.RequireWritable(path); return operations.CreateFolderAsync(path, cancellationToken); }
 
+    public async Task ValidateDirectoryAsync(string path, CancellationToken cancellationToken)
+    {
+        var current = path;
+        while (ArchivePath.IsEntry(current))
+        {
+            FileOperationRules.ValidateDirectory(await InspectAsync(current, cancellationToken));
+            current = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(current))
+                ?? throw new IOException("The source directory is unavailable.");
+        }
+        await operations.ValidateDirectoryAsync(current, cancellationToken);
+    }
+
     public Task<long> CopyAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken)
     {
         ArchivePath.RequireWritable(destination);

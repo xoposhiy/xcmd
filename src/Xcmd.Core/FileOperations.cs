@@ -25,6 +25,13 @@ public static class FileOperationNames
 public interface IFileOperationStore
 {
     Task<FileEntry?> InspectAsync(string path, CancellationToken cancellationToken);
+    async Task ValidateDirectoryAsync(string path, CancellationToken cancellationToken)
+    {
+        for (string? current = path; current != null; current = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(current)))
+        {
+            FileOperationRules.ValidateDirectory(await InspectAsync(current, cancellationToken));
+        }
+    }
     Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken cancellationToken);
     Task<bool> AreIdenticalAsync(FileEntry source, FileEntry destination, CancellationToken cancellationToken);
     Task CreateFolderAsync(string path, CancellationToken cancellationToken);

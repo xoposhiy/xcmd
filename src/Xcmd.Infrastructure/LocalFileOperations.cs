@@ -4,17 +4,30 @@ namespace Xcmd.Infrastructure;
 
 public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperationStore
 {
-    public Task<FileEntry?> InspectAsync(string path, CancellationToken cancellationToken) => Task.Run(() =>
+    public Task<FileEntry?> InspectAsync(string path, CancellationToken cancellationToken) => Task.Run(() => Inspect(path), cancellationToken);
+
+    private static FileEntry? Inspect(string path)
     {
         try
         {
-            var attributes = File.GetAttributes(path);
+            var info = new FileInfo(path);
+            var attributes = info.Attributes;
+            if (attributes == (FileAttributes)(-1)) return null;
             var directory = attributes.HasFlag(FileAttributes.Directory);
             return new FileEntry(path, Path.GetFileName(Path.TrimEndingDirectorySeparator(path)), directory,
-                directory ? 0 : new FileInfo(path).Length, File.GetLastWriteTimeUtc(path), IsLink: attributes.HasFlag(FileAttributes.ReparsePoint));
+                directory ? 0 : info.Length, info.LastWriteTimeUtc, IsLink: attributes.HasFlag(FileAttributes.ReparsePoint));
         }
         catch (FileNotFoundException) { return null; }
         catch (DirectoryNotFoundException) { return null; }
+    }
+
+    public Task ValidateDirectoryAsync(string path, CancellationToken cancellationToken) => Task.Run(() =>
+    {
+        for (string? current = path; current != null; current = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(current)))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            FileOperationRules.ValidateDirectory(Inspect(current));
+        }
     }, cancellationToken);
 
     public Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken cancellationToken) => fileSystem.ReadDirectoryAsync(path, cancellationToken);

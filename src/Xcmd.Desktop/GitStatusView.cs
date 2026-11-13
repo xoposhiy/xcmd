@@ -52,6 +52,7 @@ public sealed class GitStatusView : Border
     public event Action? StatusChanged;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public GitStatus? Status { get; private set; }
+    public GitStatus[] ChildRepositories { get; private set; } = [];
     public string Summary => branch.Text + statusText;
 
     public GitStatusView(string id, IGitStatusReader? reader = null)
@@ -110,16 +111,20 @@ public sealed class GitStatusView : Border
         try
         {
             var result = await reader.ReadAsync(path, owner.Token);
-            if (!owner.IsCancellationRequested && directory == path) Apply(result);
+            if (owner.IsCancellationRequested || directory != path) return;
+            Apply(result, ChildRepositories);
+            var children = await reader.ReadChildRepositoriesAsync(path, owner.Token);
+            if (!owner.IsCancellationRequested && directory == path) Apply(result, children);
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or OperationCanceledException)
         { if (!owner.IsCancellationRequested && directory == path) Apply(null); }
         finally { owner.Dispose(); if (request == owner) request = null; }
     }
 
-    private void Apply(GitStatus? value)
+    private void Apply(GitStatus? value, GitStatus[]? children = null)
     {
         Status = value;
+        ChildRepositories = children ?? [];
         StatusChanged?.Invoke();
         IsVisible = value != null;
         ActionsButton.IsVisible = value != null;

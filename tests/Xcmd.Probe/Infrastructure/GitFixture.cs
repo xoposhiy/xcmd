@@ -34,11 +34,37 @@ public static class GitFixture
 
 public sealed class DelayedGitReader : IGitStatusReader
 {
+    public TaskCompletionSource<GitStatus[]>? Children { get; set; }
+    public TaskCompletionSource ChildReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken)
+    {
+        ChildReadStarted.TrySetResult();
+        return Children?.Task ?? Task.FromResult<GitStatus[]>([]);
+    }
     public List<TaskCompletionSource<GitStatus?>> Requests { get; } = [];
     public Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken)
     {
         var completion = new TaskCompletionSource<GitStatus?>(TaskCreationOptions.RunContinuationsAsynchronously);
         Requests.Add(completion);
         return completion.Task;
+    }
+}
+
+public sealed class ChildRepositoryFixture : IDisposable
+{
+    public string Root { get; } = Path.Combine(Path.GetTempPath(), "xcmd-child-repositories-" + Guid.NewGuid().ToString("N"));
+    public string Repository => Path.Combine(Root, "left");
+
+    public ChildRepositoryFixture()
+    {
+        Directory.CreateDirectory(Repository);
+        Directory.CreateDirectory(Path.Combine(Root, "right"));
+        File.WriteAllText(Path.Combine(Repository, "alpha.txt"), "initial");
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(Path.Combine(Repository, ".git"))) GitFixture.AllowCleanup(Repository);
+        Directory.Delete(Root, recursive: true);
     }
 }

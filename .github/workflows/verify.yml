@@ -1,6 +1,9 @@
 name: Verify
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -13,7 +16,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11.9'
-      - name: Verify and generate code health report
+      - name: Verify static checks
+        if: github.event_name != 'workflow_dispatch'
+        shell: pwsh
+        run: ./scripts/Test-Architecture.ps1
+      - name: Generate code health report without full regression
+        if: github.event_name != 'workflow_dispatch'
+        shell: pwsh
+        run: ./scripts/Report-CodeHealth.ps1 -SkipVerification -OutputPath artifacts/code-health/ci
+      - name: Run requested full regression and generate code health report
+        if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         run: ./scripts/Report-CodeHealth.ps1 -OutputPath artifacts/code-health/ci
       - uses: actions/upload-artifact@v4

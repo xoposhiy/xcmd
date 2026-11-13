@@ -13,6 +13,61 @@ public static class GitRowsScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("git-rows-child-repositories", "A folder outside Git shows whole-repository states for child repositories", async c =>
+        {
+            var panel = c.Window.Left;
+            using var fixture = new ChildRepositoryFixture();
+            try
+            {
+                await GitFixture.RunAsync(fixture.Repository, "init", "-b", "main");
+                await GitFixture.RunAsync(fixture.Repository, "add", ".");
+                await GitFixture.RunAsync(fixture.Repository, "-c", "user.name=Probe", "-c", "user.email=probe@example.test", "commit", "-m", "fixture");
+                await panel.LoadAsync(fixture.Root);
+                await GitFixture.RefreshAsync(panel.Git); await c.SettleAsync();
+                Check(panel.Table.Columns[3].IsVisible, "Git remains visible outside a repository");
+                Check(panel.Git.Status == null && !panel.Git.IsVisible, "The parent folder has no repository header");
+                var clean = panel.Rows.Single(row => row.Name == "left");
+                Equal("✓", clean.Git.WorkingGlyph, "A clean child repository has an explicit check mark");
+                Check(clean.Git.Description.Contains("main · clean", StringComparison.Ordinal), "The tooltip identifies the clean repository branch");
+                Equal("", panel.Rows.Single(row => row.Name == "right").Git.WorkingGlyph, "An ordinary folder has an empty Git cell");
+                File.AppendAllText(Path.Combine(fixture.Repository, "alpha.txt"), "staged");
+                await GitFixture.RunAsync(fixture.Repository, "add", "alpha.txt");
+                File.AppendAllText(Path.Combine(fixture.Repository, "alpha.txt"), "working");
+                await GitFixture.RefreshAsync(panel.Git); await c.SettleAsync();
+                clean = panel.Rows.Single(row => row.Name == "left");
+                Equal("✓", clean.Git.IndexGlyph, "The child repository reports staged changes");
+                Equal("●", clean.Git.WorkingGlyph, "The child repository also reports working-tree changes");
+                foreach (var scale in new[] { 1d, 1.5d })
+                {
+                    c.Window.SetScaleForTest(scale);
+                    await c.ScreenshotAsync("git-child-repositories-" + scale * 100);
+                }
+                await panel.LoadAsync(c.RightPath); await GitFixture.RefreshAsync(panel.Git); await c.SettleAsync();
+                Check(panel.Table.Columns[3].IsVisible && panel.Rows.All(row => row.Git.Repository == null), "Navigation clears child repository states while keeping the column");
+            }
+            finally { await panel.LoadAsync(c.RightPath); await panel.Git.PendingWork; }
+        }),
+        new("git-rows-child-worktrees", "Child worktrees with a Git file report their own changes", async c =>
+        {
+            using var fixture = new ChildRepositoryFixture();
+            var worktree = Path.Combine(fixture.Root, "right");
+            try
+            {
+                await GitFixture.RunAsync(fixture.Repository, "init", "-b", "main");
+                await GitFixture.RunAsync(fixture.Repository, "add", ".");
+                await GitFixture.RunAsync(fixture.Repository, "-c", "user.name=Probe", "-c", "user.email=probe@example.test", "commit", "-m", "fixture");
+                await GitFixture.RunAsync(fixture.Repository, "worktree", "add", "--detach", worktree);
+                Check(File.Exists(Path.Combine(worktree, ".git")), "The fixture uses a Git file rather than a Git directory");
+                File.AppendAllText(Path.Combine(worktree, "alpha.txt"), "worktree edit");
+                await c.Window.Left.LoadAsync(fixture.Root);
+                await GitFixture.RefreshAsync(c.Window.Left.Git); await c.SettleAsync();
+                Equal("✓", c.Window.Left.Rows.Single(row => row.Name == "left").Git.WorkingGlyph, "The primary repository remains clean");
+                var status = c.Window.Left.Rows.Single(row => row.Name == "right").Git;
+                Equal("●", status.WorkingGlyph, "The worktree reports its own working-tree modification");
+                Check(status.Description.Contains("detached ", StringComparison.Ordinal), "The worktree tooltip identifies detached HEAD");
+            }
+            finally { await c.Window.Left.LoadAsync(c.RightPath); await c.Window.Left.Git.PendingWork; }
+        }),
         new("git-rows-file-states", "Git column distinguishes clean, staged, modified, added, untracked, renamed and conflicted paths", async c =>
         {
             try
@@ -69,7 +124,7 @@ public static class GitRowsScenarios
                 Check(!nested.Git.HasChanges, "A refreshed clean snapshot clears both icon slots");
                 Check(c.Row("nested").GetVisualDescendants().OfType<Image>().Single().IsVisible, "Committing does not replace the native folder icon");
                 await c.Window.Left.LoadAsync(Path.Combine(c.LeftPath, "ignored")); await GitFixture.RefreshAsync(c.Window.Left.Git); await c.SettleAsync();
-                Check(!c.Window.Left.Table.Columns[3].IsVisible && c.Window.Left.Rows.All(row => !row.Git.HasChanges), "Entering an ignored folder hides irrelevant Git statuses");
+                Check(c.Window.Left.Table.Columns[3].IsVisible && c.Window.Left.Rows.All(row => !row.Git.HasChanges), "An ignored folder keeps the Git column with empty cells");
                 await c.Window.Left.LoadAsync(c.FixturePath); await GitFixture.RefreshAsync(c.Window.Left.Git); await c.SettleAsync();
                 Equal("DIR", c.Window.Left.Rows.Single(row => row.Name == "left").Kind, "A repository root also keeps the ordinary directory type");
                 var repository = c.Row("left");

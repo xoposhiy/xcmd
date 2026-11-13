@@ -4,7 +4,7 @@ Xcmd is a Windows file manager with two panels and keyboard controls. It uses C#
 
 The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
 
-The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks rather than full final verification. Search and Git inspection remain planned. See [requirements and status](docs/use-cases.md).
+The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks. Git status appears in the header and Git column, including summaries of direct child repositories. Git diff routing remains planned. See [requirements and status](docs/use-cases.md).
 
 ## Run
 
@@ -27,9 +27,9 @@ See the [user guide](docs/user-guide.md) for all controls, command history, sett
 
 Use Windows, PowerShell 7, Python 3.11 or later, and the .NET SDK selected by [global.json](global.json). Dependencies are pinned in package lock files and [requirements-lint.txt](scripts/requirements-lint.txt).
 
-Use only Release / Windows x64 for application builds, tests, and local releases. Follow the [development workflow](docs/development-workflow.md): use smoke checks under 60 seconds and automatic local feedback builds while the behavior is being refined; run the complete quality gate after acceptance and before committing. The commands below run finalization checks. A dedicated fast feedback release script is not implemented yet.
+Use only Release / Windows x64 for application builds, tests, and local releases. Follow the [development workflow](docs/development-workflow.md): use smoke checks under 60 seconds and automatic local feedback builds while the behavior is being refined; run affected scenarios and static checks before committing accepted work. Run the complete regression suite only when the user explicitly requests it.
 
-Run the complete verification path:
+Run the complete verification path only for an explicit full-regression request:
 
 ```powershell
 ./scripts/Test-Xcmd.ps1
@@ -42,7 +42,7 @@ For focused work:
 ```powershell
 ./scripts/Test-Architecture.ps1
 ./scripts/Test-Xcmd.ps1 -Filter command-line
-./scripts/Test-Xcmd.ps1 -OutputPath artifacts/probe/my-run -KeepFixtures
+./scripts/Test-Xcmd.ps1 -Filter command-line -OutputPath artifacts/probe/my-run -KeepFixtures
 dotnet format whitespace Xcmd.slnx --no-restore
 ```
 
@@ -53,19 +53,27 @@ dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --list
 dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --filter rename
 ```
 
-Results, input and state traces, failure details and offscreen images are written under `artifacts`. Successful fixtures are removed unless `-KeepFixtures` is set. A failed check returns a nonzero exit code. CI uses the same complete verification path on Windows.
+Results, input and state traces, failure details and offscreen images are written under `artifacts`. Successful fixtures are removed unless `-KeepFixtures` is set. A failed check returns a nonzero exit code. Automatic CI runs static checks; manually starting the full-regression workflow requests the complete verification path on Windows.
 
 See [automated checks](docs/automated-checks.md) for enforced rules and limits, and [verification coverage](docs/verification.md) for current evidence and native coverage limits.
 
-Generate the [code health report](docs/automated-checks.md#code-health-report) with `./scripts/Report-CodeHealth.ps1` to inspect measured values by project, folder, file, function, and type. CI publishes the same report as a `code-health` artifact.
+Generate the [code health report](docs/automated-checks.md#code-health-report) with `./scripts/Report-CodeHealth.ps1 -SkipVerification` to inspect measured values by project, folder, file, function, and type. Omit `-SkipVerification` only when the user explicitly requests full regression checks. CI publishes the report as a `code-health` artifact.
 
 ## Build a ready release
+
+Publish a feedback build with selected smoke checks:
+
+```powershell
+./scripts/Publish-Feedback.ps1 -Filter '<targeted-scenario-filters>'
+```
+
+When the user explicitly requests a full regression run with the release:
 
 ```powershell
 ./scripts/Release-Xcmd.ps1
 ```
 
-This is the full finalization command. The script verifies the source and publishes the Release build with its dependencies into a new `releases/<release-id>` directory. It includes `verification.json` and a restart-protocol manifest, prepares the permanent `Xcmd.exe` and `Xcmd.lnk`, then atomically updates `releases/latest.txt` after success. It does not open the application. Existing releases stay unchanged and can remain open during development. An in-use launcher keeps its existing file and defers a launcher replacement without blocking the application release.
+This command includes the full regression suite and requires an explicit request for that suite. Both publishing paths create a Release build with dependencies in a new `releases/<release-id>` directory. Each build includes verification evidence and a restart-protocol manifest, prepares the permanent `Xcmd.exe` and `Xcmd.lnk`, then atomically updates `releases/latest.txt` after success. Publishing does not open the application. Existing releases stay unchanged and can remain open during development. An in-use launcher keeps its existing file and defers a launcher replacement without blocking the application release.
 
 A running release can switch to a newer locally published release after the application becomes idle. The workspace is saved and restored through a process handoff. This is local release discovery, not a network update service.
 

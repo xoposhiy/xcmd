@@ -221,11 +221,12 @@ public sealed partial class CommanderWindow : Window
     private async Task OpenCurrentAsync(PanelView panel)
     {
         if (panel.Current is not { } row) return;
+        if (row.Entry.IsParent) { await OpenParentAsync(panel); return; }
         if (!row.Entry.IsDirectory && ArchivePath.OpensOnEnter(row.Entry.FullPath))
         { await OpenArchiveAsync(panel); return; }
         if (!row.Entry.IsDirectory)
         { await OpenFileExternallyAsync(row.Entry.FullPath, panel.OperationDirectory); return; }
-        await panel.LoadAsync(panel.Current.Entry.FullPath, selectName: panel.Current.Entry.IsParent ? null : "..");
+        await panel.LoadAsync(row.Entry.FullPath, selectName: "..");
         panel.FocusCurrent();
     }
 

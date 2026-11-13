@@ -6,13 +6,15 @@ Use Windows, PowerShell 7, the SDK selected by `global.json`, Python 3.11 or lat
 
 Use one build profile: Release / `win-x64` / x64. `Directory.Build.props` supplies the defaults, and `Directory.Build.targets` rejects unsupported profiles before restore or build. Application and test outputs share `bin/Release/net10.0/win-x64`; do not create Debug or runtime-independent variants.
 
-Before committing accepted work, use `Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` to run the static checks and scenarios for the changed features and affected shared behavior. The complete behavior suite runs separately after commits, in CI and before final releases. See the [development workflow](development-workflow.md) for selection and evidence rules. Feedback iterations still use small smoke checks; the filtered command includes the architecture stage and is not the fast feedback path.
+Before committing accepted work, use `Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` to run the static checks and scenarios for the changed features and affected shared behavior. Run the complete regression suite only when the user explicitly requests it. Commits, releases and automatic CI do not require a full regression run. See the [development workflow](development-workflow.md) for selection and evidence rules. Feedback iterations still use small smoke checks; the filtered command includes the architecture stage and is not the fast feedback path.
+
+For an explicit full-regression request:
 
 ```powershell
 ./scripts/Test-Xcmd.ps1
 ```
 
-This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path for final releases. CI runs the same command on Windows.
+This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path, so run it only when full regression checks were explicitly requested. Automatic CI runs static checks. Manually starting the full-regression workflow requests the complete gate on Windows.
 
 The architecture command also builds the self-contained Windows x64 NativeAOT launcher from a small source subset of Infrastructure. The launcher has no project or UI dependencies, uses `packages.launcher.lock.json`, and keeps build outputs under `artifacts/launcher`. Normal project and package checks still cover the same six application/test projects. Launcher scenarios use isolated installation trees and do not change taskbar pins.
 
@@ -97,7 +99,7 @@ Static checks do not establish correct runtime behavior, task ownership, error r
 
 ## Code health report
 
-Generate a report with fresh architecture, analyzer, formatting, metric, and behavioral checks:
+When the user explicitly requests full regression checks, generate a report with fresh architecture, analyzer, formatting, metric, and behavioral checks:
 
 ```powershell
 ./scripts/Report-CodeHealth.ps1
@@ -109,7 +111,7 @@ The report includes project, folder, file, Lizard function, and Roslyn type/memb
 
 The report reads the actual limits from `config/metrics.json` and `CodeMetricsConfig.txt`. Project maintainability is the Microsoft tool's assembly index. File and folder maintainability columns show the lowest member value, not a separate health score. Type coupling is not additive, and partial classes span files.
 
-For measurements without rerunning verification:
+By default, generate measurements without starting a full regression run:
 
 ```powershell
 ./scripts/Report-CodeHealth.ps1 -SkipVerification
@@ -119,7 +121,7 @@ Such a report explicitly marks verification as skipped and labels older behavior
 
 Microsoft.CodeAnalysis.Metrics 5.6.0 produces semantic XML. Its package uses Roslyn Workspace 4.12.0 and omits the host needed to load SDK projects. The report command restores that matching host separately and combines them only under `artifacts/code-health-tools`. The pinned SDK build remains authoritative for lint diagnostics. The reporting tool is not a production dependency.
 
-CI runs the report command and uploads the `code-health` artifact on success or failure. This includes the report, raw metrics, verification log, and behavioral diagnostics. The lightweight `Test-Xcmd.ps1` and release workflow keep their existing verification path.
+CI uploads the `code-health` artifact on success or failure. Automatic runs execute static checks and generate the report with `-SkipVerification`. A manual full-regression run also includes the complete behavior suite and its diagnostics.
 
 ## Tool references
 

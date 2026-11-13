@@ -54,6 +54,12 @@ public static class FileOperationInventory
 
 public static class FileOperationRules
 {
+    public static void ValidateDirectory(FileEntry? entry)
+    {
+        if (entry == null || !entry.IsDirectory) throw new IOException("The destination directory is unavailable.");
+        if (entry.IsLink) throw new IOException("Writing through links or junctions is not supported.");
+    }
+
     public static void ValidateRequest(FileOperationRequest request)
     {
         if (request.Kind != FileOperationKind.Copy)

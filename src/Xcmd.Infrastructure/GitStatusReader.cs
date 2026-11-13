@@ -6,6 +6,7 @@ namespace Xcmd.Infrastructure;
 public interface IGitStatusReader
 {
     Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken);
+    Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken);
 }
 
 public sealed record GitStatus(string Branch, int Staged, int Changed, int Untracked, int Conflicts, int Ahead, int Behind)
@@ -20,6 +21,23 @@ public sealed record GitStatus(string Branch, int Staged, int Changed, int Untra
 
 public sealed class GitStatusReader : IGitStatusReader
 {
+    public Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken) =>
+        Task.Run(async () =>
+        {
+            var repositories = new System.Collections.Concurrent.ConcurrentBag<GitStatus>();
+            try
+            {
+                var children = Directory.EnumerateDirectories(directory, "*", new EnumerationOptions { IgnoreInaccessible = true, AttributesToSkip = 0 })
+                    .Where(path => Path.Exists(Path.Combine(path, ".git")));
+                await Parallel.ForEachAsync(children, new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = cancellationToken }, async (path, token) =>
+                {
+                    if (await ReadBackgroundAsync(path, token).ConfigureAwait(false) is { } status) repositories.Add(status);
+                }).ConfigureAwait(false);
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or OperationCanceledException) { }
+            return repositories.ToArray();
+        }, cancellationToken);
+
     public Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken) =>
         Task.Run(() => ReadBackgroundAsync(directory, cancellationToken), cancellationToken);
 

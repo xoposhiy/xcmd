@@ -49,7 +49,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC24 | Compare two files. | Planned | Define text/binary handling, external tools and whether editing or merging belongs in the workflow. |
 | UC25 | Compare two directories. | Planned | Show differences. Directory synchronization remains deferred. |
 | UC26 | Rename many files with one rule. | Optional | Very rare use. Define a small workflow before implementation. |
-| UC27 | Inspect Git status and diffs. | Planned | Define file states, directory summaries, ignored files, branch display and diff routing. |
+| UC27 | Inspect Git status and diffs. | Partial | Show branch and whole-repository status in the header, file and descendant changes in the Git column, and direct child repository summaries outside a working tree. Native folder icons stay unchanged. Diff routing remains deferred. |
 | UC28 | Perform Git write operations. | Prototype | Click the Git status and choose Commit to open interactive Claude Code at the repository root with Sonnet, medium effort and `Commit all changes.`. Questions, permissions, results and follow-up stay in Claude's console. Xcmd remains usable. Native staging, branch, pull and push remain deferred. |
 | UC29 | Filter a panel while typing. | Optional | Keep separate from Alt name jumping. No implementation commitment. |
 | UC30 | Show a flat recursive file list. | Planned | Define paths, exclusions and operations on mixed-directory entries. |

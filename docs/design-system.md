@@ -126,7 +126,7 @@ Open note 80 adds a width policy: shrink Name to a minimum before horizontal scr
 - Are paths, errors and disabled actions inspectable without losing essential information?
 - Do 100/150% renders, long Cyrillic/Latin names, empty/full tables and minimum window widths remain usable?
 
-For an application implementation follow the existing smoke-check and feedback-build workflow. Before committing, complete the independent usability review and run the affected feature scenarios and static checks. Run the complete behavior suite separately after commits; final releases still require the full gate. A design document alone does not require a new application release.
+For an application implementation follow the existing smoke-check and feedback-build workflow. Before committing, complete the independent usability review and run the affected feature scenarios and static checks. Run the complete regression suite only when the user explicitly requests it. A design document alone does not require a new application release.
 
 ## External references
 

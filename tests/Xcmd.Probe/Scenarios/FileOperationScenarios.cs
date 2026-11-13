@@ -14,6 +14,32 @@ public static class FileOperationScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("operations-delete-large-tree-cancel", "UC35; Cancelling active deletion keeps all unstarted files", async c =>
+        {
+            var root = DeletionPerformanceProbe.CreateTree(c);
+            await c.Window.Left.LoadAsync(c.LeftPath);
+            var entry = c.Window.Left.Rows.Single(row => row.Name == "delete-tree").Entry;
+            var gate = c.FileSystem.PauseRemovalsAfter(10);
+            var job = c.Window.Operations.Enqueue(new(FileOperationKind.Delete, [entry]));
+            await WaitUntilAsync(() => gate.Entered.Task.IsCompleted);
+            c.Window.OperationsView.ToggleDetails(); await DrainRenderingAsync(c);
+            Equal(10L, job.CompletedFiles, "Deletion has removed files before cancellation");
+            await c.ClickAsync(c.Window.OperationsView.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "CancelCurrentOperation"));
+            Equal(FileOperationState.Cancelled, job.State, "Cancel current stops the active deletion");
+            Check(gate.WasCancelled, "Cancellation reaches the pending removal");
+            Equal(1190, Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).Count(), "All unstarted files remain on disk");
+            Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "Cancellation preserves neighbouring files");
+        }),
+        new("operations-delete-large-tree", "UC35; Delete many small files while operation details remain responsive", async c =>
+        {
+            var root = DeletionPerformanceProbe.CreateTree(c);
+            await c.Window.Left.LoadAsync(c.LeftPath);
+            var entry = c.Window.Left.Rows.Single(row => row.Name == "delete-tree").Entry;
+            await DeletionPerformanceProbe.MeasureAsync(c, entry);
+            Check(!Directory.Exists(root), "Deletion removes the complete directory tree");
+            Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "Deletion preserves neighbouring files");
+            await c.SettleAsync();
+        }),
         new("operations-copy-tree-and-empty-folder", "UC04; Recursive copy; source focus", async c =>
         {
             Directory.CreateDirectory(Path.Combine(c.LeftPath, "folder1", "empty"));

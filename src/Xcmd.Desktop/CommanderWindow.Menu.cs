@@ -70,9 +70,17 @@ public sealed partial class CommanderWindow
     private void OpenParent()
     {
         var panel = ActivePanel;
-        if (panel.IsSearchResults) { Execute(panel.ExitSearchResultsAsync); return; }
-        var parent = PanelRules.ParentEntry(panel.Session.DirectoryPath);
-        if (parent != null) Execute(async () => { await panel.LoadAsync(parent.FullPath); panel.FocusCurrent(); });
+        Execute(() => OpenParentAsync(panel));
+    }
+
+    private static async Task OpenParentAsync(PanelView panel)
+    {
+        if (panel.IsSearchResults) { await panel.ExitSearchResultsAsync(); return; }
+        var directory = panel.Session.DirectoryPath;
+        var parent = PanelRules.ParentEntry(directory);
+        if (parent == null) return;
+        await panel.LoadAsync(parent.FullPath, selectName: PanelRules.ParentCursorName(directory));
+        panel.FocusCurrent();
     }
 
     private void CopySelected()
