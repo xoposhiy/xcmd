@@ -4,7 +4,7 @@ Confirmed cross-cutting requirement, 2026-11-09: the agent must be able to test 
 
 These requirements apply to [all user workflows](use-cases.md), including [search](search.md). They are a condition for architecture and framework choices, not a later testing improvement.
 
-Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Full quality checks, complete regression coverage, and independent usability review are required during finalization before committing. Use only Release / Windows x64 for this user's machine.
+Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Before committing, run the affected feature scenarios and static quality checks, and complete the independent usability review for changed workflows. Run the complete regression suite separately after commits. Final releases still require the full gate. Use only Release / Windows x64 for this user's machine.
 
 ## Required capabilities
 

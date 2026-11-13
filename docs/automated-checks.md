@@ -6,7 +6,7 @@ Use Windows, PowerShell 7, the SDK selected by `global.json`, Python 3.11 or lat
 
 Use one build profile: Release / `win-x64` / x64. `Directory.Build.props` supplies the defaults, and `Directory.Build.targets` rejects unsupported profiles before restore or build. Application and test outputs share `bin/Release/net10.0/win-x64`; do not create Debug or runtime-independent variants.
 
-These commands are the full finalization gate described in the [development workflow](development-workflow.md). Run the full gate before committing accepted work. Feedback iterations use small smoke checks instead; `Test-Xcmd.ps1 -Filter` still runs the architecture stage and is not the fast feedback path.
+Before committing accepted work, use `Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` to run the static checks and scenarios for the changed features and affected shared behavior. The complete behavior suite runs separately after commits, in CI and before final releases. See the [development workflow](development-workflow.md) for selection and evidence rules. Feedback iterations still use small smoke checks; the filtered command includes the architecture stage and is not the fast feedback path.
 
 ```powershell
 ./scripts/Test-Xcmd.ps1
