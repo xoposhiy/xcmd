@@ -30,7 +30,7 @@ public sealed class ProbeContext : IDisposable
     public ProbeContext(string outputPath)
     {
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell));
+        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
         OutputPath = outputPath;
         FixturePath = Path.Combine(outputPath, "fixture");
         Directory.CreateDirectory(LeftPath);

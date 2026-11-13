@@ -14,7 +14,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 - Combine directory History, Frequent locations and Favorites in one navigation window. Share favorites and frequency scores between panels. Count qualified work visits rather than quick transitions, exclude roots and reduce older scores over time.
 - Keep basic multi-file selection. Advanced selection and directory synchronization are deferred.
 - Handle copy and move conflicts explicitly. The prototype supports Skip, Rename and Replace, with apply-to-all for matching conflict types. Comparison and newer-file rules remain planned.
-- Keep Git inspection limited to file status and diffs. Git write operations are deferred.
+- Show Git status in the panel header. Commit opens ordinary interactive Claude Code (Sonnet, medium effort) at the repository root with the initial prompt `Commit all changes.`. Other Git write operations remain deferred.
 - Search by name substring, mask or contents. Handle encodings and supported archives automatically. Return useful results before scanning dependency directories. The [search design](search.md) distinguishes confirmed requirements from proposed scheduling and ignore rules.
 - Test every implemented workflow without visible application windows or human assistance. Deliver separate verified releases and preserve the workspace during local release handoff.
 - Allow element feedback inside the main window and every application dialog. Save notes immediately and preserve original user text.
@@ -50,7 +50,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC25 | Compare two directories. | Planned | Show differences. Directory synchronization remains deferred. |
 | UC26 | Rename many files with one rule. | Optional | Very rare use. Define a small workflow before implementation. |
 | UC27 | Inspect Git status and diffs. | Planned | Define file states, directory summaries, ignored files, branch display and diff routing. |
-| UC28 | Perform Git write operations. | Deferred | Stage, commit, branch, pull and push are outside the current scope. |
+| UC28 | Perform Git write operations. | Prototype | Click the Git status and choose Commit to open interactive Claude Code at the repository root with Sonnet, medium effort and `Commit all changes.`. Questions, permissions, results and follow-up stay in Claude's console. Xcmd remains usable. Native staging, branch, pull and push remain deferred. |
 | UC29 | Filter a panel while typing. | Optional | Keep separate from Alt name jumping. No implementation commitment. |
 | UC30 | Show a flat recursive file list. | Planned | Define paths, exclusions and operations on mixed-directory entries. |
 | UC31 | Work with search results in a panel. | Prototype | To panel / Alt+P transfers a snapshot with relative paths, selection, sorting, viewing and source operations. Ctrl+Left/Right locates the current entry in the other panel. Escape restores the previous directory state. Results survive workspace restore. |
@@ -59,7 +59,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 | UC34 | Resolve copy and move conflicts. | Prototype; required | Skip, Rename and Replace regular files; apply Skip or Replace to matching conflicts in the current request. Merge folders without removing destination-only contents. Compare and newer-file rules remain planned. |
 | UC35 | Delete with familiar Total Commander behavior. | Prototype | F8/Delete selects Recycle Bin; Shift+Delete selects permanent deletion. The same short confirmation allows either mode, with Yes focused for Enter. Reject permanent fallback when recycling is unavailable. |
 | UC36 | Identify links and junctions and inspect their targets. | Partial | Folder sizes skip links and test a real junction cycle. Target inspection, target navigation, broken links and file-operation policies remain planned. |
-| UC37 | Start agent tasks in the active directory. | Deferred | No provider, command syntax or execution policy is selected. |
+| UC37 | Start agent tasks in the active directory. | Partial | Git Commit launches installed Claude Code in its ordinary console using the existing login, settings and project instructions. General-purpose agent tasks remain deferred. |
 | UC38 | Restore the workspace and switch to a newer local release. | Implemented | Save panels, window state, navigation, measurements, command drafts and notes. Verify real process handoff and safe startup failure. |
 | UC39 | Comment on interface elements and keep a refinement list. | Implemented | F12 and Feedback work in the main window and dialogs. Double-click sends one normal click while selection stays active; a single click comments on the target. Save the interaction path with notes, compile a checklist and support resolution records. |
 | UC40 | Launch the latest verified release from one permanent shortcut. | Implemented | Permanent Xcmd.exe and Xcmd.lnk preserve shortcuts across releases. Share a Windows taskbar identity, keep caller arguments and working directory, and allow releases while the application runs. |
@@ -71,7 +71,7 @@ This inventory records accepted goals and current limits. Implemented behavior i
 - Indexed global lookup, checksum tools, SFTP and dedicated network-location support.
 - Duplicate-content detection. Clipboard copy/cut/paste and full-path export were requested on 2026-11-12 and are now feedback prototypes.
 - Advanced selection by mask, inversion and restoration; basic multi-file selection stays implemented.
-- Directory synchronization and Git write operations.
+- Directory synchronization and native Git write controls beyond the Claude Code Commit launcher.
 
 These decisions preserve the reviewed scope. They do not prevent future changes requested by the user.
 

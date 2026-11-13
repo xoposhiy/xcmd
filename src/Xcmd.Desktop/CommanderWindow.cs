@@ -33,7 +33,7 @@ public sealed partial class CommanderWindow : Window
     internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
     private readonly ShellInteractionController shell;
     private readonly PanelClipboardController panelClipboard;
-    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true;
+    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true || Left.Git.IsMenuOpen || Right.Git.IsMenuOpen;
     public PanelView Left { get; }
     public PanelView Right { get; }
     public PanelView ActivePanel { get; private set; }
@@ -57,7 +57,7 @@ public sealed partial class CommanderWindow : Window
     public void RecordActivity() => lastInput = Stopwatch.GetTimestamp();
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
-    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null)
+    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null)
     {
         shell = shellInteraction ?? new ShellInteractionController();
         archives = new ArchiveController(this, archiveCacheRoot, archiveContents);
@@ -116,6 +116,7 @@ public sealed partial class CommanderWindow : Window
         root.Children.Add(applicationLayout);
         Content = root;
         Feedback = new FeedbackController(this, root);
+        GitCommitController.Attach(this, claudeExecutable);
         shell.Attach(this, operationStore);
         frame.AttachFeedback(Feedback);
         AddHandler(PointerMovedEvent, (_, _) => { lastInput = Stopwatch.GetTimestamp(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
@@ -178,6 +179,7 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.IsPicking) { if (e.Key == Key.Escape) Feedback.Cancel(); e.Handled = true; return; }
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
+        if (Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin) return;
         if (HasOpenDialog) return;
         if (e.Key == Key.F7 && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); FileSearch.Open(); e.Handled = true; return; }

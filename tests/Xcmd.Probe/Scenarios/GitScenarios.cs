@@ -55,9 +55,17 @@ public static class GitScenarios
             {
                 await c.Window.Left.LoadAsync(empty);
                 await view.PendingWork;
-                Check(view.IsVisible && view.Status == null && view.Summary.Length == 0, "No repository leaves an empty reserved Git row");
-                await c.ScreenshotAsync("git-empty-row");
-                Equal(initialTableBounds, c.Window.Left.Table.Bounds, "Leaving Git preserves table geometry");
+                Check(!view.IsVisible && !view.ActionsButton.IsVisible && view.Status == null && view.Summary.Length == 0, "No repository hides the complete Git button");
+                await c.SettleAsync();
+                Equal(initialTableBounds, c.Window.Left.Table.Bounds, "Leaving Git preserves table geometry at the same scale");
+                foreach (var scale in new[] { 1d, 1.5d })
+                {
+                    c.Window.SetScaleForTest(scale);
+                    await c.ScreenshotAsync("git-empty-row-" + scale * 100);
+                    Check(!view.IsVisible && !view.ActionsButton.IsVisible, "The empty button stays hidden at each display scale");
+                    Equal(initialTableBounds.Y, c.Window.Left.Table.Bounds.Y, "Hiding Git keeps the table's vertical position at each scale");
+                    Equal(c.Window.Left.Table.Bounds.Y, c.Window.Right.Table.Bounds.Y, "Headers stay aligned with and without Git");
+                }
             }
             finally
             {
@@ -126,8 +134,12 @@ public static class GitScenarios
             await old;
             Equal("new", view.Status?.Branch, "Late result cannot replace current location");
             Check(view.Summary.Contains("↑2", StringComparison.Ordinal) && view.Summary.Contains("↓1", StringComparison.Ordinal), "Upstream divergence is concise");
+            view.SetDirectory(c.LeftPath);
+            reader.Requests[2].SetResult(null);
+            await view.PendingWork;
+            Check(!view.IsVisible && !view.ActionsButton.IsVisible, "A null repository result removes the entire previous control");
             view.SetDirectory("");
-            Check(view.IsVisible && view.Summary.Length == 0, "Search and non-directory locations clear text but preserve the row");
+            Check(!view.IsVisible && view.Summary.Length == 0, "Search and non-directory locations hide Git actions");
         })
     ];
 }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Xcmd.Core;
@@ -12,8 +13,8 @@ namespace Xcmd.Desktop;
 public sealed class GitStatusView : Border
 {
     private readonly IGitStatusReader reader;
-    private readonly TextBlock branch = new() { MaxWidth = 150, LineHeight = 18, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Focus, TextTrimming = TextTrimming.CharacterEllipsis };
-    private readonly TextBlock state = new() { LineHeight = 18, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock branch = new() { MaxWidth = 150, LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Focus, TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock state = new() { LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly PathIcon remote = new()
     {
         Width = 14,
@@ -28,6 +29,19 @@ public sealed class GitStatusView : Border
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(3) };
     private CancellationTokenSource? request;
     private string directory = "";
+    private string actionDirectory = "";
+    private readonly TextBlock arrow = new() { Text = "▾", LineHeight = 18, FontSize = UiPalette.BodySize, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), Foreground = UiPalette.Secondary, IsVisible = false };
+    public Button ActionsButton { get; } = new()
+    {
+        Height = 24, MinHeight = 0, MinWidth = 0, Padding = new Thickness(6, 0), BorderThickness = new Thickness(0),
+        Background = Brushes.Transparent, HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+        VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+        IsEnabled = false, IsVisible = false
+    };
+    public ContextMenu Actions { get; } = new() { Placement = PlacementMode.Bottom };
+    public bool IsMenuOpen => Actions.IsOpen;
+    public MenuItem CommitCommand { get; } = new() { Header = "_Commit" };
+    public event Action<string>? CommitRequested;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public GitStatus? Status { get; private set; }
     public string Summary => branch.Text + statusText;
@@ -40,11 +54,22 @@ public sealed class GitStatusView : Border
         AutomationProperties.SetAutomationId(branch, id + ".git.branch");
         AutomationProperties.SetAutomationId(state, id + ".git.status");
         AutomationProperties.SetAutomationId(remote, id + ".git.remote");
+        AutomationProperties.SetAutomationId(arrow, id + ".git.arrow");
         ToolTip.SetTip(remote, "Repository has a remote");
         AutomationProperties.SetName(remote, "Repository has a remote");
-        Height = 24; MaxWidth = 300; Padding = new Thickness(6, 0); ClipToBounds = true;
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
-        grid.Children.Add(remote); Grid.SetColumn(branch, 1); grid.Children.Add(branch); Grid.SetColumn(state, 2); grid.Children.Add(state); Child = grid;
+        Height = 24; MaxWidth = 300; ClipToBounds = true; VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center; IsVisible = false;
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+        grid.Children.Add(remote); Grid.SetColumn(branch, 1); grid.Children.Add(branch); Grid.SetColumn(state, 2); grid.Children.Add(state);
+        Grid.SetColumn(arrow, 3); grid.Children.Add(arrow); ActionsButton.Content = grid; Child = ActionsButton;
+        ActionsButton.Name = id + "GitActions";
+        AutomationProperties.SetAutomationId(ActionsButton, id + ".git.actions");
+        AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
+        CommitCommand.Name = id + "GitCommit";
+        ToolTip.SetTip(CommitCommand, "Open Claude Code to commit all changes in this repository.");
+        Actions.ItemsSource = new[] { CommitCommand };
+        Actions.Opened += (_, _) => actionDirectory = directory;
+        ActionsButton.Click += (_, _) => { if (Status != null) Actions.Open(ActionsButton); };
+        CommitCommand.Click += (_, _) => { if (actionDirectory.Length > 0) CommitRequested?.Invoke(actionDirectory); };
         timer.Tick += (_, _) => Refresh();
         AttachedToVisualTree += (_, _) => { timer.Start(); Refresh(); };
         DetachedFromVisualTree += (_, _) => { timer.Stop(); request?.Cancel(); };
@@ -53,6 +78,7 @@ public sealed class GitStatusView : Border
     public void SetDirectory(string value)
     {
         if (directory == value) return;
+        Actions.Close();
         directory = value;
         request?.Cancel();
         Apply(null);
@@ -86,10 +112,20 @@ public sealed class GitStatusView : Border
     private void Apply(GitStatus? value)
     {
         Status = value;
+        IsVisible = value != null;
+        ActionsButton.IsVisible = value != null;
+        ActionsButton.IsEnabled = value != null;
+        ActionsButton.ContextMenu = value == null ? null : Actions;
+        ActionsButton.Cursor = value == null ? null : new Cursor(StandardCursorType.Hand);
+        arrow.IsVisible = value != null;
         Background = value == null ? Brushes.Transparent : UiPalette.Raised;
         remote.IsVisible = value?.HasRemote == true;
         state.Inlines!.Clear(); statusText = "";
-        if (value == null) { branch.Text = ""; ToolTip.SetTip(this, null); AutomationProperties.SetName(this, ""); return; }
+        if (value == null)
+        {
+            Actions.Close(); branch.Text = ""; ToolTip.SetTip(this, null); ToolTip.SetTip(ActionsButton, null);
+            AutomationProperties.SetName(this, ""); AutomationProperties.SetName(ActionsButton, ""); return;
+        }
         branch.Text = value.Branch;
         var clean = value.Staged + value.Changed + value.Untracked + value.Deleted + value.Conflicts == 0;
         branch.Foreground = clean ? UiPalette.Success : UiPalette.Focus;
@@ -102,6 +138,8 @@ public sealed class GitStatusView : Border
         if (value.Behind > 0) AddStatus($"↓{value.Behind}", UiPalette.Secondary);
         var description = $"Git · {value.Branch} · {(clean ? "clean" : "changes")}\nWhole repository: {value.Staged} staged (+), {value.Changed} changed (~), {value.Untracked} untracked (?), {value.Deleted} deleted (−), {value.Conflicts} conflicts (!)\nUpstream: {value.Upstream ?? "not configured"} · {value.Ahead} ahead (↑), {value.Behind} behind (↓) · local status, no fetch";
         ToolTip.SetTip(this, description);
+        ToolTip.SetTip(ActionsButton, description + "\nClick for repository actions.");
+        AutomationProperties.SetName(ActionsButton, "Repository actions · " + value.Branch);
         AutomationProperties.SetName(this, description);
     }
 
