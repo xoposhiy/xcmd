@@ -2,34 +2,51 @@ name: Verify
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
+    name: Full verification
     runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.packages
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
-      - uses: actions/setup-python@v5
+          cache: true
+          cache-dependency-path: '**/packages*.lock.json'
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.11.9'
-      - name: Verify static checks
-        if: github.event_name != 'workflow_dispatch'
-        shell: pwsh
-        run: ./scripts/Test-Architecture.ps1
-      - name: Generate code health report without full regression
-        if: github.event_name != 'workflow_dispatch'
-        shell: pwsh
-        run: ./scripts/Report-CodeHealth.ps1 -SkipVerification -OutputPath artifacts/code-health/ci
-      - name: Run requested full regression and generate code health report
-        if: github.event_name == 'workflow_dispatch'
-        shell: pwsh
+          cache: pip
+          cache-dependency-path: scripts/requirements-lint.txt
+      - name: Run all tests and checks and generate the code health report
         run: ./scripts/Report-CodeHealth.ps1 -OutputPath artifacts/code-health/ci
-      - uses: actions/upload-artifact@v4
+      - name: Upload the report and test diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: code-health
           path: artifacts/code-health/ci
+          retention-days: 14
+      - name: Upload analyzer failure diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: architecture-diagnostics
+          path: artifacts/architecture
+          retention-days: 14

@@ -6,7 +6,7 @@ Use Windows, PowerShell 7, the SDK selected by `global.json`, Python 3.11 or lat
 
 Use one build profile: Release / `win-x64` / x64. `Directory.Build.props` supplies the defaults, and `Directory.Build.targets` rejects unsupported profiles before restore or build. Application and test outputs share `bin/Release/net10.0/win-x64`; do not create Debug or runtime-independent variants.
 
-Before committing accepted work, use `Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` to run the static checks and scenarios for the changed features and affected shared behavior. Run the complete regression suite only when the user explicitly requests it. Commits, releases and automatic CI do not require a full regression run. See the [development workflow](development-workflow.md) for selection and evidence rules. Feedback iterations still use small smoke checks; the filtered command includes the architecture stage and is not the fast feedback path.
+Before committing accepted work, use `Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` to run the static checks and scenarios for the changed features and affected shared behavior. Run the complete regression suite locally only when the user explicitly requests it. Local commits and releases do not require a full regression run; GitHub Actions always runs the full gate. See the [development workflow](development-workflow.md) for selection and evidence rules. Feedback iterations still use small smoke checks; the filtered command includes the architecture stage and is not the fast feedback path.
 
 For an explicit full-regression request:
 
@@ -14,7 +14,7 @@ For an explicit full-regression request:
 ./scripts/Test-Xcmd.ps1
 ```
 
-This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path, so run it only when full regression checks were explicitly requested. Automatic CI runs static checks. Manually starting the full-regression workflow requests the complete gate on Windows.
+This command runs architecture tests, analyzer self-checks, formatting, code metrics, and the complete headless behavior suite. Any failed check stops the command with a nonzero exit code. `scripts/Release-Xcmd.ps1` uses the same path, so run it only when full regression checks were explicitly requested. GitHub Actions runs the complete gate on Windows for pushes and pull requests to `main`, and for manual runs.
 
 The architecture command also builds the self-contained Windows x64 NativeAOT launcher from a small source subset of Infrastructure. The launcher has no project or UI dependencies, uses `packages.launcher.lock.json`, and keeps build outputs under `artifacts/launcher`. Normal project and package checks still cover the same six application/test projects. Launcher scenarios use isolated installation trees and do not change taskbar pins.
 
@@ -40,15 +40,8 @@ dotnet format whitespace Xcmd.slnx --no-restore
 
 See [Code health report](#code-health-report) for measured values at project, folder, file, function, and type level.
 
-The [code architecture](architecture.md) defines the three production projects. Project-scoped API bans protect Core and Desktop.
-
-| Project | Allowed production dependencies | Responsibility |
-| --- | --- | --- |
-| `Xcmd.Core` | None | Rules, state, and application contracts; no UI, platform access, or adapter implementations |
-| `Xcmd.Infrastructure` | Core | Filesystem, persistence, Windows integration, and processes; no UI |
-| `Xcmd.Desktop` | Core, Infrastructure | Avalonia controls, input routing, presentation, and existing workflow coordination |
-
-The adapters use Core contracts and state values. Desktop can call them and own interaction coordination. These are supported boundaries. Extract substantial UI-independent decisions into Core as workflows grow; this does not require a new project or a rule that all adapter access belongs in startup.
+The [code architecture](architecture.md#dependencies) defines project dependencies,
+responsibilities, and state ownership. The checks below enforce those boundaries.
 
 ## Enforced checks
 
@@ -121,7 +114,7 @@ Such a report explicitly marks verification as skipped and labels older behavior
 
 Microsoft.CodeAnalysis.Metrics 5.6.0 produces semantic XML. Its package uses Roslyn Workspace 4.12.0 and omits the host needed to load SDK projects. The report command restores that matching host separately and combines them only under `artifacts/code-health-tools`. The pinned SDK build remains authoritative for lint diagnostics. The reporting tool is not a production dependency.
 
-CI uploads the `code-health` artifact on success or failure. Automatic runs execute static checks and generate the report with `-SkipVerification`. A manual full-regression run also includes the complete behavior suite and its diagnostics.
+Every CI run calls `Report-CodeHealth.ps1` without `-SkipVerification`. This runs the report aggregation tests, architecture checks, analyzer self-checks, formatting, code metrics, and every headless behavior scenario. Failed checks make the job fail. CI uploads the `code-health` artifact on success or failure and retains it for 14 days. Failed runs also upload analyzer fixtures as `architecture-diagnostics`. The Windows job uses the pinned SDK and locked dependencies, caches NuGet and pip downloads, and has a 45-minute timeout.
 
 ## Tool references
 

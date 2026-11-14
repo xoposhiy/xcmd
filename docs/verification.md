@@ -1,5 +1,37 @@
 # Verification coverage
 
+`git-usability-return-and-viewer`, `git-usability-empty-and-refresh` and
+`git-usability-cancel-and-deletion` cover the repaired Git review findings:
+cross-panel return state, viewer origin and read-only menus/shortcuts, unknown file
+dates, contextual legends/help/footer, explicit empty states, coherent report and
+panel refresh, background live refresh and new HEAD, command-line-focus cancellation,
+visible expected errors and staged-deletion diff. Existing `git-history-*` cases
+also cover actionable deleted-commit paths and mouse resizing of the message area.
+These are targeted feedback checks, not a full regression result.
+
+`git-history-commit-message` checks the inline full message below the Git log,
+paragraphs and Unicode, scrolling and text selection, keyboard focus, rapid cursor
+changes, cached messages, clearing log navigation rows, commit columns without
+file icons, file-column restoration in snapshots, and keeping the message visible
+across snapshot folder and file selection. Ordinary folders restore the full
+viewport. It renders long log and snapshot messages without native windows,
+including the log at 100/150%.
+
+`git-history-folder`, `git-history-file-and-diff`, `git-history-working-tree` and `git-history-root-and-empty`
+exercise the [Git history prototype](git-history.md) with real temporary repositories.
+They cover file and folder filters, adjacent-panel focus and restoration, F3 commit
+details, changed files, repository snapshots, Unicode names, renames, deletions,
+initial commits, literal path filters, empty repositories and basic diffs against
+HEAD or the first parent. The working-tree scenario checks scoped directory changes
+above filtered commits, staged and working statuses, untracked files, ignored-file
+exclusion, F3, Enter, file diff, deleted-file viewing and removal of the entry when
+only other folders have changes. The file-history scenario checks single-file
+Working tree filtering. The folder scenario uses the production virtual filesystem
+and the same file table for full snapshots, unchanged files, Git cells, parent-row
+F3, hover behavior, keyboard sorting and cursor restoration. It renders the history and snapshot
+controls offscreen at 100/150%. This is feedback smoke coverage; history paging,
+merge-specific integration and full finalization remain outside this smoke set.
+
 `history-parent-selects-exited-folder` opens a folder through History while its
 parent remembers a different cursor, then checks Ctrl+PageUp, Backspace and Enter
 on `..`. Each parent command selects the exited folder, so Enter returns to the
@@ -60,7 +92,7 @@ The `zip-*` feedback scenarios check the actual native menu's ZIP label alongsid
 
 The `clipboard-*` feedback scenarios cover actual panel Ctrl+C/X/V, Windows file/effect data through Avalonia's headless clipboard, marked files and folder trees, Unicode paths, insertion into the displayed folder with a different folder highlighted, cut dimming across both panels and reload, move conflicts and retries, safe same-folder copy names, captured destinations, pending-cut repeat protection, preservation of newer clipboard data, direct full-path export and immediate copying of selected command arguments. Real fixture contents and resulting paths are asserted. Native Explorer appearance and a live desktop clipboard round-trip are not covered by these headless checks.
 
-Before a feature commit, run `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'`. Select the changed features and affected shared behavior from the mapping below. The command runs architecture checks, analyzer self-checks, formatting, code metrics and only the selected behavior scenarios. Run the unfiltered command only when the user explicitly requests full regression checks. The same restriction applies to `./scripts/Release-Xcmd.ps1` and the manual full-regression CI workflow. Automatic CI runs static checks. Active feedback iterations use the smaller checks described in the [development workflow](development-workflow.md).
+Before a feature commit, run `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'`. Select the changed features and affected shared behavior from the mapping below. The command runs architecture checks, analyzer self-checks, formatting, code metrics and only the selected behavior scenarios. Run the unfiltered command locally only when the user explicitly requests full regression checks. The same local restriction applies to `./scripts/Release-Xcmd.ps1`. GitHub Actions runs all scenarios and static checks automatically for pushes and pull requests to `main`, and for manual runs. Active feedback iterations use the smaller checks described in the [development workflow](development-workflow.md).
 
 The recorded environment on 2026-11-10 used the SDK in `global.json`, .NET runtime 10.0.2, Avalonia 12.1.6 and Windows 10.0.26300. That historical run passed all 168 scenarios with no build warnings and zero native application windows. Compiled architecture rules, evaluated project/package policies in Debug and Release, the isolated launcher build policy, 14 deliberate analyzer violations, formatting and Lizard metrics passed. New checks use only Release / win-x64 / x64; historical evidence files remain unchanged.
 

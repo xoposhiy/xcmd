@@ -4,7 +4,7 @@ Confirmed cross-cutting requirement, 2026-11-09: the agent must be able to test 
 
 These requirements apply to [all user workflows](use-cases.md), including [search](search.md). They are a condition for architecture and framework choices, not a later testing improvement.
 
-Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Before committing, run the affected feature scenarios and static quality checks, and complete the independent usability review for changed workflows. Run the complete regression suite only when the user explicitly requests it. Commits and final releases do not require a full regression run. Use only Release / Windows x64 for this user's machine.
+Use the [development workflow](development-workflow.md) to choose when checks run. Active feedback iterations use a smoke check under 60 seconds and an automatically published local feedback build. Before committing, run the affected feature scenarios and static quality checks, and complete the independent usability review for changed workflows. Local full regression runs require a user request. GitHub Actions runs the full gate automatically as defined in the development workflow. Commits and final releases do not require a full regression run. Use only Release / Windows x64 for this user's machine.
 
 ## Required capabilities
 
@@ -18,8 +18,6 @@ Use the [development workflow](development-workflow.md) to choose when checks ru
 - Keep normal test runs independent of the user's files, TC settings, live Git repositories, credentials, and desktop state.
 - Do not create extra console windows during tests, builds or releases. Start background console processes without a console and keep output in the existing log or terminal.
 - Let the agent create fixtures, execute requested checks, inspect failures, and rerun relevant checks without human setup or decisions. Keep the full suite available for explicit user requests.
-
-The exact command names and test-driver protocol will be chosen with the implementation. Do not document an executable command as available before it exists.
 
 ## Keep behavior separate from infrastructure
 

@@ -4,7 +4,7 @@ Xcmd is a Windows file manager with two panels and keyboard controls. It uses C#
 
 The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
 
-The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks. Git status appears in the header and Git column, including summaries of direct child repositories. Git diff routing remains planned. See [requirements and status](docs/use-cases.md).
+The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks. Git status appears in the header and Git column, including summaries of direct child repositories. The Git menu opens file or folder history in the other panel, browses commit snapshots and shows a basic text diff. See [requirements and status](docs/use-cases.md).
 
 ## Run
 
@@ -27,7 +27,7 @@ See the [user guide](docs/user-guide.md) for all controls, command history, sett
 
 Use Windows, PowerShell 7, Python 3.11 or later, and the .NET SDK selected by [global.json](global.json). Dependencies are pinned in package lock files and [requirements-lint.txt](scripts/requirements-lint.txt).
 
-Use only Release / Windows x64 for application builds, tests, and local releases. Follow the [development workflow](docs/development-workflow.md): use smoke checks under 60 seconds and automatic local feedback builds while the behavior is being refined; run affected scenarios and static checks before committing accepted work. Run the complete regression suite only when the user explicitly requests it.
+Use only Release / Windows x64 for application builds, tests, and local releases. Follow the [development workflow](docs/development-workflow.md): use smoke checks under 60 seconds and automatic local feedback builds while the behavior is being refined; run affected scenarios and static checks before committing accepted work. Run the complete regression suite locally only when the user explicitly requests it. GitHub Actions runs the full gate automatically.
 
 Run the complete verification path only for an explicit full-regression request:
 
@@ -53,7 +53,7 @@ dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --list
 dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --filter rename
 ```
 
-Results, input and state traces, failure details and offscreen images are written under `artifacts`. Successful fixtures are removed unless `-KeepFixtures` is set. A failed check returns a nonzero exit code. Automatic CI runs static checks; manually starting the full-regression workflow requests the complete verification path on Windows.
+Results, input and state traces, failure details and offscreen images are written under `artifacts`. Successful fixtures are removed unless `-KeepFixtures` is set. A failed check returns a nonzero exit code. GitHub Actions runs all tests and static checks on Windows for pushes and pull requests to `main`, and for manual runs. The `code-health` artifact retains reports and test diagnostics for 14 days, including failed runs.
 
 See [automated checks](docs/automated-checks.md) for enforced rules and limits, and [verification coverage](docs/verification.md) for current evidence and native coverage limits.
 

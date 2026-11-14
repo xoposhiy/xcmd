@@ -2,7 +2,7 @@
 
 Use two phases: feedback and finalization. The user decides when the feature is ready for finalization.
 
-Run the complete regression suite only when the user explicitly requests it. A commit, finalization, release, code health report or CI run does not authorize a full regression run. Keep the required checks for affected features and static quality rules.
+GitHub Actions runs the complete regression suite and all static checks for pushes and pull requests to `main`, and for manual runs. This is the standing CI policy requested by the user. Local full regression runs still require a user request; a commit, finalization, release or code health report alone does not require one. Keep targeted local checks for affected features.
 
 ## Build profile
 
@@ -46,14 +46,19 @@ When the user explicitly requests a full regression run, test the requested snap
 
 When the user requests regression monitoring and repairs, a monitoring agent may fix failures and commit verified repairs into `main`. Use only this branch; an isolated worktree uses detached HEAD, not a repair branch. Run the relevant scenarios and static checks before committing a background repair. Repeat the complete suite only within the user's explicit full-regression request. Keep the tests and quality limits intact. Treat missing services, permissions or tools as environment failures, not as permission to remove coverage. Stop a repair that needs a product decision or cannot make progress; report the failure instead of retrying forever.
 
-Prepare the repair commit in the detached worktree and fast-forward `main` to that verified commit when the development checkout is clean and `main` still points to the tested base. This needs no separate approval. If `main` advances, apply the repair to a fresh snapshot of its new tip and verify again; do not publish an obsolete fix. If active uncommitted work prevents integration, retain the pending repair and retry when the checkout is clean. Never overwrite drafts, force-update `main`, rewrite its history or create another branch. Push only when requested. Releases and automatic CI do not require a full regression run. Use the label fully verified only when a requested full gate has passed.
+Prepare the repair commit in the detached worktree and fast-forward `main` to that verified commit when the development checkout is clean and `main` still points to the tested base. This needs no separate approval. If `main` advances, apply the repair to a fresh snapshot of its new tip and verify again; do not publish an obsolete fix. If active uncommitted work prevents integration, retain the pending repair and retry when the checkout is clean. Never overwrite drafts, force-update `main`, rewrite its history or create another branch. Push only when requested. Local releases do not require a full regression run; automatic CI always runs the full gate. Use the label fully verified only when a requested full gate has passed.
 
 ## Current commands
 
 Before a feature commit, use `scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'`. Filters are comma-separated case-insensitive substrings of scenario IDs. Use the probe's `--list` option to inspect the scenario inventory and select checks from the coverage mapping in `verification.md`. This command runs the static checks and only the selected behavior scenarios. Documentation-only changes need relevant document checks.
 
-Use `scripts/Test-Xcmd.ps1` without a filter only for an explicit full-regression request. `scripts/Test-Architecture.ps1` runs the architecture, analyzer, formatting and metrics checks. `scripts/Release-Xcmd.ps1` includes the full gate, so use it only when the user explicitly requests a full regression run with the release. Use `scripts/Report-CodeHealth.ps1 -SkipVerification` for reports unless the user explicitly requests full regression checks. Automatic CI runs static checks; a manual full-regression workflow run is an explicit user request. These commands are not the fast feedback path.
+Use `scripts/Test-Xcmd.ps1` without a filter only for an explicit full-regression request. `scripts/Test-Architecture.ps1` runs the architecture, analyzer, formatting and metrics checks. `scripts/Release-Xcmd.ps1` includes the full gate, so use it only when the user explicitly requests a full regression run with the release. Use `scripts/Report-CodeHealth.ps1 -SkipVerification` for reports unless the user explicitly requests full regression checks. CI uses `Report-CodeHealth.ps1` without `-SkipVerification` for every trigger, so reports include the complete behavior suite and static checks. These commands are not the fast feedback path.
 
 Use `scripts/Publish-Feedback.ps1 -Filter '<targeted-scenario-filters>'` for a feedback release. It builds Release / Windows x64, runs the selected headless scenarios, records the verification time, publishes a new ReadyToRun release, installs the permanent launcher and updates the release marker atomically. The evidence explicitly says `feedback-smoke` and `fullVerification: false`. Choose a small set that covers startup and the changed workflow. Run the helper from a hidden PowerShell process with output redirected to a log, as required above. Package audit and locked dependency restore still run; network access may be needed when cached audit data expires.
+
+Both release commands use `scripts/Publish-Application.ps1` for result validation,
+publishing, launcher installation, and the final marker update. Keep these steps
+in this shared helper. `scripts/BuildEnvironment.ps1` sets the repository-local
+.NET environment for build and test commands.
 
 When the user explicitly requests installation despite an unavailable NuGet vulnerability service, `-SkipPackageAudit` permits a feedback release using locked dependencies and the same build and smoke checks. The release evidence records `packageAudit: skipped-explicitly`. This option does not apply to final releases and is never enabled by default.
