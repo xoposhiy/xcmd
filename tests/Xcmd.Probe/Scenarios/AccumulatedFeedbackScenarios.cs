@@ -54,6 +54,7 @@ public static class AccumulatedFeedbackScenarios
             var navigate = menu.Items.OfType<MenuItem>().Single(item => item.Header as string == "Navigate");
             foreach (var (title, destination) in new[] { ("Home folder", UserDirectories.Home), ("Drive root", root) })
             {
+                await c.Window.Left.LoadAsync(c.LeftPath); await c.SettleAsync();
                 var command = navigate.Items.OfType<MenuItem>().Single(item => item.Header as string == title);
                 Check(command.InputGesture != null, "The menu exposes the existing shortcut");
                 await c.ClickAsync(navigate); await c.ClickAsync(command);

@@ -10,37 +10,26 @@ public static class TaskbarProbe
     public static void CheckShortcut(LauncherFixture fixture, string? icon = null)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("The taskbar probe requires Windows.");
-        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!)!;
-        dynamic shortcut = shell.CreateShortcut(fixture.Shortcut);
+        var shortcut = ShortcutProbe.Read(fixture.Shortcut);
         dynamic explorer = Activator.CreateInstance(Type.GetTypeFromProgID("Shell.Application")!)!;
         dynamic folder = explorer.NameSpace(fixture.Root);
         dynamic item = folder.ParseName("Xcmd.lnk");
         try
         {
-            Equal(fixture.Launcher, (string)shortcut.TargetPath, "The shortcut uses the permanent launcher");
-            Equal(fixture.Root, (string)shortcut.WorkingDirectory, "The shortcut has a stable working directory");
-            Equal("", (string)shortcut.Arguments, "The shortcut does not select a fixed release");
-            Equal((icon ?? fixture.Launcher) + ",0", (string)shortcut.IconLocation, "The shortcut uses the configured application icon");
+            Equal(fixture.Launcher, shortcut.Target, "The shortcut uses the permanent launcher");
+            Equal(fixture.Root, shortcut.WorkingDirectory, "The shortcut has a stable working directory");
+            Equal("", shortcut.Arguments, "The shortcut does not select a fixed release");
+            Equal(icon ?? fixture.Launcher, shortcut.Icon, "The shortcut uses the configured application icon");
+            Equal(0, shortcut.IconIndex, "The shortcut uses the first icon");
             Equal("Xcmd.FileManager", (string)item.ExtendedProperty("System.AppUserModel.ID"), "The shortcut has the shared taskbar identity");
         }
         finally
         {
-            foreach (object instance in new object[] { item, folder, explorer, shortcut, shell }) Marshal.FinalReleaseComObject(instance);
+            foreach (object instance in new object[] { item, folder, explorer }) Marshal.FinalReleaseComObject(instance);
         }
     }
 
-    public static string ReadShortcutIcon(LauncherFixture fixture)
-    {
-        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("The taskbar probe requires Windows.");
-        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!)!;
-        dynamic shortcut = shell.CreateShortcut(fixture.Shortcut);
-        try
-        {
-            var location = (string)shortcut.IconLocation;
-            return location[..location.LastIndexOf(',')];
-        }
-        finally { Marshal.FinalReleaseComObject(shortcut); Marshal.FinalReleaseComObject(shell); }
-    }
+    public static string ReadShortcutIcon(LauncherFixture fixture) => ShortcutProbe.Read(fixture.Shortcut).Icon;
 
     public static byte[] ReadIconPixels(string path) => SystemIcons.Read(path, false).Bytes;
 

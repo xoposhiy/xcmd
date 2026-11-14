@@ -72,12 +72,12 @@ public static class OpenFeedbackScenarios
             foreach (var scale in new[] { 1d, 1.5d })
             {
                 c.Window.SetScaleForTest(scale);
-                foreach (var (width, visible) in new[] { (520d, 4), (400d, 3), (250d, 2), (140d, 1), (520d, 4) })
+                foreach (var (width, visible) in new[] { (600d, 5), (520d, 4), (400d, 4), (350d, 3), (250d, 2), (140d, 1), (600d, 5) })
                 {
                     panel.Width = width;
                     await c.SettleAsync();
                     Equal(visible, panel.Table.Columns.Count(column => column.IsVisible), "Columns hide from the right at width " + width);
-                    Check(panel.Table.Columns.Where((_, index) => index != 3).Take(visible).All(column => column.IsVisible), "Available columns hide from the right");
+                    Check(panel.Table.Columns.Take(visible).All(column => column.IsVisible), "Available columns hide from the right");
                     var scroll = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
                     Check(scroll.Extent.Width <= scroll.Viewport.Width + 1, "No horizontal overflow while the name minimum fits");
                     Equal(cursor, panel.Current?.Name, "Resize preserves cursor");

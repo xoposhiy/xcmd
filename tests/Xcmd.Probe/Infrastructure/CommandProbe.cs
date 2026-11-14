@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using static Xcmd.Probe.Infrastructure.WorkspaceProbe;
 
@@ -59,14 +58,7 @@ public static class CommandProbe
         return await reading;
     }
 
-    public static void CreateShortcut(string path, LaunchFixture fixture, string workingDirectory)
-    {
-        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("The shortcut fixture requires Windows.");
-        var type = Type.GetTypeFromProgID("WScript.Shell") ?? throw new IOException("Windows Script Host is unavailable.");
-        dynamic shell = Activator.CreateInstance(type)!;
-        dynamic shortcut = shell.CreateShortcut(path);
-        try { shortcut.TargetPath = fixture.Executable; shortcut.WorkingDirectory = workingDirectory; shortcut.Save(); }
-        finally { Marshal.FinalReleaseComObject(shortcut); Marshal.FinalReleaseComObject(shell); }
-    }
+    public static void CreateShortcut(string path, LaunchFixture fixture, string workingDirectory) =>
+        ShortcutProbe.Create(path, fixture.Executable, workingDirectory);
 
 }

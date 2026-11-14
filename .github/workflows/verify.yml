@@ -36,12 +36,27 @@ jobs:
           cache-dependency-path: scripts/requirements-lint.txt
       - name: Run all tests and checks and generate the code health report
         run: ./scripts/Report-CodeHealth.ps1 -OutputPath artifacts/code-health/ci
+      - name: Publish the application for startup checks
+        run: dotnet publish src/Xcmd.Desktop/Xcmd.Desktop.csproj -c Release -r win-x64 --no-self-contained -p:PublishReadyToRun=true -p:RestoreLockedMode=true --output artifacts/ci-application -m:1 -p:UseSharedCompilation=false -v minimal
+      - name: Check published startup with offscreen rendering
+        run: ./scripts/Test-Startup.ps1 -ApplicationPath artifacts/ci-application -OutputPath artifacts/startup/ci-headless
+      - name: Check published startup with the native Windows backend
+        run: ./scripts/Test-Startup.ps1 -ApplicationPath artifacts/ci-application -OutputPath artifacts/startup/ci-native -Native
       - name: Upload the report and test diagnostics
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: code-health
           path: artifacts/code-health/ci
+          retention-days: 14
+      - name: Upload startup results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: startup
+          path: |
+            artifacts/startup/ci-*/results.json
+            artifacts/startup/ci-*/run-*
           retention-days: 14
       - name: Upload analyzer failure diagnostics
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

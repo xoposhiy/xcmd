@@ -61,7 +61,7 @@ public static class RefinementScenarios
         new("refinement-command-menu", "UC20", async c =>
         {
             var menu = c.Window.GetVisualDescendants().OfType<Menu>().Single();
-            Check(menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).SequenceEqual(new[] { "File", "Navigate", "Sort", "View", "Help" }), "The header contains a command menu.");
+            Check(menu.Items.OfType<MenuItem>().Select(item => item.Header?.ToString()).SequenceEqual(new[] { "File", "Navigate", "Sort", "View", "Git", "Help" }), "The header contains a command menu.");
             Check(!c.Window.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "XCMD   /   FILE PANELS"), "The large title is removed.");
             await c.ClickAsync((MenuItem)menu.Items[0]!);
             Check(c.Window.IsMenuOpen && !c.Window.Readiness.CanRestart, "An open menu defers automatic updates.");

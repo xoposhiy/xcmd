@@ -104,6 +104,7 @@ public static class NavigationAndColorsScenarios
         }),
         new("navigation-search-active-column-and-keyboard-layout", "UC15; UC16; first matching row, physical input and search reset", async c =>
         {
+            using var layouts = new KeyboardLayoutFixture();
             var path = Path.Combine(c.LeftPath, "folder1");
             var first = c.Window.Favorites.Add(c.RightPath); c.Window.Favorites.Rename(first.Id, "My work");
             var second = c.Window.Favorites.Add(path); c.Window.Favorites.Rename(second.Id, "work");

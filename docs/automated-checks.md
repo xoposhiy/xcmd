@@ -116,6 +116,8 @@ Microsoft.CodeAnalysis.Metrics 5.6.0 produces semantic XML. Its package uses Ros
 
 Every CI run calls `Report-CodeHealth.ps1` without `-SkipVerification`. This runs the report aggregation tests, architecture checks, analyzer self-checks, formatting, code metrics, and every headless behavior scenario. Failed checks make the job fail. CI uploads the `code-health` artifact on success or failure and retains it for 14 days. Failed runs also upload analyzer fixtures as `architecture-diagnostics`. The Windows job uses the pinned SDK and locked dependencies, caches NuGet and pip downloads, and has a 45-minute timeout.
 
+CI also publishes a ReadyToRun application and runs `Test-Startup.ps1` with both offscreen rendering and the native Windows backend. Each backend checks seven launches through the real launcher, saved workspace restoration, and the absence of visible windows or attached consoles. The `startup` artifact retains the results for 14 days. CI does not install a release or change the local release marker.
+
 ## Tool references
 
 - [ArchUnitNET](https://github.com/TNG/ArchUnitNET)

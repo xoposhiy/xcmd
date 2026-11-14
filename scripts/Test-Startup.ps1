@@ -47,7 +47,7 @@ for ($run = 1; $run -le $Runs; $run++) {
     $start.UseShellExecute = $false
     $start.CreateNoWindow = $true
     $start.WorkingDirectory = $fixture
-    foreach ($argument in @('--startup-host', $reportPath, $session)) { $start.ArgumentList.Add($argument) }
+    foreach ($argument in @('--startup-host', $reportPath, $session, '--wait-for-exit-signal')) { $start.ArgumentList.Add($argument) }
     if ($Native) { $start.ArgumentList.Add('--native') }
     $started = [System.Diagnostics.Stopwatch]::GetTimestamp()
     $timer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -79,8 +79,11 @@ for ($run = 1; $run -le $Runs; $run++) {
             $hostProcess = Get-Process -Id ([int](Get-Content -Raw -LiteralPath $pidPath)) -ErrorAction SilentlyContinue
             if ($hostProcess) {
                 try {
+                    # Retain the Windows handle so the exit code remains available after the process exits.
+                    $null = $hostProcess.get_Handle()
+                    [System.IO.File]::WriteAllText($reportPath + '.exit', '')
                     if (-not $hostProcess.WaitForExit(10000)) { $hostProcess.Kill(); throw 'The startup host did not close.' }
-                    if ($hostProcess.ExitCode -ne 0) { throw 'The startup host failed.' }
+                    if ($hostProcess.ExitCode -ne 0) { throw "The startup host failed with exit code '$($hostProcess.ExitCode)'." }
                 }
                 finally { $hostProcess.Dispose() }
             }

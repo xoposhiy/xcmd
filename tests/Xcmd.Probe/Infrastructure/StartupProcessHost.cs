@@ -59,6 +59,8 @@ public static class StartupProcessHost
                         var report = new { native, consoleAttached, visibleApplicationWindows = 0, readyToShowTimestamp, frameReadyTimestamp, phases, state = window.CaptureWorkspace() };
                         await File.WriteAllTextAsync(args[0] + ".tmp", JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
                         File.Move(args[0] + ".tmp", args[0]);
+                        if (args.Contains("--wait-for-exit-signal"))
+                            await WorkspaceProbe.WaitAsync(() => File.Exists(args[0] + ".exit"));
                         lifecycle!.Dispose();
                         desktop.Shutdown();
                     }
