@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using System.Diagnostics;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 
@@ -11,6 +12,7 @@ public sealed class DirectoryUpdates : IDisposable
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
     private bool checking;
     private bool disposed;
+    private readonly Dictionary<PanelView, long> gitRefreshes = [];
     public Task PendingWork { get; private set; } = Task.CompletedTask;
 
     public DirectoryUpdates(CommanderWindow window)
@@ -32,9 +34,11 @@ public sealed class DirectoryUpdates : IDisposable
             foreach (var panel in new[] { window.Left, window.Right })
             {
                 var path = panel.Session.DirectoryPath;
-                if (panel.IsSearchResults || ArchivePath.IsEntry(path))
+                var liveGit = GitPath.IsLive(path);
+                if (liveGit || panel.IsSearchResults || ArchivePath.IsEntry(path))
                 {
                     if (monitors.Remove(panel, out var old)) old.Monitor.Dispose();
+                    if (liveGit) await RefreshGitAsync(panel);
                     continue;
                 }
                 if (path.Length == 0) continue;
@@ -56,6 +60,17 @@ public sealed class DirectoryUpdates : IDisposable
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         { window.Trace.Add("Directory monitoring: " + error); window.SetUpdateMessage("A directory could not be updated. Retrying automatically."); }
         finally { checking = false; }
+    }
+
+    private async Task RefreshGitAsync(PanelView panel)
+    {
+        if (window.IsBusy || !CanApply || panel.HasCommitMessageFocus) return;
+        if (gitRefreshes.TryGetValue(panel, out var refreshed) && Stopwatch.GetElapsedTime(refreshed) < TimeSpan.FromSeconds(3)) return;
+        gitRefreshes[panel] = Stopwatch.GetTimestamp();
+        await window.RunActionAsync(async () =>
+        {
+            await panel.RefreshAsync(() => CanApply && !panel.HasCommitMessageFocus, () => window.ActivePanel == panel);
+        });
     }
 
     public void Dispose()

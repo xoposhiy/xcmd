@@ -3,8 +3,7 @@ param(
     [switch]$SkipVerification
 )
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path $PSScriptRoot -Parent
+. (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
 if (-not $OutputPath) { $OutputPath = 'artifacts/code-health/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') }
 $reportPath = [System.IO.Path]::GetFullPath($OutputPath, $projectRoot)
 $python = Join-Path $projectRoot 'artifacts/lint-venv/Scripts/python.exe'
@@ -12,9 +11,6 @@ $collector = Join-Path $PSScriptRoot 'code-health/collect.py'
 $previousRollForward = $env:DOTNET_ROLL_FORWARD
 Push-Location $projectRoot
 try {
-    $env:DOTNET_CLI_HOME = Join-Path $projectRoot '.dotnet'
-    $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
-    $env:DOTNET_GENERATE_ASPNET_CERTIFICATE = 'false'
     New-Item -ItemType Directory -Path $reportPath -Force | Out-Null
     if (-not (Test-Path -LiteralPath $python)) {
         python -m venv artifacts/lint-venv

@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Xcmd.Core;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
@@ -7,6 +8,22 @@ public sealed record GitRowStatus(GitChange Staged, GitChange Unstaged)
 {
     public static readonly GitRowStatus Empty = new(GitChange.None, GitChange.None);
     public GitStatus? Repository { get; init; }
+    public bool IsCommitSnapshot { get; init; }
+    public static GitRowStatus FromEntry(GitEntryStatus status, bool commit) =>
+        new(Change(status.Staged), Change(status.Working)) { IsCommitSnapshot = commit };
+
+    private static GitChange Change(char code) => code switch
+    {
+        'M' => GitChange.Modified,
+        'A' => GitChange.Added,
+        'D' => GitChange.Deleted,
+        'R' => GitChange.Renamed,
+        'C' => GitChange.Copied,
+        'T' => GitChange.TypeChanged,
+        '?' => GitChange.Untracked,
+        'U' => GitChange.Conflict,
+        _ => GitChange.None
+    };
     public bool HasChanges => Staged != GitChange.None || Unstaged != GitChange.None;
     private bool Conflict => (Staged | Unstaged).HasFlag(GitChange.Conflict);
     public string IndexGlyph => Conflict ? "!" : Glyph(Staged, staged: true);
@@ -15,7 +32,7 @@ public sealed record GitRowStatus(GitChange Staged, GitChange Unstaged)
     public IBrush WorkingBrush => Repository != null && !HasChanges ? UiPalette.Success : Unstaged.HasFlag(GitChange.Deleted) ? UiPalette.Error : Unstaged.HasFlag(GitChange.Untracked) ? UiPalette.Focus : UiPalette.Mark;
     public string Description => Repository is { } repository ? $"Git · {repository.Branch} · {(HasChanges ? "changes" : "clean")}\nWhole repository: {repository.Staged} staged, {repository.Changed} changed, {repository.Untracked} untracked, {repository.Deleted} deleted, {repository.Conflicts} conflicts\n{repository.Ahead} ahead, {repository.Behind} behind" : ChangeDescription;
     private string ChangeDescription => !HasChanges ? "No reported changes" : Conflict ? "Unresolved merge conflict" :
-        string.Join("\n", new[] { Describe("Staged", Staged), Describe("Working tree", Unstaged) }.Where(text => text.Length > 0));
+        string.Join("\n", new[] { Describe("Staged", Staged), Describe(IsCommitSnapshot ? "Commit" : "Working tree", Unstaged) }.Where(text => text.Length > 0));
 
     private static string Glyph(GitChange value, bool staged)
     {

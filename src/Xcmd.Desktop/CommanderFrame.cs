@@ -5,6 +5,7 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Xcmd.Core;
 
 namespace Xcmd.Desktop;
 
@@ -80,12 +81,18 @@ internal sealed class CommanderFrame
         AutomationProperties.SetAutomationId(button, id);
         return button;
     }
-    public static Control BuildKeyboardHelp()
+    public static Control BuildKeyboardHelp(CommanderWindow? window = null)
     {
         var help = new WrapPanel { Name = "KeyboardHelp" }.WithFeedbackId("CommanderFrame.help");
-        string[] hints = ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
-        foreach (var hint in hints)
-            help.Children.Add(new Border
+        void Update()
+        {
+            string[] hints = window?.ActivePanel.HasHistory == true
+                ? GitPath.IsLog(window.ActivePanel.Session.DirectoryPath)
+                    ? ["Enter  Full repository snapshot", "F3  Commit details", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
+                    : ["F3  View / changed files on ..", "Ctrl+Alt+D  Diff", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
+                : ["Alt+F7  Find files", "F3  View", "F4  Edit", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+            help.Children.Clear();
+            foreach (var hint in hints) help.Children.Add(new Border
             {
                 BorderThickness = new Thickness(help.Children.Count == 0 ? 0 : 1, 0, 0, 0),
                 BorderBrush = UiPalette.Divider,
@@ -93,6 +100,13 @@ internal sealed class CommanderFrame
                 Margin = new Thickness(0, 3),
                 Child = new TextBlock { Text = hint, FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("CommanderFrame.BuildKeyboardHelp")
             }.WithFeedbackId("CommanderFrame.BuildKeyboardHelp.2"));
+        }
+        if (window != null)
+            foreach (var panel in new[] { window.Left, window.Right })
+            {
+                panel.Activated += _ => Update(); panel.LocationVisited += _ => Update();
+            }
+        Update();
         return help;
     }
 

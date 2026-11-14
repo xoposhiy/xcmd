@@ -15,8 +15,8 @@ public sealed partial class FileViewerWindow
         WindowDecorationProperties.SetElementRole(TitleBar, WindowDecorationsElementRole.TitleBar);
         WindowDecorationProperties.SetElementRole(Commands, WindowDecorationsElementRole.User);
         TitleBar.Children.Add(Commands);
-        titlePath.Text = Path.GetFileName(CurrentPath);
-        ToolTip.SetTip(titlePath, CurrentPath);
+        titlePath.Text = document?.Caption ?? Path.GetFileName(CurrentPath);
+        ToolTip.SetTip(titlePath, DocumentCaption);
         Grid.SetColumn(titlePath, 1); TitleBar.Children.Add(titlePath);
         Grid.SetColumn(Progress, 2); TitleBar.Children.Add(Progress);
         var caption = WindowHeader.CaptionButtons(this, "Viewer");

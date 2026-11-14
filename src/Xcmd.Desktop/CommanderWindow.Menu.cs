@@ -8,13 +8,28 @@ public sealed partial class CommanderWindow
 {
     private Menu BuildMenu()
     {
-        MenuItem Item(string title, Action action, KeyGesture? gesture = null)
+        MenuItem Item(string title, Action action, KeyGesture? gesture = null, bool historyAllowed = false)
         {
             var item = new MenuItem { Header = title, InputGesture = gesture }.WithFeedbackId("CommanderWindow.Menu.item");
-            item.Click += (_, _) => { ResetQuickJump(); action(); };
+            item.Click += (_, _) =>
+            {
+                ResetQuickJump();
+                if (ActivePanel.HasHistory && !historyAllowed) { SetError("Git history is read-only. Close the log to use this command."); return; }
+                action();
+            };
+            GitHistory.RegisterMenuItem(item, historyAllowed);
             return item;
         }
-        MenuItem Sort(string title, SortField field) => Item(title, () => { ActivePanel.SortBy(field); ActivePanel.FocusCurrent(); });
+        MenuItem Sort(string title, SortField field)
+        {
+            var item = Item(title, () => { ActivePanel.SortBy(field); ActivePanel.FocusCurrent(); }, historyAllowed: true);
+            GitHistory.MarkSort(item); return item;
+        }
+        MenuItem Changes()
+        {
+            var item = Item("Changed files in current commit", GitHistory.ShowChanges, historyAllowed: true);
+            GitHistory.MarkChanges(item); return item;
+        }
         return new Menu
         {
             Name = "MainMenu",
@@ -22,7 +37,7 @@ public sealed partial class CommanderWindow
             {
                 new MenuItem() { Header = "File", ItemsSource = new MenuItem[]
                 {
-                    Item("View file", viewing.ViewCurrent, new(Key.F3)),
+                    Item("View file or commit", viewing.ViewCurrent, new(Key.F3), historyAllowed: true),
                     Item("Find files", FileSearch.Open, new(Key.F7, KeyModifiers.Alt)),
                     Item("Edit in Notepad++", () => Execute(viewing.EditCurrentAsync), new(Key.F4)),
                     Item("New file and edit", OpenCreateFileDialog, new(Key.F4, KeyModifiers.Shift)),
@@ -37,31 +52,38 @@ public sealed partial class CommanderWindow
                     Item("Move to other panel", () => TransferSelected(FileOperationKind.Move), new(Key.F6)),
                     Item("Move to Recycle Bin", () => DeleteSelected(false), new(Key.F8)),
                     Item("Delete permanently", () => DeleteSelected(true), new(Key.Delete, KeyModifiers.Shift)),
-                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter)),
-                    Item("Open with Windows", OpenWithWindows), Item("Exit", Close)
+                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter), historyAllowed: true),
+                    Item("Open with Windows", OpenWithWindows), Item("Exit", Close, historyAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu"),
                 new MenuItem() { Header = "Navigate", ItemsSource = new MenuItem[]
                 {
-                    Item("Parent directory", OpenParent, new(Key.PageUp, KeyModifiers.Control)),
+                    Item("Parent directory", OpenParent, new(Key.PageUp, KeyModifiers.Control), historyAllowed: true),
                     Item("Home folder", () => OpenDirectoryDestination(PanelView.HomeDirectory), new(Key.OemTilde, KeyModifiers.Control)),
                     Item("Drive root", () => OpenDirectoryDestination(Path.GetPathRoot(ArchivePath.PhysicalFile(ActivePanel.Session.DirectoryPath))), new(Key.OemBackslash, KeyModifiers.Control)),
                     Item("Open as archive", () => Execute(() => OpenArchiveAsync(ActivePanel)), new(Key.PageDown, KeyModifiers.Control)),
                     Item("Go to directory", () => OpenNavigation(ActivePanel, DirectoryList.History), new(Key.Down, KeyModifiers.Alt)),
                     Item("Favorite directories", () => OpenNavigation(ActivePanel, DirectoryList.Favorites), new(Key.D, KeyModifiers.Control)),
-                    Item("Switch panel", () => { Activate(OppositePanel); ActivePanel.FocusCurrent(); }, new(Key.Tab)),
-                    Item("Focus command line", () => CommandLine.FocusCommand(), new(Key.L, KeyModifiers.Control))
+                    Item("Switch panel", () => { Activate(OppositePanel); ActivePanel.FocusCurrent(); }, new(Key.Tab), historyAllowed: true),
+                    Item("Focus command line", () => CommandLine.FocusCommand(), new(Key.L, KeyModifiers.Control), historyAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.2"),
                 new MenuItem() { Header = "Sort", ItemsSource = new[] { Sort("Name", SortField.Name), Sort("Type", SortField.Extension), Sort("Size", SortField.Size), Sort("Modified", SortField.Modified) } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.3"),
                 new MenuItem() { Header = "View", ItemsSource = new[]
                 {
-                    Item("Reset column widths", () => ActivePanel.ResetColumns()), Item("Reload file colors", () => Execute(ReloadFileTypesAsync)),
+                    Item("Reset column widths", () => ActivePanel.ResetColumns(), historyAllowed: true), Item("Reload file colors", () => Execute(ReloadFileTypesAsync)),
                     Item("Calculate folder sizes", () => Execute(CalculateDirectorySizesAsync), new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift)),
                     Item("File operations", () => OperationsView.ToggleDetails())
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.4"),
+                new MenuItem() { Header = "Git", ItemsSource = new MenuItem[]
+                {
+                    Item("Log of selected file or folder", () => GitHistory.Open(selectedItem: true), new(Key.L, KeyModifiers.Control | KeyModifiers.Alt), historyAllowed: true),
+                    Item("Log of current folder", () => GitHistory.Open(selectedItem: false), historyAllowed: true),
+                    Changes(),
+                    Item("Diff selected file", GitHistory.DiffCurrent, new(Key.D, KeyModifiers.Control | KeyModifiers.Alt), historyAllowed: true)
+                } }.WithFeedbackId("CommanderWindow.Menu.git"),
                 new MenuItem() { Header = "Help", ItemsSource = new MenuItem[]
                 {
-                    Item("Comment on an element", () => Feedback.Begin(), new(Key.F12)),
-                    Item("Refinement list", () => Feedback.ShowNotes())
+                    Item("Comment on an element", () => Feedback.Begin(), new(Key.F12), historyAllowed: true),
+                    Item("Refinement list", () => Feedback.ShowNotes(), historyAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.5")
             }
         }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.6");
@@ -75,6 +97,7 @@ public sealed partial class CommanderWindow
 
     private static async Task OpenParentAsync(PanelView panel)
     {
+        if (panel.HasHistory) { await panel.BackHistoryAsync(); return; }
         if (panel.IsSearchResults) { await panel.ExitSearchResultsAsync(); return; }
         var directory = panel.Session.DirectoryPath;
         var parent = PanelRules.ParentEntry(directory);

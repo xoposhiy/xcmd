@@ -11,11 +11,7 @@ public sealed partial class CommanderWindow
         if (CommandLine.Completions.HandleKey(e)) { e.Handled = true; return; }
         if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Control) Execute(CommandLine.CompleteAsync);
         else if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
-        {
-            if (ActivePanel.IsSearchResults && string.IsNullOrEmpty(CommandLine.Editor.Text))
-            { Activate(ActivePanel); Execute(ActivePanel.ExitSearchResultsAsync); }
-            else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); }
-        }
+            EscapeCommandLine();
         else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
             Execute(CommandLine.CopyAllAsync);
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
@@ -28,6 +24,15 @@ public sealed partial class CommanderWindow
         { if (launchKeysHeld.Add(e.Key)) Execute(RunCommandLineAsync); }
         else return;
         e.Handled = true;
+    }
+
+    private void EscapeCommandLine()
+    {
+        if (ActivePanel.HasHistory && string.IsNullOrEmpty(CommandLine.Editor.Text))
+        { Activate(ActivePanel); Execute(ActivePanel.ExitHistoryAsync); }
+        else if (ActivePanel.IsSearchResults && string.IsNullOrEmpty(CommandLine.Editor.Text))
+        { Activate(ActivePanel); Execute(ActivePanel.ExitSearchResultsAsync); }
+        else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); Activate(ActivePanel); ActivePanel.ClearMarks(); }
     }
 
     private void HandleRenameKey(KeyEventArgs e)

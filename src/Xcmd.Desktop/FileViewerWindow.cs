@@ -86,10 +86,11 @@ public sealed partial class FileViewerWindow : Window
     public TextBox Search { get; } = new TextBox() { Name = "ViewerSearch", PlaceholderText = "Find", MaxLength = 1024, Margin = new Thickness(0, 0, 12, 0) }.WithFeedbackId("FileViewerWindow.Search");
 
     public FileViewerWindow(string[] paths, int index, IViewerFiles files, FeedbackController feedback,
-        Func<string, Task> edit, Func<string, Task> open, string themeId = "dark")
+        Func<string, Task> edit, Func<string, Task> open, string themeId = "dark", ViewerDocument? document = null)
     {
         this.paths = paths; this.index = index; this.files = files; this.feedback = feedback; this.edit = edit; this.open = open;
-        Title = CurrentPath + " — Xcmd Viewer";
+        this.document = document;
+        Title = DocumentCaption + " — Xcmd Viewer";
         Width = 1120; Height = 760; MinWidth = 640; MinHeight = 300;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         WindowHeader.Configure(this);

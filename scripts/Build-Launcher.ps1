@@ -1,10 +1,8 @@
 param([string]$OutputPath = 'artifacts/launcher/publish')
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path $PSScriptRoot -Parent
+. (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
 Push-Location $projectRoot
 try {
-    $env:DOTNET_CLI_HOME = Join-Path $projectRoot '.dotnet'
     $output = [System.IO.Path]::GetFullPath($OutputPath, $projectRoot)
     $intermediate = Join-Path $projectRoot 'artifacts/launcher/obj/'
     $binary = Join-Path $projectRoot 'artifacts/launcher/bin/'

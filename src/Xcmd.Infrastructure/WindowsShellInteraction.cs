@@ -42,10 +42,6 @@ public sealed class WindowsShellInteraction : IShellInteraction
         return message != 0x120 && activeMenu is IContextMenu2 second && second.HandleMenuMsg(message, wParam, lParam) == 0;
     }
 
-    // Native discovery uses the same shell objects as the visible menu, without displaying it.
-    public static IReadOnlyList<string> DiscoverVerbs(string path)
-        => InspectMenu(path).Verbs;
-
     public static ShellMenuInspection InspectMenu(string path, bool asynchronousState = true)
         => InspectMenu([path], asynchronousState);
 

@@ -27,8 +27,6 @@ public sealed class ArchiveFileSystem(IFileSystem fileSystem, IArchiveContents a
     public Task CreateDirectoryAsync(string parent, string name)
     { ArchivePath.RequireWritable(parent); return fileSystem.CreateDirectoryAsync(parent, name); }
 
-    public Task CopyFileAsync(FileEntry entry, string destination) => CopyAsync(entry.FullPath, Path.Combine(destination, entry.Name), false, new Progress<long>(), CancellationToken.None);
-
     public Task<bool> AreIdenticalAsync(FileEntry source, FileEntry destination, CancellationToken cancellationToken) =>
         ArchivePath.IsEntry(source.FullPath) ? Task.FromResult(false) : operations.AreIdenticalAsync(source, destination, cancellationToken);
 

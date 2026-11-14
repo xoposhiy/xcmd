@@ -36,7 +36,7 @@ public sealed partial class PanelView : Border
     }
     private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
     public PanelSession Session { get; }
-    public string DisplayPath => PathText.Display(Session.DirectoryPath);
+    public string DisplayPath => PathText.Display(Session.FileSystem is GitFileSystem git ? git.Display(Session.DirectoryPath) : Session.DirectoryPath);
     public TableView Table { get; }
     public List<FileRow> Rows { get; private set; } = [];
     public FileRow? EditingRow { get; private set; }
@@ -64,6 +64,7 @@ public sealed partial class PanelView : Border
 
     public PanelState CaptureState()
     {
+        if (HasHistory && gitReturnState != null) return gitReturnState;
         if (searchResults != null) return CaptureSearchState();
         Session.RememberCursor(Current?.Name);
         var offset = Scroll?.Offset ?? default;
@@ -204,6 +205,7 @@ public sealed partial class PanelView : Border
         Table.Columns.Add(Column(SortField.Size, "Size", new GridLength(88)));
         Table.Columns.Add(MakeGitColumn());
         Table.Columns.Add(Column(SortField.Modified, "Modified", new GridLength(145)));
+        logPresentation = new GitLogPresentation(Table);
         Git.StatusChanged += ApplyGitStatus;
         ResetColumns();
         Table.Loaded += (_, _) => { ConfigureHeaders(); QueueColumnAdaptation(); };
@@ -243,7 +245,7 @@ public sealed partial class PanelView : Border
                 OpenRequested?.Invoke(this);
         };
         AttachShellInput();
-        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,29") }.WithFeedbackId("PanelView.content");
+        var content = new Grid { RowDefinitions = new RowDefinitions("34,*,0,29") }.WithFeedbackId("PanelView.content");
         var historyButton = new Button
         {
             Content = "History",
@@ -277,6 +279,7 @@ public sealed partial class PanelView : Border
         content.Children.Add(pathContainer);
         Grid.SetRow(Table, 1);
         content.Children.Add(Table);
+        BuildCommitMessageArea(content);
         summary.VerticalAlignment = VerticalAlignment.Center;
         summary.TextTrimming = TextTrimming.CharacterEllipsis;
         summary.HorizontalAlignment = HorizontalAlignment.Right;
@@ -292,7 +295,7 @@ public sealed partial class PanelView : Border
             ClipToBounds = true
         }.WithFeedbackId("PanelView.summaryContainer");
         AutomationProperties.SetAutomationId(summary, id + ".summary");
-        Grid.SetRow(summaryContainer, 2);
+        Grid.SetRow(summaryContainer, 3);
         content.Children.Add(summaryContainer);
         Child = content;
         UpdateHeaders();
@@ -300,6 +303,7 @@ public sealed partial class PanelView : Border
 
     public void ResetColumns()
     {
+        if (logPresentation.ResetWidths()) return;
         headersConfigured = false;
         Table.Columns[0].Width = new GridLength(3, GridUnitType.Star);
         Table.Columns[1].Width = new GridLength(88);
@@ -379,30 +383,34 @@ public sealed partial class PanelView : Border
         return text;
     }
 
-    public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null)
+    public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default)
     {
+        var gitReturn = GitPath.IsEntry(directory) && !HasHistory ? CaptureState() : null;
         LoadingRequested?.Invoke(this);
         CancelRename();
         if (!preserveSelection) keyboardMarks = false;
         var selected = preserveSelection ? SelectedNames() : [];
         if (!IsSearchResults) Session.RememberCursor(Current?.Name);
         var previousPath = Session.DirectoryPath;
-        var loaded = await Session.LoadAsync(directory);
-        if (loaded)
+        if (!await Session.LoadAsync(directory, cancellationToken))
         {
-            searchResults = null;
-            searchReturnState = null;
-            sizes.Clear();
-            ApplyEntries(selected, selectName ?? (preserveSelection ? Current?.Name : Session.RememberedCursor));
-            path.Text = DisplayPath;
-            Git.SetDirectory(Session.DirectoryPath);
-            path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
-            ToolTip.SetTip(path, path.Text);
-            AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);
-            if (!previousPath.Equals(Session.DirectoryPath, StringComparison.OrdinalIgnoreCase)) LocationVisited?.Invoke(Session.DirectoryPath);
+            UpdateSummary();
+            return false;
         }
+        gitReturnState = HasHistory ? gitReturn ?? gitReturnState : null;
+        searchResults = null;
+        searchReturnState = null;
+        sizes.Clear();
+        selectName ??= preserveSelection ? Current?.Name : Session.RememberedCursor;
+        ApplyEntries(selected, selectName);
+        path.Text = DisplayPath;
+        Git.SetDirectory(Session.DirectoryPath);
+        path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
+        ToolTip.SetTip(path, path.Text);
+        AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);
+        if (!previousPath.Equals(Session.DirectoryPath, StringComparison.OrdinalIgnoreCase)) LocationVisited?.Invoke(Session.DirectoryPath);
         UpdateSummary();
-        return loaded;
+        return true;
     }
 
     public void SortBy(SortField field)
@@ -418,6 +426,7 @@ public sealed partial class PanelView : Border
     private void ApplyEntries(string[] selected, string? current)
     {
         rangeAnchor = null;
+        ConfigureLogPresentation();
         Rows = ResultRows();
         foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
         Table.ItemsSource = Rows;
@@ -634,11 +643,17 @@ public sealed partial class PanelView : Border
         foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
         markedRows = marked;
         UpdateSelectionTotal();
+        UpdateCommitMessage();
     }
 
     private void UpdateSelectionTotal()
     {
         var selectedNames = SelectedNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (HasHistory)
+        {
+            summary.Text = Session.Error ?? logPresentation.Footer(Session.DirectoryPath, Rows, selectedNames.Count);
+            ToolTip.SetTip(summary, summary.Text); return;
+        }
         var selectedRows = Rows.Where(row => selectedNames.Contains(row.Name) && !row.Entry.IsParent).ToArray();
         var selectedBytes = selectedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
         var incomplete = selectedRows.Any(IsIncompleteDirectory);
@@ -651,6 +666,7 @@ public sealed partial class PanelView : Border
     private static string IncompleteNote(bool incomplete) => incomplete ? " (incomplete)" : "";
     private string LocationPrefix()
     {
+        if (HasHistory) return GitPath.IsLog(Session.DirectoryPath) ? "Git log · Enter opens · F3 details · Esc returns · " : "Git (read-only) · F3 on .. lists changes · Esc returns · ";
         if (IsSearchResults) return "Search results · Esc returns · Ctrl+←/→ locates · ";
         return ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "";
     }

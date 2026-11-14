@@ -2,6 +2,7 @@ namespace Xcmd.Core;
 
 public sealed record FileEntry(string FullPath, string Name, bool IsDirectory, long Size, DateTime ModifiedUtc, bool IsParent = false, bool IsLink = false)
 {
+    public GitEntryStatus? GitStatus { get; init; }
     public string Extension => IsDirectory || (Name.StartsWith('.') && Name.IndexOf('.', 1) < 0)
         ? "" : Path.GetExtension(Name).TrimStart('.');
 }
@@ -14,6 +15,11 @@ public static class PanelRules
 {
     public static string ParentCursorName(string directoryPath)
     {
+        if (GitPath.IsEntry(directoryPath))
+        {
+            var location = GitPath.Parse(directoryPath);
+            return location.Kind == "tree" && location.RelativePath.Length == 0 ? location.Revision : Path.GetFileName(directoryPath);
+        }
         var child = ArchivePath.IsEntry(directoryPath) && ArchivePath.EntryName(directoryPath).Length == 0
             ? ArchivePath.Source(directoryPath) : directoryPath;
         var name = ArchivePath.IsEntry(child) ? ArchivePath.EntryName(child) : child;

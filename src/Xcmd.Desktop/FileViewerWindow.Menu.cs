@@ -21,6 +21,11 @@ public sealed partial class FileViewerWindow
         var item = new MenuItem { Header = title, Name = id, InputGesture = gesture }.WithFeedbackId("FileViewerWindow.Menu.item");
         AutomationProperties.SetAutomationId(item, id);
         item.Click += (_, _) => action();
+        if (id is "viewer.edit" or "viewer.open")
+        {
+            item.IsEnabled = !IsDocumentReadOnly;
+            ToolTip.SetTip(item, IsDocumentReadOnly ? "This Git view is read-only." : null);
+        }
         return item;
     }
 

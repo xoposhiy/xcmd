@@ -4,36 +4,19 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Xcmd.Core;
-using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
 public sealed partial class PanelView
 {
     private const int GitColumnIndex = 3;
-    private GitStatus? projectedGitStatus;
-    private GitStatusProjection gitProjection = new(null);
+    private readonly GitPanelRows gitRows = new();
     private bool showGitColumn;
 
     private void ApplyGitStatus()
     {
-        if (!ReferenceEquals(projectedGitStatus, Git.Status))
-        {
-            projectedGitStatus = Git.Status;
-            gitProjection = new(projectedGitStatus);
-        }
-        showGitColumn = !IsSearchResults && !ArchivePath.IsEntry(Session.DirectoryPath) && Session.DirectoryPath.Length > 0;
-        var repositories = Git.ChildRepositories.Where(status => status.Root != null)
-            .ToDictionary(status => status.Root!, status => new GitStatusProjection(status).For(status.Root!) with { Repository = status }, StringComparer.OrdinalIgnoreCase);
-        foreach (var row in Rows)
-        {
-            var status = GitRowStatus.Empty;
-            if (showGitColumn && !row.Entry.IsParent)
-                status = repositories.GetValueOrDefault(row.Entry.FullPath) ??
-                    (gitProjection.Contains(row.Entry.FullPath) ? gitProjection.For(row.Entry.FullPath) : GitRowStatus.Empty);
-            row.SetGitStatus(status);
-        }
+        showGitColumn = gitRows.Apply(Rows, Git, Session.DirectoryPath, IsSearchResults);
+        ToolTip.SetTip((Control)Table.Columns[GitColumnIndex].Header!, gitRows.Legend(Session.DirectoryPath));
         QueueColumnAdaptation();
     }
 
@@ -47,7 +30,7 @@ public sealed partial class PanelView
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         }.WithFeedbackId("PanelView.gitHeader");
-        ToolTip.SetTip(header, "Left: staged · Right: working tree\n✓ staged · ● modified · + added · ? untracked · → renamed/copied · − deleted · ! conflict\nClean files are blank. A green ✓ on the right marks a clean repository. Folder statuses include descendants.");
+        ToolTip.SetTip(header, GitPanelRows.LiveLegend);
         return new TableViewColumn
         {
             Header = header,

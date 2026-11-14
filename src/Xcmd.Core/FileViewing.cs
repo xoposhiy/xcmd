@@ -5,6 +5,7 @@ public enum FileViewMode { Text, Binary, Hex, Image }
 public sealed record FileTextQuery(string Path, string Text, int CodePage, long Start, bool Backward);
 public sealed record FileTextMatch(long Offset, int Length, bool Wrapped = false);
 public sealed record ViewerSource(string Path, bool IsArchiveReport = false);
+public sealed record ViewerDocument(string Path, string Caption, bool IsReadOnly = true);
 
 public sealed record FileSlice(long Offset, long Length, byte[] Bytes)
 {

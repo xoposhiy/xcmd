@@ -60,11 +60,11 @@ internal static class SearchText
                 if (line.Length > 256 * 1024) throw new IOException("This file contains a very long line. Use plain text search to include it.");
                 offset += length + 1;
                 if (end < 0) break;
-                var match = MatchLine(line.ToString(), number++, encoding.CodePage, query, regex);
+                var match = MatchLine(line.ToString(), number++, encoding.CodePage, regex);
                 if (match != null) return match;
                 line.Clear();
             }
-            if (count == 0) return MatchLine(line.ToString(), number, encoding.CodePage, query, regex);
+            if (count == 0) return MatchLine(line.ToString(), number, encoding.CodePage, regex);
         }
     }
 
@@ -96,15 +96,14 @@ internal static class SearchText
     private static int CountNewlines(ReadOnlySpan<char> text)
     { var count = 0; foreach (var character in text) if (character == '\n') count++; return count; }
 
-    private static SearchTextMatch? MatchLine(string line, long number, int codePage, FileSearchQuery query, Regex? regex)
+    private static SearchTextMatch? MatchLine(string line, long number, int codePage, Regex regex)
     {
         line = line.TrimEnd('\r');
         if (number == 1) line = line.TrimStart('\uFEFF');
-        var position = regex == null ? line.IndexOf(query.Text, query.MatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)
-            : regex.Match(line) is { Success: true } match ? match.Index : -1;
-        if (position < 0) return null;
-        var start = Math.Max(0, position - 70);
+        var match = regex.Match(line);
+        if (!match.Success) return null;
+        var start = Math.Max(0, match.Index - 70);
         var excerpt = line.Substring(start, Math.Min(240, line.Length - start)).TrimStart('\uFEFF').Replace('\t', ' ');
-        return new(number, excerpt, codePage, regex == null ? query.Text : regex.Match(line).Value);
+        return new(number, excerpt, codePage, match.Value);
     }
 }

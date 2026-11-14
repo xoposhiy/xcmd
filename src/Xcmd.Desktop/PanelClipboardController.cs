@@ -38,6 +38,8 @@ public sealed class PanelClipboardController
         if (entries.Length == 0) return;
         owner.Execute(() => RunAsync(async () =>
         {
+            if (entries.Any(entry => GitPath.IsEntry(entry.FullPath)))
+                throw new IOException("Copying files from Git history is not available. F3 views the selected file.");
             if (entries.Any(entry => ArchivePath.IsEntry(entry.FullPath)))
                 throw new IOException("Use F5 to copy files out of an archive before using the clipboard.");
             var files = new ClipboardFiles(entries.Select(entry => entry.FullPath).ToArray(), cut);

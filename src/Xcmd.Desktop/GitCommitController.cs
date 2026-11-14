@@ -9,8 +9,9 @@ internal static class GitCommitController
         var launcher = new ClaudeCommitLauncher(executable);
         foreach (var panel in new[] { owner.Left, owner.Right })
         {
+            panel.Git.LogRequested += () => { owner.Activate(panel); owner.GitHistory.Open(selectedItem: false); };
             panel.Git.Actions.Opened += (_, _) => owner.Activate(panel);
-            panel.Git.Actions.Closed += (_, _) => { owner.RecordActivity(); panel.FocusCurrent(scrollIntoView: false); };
+            panel.Git.Actions.Closed += (_, _) => { owner.RecordActivity(); owner.ActivePanel.FocusCurrent(scrollIntoView: false); };
             panel.Git.CommitRequested += directory => owner.Execute(async () =>
             {
                 var launch = await launcher.PrepareAsync(directory);

@@ -47,7 +47,9 @@ public sealed class GitStatusView : Border
     }.WithFeedbackId("GitStatusView.ActionsButton");
     public ContextMenu Actions { get; } = new ContextMenu() { Placement = PlacementMode.Bottom }.WithFeedbackId("GitStatusView.Actions");
     public bool IsMenuOpen => Actions.IsOpen;
-    public MenuItem CommitCommand { get; } = new MenuItem() { Header = "_Commit with AI" }.WithFeedbackId("GitStatusView.CommitCommand");
+    public MenuItem CommitCommand { get; } = new MenuItem() { Header = "_Commit repository with Claude Code…" }.WithFeedbackId("GitStatusView.CommitCommand");
+    public MenuItem LogCommand { get; } = new MenuItem() { Header = "_Log of current folder" }.WithFeedbackId("GitStatusView.LogCommand");
+    public event Action? LogRequested;
     public event Action<string>? CommitRequested;
     public event Action? StatusChanged;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
@@ -75,7 +77,8 @@ public sealed class GitStatusView : Border
         AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
         CommitCommand.Name = id + "GitCommit";
         ToolTip.SetTip(CommitCommand, "Open Claude Code to commit all changes in this repository.");
-        Actions.ItemsSource = new[] { CommitCommand };
+        Actions.ItemsSource = new[] { LogCommand, CommitCommand };
+        LogCommand.Click += (_, _) => LogRequested?.Invoke();
         Actions.Opened += (_, _) => actionDirectory = directory;
         ActionsButton.Click += (_, _) => { if (Status != null) Actions.Open(ActionsButton); };
         CommitCommand.Click += (_, _) => { if (actionDirectory.Length > 0) CommitRequested?.Invoke(actionDirectory); };

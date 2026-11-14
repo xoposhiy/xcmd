@@ -13,6 +13,21 @@ public static class GitRowsScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("git-rows-ignored-child-repository", "An ignored child repository has no Git markers in its parent repository", async c =>
+        {
+            try
+            {
+                await GitRowsFixture.CreateIgnoredRepositoryAsync(c);
+                var ignored = c.Window.Left.Rows.Single(row => row.Name == "ignored");
+                Check(!ignored.Git.HasChanges && ignored.Git.Repository == null, "The parent ignore rule takes priority over child repository status");
+                Check(c.Window.Left.Rows.Single(row => row.Name == "new-tree").Git.Repository != null, "A child repository outside the ignore rule keeps its own status");
+                await c.SelectAsync("ignored"); await c.KeyAsync(Key.Enter);
+                await GitFixture.RefreshAsync(c.Window.Left.Git);
+                Equal(Path.Combine(c.LeftPath, "ignored"), c.Window.Left.Git.Status?.Root, "Entering the ignored repository reads its own Git status");
+                Equal("?", c.Window.Left.Rows.Single(row => row.Name == "generated.bin").Git.WorkingGlyph, "Files inside the child repository use its own ignore rules");
+            }
+            finally { GitFixture.AllowCleanup(c.LeftPath); }
+        }),
         new("git-rows-child-repositories", "A folder outside Git shows whole-repository states for child repositories", async c =>
         {
             var panel = c.Window.Left;

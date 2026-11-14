@@ -1,0 +1,32 @@
+# Git history feedback prototype
+
+Use the Git menu to open history in the adjacent panel:
+
+- **Log of selected file or folder** (`Ctrl+Alt+L`) uses the cursor item. On the parent row, it uses the displayed folder.
+- **Log of current folder** uses the displayed folder. The Git status menu also offers this command.
+
+History includes only commits that changed the selected path, using Git's normal path filtering. A repository root includes the whole repository. History loads 200 commits at a time. Load more commits continues from the captured revision. Live history checks for a new HEAD during refresh and starts from that revision when HEAD changes. Open snapshots retain their original commit. The initial version does not follow a file across a rename or offer branch selection.
+
+If the selected history scope has uncommitted changes, Working tree appears above the commits. F3 lists only changes inside the selected folder or file, with separate staged and working-tree statuses, rename sources and untracked files. Repository-root history includes the whole repository. Ignored files are excluded. Enter opens this list in the normal file panel; F3 views a file and Ctrl+Alt+D opens its diff. Deleted working files open from HEAD. Backspace returns to Working tree in the log. Changes outside the selected scope do not add a Working tree entry. Working tree also works before the first commit. Live Git panels refresh in the background when interaction allows it. Ctrl+R refreshes explicitly. The footer shows the refresh time. F3 refreshes the panel and report together, so their captured changes agree.
+
+Use Up, Down, Home, End and Page Up/Down to select a commit. F3 opens its full message and changed files. Enter opens the complete repository tree at that commit, including unchanged files and paths outside the history filter. Changes compare with the first parent; the first commit compares with an empty tree.
+
+The bottom of the history panel shows the full message of the current commit, with its author, short ID and date. The message preserves paragraphs and supports scrolling, text selection and copying. Drag the divider above the message to change its height; both areas keep a useful minimum size. Selecting another commit updates the message without moving keyboard focus from the list. Messages load asynchronously and are cached for this history session. Working tree and navigation rows show a short explanation. Empty history explains whether no commits match or the repository has no commits yet. The full message stays visible after entering a commit and while browsing its folders, changed files or selecting files. Escape from the message returns focus to the list. The message area collapses while browsing working files or an ordinary folder.
+
+The log uses Commit, Subject, Author and Date columns without filesystem icons or file columns. IDs use a fixed monospace width. Log sorting stays newest first and does not change the file sort. Snapshots and changed-file lists use the normal file columns and icons through the existing virtual filesystem. Snapshot modification dates are blank because Git trees do not store file modification times. All views keep the normal cursor, marking, hover behavior and keyboard navigation. There is no separate Git action bar. The Git column in snapshots marks changes against the first parent; unchanged files have blank cells. Enter opens a folder or views a file.
+
+F3 on the parent row (`..`), or Git > Changed files in current commit, opens an actionable list for the current snapshot folder. Added, modified, renamed and deleted paths can be selected. F3 views the selected version, using the parent version for deleted files. Ctrl+Alt+D opens its basic diff. The commit message remains visible. Backspace returns to the tree. F3 on the parent row in this changed-file list opens a text report that names its scope. Deleted files remain absent from the full snapshot tree. Submodule contents belong to another repository and cannot be browsed in this prototype.
+
+Backspace returns to the parent folder or log and restores the cursor. Escape restores the original physical panel, including after a Git location was opened with Ctrl+Left/Right. Tab switches panels. Opening the log, views and diffs shows progress; Escape cancels the pending command before handling command-line or message focus. A new Git command replaces the pending command and obsolete results cannot open a late view or steal focus.
+
+Ctrl+Alt+D or Git > Diff selected file opens a basic unified text diff. In the working tree it compares with HEAD and includes staged and unstaged changes. Untracked files compare with an empty file. In a commit it compares with the first parent, including rename sources and deleted files. Binary changes use Git's text notice. The full diff viewer is a separate task.
+
+History reads Git objects without checkout, reset, staging or index changes. Git locations are read-only. Git viewers display the original path, commit or comparison, and read-only state. Edit and Open externally are disabled for these views; text selection and copying remain available. File copy/export from Git panels is not available, and its feedback states this limitation without archive instructions. Snapshot files and reports use temporary viewer files internally. Open history delays automatic release handoff; close history to allow the normal idle update. Saving a workspace while viewing Git preserves the original physical panel location.
+
+Run the headless feedback smoke checks with:
+
+```powershell
+./scripts/Publish-Feedback.ps1 -Filter 'git-history-,git-usability-,git-commit-menu,git-rows-file-states'
+```
+
+The selected scenarios use real temporary repositories and actual application controls. They cover folder and file filters, virtual filesystem reads, adjacent-panel focus and restoration, actionable changed files, full-tree navigation and statuses, unchanged files, standard row hover and keyboard sorting, snapshot contents, renames, deletions, working/staged/untracked diffs, scoped Working tree reports and file lists, coherent live refresh, ignored-file exclusion, initial commits, empty repositories, full commit messages, message scrolling and selection, a draggable divider, cancellation, viewer origin and read-only state, rapid cursor changes and 100/150% offscreen renders. This is feedback smoke evidence, not the full finalization gate. See the [review repair record](evidence/git-usability-review-2026-11-13.md).

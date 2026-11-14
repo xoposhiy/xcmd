@@ -25,6 +25,7 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
 
     public void ViewCurrent()
     {
+        if (owner.ActivePanel.HasHistory) { owner.GitHistory.ViewCurrent(); return; }
         if (owner.HasOpenDialog) return;
         var panel = owner.ActivePanel;
         if (panel.Current is not { Entry.IsDirectory: false } row) { owner.SetError("Select a file to view."); return; }
@@ -32,6 +33,9 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
         var directory = panel.Session.DirectoryPath;
         OpenViewer(paths, Array.IndexOf(paths, row.Entry.FullPath), directory);
     }
+
+    public GitHistoryController CreateGitHistory() => new(owner, ViewDocument);
+    public void ViewDocument(ViewerDocument document) => OpenViewer([document.Path], 0, Path.GetDirectoryName(document.Path)!, document: document);
 
     public void ViewSearchResults(IReadOnlyList<FileSearchResult> results, int index, string text)
     {
@@ -41,11 +45,11 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
             viewer => viewer.SearchFromResultsAsync(match?.Text ?? text, match?.CodePage));
     }
 
-    private FileViewerWindow OpenViewer(string[] paths, int index, string directory, Func<FileViewerWindow, Task>? loaded = null)
+    private FileViewerWindow OpenViewer(string[] paths, int index, string directory, Func<FileViewerWindow, Task>? loaded = null, ViewerDocument? document = null)
     {
         var viewer = new FileViewerWindow(paths, index, files, owner.Feedback,
             path => EditFileAsync(path, directory),
-            path => owner.OpenFileExternallyAsync(path, directory), ThemeId).WithFeedbackId("FileViewingController.viewer");
+            path => owner.OpenFileExternallyAsync(path, directory), ThemeId, document).WithFeedbackId("FileViewingController.viewer");
         viewers.Add(viewer);
         viewer.RememberedSearch = lastSearch;
         viewer.SearchTextChanged += text => { lastSearch = text; foreach (var openViewer in viewers) openViewer.RememberedSearch = text; };

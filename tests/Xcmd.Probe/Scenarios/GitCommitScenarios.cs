@@ -28,7 +28,7 @@ public static class GitCommitScenarios
                     GitHeaderProbe.CheckAlignment(c.Window.Left);
                     await c.ClickAsync(c.Window.Left.Git.ActionsButton);
                     Check(c.Window.IsMenuOpen && c.Window.Left.Git.CommitCommand.IsVisible, "Git actions open on a normal left click");
-                    Equal("_Commit with AI", c.Window.Left.Git.CommitCommand.Header as string, "The command describes AI-assisted commit");
+                    Equal("_Commit repository with Claude Code…", c.Window.Left.Git.CommitCommand.Header as string, "The command names the repository scope and external tool");
                     GitHeaderProbe.CheckMenuPlacement(c.Window.Left, c.Window);
                     await c.ScreenshotAsync("commit-menu-" + scale * 100);
                     await c.KeyAsync(Key.Escape);

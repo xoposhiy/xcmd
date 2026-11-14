@@ -18,7 +18,7 @@ public sealed class PanelSession(IFileSystem fileSystem)
     public void RestoreNavigation(PanelState state)
     {
         SortOrder = state.Sort;
-        Entries = PanelRules.Sort(Entries, SortOrder);
+        if (!GitPath.IsLog(DirectoryPath)) Entries = PanelRules.Sort(Entries, SortOrder);
         cursors.Clear();
         foreach (var cursor in state.Cursors) cursors[cursor.Key] = cursor.Value;
         history.Restore(state.History, DirectoryPath);
@@ -34,10 +34,10 @@ public sealed class PanelSession(IFileSystem fileSystem)
 
     public string? RememberedCursor => cursors.GetValueOrDefault(DirectoryPath);
 
-    public async Task<bool> LoadAsync(string path)
+    public async Task<bool> LoadAsync(string path, CancellationToken cancellationToken = default)
     {
         loading?.Cancel();
-        var request = new CancellationTokenSource();
+        var request = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         loading = request;
         IsLoading = true;
         Error = null;
@@ -49,7 +49,7 @@ public sealed class PanelSession(IFileSystem fileSystem)
             DirectoryPath = fullPath;
             var parent = PanelRules.ParentEntry(DirectoryPath);
             var navigationEntries = parent == null ? entries : entries.Prepend(parent);
-            Entries = PanelRules.Sort(navigationEntries, SortOrder);
+            Entries = GitPath.IsLog(fullPath) ? navigationEntries.ToArray() : PanelRules.Sort(navigationEntries, SortOrder);
             history.Visit(DirectoryPath);
             Revision++;
             return true;
@@ -70,8 +70,9 @@ public sealed class PanelSession(IFileSystem fileSystem)
 
     public void SortBy(SortField field)
     {
+        if (GitPath.IsLog(DirectoryPath)) return;
         SortOrder = new(field, SortOrder.Field == field && !SortOrder.Descending);
-        Entries = PanelRules.Sort(Entries, SortOrder);
+        if (!GitPath.IsLog(DirectoryPath)) Entries = PanelRules.Sort(Entries, SortOrder);
         Revision++;
     }
 }

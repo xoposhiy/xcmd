@@ -31,11 +31,4 @@ public sealed class LocalFileSystem : IFileSystem
         if (Directory.Exists(target) || File.Exists(target)) throw new IOException("The destination already exists.");
         Directory.CreateDirectory(target);
     });
-
-    public Task CopyFileAsync(FileEntry entry, string destination) => Task.Run(() =>
-    {
-        if (entry.IsParent) throw new IOException("The parent navigation item cannot be copied.");
-        if (entry.IsDirectory) throw new IOException("Copying directories is not supported yet.");
-        File.Copy(entry.FullPath, Path.Combine(destination, entry.Name), overwrite: false);
-    });
 }

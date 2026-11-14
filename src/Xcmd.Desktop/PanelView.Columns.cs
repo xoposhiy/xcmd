@@ -37,6 +37,7 @@ public sealed partial class PanelView
     private void AdaptColumns()
     {
         if (Table.Bounds.Width <= 0) return;
+        if (logPresentation.IsLog) { logPresentation.Adapt(); return; }
         // Reserve scrollbar space independently of its current visibility. Otherwise a
         // scrollbar can change the column decision and start another layout cycle.
         var available = Math.Max(0, Table.Bounds.Width - 18);

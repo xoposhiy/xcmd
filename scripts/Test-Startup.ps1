@@ -5,8 +5,7 @@ param(
     [switch]$Native
 )
 
-$ErrorActionPreference = 'Stop'
-$projectRoot = Split-Path $PSScriptRoot -Parent
+. (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
 $application = [System.IO.Path]::GetFullPath($ApplicationPath, $projectRoot)
 if (-not $OutputPath) { $OutputPath = 'artifacts/startup/' + [Guid]::NewGuid().ToString('N') }
 $output = [System.IO.Path]::GetFullPath($OutputPath, $projectRoot)
@@ -16,7 +15,6 @@ $id = '20261110-000000-000-00000001'
 $release = Join-Path $fixture ('releases/' + $id)
 New-Item -ItemType Directory -Path $release -Force | Out-Null
 $probe = Join-Path $output 'driver'
-$env:DOTNET_CLI_HOME = Join-Path $projectRoot '.dotnet'
 dotnet publish (Join-Path $projectRoot 'tests/Xcmd.Probe/Xcmd.Probe.csproj') -c Release -r win-x64 --no-self-contained -p:PublishReadyToRun=true -p:RestoreLockedMode=true --output $probe -m:1 -p:UseSharedCompilation=false -v minimal
 if ($LASTEXITCODE -ne 0) { throw 'The precompiled startup driver could not be built.' }
 Copy-Item -Path (Join-Path $probe '*') -Destination $release -Recurse

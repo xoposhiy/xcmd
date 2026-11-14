@@ -35,6 +35,9 @@ Current examples:
 - `PanelSession` and `DirectoryHistory`: directory state, reads through `IFileSystem`, cancellation of obsolete reads, sorting, and remembered directory cursors.
 - `FavoriteDirectories`, `DirectoryUsageBook`, `DirectoryAttention`, and `NameJump`: navigation rules expressed using values and explicit inputs.
 - `DirectorySizeCalculator`: traversal, link exclusion, cancellation, and partial measurement results through `IFileSystem`.
+- `FileTransferPlanner`, `ClipboardTransferPlanner`, `FileOperationRunner`, and
+  `FileOperationQueue`: operation requests, conflict decisions, progress,
+  cancellation, and partial results through `IFileOperationStore`.
 - `IFileSystem`, `IExternalLauncher`, and launch plans: application contracts and requests.
 - `WorkspaceState` and related records: framework-independent data shared with persistence and the desktop.
 
@@ -46,13 +49,35 @@ Keep formatting choices that depend on display culture or presentation context i
 
 ## Infrastructure
 
+`GitFileSystem` wraps the panel filesystem and handles Git log, snapshot and
+working-change locations through `IFileSystem`. Core owns the virtual path and
+scope rules. The adapter reads Git objects, caches immutable commit changes and
+filters working changes by the history scope. `PanelView` uses its existing table,
+rows, selection and Git cells for these entries and retains the physical return
+state. `GitHistoryController` connects navigation, reports and temporary viewer
+files. Git locations are read-only and do not check out commits.
+
+`GitCommitMessageView` owns the inline log message, its text selection and the
+current asynchronous read. Cursor changes cancel obsolete reads. `GitFileSystem`
+caches full messages by commit within each history context. `GitPanelRows` projects
+Git states into normal file rows without making the panel own Git status caches.
+
+Live log and working-change locations refresh their captured status together with
+their rows. A new HEAD updates the log, while the commit catalog retains metadata
+for open immutable snapshots. Changed-file locations expose deleted paths without
+adding them to the snapshot tree. `GitActionRunner` owns cancellation and repeated
+command replacement. `ViewerDocument` carries origin and read-only state across
+temporary materialization into the existing viewer.
+
 Put code in Infrastructure when it performs an external operation or translates external data and failures into application values.
 
 Archive locations use `ArchivePath` values with a physical source and entry path. `ArchiveFileSystem` routes those values to `ArchiveContents` and delegates ordinary paths to the existing filesystem and operation store. Archive contents stay read-only; extraction uses the existing copy queue. `ArchiveViewerFiles` supplies reports or temporary member files to the existing viewer. SharpCompress types, compression streams, catalog caching and temporary-file ownership stay in Infrastructure. Desktop owns archive key routing and panel focus. Filesystem monitoring skips virtual archive locations; explicit reload and workspace restore use the same archive adapter.
 
 Current examples:
 
-- `LocalFileSystem` and `DirectoryMonitor`: filesystem operations, enumeration, and change notifications.
+- `LocalFileSystem` and `DirectoryMonitor`: directory enumeration, rename, folder
+  creation, and change notifications. `LocalFileOperations` implements the
+  `IFileOperationStore` used by the operation queue.
 - `SessionStore` and `FileTypeSettings`: session/settings formats and atomic replacement.
 - `IssueStore`, `IssueDatabase`, and `IssueCli`: the independent repository SQLite
   tracker, parameterized SQL, transactional claims and command-line access. The
@@ -64,7 +89,7 @@ Current examples:
 
 These adapters may know Xcmd contracts and state records. An adapter does not need to work unchanged in an unrelated application. Make a module general only when a concrete use benefits from it.
 
-Keep user decisions in Core or the interaction that owns them. Infrastructure executes an explicit request, enforces its contract, and handles platform constraints. For example, the copy adapter performs a copy without overwriting; a future conflict workflow decides what to do when the destination exists.
+Keep user decisions in Core or the interaction that owns them. Infrastructure executes an explicit request, enforces its contract, and handles platform constraints. `FileOperationRunner` asks Desktop for conflict and error decisions, then passes explicit copy, replace, move, or removal requests to the store.
 
 Infrastructure does not select an active panel, open a dialog, restore focus, or update controls. It returns data, tasks, failures, and notifications. Desktop dispatches notifications to the UI thread when needed.
 
@@ -148,30 +173,14 @@ Give background work an owner, a lifetime, observable progress or completion, an
 
 Keep blocking waits out of UI paths. Use `async void` only at an event boundary that observes the task and reports failures. Distinguish expected failures, cancellation, partial results, and unexpected faults. Linters do not prove these runtime properties; behavioral tests remain required.
 
-## Assessment and local improvements
+## Source organization
 
-The existing dependency direction supports the current product. Core behavior can use controlled adapters, Infrastructure can be tested against real fixtures, and Desktop runs through the same actual controls in interactive and headless modes. These properties already provide useful separation.
-
-The areas that need care are within the projects:
-
-| Area | Current limit | Appropriate next step |
-| --- | --- | --- |
-| Window and panel coordination | `CommanderWindow` and `PanelView` combine many interactions and state transitions. Partial files divide source text but keep one class and one set of state. | Extract a focused controller or Core workflow when a specific interaction becomes difficult to follow or test. |
-| File operations | Copy coordination and rename execution live in Desktop; `PanelSession.FileSystem` exposes the adapter contract. | Keep the simple current path. Add explicit Core operation requests and outcomes when implementing conflicts, queues, or richer cancellation. |
-| State synchronization | Applied rows, live cursor/selection, Core directory state, and saved snapshots meet at refresh and restore boundaries. | Preserve a clear owner and add regression scenarios when changing these boundaries. |
-| Startup work | `CommanderWindow` loads bundled file-type settings once and passes the same result to both panels. API bans do not prove that an adapter call is nonblocking. | Keep startup work measured and avoid repeated settings reads. |
-
-These are improvement points, not a requirement to refactor all listed code now. New project boundaries would not resolve them by themselves.
-
-## Why keep three projects
-
-The three projects already let the compiler and architecture tests separate application behavior, external operations, and UI dependencies. A separate Desktop.Infrastructure project has no demonstrated independent consumer or dependency policy that needs its own assembly today.
-
-Requiring Infrastructure to know nothing about Xcmd would add generic contracts and conversions around application-specific state, settings, and release handling. Current adapters can remain small by using Core contracts directly.
-
-Keeping Desktop coordination also preserves useful knowledge about editor lifetime, focus, dialogs, and safe refresh timing. Moving those conditions into Core would introduce UI-shaped inputs and callbacks. Extract the independent decisions when they exist.
-
-Organize growing features into folders and focused classes within the current projects. Add feature-cycle checks when feature namespaces exist. Consider a new production project only when a concrete dependency boundary or independent consumer needs compiler enforcement. A large file or a desire for symmetry is not sufficient evidence.
+Organize growing features into folders and focused classes within the three
+projects. Partial files split source text but retain one class and its state.
+Extract a controller or Core workflow when an interaction becomes difficult to
+follow or test. Add feature-cycle checks when feature namespaces exist. A new
+project needs a concrete dependency boundary or independent consumer; file size
+alone does not require another project.
 
 ## Tests and usability review
 

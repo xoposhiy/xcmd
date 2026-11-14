@@ -28,7 +28,7 @@ public sealed partial class CommanderWindow
         ResetQuickJump();
         SetError(null);
         var sourceDirectory = ActivePanel.OperationDirectory;
-        if (!samePanel && OppositePanel.IsSearchResults) { SetError("Open a destination folder in the other panel first (Escape leaves search results)."); return; }
+        if (!samePanel && (OppositePanel.IsSearchResults || OppositePanel.HasHistory)) { SetError("Open a destination folder in the other panel first (Escape leaves search results or Git history)."); return; }
         var targetDirectory = samePanel ? sourceDirectory : OppositePanel.Session.DirectoryPath;
         if (ArchivePath.IsEntry(targetDirectory)) { SetError("Archives are read-only. Choose a regular destination folder."); return; }
         var dialog = new FileTransferDialog(kind, selected, targetDirectory, Feedback, samePanel) { Background = Background }.WithFeedbackId("CommanderWindow.FileOperations.dialog");

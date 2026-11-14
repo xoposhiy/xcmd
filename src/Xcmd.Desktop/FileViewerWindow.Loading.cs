@@ -42,8 +42,7 @@ public sealed partial class FileViewerWindow
         imageUnavailable = null; imageSignature = false;
         IsArchiveReport = false;
         UpdateControls();
-        Title = CurrentPath + " — Xcmd Viewer";
-        titlePath.Text = Path.GetFileName(CurrentPath); Avalonia.Controls.ToolTip.SetTip(titlePath, CurrentPath);
+        UpdateDocumentTitle();
         selectedEncoding = EncodingChoice.All[0];
         var page = await files.ReadAsync(CurrentPath, 0, token);
         IsArchiveReport = files.IsArchiveReport(CurrentPath);
@@ -180,7 +179,7 @@ public sealed partial class FileViewerWindow
         wrapItem.IsEnabled = Mode == FileViewMode.Text && slice != null;
         wrapItem.IsChecked = wrapLines;
         informationItem.IsChecked = information.IsVisible;
-        followItem.IsEnabled = slice != null && text && !IsArchiveReport && !ArchivePath.IsEntry(CurrentPath);
+        followItem.IsEnabled = slice != null && text && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
     }
 
@@ -205,9 +204,9 @@ public sealed partial class FileViewerWindow
     private bool HandleFileKey(KeyEventArgs e)
     {
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.None)
-        { if (!editKeyHeld) { editKeyHeld = true; RunExternal(() => edit(CurrentPath)); } return true; }
+        { if (AllowExternalAction() && !editKeyHeld) { editKeyHeld = true; RunExternal(() => edit(CurrentPath)); } return true; }
         if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Control)
-        { RunExternal(() => open(CurrentPath)); return true; }
+        { if (AllowExternalAction()) RunExternal(() => open(CurrentPath)); return true; }
         if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Left or Key.Right)
         { _ = NavigateAsync(e.Key == Key.Left ? -1 : 1); return true; }
         return false;

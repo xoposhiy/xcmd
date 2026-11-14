@@ -81,14 +81,4 @@ public sealed class ControlledFileSystem : IFileSystem, IFileOperationStore
         }
         return await operations.CopyAsync(source, destination, replace, progress, cancellationToken);
     }
-    public async Task CopyFileAsync(FileEntry entry, string destination)
-    {
-        if (nextCopy is { } gate && entry.FullPath.Equals(gate.Path, StringComparison.OrdinalIgnoreCase))
-        {
-            nextCopy = null;
-            gate.Entered.TrySetResult();
-            await gate.Release.Task;
-        }
-        await actual.CopyFileAsync(entry, destination);
-    }
 }

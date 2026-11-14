@@ -2,6 +2,15 @@ namespace Xcmd.Probe.Infrastructure;
 
 public static class GitRowsFixture
 {
+    public static async Task CreateIgnoredRepositoryAsync(ProbeContext context)
+    {
+        await CreateAsync(context);
+        foreach (var folder in new[] { "ignored", "new-tree" })
+            await GitFixture.RunAsync(Path.Combine(context.LeftPath, folder), "init", "--template=", "-b", "main");
+        await GitFixture.RefreshAsync(context.Window.Left.Git);
+        await context.SettleAsync();
+    }
+
     public static async Task CreateAsync(ProbeContext context, bool conflict = false)
     {
         var root = context.LeftPath;

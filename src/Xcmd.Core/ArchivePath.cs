@@ -7,11 +7,12 @@ public static class ArchivePath
     public static string Source(string path) => path[..path.LastIndexOf('|')];
     public static string EntryName(string path) => path[(path.LastIndexOf('|') + 1)..].TrimStart('\\').Replace('\\', '/');
     public static string PhysicalFile(string path) => path.Split('|')[0];
-    public static string WorkingDirectory(string path) => IsEntry(path) ? Path.GetDirectoryName(PhysicalFile(path))! : path;
-    public static string Display(string path) => path.Replace("|", "!");
+    public static string WorkingDirectory(string path) => GitPath.IsEntry(path) ? GitPath.Parse(path).Repository : IsEntry(path) ? Path.GetDirectoryName(PhysicalFile(path))! : path;
+    public static string Display(string path) => GitPath.IsEntry(path) ? GitPath.Display(path) : path.Replace("|", "!");
 
     public static string? Parent(string path)
     {
+        if (GitPath.IsEntry(path)) return GitPath.Parent(path);
         if (!IsEntry(path)) return Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(path));
         var name = EntryName(path);
         if (name.Length == 0) return Parent(Source(path));
@@ -26,6 +27,7 @@ public static class ArchivePath
 
     public static void RequireWritable(string path)
     {
+        if (GitPath.IsEntry(path)) throw new IOException("Git history is read-only. Choose a regular folder.");
         if (IsEntry(path)) throw new IOException("Archives are read-only. Copy files to a regular folder first.");
     }
 }
