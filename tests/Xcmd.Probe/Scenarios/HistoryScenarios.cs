@@ -139,7 +139,7 @@ public static class HistoryScenarios
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The other panel keeps its directory");
             Check(c.Window.Right.Table.IsKeyboardFocusWithin, "The source panel regains focus.");
         }),
-        new("history-missing-directory-and-retry", "UC15", async c =>
+        new("history-missing-directory-and-retry", "UC15; missing directories open the nearest existing parent", async c =>
         {
             await c.SelectAsync("folder2");
             await c.KeyAsync(Key.Enter);
@@ -148,14 +148,14 @@ public static class HistoryScenarios
             await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
             var dialog = c.Window.ActiveNavigationDialog!;
             await c.KeyAsync(Key.Enter, target: dialog);
-            Check(c.Window.ActiveNavigationDialog == dialog && dialog.Error != null, "An unavailable directory reports an error in history.");
-            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "Failed history navigation keeps the current directory");
-            Equal("folder2", c.Window.Left.Current?.Name, "Failed navigation keeps the current cursor");
-            Check(dialog.Directories.IsKeyboardFocusWithin, "The user can retry without restoring focus.");
-            await c.ScreenshotAsync("missing-directory", dialog);
+            Check(c.Window.ActiveNavigationDialog == null && dialog.Error == null, "A missing directory opens its existing parent without an error.");
+            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The nearest existing parent opens");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "The source panel receives focus.");
             Directory.CreateDirectory(Path.Combine(c.LeftPath, "folder2"));
+            await c.KeyAsync(Key.Down, RawInputModifiers.Alt);
+            dialog = c.Window.ActiveNavigationDialog!;
             await c.KeyAsync(Key.Enter, target: dialog);
-            Equal(Path.Combine(c.LeftPath, "folder2"), c.Window.Left.Session.DirectoryPath, "Retry opens a directory that is available again");
+            Equal(Path.Combine(c.LeftPath, "folder2"), c.Window.Left.Session.DirectoryPath, "History keeps the original path for a later retry");
             Check(c.Window.ActiveNavigationDialog == null, "Successful retry closes history.");
         }),
         new("history-failed-and-obsolete-reads-excluded", "UC15; development requirements", async c =>

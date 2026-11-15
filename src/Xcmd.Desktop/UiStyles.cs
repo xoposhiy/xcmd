@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -69,7 +70,24 @@ internal static class UiStyles
         AddPrimary(app, s => s.OfType<Button>().PropertyEquals(Button.IsDefaultProperty, true));
         AddPrimary(app, s => s.OfType<Button>().Class("primary"));
         AddQuiet(app);
+        AddListRows(app);
         AddResources(app);
+    }
+
+    private static void AddListRows(Application app)
+    {
+        app.Styles.Add(new Style(s => s.OfType<ListBoxItem>())
+        { Setters = { new Setter(Control.FocusAdornerProperty, null) } });
+        foreach (var selected in new[] { false, true })
+            app.Styles.Add(new Style(s => s.OfType<ListBoxItem>().PropertyEquals(ListBoxItem.IsSelectedProperty, selected)
+                .Template().OfType<ContentPresenter>().Name("PART_ContentPresenter"))
+            {
+                Setters =
+                {
+                    new Setter(ContentPresenter.BackgroundProperty, selected ? UiPalette.Cursor : Brushes.Transparent),
+                    new Setter(ContentPresenter.ForegroundProperty, UiPalette.Text)
+                }
+            });
     }
 
     private static void AddPrimary(Application app, Func<Selector?, Selector> selector) => app.Styles.Add(new Style(selector)

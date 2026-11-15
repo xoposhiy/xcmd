@@ -383,7 +383,7 @@ public sealed partial class PanelView : Border
         return text;
     }
 
-    public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default)
+    public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default, bool nearestExistingParent = false)
     {
         var gitReturn = GitPath.IsEntry(directory) && !HasHistory ? CaptureState() : null;
         LoadingRequested?.Invoke(this);
@@ -392,7 +392,7 @@ public sealed partial class PanelView : Border
         var selected = preserveSelection ? SelectedNames() : [];
         if (!IsSearchResults) Session.RememberCursor(Current?.Name);
         var previousPath = Session.DirectoryPath;
-        if (!await Session.LoadAsync(directory, cancellationToken))
+        if (!await Session.LoadAsync(directory, cancellationToken, nearestExistingParent))
         {
             UpdateSummary();
             return false;

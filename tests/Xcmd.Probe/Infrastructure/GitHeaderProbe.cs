@@ -14,7 +14,8 @@ public static class GitHeaderProbe
         var path = header.Children.OfType<TextBlock>().Single();
         var middle = Centre(path, header);
         foreach (var control in new Control[] { panel.Git, panel.Git.ActionsButton }
-            .Concat(panel.Git.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsVisible && text.Bounds.Height > 0)))
+            .Concat(panel.Git.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsVisible && text.Bounds.Height > 0))
+            .Concat(panel.Git.GetVisualDescendants().OfType<PathIcon>().Where(icon => icon.IsVisible)))
         {
             var actual = Centre(control, header);
             ProbeContext.Check(Math.Abs(actual - middle) <= .75,

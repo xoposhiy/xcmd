@@ -6,6 +6,7 @@ public sealed class LocalFileSystem : IFileSystem
 {
     public Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken cancellationToken) => Task.Run<IReadOnlyList<FileEntry>>(() =>
     {
+        if (File.Exists(path)) throw new DirectoryNotFoundException("The path is not a directory: " + path);
         var entries = new List<FileEntry>();
         foreach (var info in new DirectoryInfo(path).EnumerateFileSystemInfos())
         {

@@ -66,7 +66,7 @@ public sealed partial class GitHistoryController
     public Task OpenCurrentAsync(PanelView panel)
     {
         var entry = panel.Current?.Entry;
-        return entry == null ? Task.CompletedTask : actions.RunAsync("Opening Git location", token => NavigateAsync(panel, entry, token));
+        return entry == null ? Task.CompletedTask : actions.RunAsync("Opening Git location", token => NavigateAsync(panel, entry, token), opensViewer: !entry.IsDirectory);
     }
 
     private async Task NavigateAsync(PanelView panel, FileEntry entry, CancellationToken token)
@@ -82,7 +82,7 @@ public sealed partial class GitHistoryController
         {
             if (!await panel.LoadAsync(entry.FullPath, selectName: "..", cancellationToken: token)) owner.SetError(panel.Session.Error);
         }
-        else await ViewAsync(panel, panel.Session.DirectoryPath, entry, token);
+        else { await ViewAsync(panel, panel.Session.DirectoryPath, entry, token); return; }
         if (!token.IsCancellationRequested) panel.FocusCurrent();
     }
 
@@ -104,6 +104,7 @@ public sealed partial class GitHistoryController
     public bool HandleKey(KeyEventArgs e)
     {
         if (CancelPending(e)) return true;
+        if (BlocksViewerNavigation(e.Key)) return true;
         if (e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Alt))
         {
             if (e.Key == Key.L) { Open(selectedItem: true); return true; }
@@ -126,4 +127,7 @@ public sealed partial class GitHistoryController
     }
 
     public bool CancelPending(KeyEventArgs e) => e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && actions.Cancel();
+
+    private bool BlocksViewerNavigation(Key key) => actions.IsOpeningViewer &&
+        key is Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End or Key.Enter or Key.Back;
 }

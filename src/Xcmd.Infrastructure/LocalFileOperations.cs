@@ -108,7 +108,22 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (entry.IsDirectory) Directory.Delete(entry.FullPath, recursive: false);
-            else File.Delete(entry.FullPath);
+            else RemoveFile(entry.FullPath);
         }, cancellationToken);
+    }
+
+    private static void RemoveFile(string path)
+    {
+        FileAttributes attributes;
+        try { attributes = File.GetAttributes(path); }
+        catch (FileNotFoundException) { return; }
+        catch (DirectoryNotFoundException) { return; }
+        if (attributes.HasFlag(FileAttributes.ReadOnly)) File.SetAttributes(path, attributes & ~FileAttributes.ReadOnly);
+        try { File.Delete(path); }
+        catch
+        {
+            if (File.Exists(path)) File.SetAttributes(path, attributes);
+            throw;
+        }
     }
 }

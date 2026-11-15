@@ -10,6 +10,13 @@ Panels and search share 28-unit rows, aligned headings and dark surfaces. Primar
 
 The directory chooser uses two columns, History and Favorites. Starred favorites stay above frequent locations in the right column, without duplicate paths. Plain typing selects the uppermost substring match in the active list. Selected-file totals use readable binary units; the exact byte total remains available in the tooltip.
 
+Directory lists use the same blue current-row fill as file panels, with no second
+hover fill. PageUp/PageDown move the current row by a visible page; Home/End move
+to the first or last row. Missing locations show `[missing]` and explain that Open
+uses the nearest existing parent. Path labels use Windows backslashes. Repository
+action arrows use a centred vector shape so alignment does not depend on font
+glyph metrics.
+
 `design-system-shared-surfaces` renders panels, creation, transfer, navigation and narrow search layouts at 100/150%. `design-system-reader-contrast` checks real palette selection, selected text contrast and preservation of the found text. Existing action, responsive-column, queue and feedback scenarios remain relevant. This is feedback-phase validation, not the full finalisation gate.
 
 ## Evidence and scope

@@ -337,13 +337,27 @@ The inline editor is an application-owned `TextBox` in a `TableViewColumn.CellTe
 
 Each panel keeps its own recent directories. Alt+Down opens history with the most recent previous directory selected. Use arrows and Enter, double-click a row, or choose Open. Returning restores that directory's last file cursor and focuses the source panel. Escape or Cancel keeps the current directory, cursor and selection.
 
-One window has three lists: this panel's History, shared Frequent locations and shared Favorites. Alt+Down starts in History; Ctrl+D starts in Favorites. The shortcuts also switch lists when the window is already open. Left/Right switches lists; Up/Down selects within a list. Tab and Shift+Tab follow the normal control order through all three lists, the favorite editor and action buttons. Only the active list has a selection, and each list remembers its cursor. Shortened rows have full-path tooltips. The History link has no dropdown arrow; its tooltip shows Alt+Down.
+One window has two lists: this panel's History and shared Favorites. Starred
+favorites appear above frequent locations in the right list, without duplicate
+paths. Alt+Down starts in History; Ctrl+D starts in Favorites. The shortcuts also
+switch lists when the window is already open. Left/Right switches lists; Up/Down
+selects within a list. Tab and Shift+Tab follow the control order through both
+lists, the favorite editor and action buttons. Only the active list has a
+selection, and each list remembers its cursor. Shortened rows have full-path
+tooltips. The History link has no dropdown arrow; its tooltip shows Alt+Down.
 
 Frequent locations exclude filesystem roots. A visit qualifies after ten active seconds in the current panel's directory, once per stay. Background windows, dialogs, busy operations and more than a minute without input pause attention tracking. Timer suspension does not count as work. Qualified visit weight halves every three days. Quick pass-through navigation, reloads and failed reads earn no visits. Statistics keep up to 512 locations and persist with the session; history seeds fallback candidates. Directory history, favorites and panel state are preserved.
 
 History contains successful visits only. It excludes the current directory, merges repeated paths without regard to letter case, and keeps up to 100 locations including the current one. Refresh, sorting, failed reads and cancelled reads do not add visits. History and directory cursors are saved with the session. Back/forward shortcuts are not implemented yet.
 
-An unavailable directory shows an error in history and allows another selection or retry. Pending navigation shows `Opening directory…`; repeated submission is ignored. Escape cancels the pending read so a late response cannot change the directory after dismissal.
+Missing locations show `[missing]` in History, Favorites and frequent locations.
+Open uses the nearest existing parent and reports the directory that opened.
+An access error keeps the chooser open for another selection or retry.
+PageUp/PageDown move the selected row by a visible page; Home/End select the
+first or last row. Pending navigation shows `Opening directory…`; repeated
+submission is ignored. Escape cancels the pending read so a late response cannot
+change the directory after dismissal. Ctrl+D also opens Favorites from the
+command line and keeps the command draft.
 
 ## Favorite directories
 
@@ -353,4 +367,8 @@ Choose Add current directory or press Insert in the list. Adding the same path a
 
 Changes are saved immediately with the session and survive release changes. Existing sessions without favorites start with an empty list. No sample favorites or Total Commander imports are added. The initial limit is 256 favorites; labels support 1 to 100 characters. Full paths appear in tooltips when a row is shortened.
 
-An unavailable location leaves the dialog open with an error for retry or another choice. A pending read disables repeated submission; Escape cancels the read. Favorites supports F12 feedback without losing the name draft. Open dialogs delay automatic release changes and external directory refresh.
+A missing location opens its nearest existing parent and keeps the saved
+favorite path. An access error leaves the dialog open for retry or another
+choice. A pending read disables repeated submission; Escape cancels the read.
+Favorites supports F12 feedback without losing the name draft. Open dialogs delay
+automatic release changes and external directory refresh.

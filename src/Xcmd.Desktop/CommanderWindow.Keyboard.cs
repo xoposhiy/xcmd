@@ -5,6 +5,15 @@ namespace Xcmd.Desktop;
 
 public sealed partial class CommanderWindow
 {
+    private bool HasGitActionsFocus => Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin;
+
+    private bool HandleFavoritesShortcut(KeyEventArgs e)
+    {
+        if (e.Key != Key.D || e.KeyModifiers != KeyModifiers.Control) return false;
+        OpenNavigation(ActivePanel, DirectoryList.Favorites);
+        return true;
+    }
+
     private void HandleCommandLineKey(KeyEventArgs e)
     {
         if (HandleDirectoryDestinationKey(e)) { e.Handled = true; return; }

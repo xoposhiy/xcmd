@@ -70,11 +70,11 @@ public static class FavoriteScenarios
         {
             var path = Path.Combine(c.LeftPath, "folder2"); c.Window.Favorites.Add(path); Directory.Delete(path);
             var dialog = await OpenAsync(c); await c.KeyAsync(Key.Enter, target: dialog);
-            Check(dialog.IsVisible && dialog.Error != null, "An unavailable favorite stays open with an error.");
-            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "A failed favorite keeps the current directory");
-            await c.ScreenshotAsync("unavailable-favorite", dialog);
-            Directory.CreateDirectory(path); await c.KeyAsync(Key.Enter, target: dialog);
-            Equal(path, c.Window.Left.Session.DirectoryPath, "Retry opens a directory that is available again");
+            Check(!dialog.IsVisible && dialog.Error == null, "A missing favorite opens its existing parent without an error.");
+            Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "A missing favorite opens the nearest existing parent");
+            Equal(path, c.Window.Favorites.Items.Single().Path, "Fallback preserves the saved favorite path");
+            Directory.CreateDirectory(path); dialog = await OpenAsync(c); await c.KeyAsync(Key.Enter, target: dialog);
+            Equal(path, c.Window.Left.Session.DirectoryPath, "A saved favorite opens the original directory when it exists again");
         }),
         new("favorites-cancel-pending-navigation", "UC16; asynchronous cancellation", async c =>
         {

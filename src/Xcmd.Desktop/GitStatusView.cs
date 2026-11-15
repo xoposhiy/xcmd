@@ -30,7 +30,7 @@ public sealed class GitStatusView : Border
     private CancellationTokenSource? request;
     private string directory = "";
     private string actionDirectory = "";
-    private readonly TextBlock arrow = new TextBlock() { Text = "▾", LineHeight = 18, FontSize = UiPalette.BodySize, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), Foreground = UiPalette.Secondary, IsVisible = false }.WithFeedbackId("GitStatusView.arrow");
+    private readonly PathIcon arrow = new PathIcon() { Data = Geometry.Parse("M 0,0 L 8,0 L 4,4 Z"), Width = 8, Height = 4, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), Foreground = UiPalette.Secondary, IsVisible = false }.WithFeedbackId("GitStatusView.arrow");
     public Button ActionsButton { get; } = new Button()
     {
         Height = 24,

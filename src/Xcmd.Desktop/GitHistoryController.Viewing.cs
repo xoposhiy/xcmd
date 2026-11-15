@@ -9,7 +9,7 @@ public sealed partial class GitHistoryController
         var panel = owner.ActivePanel;
         if (!panel.HasHistory || panel.Current is not { } row) return;
         var directory = panel.Session.DirectoryPath;
-        actions.Start("Opening Git view", token => ViewAsync(panel, directory, row.Entry, token));
+        actions.Start("Opening Git view", token => ViewAsync(panel, directory, row.Entry, token), opensViewer: true);
     }
 
     private async Task ViewAsync(PanelView panel, string directory, FileEntry entry, CancellationToken token)
@@ -61,7 +61,7 @@ public sealed partial class GitHistoryController
         var panel = owner.ActivePanel;
         if (panel.Current is not { Entry.IsDirectory: false } row) { owner.SetError("Select a changed repository file to compare."); return; }
         var directory = panel.Session.DirectoryPath; var entry = row.Entry;
-        actions.Start("Preparing Git diff", token => DiffAsync(directory, entry, token));
+        actions.Start("Preparing Git diff", token => DiffAsync(directory, entry, token), opensViewer: true);
     }
 
     private async Task DiffAsync(string directory, FileEntry entry, CancellationToken token)

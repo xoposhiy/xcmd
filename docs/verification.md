@@ -243,6 +243,33 @@ launcher, architecture, analyzers, formatting, metrics and native integration
 checks. The independent usability review is complete. Folder icons use their
 ordinary Windows appearance; Git changes remain in the dedicated column.
 
+## Navigation feedback, 2026-11-15
+
+`feedback-navigation-command-focus`, `feedback-navigation-pages-and-colors` and
+`feedback-navigation-missing-parent` cover Ctrl+D from the command editor, draft
+preservation, page and boundary keys, shared blue selection, hover, missing
+markers, nearest-parent fallback, replacement files and access-error handling.
+Chooser renders cover 100% and 150% scale. Existing history and favorite scenarios
+cover saved paths, cursor restoration, cancellation, editing and persistence.
+
+`feedback-git-viewer-cursor-and-paths` sends PageDown immediately after F3, before
+report creation completes. It also checks actual report scrolling, background
+refresh, focus, snapshot-file viewing and Windows path separators.
+`git-commit-menu` checks the vector arrow and other header controls at both scales.
+
+`feedback-delete-readonly-git-objects` permanently deletes a real repository with
+read-only Git objects through the normal confirmation and queue.
+`feedback-delete-readonly-failure` checks attribute preservation after a locked
+file fails to delete and the existing no-op behavior for an absent file. Native
+recycle and junction scenarios retain the relevant integration coverage.
+
+The [independent usability review](evidence/feedback-usability-review-2026-11-15.md)
+records the findings and resolutions. These are targeted checks; the full suite
+was not requested.
+
+The [verification record](evidence/feedback-verification-2026-11-15.md) lists the
+39 selected scenarios, final static checks, release and remaining limits.
+
 ## Limits
 
 The 2026-11-12 priority batch has focused headless checks in `PriorityBatchScenarios`: `priority-new-file` and `priority-new-file-launch-failure` cover creation, collision, cancel and editor failure; `priority-copy-metadata` checks real Windows timestamps, basic attributes, NTFS streams and folder creation time; `priority-retry-file` and `priority-retry-skip-and-cancel` cover failed-item decisions; `priority-selected-sizes` checks cached directory totals and incomplete bounds without scanning. `priority-command-completion`, `priority-command-directory-quotes` and `priority-command-prefix-history` cover suggestions, a literal trailing separator through the real windowless Windows launcher, draft preservation and prefix history. `priority-viewer-follow` checks appended data, pause/resume and truncation. `priority-shell-group` and `priority-shell-mixed-folders` check group targeting, unchanged marks, keyboard invocation, the mixed-folder restriction and native Windows command discovery without displaying a menu. These are feedback smoke checks, not the full finalization gate. External editor appearance and third-party native menu interaction retain the limits below.

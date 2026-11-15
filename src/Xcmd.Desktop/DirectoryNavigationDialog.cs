@@ -86,7 +86,8 @@ public sealed partial class DirectoryNavigationDialog : Window
             row.Children.Add(new TextBlock { Text = "★", Foreground = UiPalette.Mark, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("DirectoryNavigationDialog.empty"));
             var name = new TextBlock { Text = favorite.Name, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("DirectoryNavigationDialog.name");
             Grid.SetColumn(name, 1); row.Children.Add(name);
-            var path = new TextBlock { Text = favorite.Path, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.PrefixCharacterEllipsis }.WithFeedbackId("DirectoryNavigationDialog.path");
+            var path = new TextBlock { Text = PathText.Display(favorite.Path), Foreground = UiPalette.Secondary, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.PrefixCharacterEllipsis }.WithFeedbackId("DirectoryNavigationDialog.path");
+            TrackLocation(path, favorite.Path);
             Grid.SetColumn(path, 2); row.Children.Add(path); ToolTip.SetTip(row, favorite.Name + "\n" + favorite.Path);
             return row;
         });
@@ -137,6 +138,7 @@ public sealed partial class DirectoryNavigationDialog : Window
             e.Handled = true;
             return;
         }
+        if (inList && HandleListMovement(e)) { e.Handled = true; return; }
         if (inList && HandleSearchKey(e)) { e.Handled = true; return; }
         if (Favorites.IsKeyboardFocusWithin) HandleFavoriteKey(e);
     }
@@ -165,10 +167,11 @@ public sealed partial class DirectoryNavigationDialog : Window
         else if (e.Key == Key.Delete) { RemoveSelection(); e.Handled = true; }
     }
 
-    private static Control PathLabel(string? path, bool reserveStar = false)
+    private Control PathLabel(string? path, bool reserveStar = false)
     {
-        var label = new TextBlock { Text = path, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.PrefixCharacterEllipsis, MinHeight = 22, Margin = new Thickness(reserveStar ? 28 : 0, 0, 0, 0) }.WithFeedbackId("DirectoryNavigationDialog.label");
-        ToolTip.SetTip(label, path); return label;
+        var label = new TextBlock { Text = path == null ? "" : PathText.Display(path), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.PrefixCharacterEllipsis, MinHeight = 22, Margin = new Thickness(reserveStar ? 28 : 0, 0, 0, 0) }.WithFeedbackId("DirectoryNavigationDialog.label");
+        if (path != null) TrackLocation(label, path);
+        return label;
     }
 
     public void SelectList(DirectoryList list) { ResetNameSearch(); ActivateList(list == DirectoryList.History ? Directories : Favorites); FocusSelection(); }

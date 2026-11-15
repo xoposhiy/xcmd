@@ -201,8 +201,9 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.IsPicking) { if (e.Key == Key.Escape) Feedback.Cancel(); e.Handled = true; return; }
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
-        if (Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin) return;
         if (HasOpenDialog) return;
+        if (HandleFavoritesShortcut(e)) { e.Handled = true; return; }
+        if (HasGitActionsFocus) return;
         if (GitHistory.CancelPending(e)) { e.Handled = true; return; }
         if (e.Key == Key.F7 && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); FileSearch.Open(); e.Handled = true; return; }
@@ -291,10 +292,14 @@ public sealed partial class CommanderWindow : Window
         {
             if (dialog.IsOpening) return;
             dialog.SetOpening(true);
-            var loaded = await panel.LoadAsync(directory);
+            var loaded = await panel.LoadAsync(directory, nearestExistingParent: true);
             dialog.SetOpening(false);
             if (!dialog.IsVisible) return;
-            if (loaded) { SetError(null); dialog.Close(); }
+            if (loaded)
+            {
+                SetError(null); dialog.Close();
+                SetStatusMessage(DirectoryNavigationDialog.OpenedMessage(directory, panel.Session.DirectoryPath));
+            }
             else dialog.ShowError(panel.Session.Error ?? "The directory could not be opened.");
         });
         dialog.Closed += (_, _) =>
@@ -306,6 +311,7 @@ public sealed partial class CommanderWindow : Window
         };
         _ = dialog.ShowDialog(this);
         dialog.FocusSelection();
+        Execute(dialog.RefreshAvailabilityAsync);
     }
 }
 

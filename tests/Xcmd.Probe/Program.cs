@@ -50,6 +50,7 @@ internal static class Program
         scenarios = scenarios.Concat(ZipPackingScenarios.All).ToArray();
         scenarios = scenarios.Concat(IssueStoreScenarios.All).ToArray();
         scenarios = scenarios.Concat(AccumulatedFeedbackScenarios.All).ToArray();
+        scenarios = scenarios.Concat(NavigationFeedbackScenarios.All).ToArray();
         if (args.Contains("--list"))
         {
             foreach (var scenario in scenarios) Console.WriteLine($"{scenario.Id}: {scenario.Requirement}");

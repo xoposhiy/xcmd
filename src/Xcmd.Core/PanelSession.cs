@@ -34,7 +34,7 @@ public sealed class PanelSession(IFileSystem fileSystem)
 
     public string? RememberedCursor => cursors.GetValueOrDefault(DirectoryPath);
 
-    public async Task<bool> LoadAsync(string path, CancellationToken cancellationToken = default)
+    public async Task<bool> LoadAsync(string path, CancellationToken cancellationToken = default, bool nearestExistingParent = false)
     {
         loading?.Cancel();
         var request = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -43,8 +43,7 @@ public sealed class PanelSession(IFileSystem fileSystem)
         Error = null;
         try
         {
-            var fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
-            var entries = await fileSystem.ReadDirectoryAsync(fullPath, request.Token);
+            var (fullPath, entries) = await ReadDirectoryAsync(path, nearestExistingParent, request.Token);
             if (request.IsCancellationRequested) return false;
             DirectoryPath = fullPath;
             var parent = PanelRules.ParentEntry(DirectoryPath);
@@ -65,6 +64,18 @@ public sealed class PanelSession(IFileSystem fileSystem)
             if (ReferenceEquals(loading, request)) IsLoading = false;
             request.Dispose();
             if (ReferenceEquals(loading, request)) loading = null;
+        }
+    }
+
+    private async Task<(string Path, IReadOnlyList<FileEntry> Entries)> ReadDirectoryAsync(string path, bool nearestExistingParent, CancellationToken token)
+    {
+        var current = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        while (true)
+        {
+            token.ThrowIfCancellationRequested();
+            try { return (current, await fileSystem.ReadDirectoryAsync(current, token)); }
+            catch (DirectoryNotFoundException) when (nearestExistingParent && ArchivePath.Parent(current) is { })
+            { current = ArchivePath.Parent(current)!; }
         }
     }
 

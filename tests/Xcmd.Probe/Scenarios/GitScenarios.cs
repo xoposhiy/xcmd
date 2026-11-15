@@ -87,7 +87,7 @@ public static class GitScenarios
                 await GitFixture.RunAsync(c.LeftPath, "remote", "add", "origin", ".");
                 await GitFixture.RefreshAsync(c.Window.Left.Git);
                 Check(c.Window.Left.Git.Status!.HasRemote, "Remote exists even without a tracking branch");
-                Check(c.Window.Left.Git.GetVisualDescendants().OfType<PathIcon>().Single().IsVisible, "Remote cloud is visible");
+                Check(c.Window.Left.Git.GetVisualDescendants().OfType<PathIcon>().Single(icon => icon.GetValue(FeedbackTarget.IdProperty) == "GitStatusView.remote").IsVisible, "Remote cloud is visible");
                 await c.ScreenshotAsync("git-clean-remote");
                 await GitFixture.RunAsync(c.LeftPath, "update-ref", "refs/remotes/origin/main", "HEAD");
                 await GitFixture.RunAsync(c.LeftPath, "branch", "--set-upstream-to=origin/main", "main");
