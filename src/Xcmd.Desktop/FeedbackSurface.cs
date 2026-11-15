@@ -28,7 +28,7 @@ internal sealed class FeedbackSurface
         overlay.Children.Add(highlight); root.Children.Add(overlay);
         window.AddHandler(InputElement.KeyDownEvent, (_, e) =>
         {
-            if (e.Key == Key.F12) { if (IsPicking) Cancel(); else controller.Begin(window); e.Handled = true; }
+            if (e.Key == Key.F12 && e.KeyModifiers == KeyModifiers.None) { if (IsPicking) Cancel(); else controller.Begin(window); e.Handled = true; }
             else if (IsPicking) { if (e.Key == Key.Escape) Cancel(); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
         window.AddHandler(InputElement.PointerMovedEvent, (_, e) =>

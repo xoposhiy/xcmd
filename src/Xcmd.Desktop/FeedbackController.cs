@@ -120,7 +120,13 @@ public sealed class FeedbackController
         return new(action, id, name);
     }
 
-    internal void OpenComment(Window source, Control control, FeedbackSurface surface, FeedbackInteraction[] interactions)
+    public CommentDialog? Report(Window source, Control control, string context)
+    {
+        if (IsActive || !surfaces.TryGetValue(source, out var surface)) return null;
+        return OpenComment(source, control, surface, [], context);
+    }
+
+    internal CommentDialog OpenComment(Window source, Control control, FeedbackSurface surface, FeedbackInteraction[] interactions, string? context = null)
     {
         var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
         var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault();
@@ -131,7 +137,7 @@ public sealed class FeedbackController
         if (source != owner) name = source.Title + ": " + name;
         if (panel != null) name = panel.Id + ": " + name;
         var actionPath = interactions.Length == 0 ? null : string.Join(" > ", interactions.Select(step => step.ElementName).Append(target.ElementName));
-        var dialog = new CommentDialog(name, this, actionPath) { Background = owner.Background }.WithFeedbackId("FeedbackController.dialog");
+        var dialog = new CommentDialog(name, this, actionPath, context) { Background = owner.Background }.WithFeedbackId("FeedbackController.dialog");
         comments.Add(dialog);
         Attach(dialog);
         var submitting = false;
@@ -142,16 +148,7 @@ public sealed class FeedbackController
             writes++;
             owner.Execute(async () =>
             {
-                try
-                {
-                    if (Store == null) throw new InvalidOperationException("The issue store has not been configured.");
-                    await Store.AddAsync(new(Guid.NewGuid().ToString("N"), FeedbackIssue.New, text.Trim(), new(id, name), ReleaseId));
-                    dialog.Close();
-                    await RefreshAsync();
-                    owner.SetUpdateMessage("Comment saved. Open Notes to view issues.");
-                }
-                catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
-                { dialog.SaveError.Text = "Could not save comment. " + error.Message; owner.Trace.Add(error.ToString()); }
+                try { await SaveCommentAsync(dialog, source, id, name, text, context); }
                 finally { submitting = false; writes--; }
             });
         };
@@ -164,6 +161,23 @@ public sealed class FeedbackController
         };
         _ = dialog.ShowDialog(source);
         dialog.Editor.Focus();
+        return dialog;
+    }
+
+    private async Task SaveCommentAsync(CommentDialog dialog, Window source, string id, string name, string text, string? context)
+    {
+        try
+        {
+            if (Store == null) throw new InvalidOperationException("The issue store has not been configured.");
+            var report = context == null ? text.Trim() : text.Trim() + "\n\n" + context;
+            await Store.AddAsync(new(Guid.NewGuid().ToString("N"), FeedbackIssue.New, report, new(id, name), ReleaseId));
+            dialog.Close();
+            await RefreshAsync();
+            owner.SetUpdateMessage("Comment saved. Open Notes to view issues.");
+            if (context != null && source is FileViewerWindow viewer && viewer.IsVisible) viewer.ShowFeedbackSaved();
+        }
+        catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
+        { dialog.SaveError.Text = "Could not save comment. " + error.Message; owner.Trace.Add(error.ToString()); }
     }
 
     public void ShowNotes()
@@ -256,7 +270,7 @@ public sealed class CommentDialog : Window
     public TextBox Editor { get; } = new TextBox() { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 100, MaxHeight = 180, PlaceholderText = "What should change?" }.WithFeedbackId("FeedbackController.Editor");
     public event Action<string>? Submitted;
 
-    public CommentDialog(string elementName, FeedbackController? feedback = null, string? actionPath = null)
+    public CommentDialog(string elementName, FeedbackController? feedback = null, string? actionPath = null, string? context = null)
     {
         Title = "Add a comment"; Width = 560; SizeToContent = SizeToContent.Height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -276,7 +290,10 @@ public sealed class CommentDialog : Window
             {
                 new TextBlock { Text = "Comment on: " + elementName, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("FeedbackController.content"),
                 new TextBlock { Text = actionPath == null ? null : "Actions: " + actionPath, Name = "FeedbackActionPath", IsVisible = actionPath != null, FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("FeedbackController.content.2"),
-                Editor, SaveError, new TextBlock { Text = "Ctrl+Enter adds the comment · Esc cancels", FontSize = UiPalette.MetaSize }.WithFeedbackId("FeedbackController.content.3"),
+                Editor,
+                new TextBlock { Text = "Included with this report:", IsVisible = context != null, FontSize = UiPalette.MetaSize }.WithFeedbackId("FeedbackController.report-label"),
+                new TextBox { Text = context, Name = "FeedbackReportContext", IsVisible = context != null, IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 160 }.WithFeedbackId("FeedbackController.report-context"),
+                SaveError, new TextBlock { Text = "Ctrl+Enter adds the comment · Esc cancels", FontSize = UiPalette.MetaSize }.WithFeedbackId("FeedbackController.content.3"),
                 UiLayout.Actions(add, cancel)
             }
         }.WithFeedbackId("FeedbackController.content.4");

@@ -270,6 +270,20 @@ was not requested.
 The [verification record](evidence/feedback-verification-2026-11-15.md) lists the
 39 selected scenarios, final static checks, release and remaining limits.
 
+## Syntax highlighting
+
+The syntax scenarios cover real language samples, embedded HTML/Markdown code,
+multiline page context with UTF-8 and UTF-16, bounded fallback, rendered colors
+in nine reader themes, selection/search, language switching and direct reports
+saved to SQLite. Existing reader layout and scrolling scenarios cover the text
+presenter. Finalization adds stale selection, cancellation races, follow-mode
+edits, real ZIP/Git sources, plain-text Unicode copy, 100/150% rendering and
+grammar failures. See [the syntax architecture and update workflow](syntax-highlighting.md)
+for the scenario mapping. The [verification record](evidence/syntax-verification-2026-11-15.md)
+records 24 passing selected scenarios and all static checks. The
+[independent usability review](evidence/syntax-usability-review-2026-11-15.md)
+is complete. These checks do not establish a passing full suite.
+
 ## Limits
 
 The 2026-11-12 priority batch has focused headless checks in `PriorityBatchScenarios`: `priority-new-file` and `priority-new-file-launch-failure` cover creation, collision, cancel and editor failure; `priority-copy-metadata` checks real Windows timestamps, basic attributes, NTFS streams and folder creation time; `priority-retry-file` and `priority-retry-skip-and-cancel` cover failed-item decisions; `priority-selected-sizes` checks cached directory totals and incomplete bounds without scanning. `priority-command-completion`, `priority-command-directory-quotes` and `priority-command-prefix-history` cover suggestions, a literal trailing separator through the real windowless Windows launcher, draft preservation and prefix history. `priority-viewer-follow` checks appended data, pause/resume and truncation. `priority-shell-group` and `priority-shell-mixed-folders` check group targeting, unchanged marks, keyboard invocation, the mixed-folder restriction and native Windows command discovery without displaying a menu. These are feedback smoke checks, not the full finalization gate. External editor appearance and third-party native menu interaction retain the limits below.

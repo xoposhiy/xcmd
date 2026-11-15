@@ -14,6 +14,8 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(XcmdLauncher)' != 'true'">
     <ProjectReference Include="../Xcmd.Core/Xcmd.Core.csproj" />
+    <EmbeddedResource Include="Syntax/Grammars/*.json" LogicalName="Xcmd.Syntax.%(Filename).json" />
+    <Content Include="Syntax/Grammars/*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup Condition="'$(XcmdLauncher)' == 'true'">
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="10.0.14" />
@@ -22,5 +24,7 @@
   <ItemGroup Condition="'$(XcmdLauncher)' != 'true'">
     <PackageReference Include="UTF.Unknown" Version="2.7.0" />
     <PackageReference Include="SharpCompress" Version="0.50.8" />
+    <PackageReference Include="TextMateSharp" Version="2.0.5" />
+    <PackageReference Include="TextMateSharp.Grammars" Version="2.0.5" />
   </ItemGroup>
 </Project>

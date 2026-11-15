@@ -46,14 +46,17 @@ public sealed partial class FileViewerWindow
         followItem = MenuCommand("Follow end of file", "viewer.follow", ToggleFollowing, new(Key.F, KeyModifiers.Control | KeyModifiers.Shift));
         followItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(followItem);
         view.Add(BuildThemeMenu());
+        view.Add(BuildSyntaxMenu());
+        reportSyntax = MenuCommand("Report highlighting problem…", "viewer.syntax-report", () => ReportSyntaxProblem(menuSelection), new(Key.F12, KeyModifiers.Control | KeyModifiers.Shift));
+        ConfigureSyntaxReporting();
         foreach (var choice in EncodingChoice.All)
         {
             var item = MenuCommand(choice.Label, "viewer.encoding." + choice.CodePage, () => SelectEncoding(choice));
             item.ToggleType = MenuItemToggleType.Radio; item.GroupName = "encoding";
             encodingItems[choice.CodePage] = item;
         }
-        previousPage = MenuCommand("Page up", "viewer.previous-page", () => Run(token => MoveViewportAsync(-Math.Max(20, (textScroll?.Viewport.Height ?? 500) - 20), token)), new(Key.PageUp));
-        nextPage = MenuCommand("Page down", "viewer.next-page", () => Run(token => MoveViewportAsync(Math.Max(20, (textScroll?.Viewport.Height ?? 500) - 20), token)), new(Key.PageDown));
+        previousPage = MenuCommand("Page up", "viewer.previous-page", () => MoveViewport(-Math.Max(20, (textScroll?.Viewport.Height ?? 500) - 20)), new(Key.PageUp));
+        nextPage = MenuCommand("Page down", "viewer.next-page", () => MoveViewport(Math.Max(20, (textScroll?.Viewport.Height ?? 500) - 20)), new(Key.PageDown));
         previousFile = MenuCommand("Previous file", "viewer.previous-file", () => RunExternal(() => NavigateAsync(-1)), new(Key.Left, KeyModifiers.Alt));
         nextFile = MenuCommand("Next file", "viewer.next-file", () => RunExternal(() => NavigateAsync(1)), new(Key.Right, KeyModifiers.Alt));
         Commands.ItemsSource = new MenuItem[]
@@ -82,7 +85,7 @@ public sealed partial class FileViewerWindow
                 TextCommand("End of file", "viewer.last-page", () => Run(token => SeekBoundaryAsync(true, token)), new(Key.End)),
                 previousFile, nextFile
             } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.5"),
-            new MenuItem() { Header = "Help", ItemsSource = new[] { MenuCommand("Comment on an element", "viewer.feedback", () => feedback.Begin(this), new(Key.F12)) } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.6")
+            new MenuItem() { Header = "Help", ItemsSource = new[] { reportSyntax, MenuCommand("Comment on an element", "viewer.feedback", () => feedback.Begin(this), new(Key.F12)) } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.6")
         };
     }
 

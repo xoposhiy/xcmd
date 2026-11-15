@@ -14,16 +14,45 @@
         "resolved": "0.50.8",
         "contentHash": "Loy3gexDEO3smsiokv3553wNDAhWfa6y4f2B8q6Bstc9Xdnmw9nbZtOrlw6YvSbJy6O2yyMgWFINgCazRPZejA=="
       },
+      "TextMateSharp": {
+        "type": "Direct",
+        "requested": "[2.0.5, )",
+        "resolved": "2.0.5",
+        "contentHash": "nzoxbQsoB1jNtZVTF+bwc4/hbC3L8RDvWkjvV00p5o0MzViyHYPFxWo3wUXIrpH00it6cEFw7h6hbT9jJX0aeg==",
+        "dependencies": {
+          "Onigwrap": "1.0.11"
+        }
+      },
+      "TextMateSharp.Grammars": {
+        "type": "Direct",
+        "requested": "[2.0.5, )",
+        "resolved": "2.0.5",
+        "contentHash": "s7YZZokJxVtKeWyU3xc11lDJwZpKZfRZt82+5YVALZr+R4bhhxd9o2yDqyywyAMQvYBMIug7IDcmGa/T/MUXbA==",
+        "dependencies": {
+          "TextMateSharp": "2.0.5"
+        }
+      },
       "UTF.Unknown": {
         "type": "Direct",
         "requested": "[2.7.0, )",
         "resolved": "2.7.0",
         "contentHash": "QpiN8FVvfEMB6QF3T8IhXCbA0atOu1opLHRlbVxPOW9Cv3VksGVPQVXAjCdWFc00sA7FL6z7pOFCYWtO89PbgQ=="
       },
+      "Onigwrap": {
+        "type": "Transitive",
+        "resolved": "1.0.11",
+        "contentHash": "5/WAxSYWfiiPzp1X13qqdqjFmYLKDD/U7Vh3WCkKxWG9BjqdrXnQE5fCKCFJX+xWvuYLTxwZIVWBwBWObViE8g=="
+      },
       "xcmd.core": {
         "type": "Project"
       }
     },
-    "net10.0/win-x64": {}
+    "net10.0/win-x64": {
+      "Onigwrap": {
+        "type": "Transitive",
+        "resolved": "1.0.11",
+        "contentHash": "5/WAxSYWfiiPzp1X13qqdqjFmYLKDD/U7Vh3WCkKxWG9BjqdrXnQE5fCKCFJX+xWvuYLTxwZIVWBwBWObViE8g=="
+      }
+    }
   }
 }

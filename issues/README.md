@@ -32,6 +32,10 @@ release or restart. New comments are inserted immediately; failed saves keep the
 comment editor open. A new session snapshot does not contain feedback. The first
 startup imports older session comments by ID without replacing existing issues
 or their current status. Original text, target and release are preserved.
+The viewer's Report highlighting problem command appends the context shown in
+the form to the comment text: file name, language, engine version, theme,
+encoding, position, status and up to 4,096 selected characters. It uses the same
+store and claim workflow without adding tracker columns or uploading code.
 The transaction also records that legacy import completed, so a stale session
 from an older application cannot resurrect intentionally removed issues.
 For an explicit one-time migration, use `./scripts/Issues.ps1 import-legacy PATH`

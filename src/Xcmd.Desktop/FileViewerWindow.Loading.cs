@@ -38,6 +38,7 @@ public sealed partial class FileViewerWindow
         readingStatus.Text = "Loading…"; Progress.Text = "…";
         ClearSearch();
         slice = null; TextContent.Text = ""; image.Source = null; decodedImage?.Bitmap.Dispose(); decodedImage = null;
+        TextContent.SetSyntax(null); syntaxLanguage = null;
         FirstVisibleByte = 0; VisibleEnd = 0;
         imageUnavailable = null; imageSignature = false;
         IsArchiveReport = false;
@@ -104,6 +105,7 @@ public sealed partial class FileViewerWindow
         var text = await Task.Run(() => mode == FileViewMode.Text ? ViewerText.Decode(page, encoding) : ViewerText.FormatBytes(page, mode == FileViewMode.Hex), token);
         token.ThrowIfCancellationRequested();
         TextContent.Text = text; TextContent.CaretIndex = 0;
+        await HighlightPageAsync(token);
         var format = mode == FileViewMode.Text ? (choice is { CodePage: > 0 } ? choice.Label + " (manual)" : detected.Description) : mode + " · Byte offsets in hex";
         information.Text = $"{page.Length:N0} bytes · {format}\n{(page.Length == 0 ? "Empty file" : $"Bytes {page.Offset:N0}–{page.Offset + page.Count - 1:N0}")} · {PageDescription(page)}";
         BindScrolling();
@@ -145,6 +147,7 @@ public sealed partial class FileViewerWindow
     {
         UpdateModeItems();
         UpdateEncodingItems();
+        UpdateSyntaxControls();
         var text = Mode != FileViewMode.Image;
         UpdateTextItems(text);
         previousPage.IsEnabled = text && FirstVisibleByte > 0;
@@ -186,6 +189,8 @@ public sealed partial class FileViewerWindow
     private void OnViewerKey(object? sender, KeyEventArgs e)
     {
         if (feedback.IsActive) return;
+        if (e.Key == Key.F12 && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
+        { ReportSyntaxProblem(); e.Handled = true; return; }
         if (e.Key == Key.F && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
         { ToggleFollowing(); e.Handled = true; return; }
         if (HandleSearchStart(e)) { e.Handled = true; return; }

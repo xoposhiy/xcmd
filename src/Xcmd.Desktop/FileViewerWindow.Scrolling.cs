@@ -66,6 +66,8 @@ public sealed partial class FileViewerWindow
         var encoding = Mode == FileViewMode.Text ? selectedEncoding.CodePage > 0 ? selectedEncoding.Label + " (Manual)" : detected.Description : "ASCII bytes";
         readingStatus.Text = $"{(IsArchiveReport ? "Archive report" : Mode.ToString())}{(automaticMode ? " (Auto)" : "")} · {encoding} · Wrap {(Mode == FileViewMode.Text && wrapLines ? "on" : "off")} · {VisibleEnd:N0}/{FileLength:N0} bytes";
         if (IsFollowing) readingStatus.Text += " · Following";
+        if (Mode == FileViewMode.Text && !IsArchiveReport) readingStatus.Text += " · " + SyntaxStatus;
+        ToolTip.SetTip(readingStatus, readingStatus.Text);
         Progress.Text = $"{ViewedPercent:0.0}%";
         var visibleBytes = Math.Max(1, VisibleEnd - FirstVisibleByte);
         updatingScroll = true;
@@ -118,7 +120,7 @@ public sealed partial class FileViewerWindow
         UpdateReadingPosition();
     }
 
-    private async Task MoveViewportAsync(double delta, CancellationToken token)
+    private void MoveViewport(double delta)
     {
         if (delta < 0) PauseFollowing();
         if (Mode == FileViewMode.Image || slice == null) return;
@@ -128,14 +130,23 @@ public sealed partial class FileViewerWindow
         var maximum = Math.Max(0, textScroll.Extent.Height - textScroll.Viewport.Height);
         if ((target > maximum && slice.HasNext) || (target < 0 && slice.Offset > 0))
         {
-            var anchor = FirstVisibleByte;
-            var offset = Math.Max(0, slice.Offset + Math.Sign(delta) * FileSlice.PageSize / 2);
-            await LoadPageAsync(offset, token);
-            token.ThrowIfCancellationRequested();
-            RestoreTopByte(Math.Max(offset, anchor));
-            target = textScroll.Offset.Y + delta;
+            Run(token => LoadAdjacentPageAsync(delta, token));
+            return;
         }
         textScroll.Offset = new Vector(textScroll.Offset.X, Math.Clamp(target, 0, Math.Max(0, textScroll.Extent.Height - textScroll.Viewport.Height)));
+        UpdateReadingPosition();
+    }
+
+    private async Task LoadAdjacentPageAsync(double delta, CancellationToken token)
+    {
+        if (slice == null) return;
+        var anchor = FirstVisibleByte;
+        var offset = Math.Max(0, slice.Offset + Math.Sign(delta) * FileSlice.PageSize / 2);
+        await LoadPageAsync(offset, token);
+        token.ThrowIfCancellationRequested();
+        RestoreTopByte(Math.Max(offset, anchor));
+        if (textScroll != null)
+            textScroll.Offset = new Vector(textScroll.Offset.X, Math.Clamp(textScroll.Offset.Y + delta, 0, Math.Max(0, textScroll.Extent.Height - textScroll.Viewport.Height)));
         UpdateReadingPosition();
     }
 
@@ -154,13 +165,13 @@ public sealed partial class FileViewerWindow
             _ => 0
         };
         if (delta == 0) return false;
-        Run(token => MoveViewportAsync(delta, token)); return true;
+        MoveViewport(delta); return true;
     }
 
     private void OnViewerWheel(object? sender, PointerWheelEventArgs e)
     {
         if (feedback.IsActive || Commands.IsOpen || Search.IsPointerOver || Mode == FileViewMode.Image || e.KeyModifiers.HasFlag(KeyModifiers.Shift) || e.Delta.Y == 0) return;
-        Run(token => MoveViewportAsync(-e.Delta.Y * 60, token));
+        MoveViewport(-e.Delta.Y * 60);
         e.Handled = true;
     }
 }

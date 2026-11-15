@@ -46,6 +46,7 @@ public sealed partial class FileViewerWindow : Window
     private int index;
     private bool updating;
     private bool closed;
+    private IDisposable? feedbackNotice;
     private bool automaticMode = true;
     private bool imageSignature;
     private string? imageUnavailable;
@@ -70,7 +71,7 @@ public sealed partial class FileViewerWindow : Window
     public double ViewedPercent => FileLength == 0 ? 100 : 100d * VisibleEnd / FileLength;
     public ScrollBar FileScroll { get; } = new ScrollBar() { Name = "ViewerFileScroll", Orientation = Orientation.Vertical, Width = 16 }.WithFeedbackId("FileViewerWindow.FileScroll");
     public Menu Commands { get; } = new Menu() { Name = "ViewerMenu", MinHeight = 24 }.WithFeedbackId("FileViewerWindow.Commands");
-    public TextBox TextContent { get; } = new TextBox()
+    public SyntaxTextBox TextContent { get; } = new SyntaxTextBox()
     {
         Name = "ViewerContent",
         IsReadOnly = true,
@@ -119,7 +120,7 @@ public sealed partial class FileViewerWindow : Window
         TextContent.SizeChanged += (_, _) => UpdateReadingPosition();
         FileScroll.PropertyChanged += (_, e) => { if (e.Property == ScrollBar.ValueProperty && !updatingScroll && slice != null) SeekFromScrollBar((long)FileScroll.Value); };
         Search.TextChanging += (_, _) => SearchChanged();
-        Closed += (_, _) => { closed = true; loading?.Cancel(); searching?.Cancel(); image.Source = null; decodedImage?.Bitmap.Dispose(); };
+        Closed += (_, _) => { closed = true; feedbackNotice?.Dispose(); loading?.Cancel(); searching?.Cancel(); image.Source = null; decodedImage?.Bitmap.Dispose(); };
     }
 
     private Grid BuildContent()
@@ -160,8 +161,19 @@ public sealed partial class FileViewerWindow : Window
 
     internal void SetFeedbackHint(string text)
     {
+        feedbackNotice?.Dispose(); feedbackNotice = null;
         feedbackStatus.Text = text; feedbackStatus.IsVisible = text.Length > 0;
         readingStatus.IsVisible = text.Length == 0;
+    }
+
+    internal void ShowFeedbackSaved()
+    {
+        SetFeedbackHint("Comment saved.");
+        feedbackNotice = Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+        {
+            feedbackNotice = null;
+            if (!closed && !feedback.IsActive) SetFeedbackHint("");
+        }, TimeSpan.FromSeconds(3));
     }
 
     private sealed record EncodingChoice(string Label, int CodePage)

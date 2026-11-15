@@ -24,6 +24,10 @@ public sealed partial class FileViewerWindow
         {
             if (!Commands.IsOpen) menuSelection = new(TextContent.Text, TextContent.CaretIndex, TextContent.SelectionStart, TextContent.SelectionEnd);
         }, RoutingStrategies.Tunnel);
+        Commands.Closed += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            if (!Commands.IsOpen) menuSelection = null;
+        }, DispatcherPriority.Input);
     }
 
     private MenuItem BuildThemeMenu()
@@ -54,6 +58,7 @@ public sealed partial class FileViewerWindow
         var start = TextContent.SelectionStart;
         var end = TextContent.SelectionEnd;
         activeTheme = ReaderThemes.Find(id);
+        TextContent.SetSyntaxTheme(activeTheme);
         var background = Brush.Parse(activeTheme.Background);
         var foreground = Brush.Parse(activeTheme.Foreground);
         var surface = Brush.Parse(activeTheme.Surface);
