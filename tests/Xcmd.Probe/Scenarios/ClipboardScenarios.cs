@@ -93,6 +93,12 @@ public static class ClipboardScenarios
             var path = Path.Combine(c.LeftPath, "отчёт 日本語.txt");
             await c.KeyAsync(Key.C, RawInputModifiers.Control | RawInputModifiers.Shift);
             Equal(path, await c.Window.Clipboard!.TryGetTextAsync(), "Ctrl+Shift+C copies the unquoted complete path");
+            var archive = Path.Combine(c.RightPath, "paths.zip");
+            ArchiveProbe.Zip(archive, ("member.txt", "Member"));
+            await c.Window.Right.LoadAsync(ArchivePath.Root(archive)); c.Window.Activate(c.Window.Right); await c.SelectAsync("member.txt", c.Window.Right);
+            await c.KeyAsync(Key.C, RawInputModifiers.Control | RawInputModifiers.Shift);
+            Equal(Path.Combine(archive + "!", "member.txt"), await c.Window.Clipboard!.TryGetTextAsync(), "Archive members copy the displayed archive path");
+            c.Window.Activate(c.Window.Left); await c.SelectAsync("отчёт 日本語.txt");
             Equal("", c.Window.CommandLine.Editor.Text, "Path copying keeps the command draft");
             Check(c.Window.Left.Table.IsKeyboardFocusWithin, "Path copying keeps file focus");
             await c.KeyAsync(Key.Enter, RawInputModifiers.Control);

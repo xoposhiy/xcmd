@@ -51,6 +51,10 @@ public static class NavigationAndColorsScenarios
             book.Visit(@"C:\", now); book.Seed([@"D:\", @"C:\other"]);
             Check(book.Capture().All(item => item.Path is not (@"C:\" or @"D:\")), "Roots are excluded from stored ranking and suggestions.");
             Equal(@"C:\project", book.Suggest(@"C:\other", now)[0].Path, "A root cannot outrank working directories");
+            book.Seed([@"C:\transit"]);
+            Equal(@"C:\transit", book.Suggest(@"C:\other", now)[^1].Path, "Briefly opened directories follow scored ones.");
+            book.Visit(@"C:\data.zip|", now); book.Seed([@"C:\data.zip|docs"]); book.Visit(GitPath.Log(@"C:\project", ""), now);
+            Equal(2, book.Suggest(@"C:\other", now).Length, "Archive and Git locations are not frequent directories.");
             var attention = new DirectoryAttention();
             Equal(0, ObserveFor(attention, @"C:\transit", now, 2, true).Count(), "A short pass through a directory earns no visit");
             Equal(1, ObserveFor(attention, @"C:\project", now.AddSeconds(3), 20, true).Count(), "Ten active seconds earn one visit per stay");
@@ -135,34 +139,48 @@ public static class NavigationAndColorsScenarios
         }),
         new("colors-source-text-and-executable-priority", "UC19; configurable file groups", async c =>
         {
+            await GitFixture.InitializeAsync(c.LeftPath); await GitFixture.RefreshAsync(c.Window.Left.Git);
             foreach (var name in new[] { "script.sh", "script.ps1", "script.cmd", "program.exe", "source.py", "readme.TXT", "Dockerfile", "unknown.pdf" }) c.AddFile(name, "File color fixture");
             Directory.CreateDirectory(Path.Combine(c.LeftPath, "folder.cs")); await c.KeyAsync(Key.R, RawInputModifiers.Control);
-            foreach (var name in new[] { "script.sh", "script.ps1", "script.cmd", "source.py", "Dockerfile" }) Equal(Color.Parse("#C3ABF5"), FileColor(c, name), "Source files use the source rule before executable or text rules");
-            Equal(Color.Parse("#E9BD79"), FileColor(c, "program.exe"), "Programs use amber");
-            Equal(Color.Parse("#8DD3E8"), FileColor(c, "readme.TXT"), "Text files use blue and ignore extension case");
+            foreach (var name in new[] { "script.sh", "script.ps1", "script.cmd", "source.py", "Dockerfile" }) Equal(Color.Parse("#C3ABF5"), TypeColor(c, name), "Source files use the source rule before executable or text rules");
+            foreach (var name in new[] { "script.sh", "program.exe", "readme.TXT", "Dockerfile" }) Equal(Colors.White, FileColor(c, name), "File names use white regardless of their type");
+            Equal(Color.Parse("#E9BD79"), TypeColor(c, "program.exe"), "Programs use amber in the Type column");
+            Equal(Color.Parse("#8DD3E8"), TypeColor(c, "readme.TXT"), "Text types use blue and ignore extension case");
             Equal(Colors.White, FileColor(c, "unknown.pdf"), "Unmatched files keep the default color");
-            Equal(Colors.White, FileColor(c, "folder.cs"), "Directory names are not classified as source files");
+            Equal(Colors.White, TypeColor(c, "folder.cs"), "Directory names are not classified as source files");
             await c.SelectAsync("script.sh"); Equal(Colors.White, FileColor(c, "script.sh"), "Selected file text keeps contrast against the selection background");
+            Equal(Color.Parse("#C3ABF5"), TypeColor(c, "script.sh"), "The current file keeps its type color in the Type column");
+            await c.KeyAsync(Key.Insert);
+            Equal(Color.Parse("#C3ABF5"), TypeColor(c, "script.sh"), "Marked files keep their type color in the Type column");
+            Equal(Color.Parse("#E9BD79"), TypeColor(c, "program.exe"), "Executable extensions use the executable color");
+            Equal(Color.Parse("#8DD3E8"), TypeColor(c, "readme.TXT"), "Text extensions use the text color");
             await c.SelectAsync("folder1"); await c.Window.Left.Icons.Completion; await c.ScreenshotAsync("file-colors");
         }),
         new("colors-config-reload-and-preservation", "UC19; persistent configuration", async c =>
         {
+            await GitFixture.InitializeAsync(c.LeftPath); await GitFixture.RefreshAsync(c.Window.Left.Git);
             var settings = Path.Combine(c.FixturePath, "profile", "file-types.json");
             await FileTypeSettings.LoadAsync(settings);
             var custom = "{\"rules\":[{\"name\":\"custom\",\"color\":\"#91E0A1\",\"extensions\":[\".txt\"],\"fileNames\":[]}]}";
             await File.WriteAllTextAsync(settings, custom); c.Window.FileTypeSettingsPath = settings;
             var menu = c.Window.GetVisualDescendants().OfType<Menu>().Single();
             await c.ClickAsync((MenuItem)menu.Items[3]!); await c.KeyAsync(Key.Down); await c.KeyAsync(Key.Down); await c.KeyAsync(Key.Enter);
-            Equal(Color.Parse("#91E0A1"), FileColor(c, "alpha.txt"), "The View command applies edited rules to existing rows");
+            Equal(Colors.White, FileColor(c, "alpha.txt"), "Changing file-type colors keeps file names white");
+            Equal(Color.Parse("#91E0A1"), TypeColor(c, "alpha.txt"), "Reloading file types updates existing Type cells");
             await FileTypeSettings.LoadAsync(settings); Equal(custom, await File.ReadAllTextAsync(settings), "Loading a new release preserves custom rules");
             await File.WriteAllTextAsync(settings, "{broken"); await c.Window.ReloadFileTypesAsync();
-            Equal(Color.Parse("#91E0A1"), FileColor(c, "alpha.txt"), "Invalid edits keep the last valid colors");
+            Equal(Color.Parse("#91E0A1"), TypeColor(c, "alpha.txt"), "Invalid edits keep the last valid colors");
             Equal("{broken", await File.ReadAllTextAsync(settings), "Invalid user settings are kept for correction");
+            await File.WriteAllTextAsync(settings, "{\"rules\":[{\"name\":\"bad\",\"color\":\"green\",\"extensions\":[\".txt\"],\"fileNames\":[]}]}");
+            await c.Window.ReloadFileTypesAsync();
+            Equal(Color.Parse("#91E0A1"), TypeColor(c, "alpha.txt"), "A rule with an invalid color keeps the last valid colors");
         }),
         new("colors-rename-changes-group", "UC19; UC17; updated file category", async c =>
         {
+            await GitFixture.InitializeAsync(c.LeftPath); await GitFixture.RefreshAsync(c.Window.Left.Git);
             await c.BeginRenameAsync("alpha.txt"); await c.TextAsync("alpha.cs"); await c.KeyAsync(Key.Enter); await c.SelectAsync("folder1");
-            Equal(Color.Parse("#C3ABF5"), FileColor(c, "alpha.cs"), "Renaming an extension updates its color group");
+            Equal(Color.Parse("#C3ABF5"), TypeColor(c, "alpha.cs"), "Renaming an extension updates its color group");
+            Equal(Colors.White, FileColor(c, "alpha.cs"), "Renamed file names remain white");
         }),
         new("layout-panel-strip-and-type-header", "UC20; b4fcf9cd", async c =>
         {

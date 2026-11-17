@@ -8,6 +8,7 @@ namespace Xcmd.Desktop;
 public sealed partial class CommanderWindow
 {
     private readonly IFileOperationStore operationStore;
+    private readonly FileOperationDecisions decisions;
     public FileOperationQueue Operations { get; }
     public FileOperationsView OperationsView { get; }
     public Window? OperationDialog { get; internal set; }
@@ -23,14 +24,14 @@ public sealed partial class CommanderWindow
         if (HasOpenDialog) return;
         var selected = SelectedOperationEntries();
         if (selected.Length == 0) return;
-        if (kind != FileOperationKind.Copy && selected.Any(entry => ArchivePath.IsEntry(entry.FullPath)))
-        { SetError("Archives are read-only. Use F5 to copy files out."); return; }
+        if (kind != FileOperationKind.Copy && selected.FirstOrDefault(entry => ArchivePath.IsEntry(entry.FullPath)) is { } virtualSource)
+        { SetError(ArchivePath.ReadOnlyMessage(virtualSource.FullPath, "Archives are read-only. Use F5 to copy files out.")); return; }
         ResetQuickJump();
         SetError(null);
         var sourceDirectory = ActivePanel.OperationDirectory;
         if (!samePanel && (OppositePanel.IsSearchResults || OppositePanel.HasHistory)) { SetError("Open a destination folder in the other panel first (Escape leaves search results or Git history)."); return; }
         var targetDirectory = samePanel ? sourceDirectory : OppositePanel.Session.DirectoryPath;
-        if (ArchivePath.IsEntry(targetDirectory)) { SetError("Archives are read-only. Choose a regular destination folder."); return; }
+        if (ArchivePath.IsEntry(targetDirectory)) { SetError(ArchivePath.ReadOnlyMessage(targetDirectory, "Archives are read-only. Choose a regular destination folder.")); return; }
         var dialog = new FileTransferDialog(kind, selected, targetDirectory, Feedback, samePanel) { Background = Background }.WithFeedbackId("CommanderWindow.FileOperations.dialog");
         OperationDialog = dialog;
         AttachOperationDialog(dialog);
@@ -55,10 +56,10 @@ public sealed partial class CommanderWindow
     private void DeleteSelected(bool permanently)
     {
         if (HasOpenDialog) return;
-        if (ArchivePath.IsEntry(ActivePanel.Session.DirectoryPath)) { SetError("Archives are read-only. Entries cannot be deleted."); return; }
+        if (ArchivePath.IsEntry(ActivePanel.Session.DirectoryPath)) { SetError(ArchivePath.ReadOnlyMessage(ActivePanel.Session.DirectoryPath, "Archives are read-only. Entries cannot be deleted.")); return; }
         var selected = SelectedOperationEntries();
         if (selected.Length == 0) return;
-        if (selected.Any(entry => ArchivePath.IsEntry(entry.FullPath))) { SetError("Archives are read-only. Entries cannot be deleted."); return; }
+        if (selected.FirstOrDefault(entry => ArchivePath.IsEntry(entry.FullPath)) is { } virtualEntry) { SetError(ArchivePath.ReadOnlyMessage(virtualEntry.FullPath, "Archives are read-only. Entries cannot be deleted.")); return; }
         ResetQuickJump();
         var request = new FileOperationRequest(permanently ? FileOperationKind.Delete : FileOperationKind.Recycle, selected);
         var dialog = new FileDeleteDialog(request, Feedback) { Background = Background }.WithFeedbackId("CommanderWindow.FileOperations.dialog.2");

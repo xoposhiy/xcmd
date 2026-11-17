@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xcmd.Core;
@@ -14,6 +15,26 @@ public static class FileOperationScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("operations-dialog-access-keys", "Copy, move and delete dialogs expose consistent keyboard actions", async c =>
+        {
+            await c.SelectAsync("alpha.txt");
+            await c.KeyAsync(Key.F5);
+            await c.KeyAsync(Key.N, RawInputModifiers.Alt, c.Window.OperationDialog);
+            Check(c.Window.OperationDialog == null && !File.Exists(Path.Combine(c.RightPath, "alpha.txt")), "Alt+N cancels the copy dialog");
+            await c.KeyAsync(Key.F5);
+            await c.KeyAsync(Key.C, RawInputModifiers.Alt, c.Window.OperationDialog);
+            Equal("abc", File.ReadAllText(Path.Combine(c.RightPath, "alpha.txt")), "Alt+C confirms Copy from the destination field");
+            await c.SelectAsync("file2.log"); await c.KeyAsync(Key.F6);
+            await c.KeyAsync(Key.M, RawInputModifiers.Alt, c.Window.OperationDialog);
+            Check(File.Exists(Path.Combine(c.RightPath, "file2.log")), "Alt+M confirms Move");
+            await c.SelectAsync("zeta.md"); await c.KeyAsync(Key.F8);
+            await c.KeyAsync(Key.N, RawInputModifiers.Alt, c.Window.OperationDialog);
+            Check(File.Exists(Path.Combine(c.LeftPath, "zeta.md")), "Alt+N cancels deletion");
+            await c.KeyAsync(Key.F8);
+            await c.KeyAsync(Key.P, RawInputModifiers.Alt, c.Window.OperationDialog);
+            await c.KeyAsync(Key.Y, RawInputModifiers.Alt, c.Window.OperationDialog);
+            Check(!File.Exists(Path.Combine(c.LeftPath, "zeta.md")), "Alt+Y confirms deletion of the isolated fixture");
+        }),
         new("operations-delete-large-tree-cancel", "UC35; Cancelling active deletion keeps all unstarted files", async c =>
         {
             var root = DeletionPerformanceProbe.CreateTree(c);
@@ -77,8 +98,12 @@ public static class FileOperationScenarios
             File.WriteAllText(Path.Combine(c.RightPath, "folder1", "second.txt"), "old second");
             File.WriteAllText(Path.Combine(c.RightPath, "folder1", "destination-only.txt"), "keep");
             await c.SelectAsync("folder1"); await CopyAsync(c);
-            ((FileConflictDialog)c.Window.OperationDialog!).ApplyToAll.IsChecked = true;
-            await ChooseConflictAsync(c, "ConflictReplace");
+            var dialog = (FileConflictDialog)c.Window.OperationDialog!;
+            await c.KeyAsync(Key.A, RawInputModifiers.Alt, dialog);
+            Check(dialog.ApplyToAll.IsChecked == true, "Alt+A enables Apply to all");
+            Check(dialog.GetVisualDescendants().OfType<AccessText>().Any(text => text.Text == "_Replace all"), "The Replace label shows its current scope");
+            await c.ScreenshotAsync("conflict-replace-all-keyboard", dialog);
+            await c.KeyAsync(Key.R, RawInputModifiers.Alt, dialog);
             Equal(FileOperationState.Completed, LastJob(c).State, "One decision resolves matching conflicts");
             Equal("new second", File.ReadAllText(Path.Combine(c.RightPath, "folder1", "second.txt")), "Apply-to-all replaces the second file");
             Equal("keep", File.ReadAllText(Path.Combine(c.RightPath, "folder1", "destination-only.txt")), "Folder merge preserves destination-only files");

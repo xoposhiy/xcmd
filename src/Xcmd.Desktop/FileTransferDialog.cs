@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Xcmd.Core;
 
@@ -31,8 +31,8 @@ public sealed class FileTransferDialog : Window
             TextTrimming = TextTrimming.CharacterEllipsis
         }.WithFeedbackId("FileTransferDialog.source");
         ToolTip.SetTip(source, string.Join("\n", sources.Select(entry => entry.FullPath)));
-        var confirm = new Button { Content = Title, Name = "ConfirmFileTransfer", IsDefault = true }.WithFeedbackId("FileTransferDialog.confirm");
-        var cancel = new Button { Content = "Cancel", Name = "CancelFileTransfer", Margin = new Thickness(8, 0, 0, 0) }.WithFeedbackId("FileTransferDialog.cancel");
+        var confirm = new Button { Content = new AccessText { Text = "_" + Title, ShowAccessKey = true }.WithFeedbackId("FileTransferDialog.confirmLabel"), Name = "ConfirmFileTransfer", IsDefault = true }.WithFeedbackId("FileTransferDialog.confirm");
+        var cancel = new Button { Content = new AccessText { Text = "Ca_ncel", ShowAccessKey = true }.WithFeedbackId("FileTransferDialog.cancelLabel"), Name = "CancelFileTransfer", Margin = new Thickness(8, 0, 0, 0) }.WithFeedbackId("FileTransferDialog.cancel");
         confirm.Click += (_, _) => Submit(); cancel.Click += (_, _) => Close();
         DialogActions.FollowFocus(this, confirm, cancel);
         Content = new StackPanel
@@ -55,6 +55,8 @@ public sealed class FileTransferDialog : Window
         {
             if (feedback.IsPickingIn(this) || feedback.ActiveComment != null) return;
             if (e.Key == Key.Escape) { Close(); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == Key.N) { Close(); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == (kind == FileOperationKind.Copy ? Key.C : Key.M)) { Submit(); e.Handled = true; }
             else if (e.Key == Key.Enter && Destination.IsKeyboardFocusWithin) { Submit(); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
     }

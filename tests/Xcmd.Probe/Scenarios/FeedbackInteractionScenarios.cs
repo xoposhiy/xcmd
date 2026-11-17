@@ -14,6 +14,16 @@ public static class FeedbackInteractionScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("feedback-first-click-immediate", "Feedback opens on the first released click without waiting for double-click detection", async c =>
+        {
+            for (var index = 0; index < 3; index++)
+            {
+                await c.KeyAsync(Key.F12);
+                SelectImmediately(c.Window, c.Window.CommandLine.Editor);
+                Check(c.Window.Feedback.ActiveComment != null, "The comment exists before the next dispatcher tick");
+                await c.KeyAsync(Key.Escape, target: c.Window.Feedback.ActiveComment);
+            }
+        }),
         new("feedback-literal-table-cell-targets", "UC39; comments preserve source IDs and file names for cells, icons and Git headers", async c =>
         {
             try
@@ -39,14 +49,14 @@ public static class FeedbackInteractionScenarios
             }
             finally { GitFixture.AllowCleanup(c.LeftPath); }
         }),
-        new("feedback-double-click-menu-and-saved-context", "UC39; interact with menus while selecting feedback and save the click path", async c =>
+        new("feedback-control-click-menu-and-saved-context", "UC39; interact with menus while selecting feedback and save the click path", async c =>
         {
             var menu = c.Window.GetVisualDescendants().OfType<Menu>().Single();
             var file = (MenuItem)menu.Items[0]!;
             await c.KeyAsync(Key.F12);
-            await DoubleClickAsync(c, c.Window, file);
-            Check(c.Window.IsMenuOpen && c.Window.Feedback.IsPicking, "Double-click opens a menu without ending feedback mode");
-            Check(c.Window.Feedback.ActiveComment == null, "Double-click does not open a premature comment");
+            await UseControlAsync(c, c.Window, file);
+            Check(c.Window.IsMenuOpen && c.Window.Feedback.IsPicking, "Ctrl+click opens a menu without ending feedback mode");
+            Check(c.Window.Feedback.ActiveComment == null, "Ctrl+click does not open a premature comment");
             var rename = file.Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == "Rename");
             await c.ClickAsync(rename);
             var comment = c.Window.Feedback.ActiveComment!;
@@ -61,13 +71,13 @@ public static class FeedbackInteractionScenarios
             Check((await store.ReadAsync())!.Notes == null, "New sessions do not contain feedback");
             Equal(note, (await c.Window.Feedback.Store!.ReadAsync()).Single(), "The independent store preserves the clicked target");
         }),
-        new("feedback-double-click-runs-one-click", "UC39; use one normal click during feedback and keep the action path", async c =>
+        new("feedback-control-click-runs-one-click", "UC39; use one normal click during feedback and keep the action path", async c =>
         {
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
             await c.KeyAsync(Key.F12, target: viewer);
-            await DoubleClickAsync(c, viewer, (MenuItem)viewer.Commands.Items[1]!);
-            await DoubleClickAsync(c, viewer, ViewerProbe.Command(viewer, "viewer.wrap"));
+            await UseControlAsync(c, viewer, (MenuItem)viewer.Commands.Items[1]!);
+            await UseControlAsync(c, viewer, ViewerProbe.Command(viewer, "viewer.wrap"));
             Equal(TextWrapping.NoWrap, viewer.TextContent.TextWrapping, "The forwarded click runs the control exactly once");
             Check(c.Window.Feedback.IsPickingIn(viewer) && c.Window.Feedback.ActiveComment == null, "Feedback remains active after using a control");
             await c.ClickAsync(viewer.TextContent, target: viewer);

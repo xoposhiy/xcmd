@@ -23,6 +23,7 @@ public sealed partial class PanelView : Border
     private string? cursorName;
     private bool headersConfigured;
     private bool keyboardMarks;
+    private int loadVersion;
     private string? rangeAnchor;
     private FileTypes fileTypes;
     private FileRow? currentRow;
@@ -48,7 +49,7 @@ public sealed partial class PanelView : Border
     public event Action<PanelView>? HistoryRequested;
     public event Action<string>? LocationVisited;
     public event Action<PanelView>? LoadingRequested;
-    public FileIconCache Icons { get; } = new();
+    public FileIconCache Icons { get; }
     public GitStatusView Git { get; }
     private NameJump? nameSearch;
     public void ShowNameMatches(NameJump? search)
@@ -118,7 +119,8 @@ public sealed partial class PanelView : Border
             return await RecoverDirectoryAsync(directory, hadFocus, canApply, canFocus);
         }
         if (!canApply() || EditingRow != null || Session.DirectoryPath != directory) return false;
-        ApplyRefreshedEntries();
+        if (Rows.Select(row => row.Entry).SequenceEqual(Session.Entries)) UpdateSummary();
+        else ApplyRefreshedEntries();
         return true;
     }
 
@@ -170,10 +172,14 @@ public sealed partial class PanelView : Border
     }
 
     public PanelView(string id, IFileSystem fileSystem, FileTypes? fileTypes = null)
+        : this(id, fileSystem, fileTypes, null) { }
+
+    public PanelView(string id, IFileSystem fileSystem, FileTypes? fileTypes, IGitStatusReader? gitReader)
     {
         this.fileTypes = fileTypes ?? FileTypeSettings.Bundled();
         Id = id;
-        Git = new GitStatusView(id).WithFeedbackId("PanelView.Git");
+        Icons = new FileIconCache(this);
+        Git = new GitStatusView(id, gitReader).WithFeedbackId("PanelView.Git");
         Name = id;
         Session = new PanelSession(fileSystem);
         Background = UiPalette.Surface;
@@ -379,12 +385,17 @@ public sealed partial class PanelView : Border
         if (field == SortField.Size)
         { text.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.DisplaySize))); text.Bind(ToolTip.TipProperty, new Binding(nameof(FileRow.SizeDescription))); }
         if (field == SortField.Extension)
-        { text.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.Kind))); text.Bind(ToolTip.TipProperty, new Binding(nameof(FileRow.Kind))); }
+        {
+            text.Bind(TextBlock.TextProperty, new Binding(nameof(FileRow.Kind)));
+            text.Bind(ToolTip.TipProperty, new Binding(nameof(FileRow.Kind)));
+            text.Bind(TextBlock.ForegroundProperty, new Binding(nameof(FileRow.TypeForeground)));
+        }
         return text;
     }
 
     public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default, bool nearestExistingParent = false)
     {
+        var version = ++loadVersion;
         var gitReturn = GitPath.IsEntry(directory) && !HasHistory ? CaptureState() : null;
         LoadingRequested?.Invoke(this);
         CancelRename();
@@ -397,20 +408,27 @@ public sealed partial class PanelView : Border
             UpdateSummary();
             return false;
         }
+        Git.SetDirectory(Session.DirectoryPath);
+        await Git.DirectoryReady;
+        if (version != loadVersion || cancellationToken.IsCancellationRequested) return false;
+        selectName ??= preserveSelection ? Current?.Name : Session.RememberedCursor;
+        ApplyDirectoryLoad(previousPath, gitReturn, selected, selectName);
+        return true;
+    }
+
+    private void ApplyDirectoryLoad(string previousPath, PanelState? gitReturn, string[] selected, string? selectName)
+    {
         gitReturnState = HasHistory ? gitReturn ?? gitReturnState : null;
         searchResults = null;
         searchReturnState = null;
         sizes.Clear();
-        selectName ??= preserveSelection ? Current?.Name : Session.RememberedCursor;
         ApplyEntries(selected, selectName);
         path.Text = DisplayPath;
-        Git.SetDirectory(Session.DirectoryPath);
         path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
         ToolTip.SetTip(path, path.Text);
         AutomationProperties.SetName(Table, "Files in " + Session.DirectoryPath);
         if (!previousPath.Equals(Session.DirectoryPath, StringComparison.OrdinalIgnoreCase)) LocationVisited?.Invoke(Session.DirectoryPath);
         UpdateSummary();
-        return true;
     }
 
     public void SortBy(SortField field)
@@ -578,12 +596,12 @@ public sealed partial class PanelView : Border
         EditingRow = null;
     }
 
-    public async Task<string?> CommitRenameAsync()
+    public async Task<FileOperationError?> CommitRenameAsync()
     {
         if (IsCommitting || EditingRow is not { } row) return null;
         var name = row.DraftName;
         var validation = PanelRules.ValidateName(name);
-        if (validation != null) return validation;
+        if (validation != null) return new(row.Entry, null, validation);
         IsCommitting = true;
         var editor = RenameEditor;
         if (editor != null) editor.IsReadOnly = true;
@@ -598,7 +616,7 @@ public sealed partial class PanelView : Border
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            return error.Message;
+            return FileOperationError.FromException(row.Entry, null, error);
         }
         finally
         {
@@ -630,7 +648,7 @@ public sealed partial class PanelView : Border
         if (row == null) return;
         sizes[row.Name] = measurement; row.SetMeasurement(measurement); UpdateSummary();
     }
-    private void ApplyFileColor(FileRow row) => row.SetFileColor(fileTypes.Match(row.Name, row.Entry.IsDirectory) is { } rule ? new SolidColorBrush(Color.Parse(rule.Color)) : Brushes.White);
+    private void ApplyFileColor(FileRow row) => row.SetFileColor(fileTypes.Match(row.Name, row.Entry.IsDirectory) is { } rule ? Brush.Parse(rule.Color) : Brushes.White);
     private void UpdateSummary()
     {
         var selection = Table.SelectedItems?.OfType<FileRow>().ToHashSet() ?? [];

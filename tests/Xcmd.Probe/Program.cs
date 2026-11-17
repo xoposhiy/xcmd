@@ -44,10 +44,16 @@ internal static class Program
         scenarios = scenarios.Concat(ShellScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitRowsScenarios.All).ToArray();
+        scenarios = scenarios.Concat(GitIgnoreScenarios.All).ToArray();
+        scenarios = scenarios.Concat(GitNavigationScenarios.All).ToArray();
+        scenarios = scenarios.Concat(IconPresentationScenarios.All).ToArray();
+        scenarios = scenarios.Concat(FileLockScenarios.All).ToArray();
+        scenarios = scenarios.Concat(MainKeyboardScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitCommitScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitHistoryScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitUsabilityFixScenarios.All).ToArray();
         scenarios = scenarios.Concat(ClipboardScenarios.All).ToArray();
+        scenarios = scenarios.Concat(FileDragScenarios.All).ToArray();
         scenarios = scenarios.Concat(PriorityBatchScenarios.All).ToArray();
         scenarios = scenarios.Concat(ZipPackingScenarios.All).ToArray();
         scenarios = scenarios.Concat(IssueStoreScenarios.All).ToArray();

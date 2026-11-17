@@ -20,6 +20,8 @@ public sealed class ProbeContext : IDisposable
     public ControlledFileSystem FileSystem { get; } = new();
     public RecordingExternalLauncher Launcher { get; } = new();
     public RecordingShellInteraction Shell { get; } = new();
+    public RecordingFileDragSource FileDrag { get; } = new();
+    public FileDragDropController DragDrop { get; }
     public ControlledArchiveContents Archives { get; }
     public CommanderWindow Window { get; }
     public InputDriver Input => new(Window);
@@ -30,7 +32,8 @@ public sealed class ProbeContext : IDisposable
     public ProbeContext(string outputPath)
     {
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
+        DragDrop = new FileDragDropController(FileDrag);
+        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell, DragDrop), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
         OutputPath = outputPath;
         Window.Feedback.Store = new Xcmd.Infrastructure.IssueStore(Path.Combine(outputPath, "issues"));
         Window.Feedback.ListPath = Window.Feedback.Store.DatabasePath;
@@ -93,7 +96,7 @@ public sealed class ProbeContext : IDisposable
             if (Window.Feedback.ActiveNotes is { } notes) VerifyHeadlessWindow(notes);
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             if (watch.Elapsed > TimeSpan.FromSeconds(20)) throw new TimeoutException("The application did not become idle.");
-        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.FileSearch.Window?.IsSearching == true || Window.Feedback.HasPendingSelection || Window.Feedback.IsSaving);
+        } while ((Window.IsBusy && !Window.Operations.IsWaitingForDecision) || Window.OperationDialog is FileErrorDialog { Users.IsBusy: true } || Window.FileSearch.Window?.IsSearching == true || Window.Feedback.IsSaving);
     }
 
     private void VerifyHeadlessWindow(Window window)

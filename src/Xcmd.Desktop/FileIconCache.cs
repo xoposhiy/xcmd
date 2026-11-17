@@ -9,7 +9,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed class FileIconCache : IDisposable
+public sealed class FileIconCache(Visual owner) : IDisposable
 {
     private readonly Dictionary<string, Task<WriteableBitmap?>> icons = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, Task<WriteableBitmap?>> defaults = new(StringComparer.Ordinal);
@@ -18,14 +18,15 @@ public sealed class FileIconCache : IDisposable
     private bool disposed;
     public Task Completion => Task.WhenAll(bindings.ToArray());
     public string? Error { get; private set; }
+    private double RenderScaling => TopLevel.GetTopLevel(owner)?.RenderScaling ?? 1;
 
     public void Bind(Image image, FileRow row)
     {
         RenderOptions.SetBitmapInterpolationMode(image, BitmapInterpolationMode.None);
-        var scale = TopLevel.GetTopLevel(image)?.RenderScaling ?? 1;
+        var scale = RenderScaling;
         image.LayoutUpdated += (_, _) =>
         {
-            var current = TopLevel.GetTopLevel(image)?.RenderScaling ?? 1;
+            var current = RenderScaling;
             if (scale != current) { scale = current; TrackBinding(image, row); }
             SizeImage(image);
         };
@@ -46,7 +47,7 @@ public sealed class FileIconCache : IDisposable
         if (disposed || !OperatingSystem.IsWindows()) return;
         var entry = row.Entry;
         var extension = Path.GetExtension(entry.FullPath);
-        var minimumSize = (int)Math.Ceiling(16 * (TopLevel.GetTopLevel(image)?.RenderScaling ?? 1));
+        var minimumSize = (int)Math.Ceiling(16 * RenderScaling);
         var identity = entry.IsDirectory || extension.ToLowerInvariant() is ".exe" or ".lnk" or ".ico" ? entry.FullPath : extension;
         var key = identity + "|" + minimumSize;
         if (!icons.TryGetValue(key, out var task))
@@ -57,7 +58,7 @@ public sealed class FileIconCache : IDisposable
         }
         var bitmap = await task;
         bitmap ??= await DefaultAsync(entry, minimumSize);
-        if (!disposed && image.DataContext == row && minimumSize == (int)Math.Ceiling(16 * (TopLevel.GetTopLevel(image)?.RenderScaling ?? 1)))
+        if (!disposed && bitmap != null && image.DataContext == row && minimumSize == (int)Math.Ceiling(16 * RenderScaling))
         { image.Source = bitmap; SizeImage(image); }
     }
 

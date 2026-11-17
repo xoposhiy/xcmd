@@ -204,6 +204,35 @@ public static class CommandLineScenarios
             await c.TextAsync("\"tool link.lnk\""); await c.KeyAsync(Key.Enter);
             Equal(c.RightPath, (await ReadReportAsync(fixture.Report)).WorkingDirectory, "ShellExecute resolves a relative shortcut and its configured directory");
         }),
+        new("command-line-layout-recovery", "A missing command can recover from the wrong keyboard layout without changing arguments", async c =>
+        {
+            using var layouts = new KeyboardLayoutFixture();
+            var fixture = Prepare(c);
+            c.Launcher.ForwardTo = new WindowsExternalLauncher(showWindows: false);
+            await c.Window.Left.LoadAsync(fixture.Directory); c.Window.Left.FocusCurrent();
+            await c.TextAsync($"\"ещщд цшер ызфсуыюучу\" \"{fixture.Report}\" \"two words\" 日本語");
+            await c.KeyAsync(Key.Enter);
+            Equal("two words|日本語", string.Join('|', (await ReadReportAsync(fixture.Report)).Arguments), "Layout recovery preserves argument text");
+            Equal("tool with spaces.exe", c.Launcher.Requests.Last().Target, "The corrected program is launched");
+            Check(c.Window.CommandLine.Capture().History.Single().StartsWith("\"tool with spaces.exe\"", StringComparison.Ordinal), "History records the command that ran");
+        }),
+        new("command-line-layout-recovery-fresh-path", "Layout recovery finds a program through the current Windows PATH and restores the parent environment", async c =>
+        {
+            using var layouts = new KeyboardLayoutFixture();
+            var fixture = Prepare(c);
+            using var environment = new LaunchEnvironmentFixture();
+            environment.Values["Path"] = fixture.Directory + ";" + environment.Values["Path"];
+            environment.SetStalePath();
+            var launcher = new WindowsExternalLauncher(showWindows: false, () => environment.Values);
+            var request = new ExternalLaunch(ExternalLaunchKind.Command, "ещщд цшер ызфсуыюучу", c.LeftPath,
+                $"\"{fixture.Report}\" \"two words\" 日本語");
+            var launched = await CommandLayoutRecovery.LaunchAsync(request, launcher.LaunchAsync, () => environment.Values);
+            var report = await ReadReportAsync(fixture.Report);
+            Equal(fixture.Executable, report.Executable, "Recovery uses the same fresh PATH as Windows Shell launch");
+            Equal("tool with spaces.exe", launched.Target, "Recovery returns the corrected program name for history");
+            Equal("two words|日本語", string.Join('|', report.Arguments), "Recovery keeps the original arguments");
+            Equal("C:\\xcmd-missing-path", environment.ProcessPath, "Candidate lookup and launch both restore the parent PATH");
+        }),
         new("command-line-native-launch-failure", "UC02; Windows launch error", async c =>
         {
             c.Launcher.ForwardTo = new WindowsExternalLauncher(showWindows: false);

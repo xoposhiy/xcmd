@@ -15,8 +15,9 @@ bypass flag; Xcmd does not disable all permissions or edit Claude's account/stat
 file. See [Claude's workspace trust documentation](https://code.claude.com/docs/en/permissions#project-allow-rules-and-workspace-trust).
 
 All directories, including repository roots and subfolders, keep their native
-Windows folder icons and the `DIR` type. Git status appears only in the Git
-column and the repository header.
+Windows folder icons and the `DIR` type. Git changes appear in the Git column
+and the repository header. Ignored file and folder names use gray. Tracked files
+that match ignore rules keep white names and show a warning in the Git column.
 
 The compact **Git** column stays available in ordinary filesystem folders,
 including outside a working tree. It shows staged changes on the left and
@@ -110,7 +111,7 @@ File clipboard commands use Windows file-list and copy/move formats for exchange
 | Ctrl+A, Ctrl+click, Shift+click | Select all, toggle a row, select a range |
 | Ctrl+C / Ctrl+X in a file panel | Put marked files/folders (or the current item) on the Windows clipboard for copy / move; cut items are dimmed until the clipboard changes or the move completes |
 | Ctrl+V in a file panel | Paste into the folder displayed in that panel, regardless of the highlighted folder; use the operation queue and conflict choices |
-| Ctrl+Shift+C in a file panel | Copy the current item's complete path as text |
+| Ctrl+Shift+C in a file panel | Copy the current item's complete path as text; an archive member copies its displayed `archive!entry` path, and Git history rows show a message |
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
 | Enter / double-click a file | Enter a common archive, or open another file through its Windows association |
@@ -225,11 +226,47 @@ Requests run in order in the background. Both panels remain available. The opera
 
 Folders with the same name merge. Destination-only files stay in place. Regular files with equal contents, sizes, modification times and basic attributes are skipped without a question. Other existing files require **Skip**, **Rename**, **Replace**, or **Cancel operation**. The compact conflict dialog compares source and destination sizes and modification times; hover over each shortened directory to see its full path. Apply-to-all affects matching conflict types in that request only. A folder cannot replace a file, and a file cannot replace a folder. Finish an open dialog, rename or command-line edit before the next conflict dialog appears.
 
+In a conflict dialog, **Alt+A** toggles **Apply to all** and **Alt+R** chooses
+**Replace**. With the option enabled, the buttons read **Replace all** and
+**Skip all**. **Alt+S** chooses Skip and **Alt+M** chooses Rename. **Alt+N** cancels
+file operation dialogs; Escape also cancels. Copy uses **Alt+C**, Move uses
+**Alt+M**, deletion confirmation uses **Alt+Y**, and Create ZIP uses **Alt+C**.
+The interface underlines each access key. Error dialogs use **Alt+R** for Retry,
+**Alt+S** for Skip, and **Alt+E** for Skip similar errors when available.
+
 Copies use a temporary destination file and replace the final path only after the copy finishes. A cancelled copy keeps an existing destination file. Moves use a filesystem rename when possible. The copy-delete fallback removes each source only after copying that item succeeds. A skipped or failed child keeps the remaining source folder available. Results identify partial changes and failures.
 
 Copies preserve creation, modification and access timestamps and Hidden, ReadOnly, System and Archive attributes. Newly created folders receive their source metadata after successful copying; existing merged folders keep their own metadata. Copies inherit access permissions from the destination folder instead of importing explicit source ACL entries. NTFS additional data streams are copied and their names and sizes are checked before the final destination is replaced. If the destination cannot preserve them, the copy reports an error and keeps any existing destination.
 
 A failed item offers Retry, Skip, Skip similar errors and Cancel operation. Retry repeats that item's work after its cause is fixed; recovered attempts do not count as permanent failures. Skipped failures remain visible in the operation report. Escape cancels the pending operation decision.
+
+Failed renames open the same error dialog immediately and keep the draft name.
+Retry repeats the rename; Cancel returns to the editor. When Windows reports that
+an item is in use, the dialog combines the error with **File is used by** or
+**Folder is used by** and shows the full path as secondary text.
+An application name is a link only when Xcmd finds a window to switch to.
+Background processes have plain names. Processes that share one terminal window
+appear in one group, with a single plain line such as
+`cmd.exe (PID 123), node.exe (PID 456)`. Each group has **Kill**. This forcibly ends only the
+listed processes and can lose unsaved changes. It does not end the terminal host
+or other processes merely because they share that window.
+
+PIDs are reference text. Xcmd uses Windows process APIs directly.
+Process actions check the process start time to reject reused PIDs; Xcmd refuses
+to end itself or a critical Windows process.
+
+When all listed processes exit, the error dialog closes and the operation retries
+automatically, including when the processes exit outside Xcmd. Windows signals
+process exit directly; Xcmd does not poll process state on a timer. If an application
+releases the item but keeps running, use **Retry**. **Skip** remains available for
+queued operations; **Cancel operation** stops the operation. Cancelling also stops
+automatic retry. A new failure opens a new decision instead of repeatedly
+retrying on a timer. **Skip similar errors** is not shown for identified locks.
+Folder checks include descendants. The lookup runs in the background with a
+short time limit. If no process can be identified, the message says so.
+
+Recycle Bin failures use the same dialog. Xcmd also checks for processes when the
+Windows Shell reports a generic recycle failure instead of a sharing error.
 
 F8 or Delete opens a short deletion question with **Recycle Bin** selected. Shift+F8 or Shift+Delete selects **Permanently** instead. The underlined **R** and **P** show the **Alt+R** and **Alt+P** access keys. Choose either mode in the same dialog, then press Enter or the highlighted **Yes** button. Escape or **Cancel** keeps the files. Windows processes each recycled tree as one item; cancellation takes effect between selected items. Recycling is limited to local fixed drives. If Windows would delete an item permanently instead, Xcmd refuses that operation. Permanent deletion checks cancellation between files.
 
@@ -239,7 +276,7 @@ Copy and move report unsupported links and junctions without following them. Wri
 
 File groups and colors are configured in `%LOCALAPPDATA%/Xcmd/file-types.json`. The application copies the bundled `config/file-types.json` only when the user file does not exist. Release changes preserve the user file. Edit the JSON file and choose View > Reload file colors, or restart the application. Invalid edits keep the current colors and show a message; the application does not overwrite the invalid file.
 
-Rules are evaluated from top to bottom. Each rule has `name`, `color` (`#RRGGBB`), `extensions` (including the dot), and `fileNames`. Names and extensions ignore case. The first match wins. Directories and unmatched files keep the normal color; selected names use white for contrast.
+Rules are evaluated from top to bottom. Each rule has `name`, `color` (`#RRGGBB`), `extensions` (including the dot), and `fileNames`. Names and extensions ignore case. The first match wins. These colors apply to the Type column, including current and marked rows. File names use white, or gray when ignored by Git. The current name uses white for contrast; marked names use amber.
 
 The defaults use pale purple for source code, amber for programs and installers, and pale blue for text and configuration files. Source rules come first, so `.sh`, `.ps1`, `.cmd` and `.bat` use the source color even though executable rules also include them. Exact file names cover extensionless files such as Dockerfile, Makefile, README and `.env`.
 
@@ -249,7 +286,7 @@ Enter or double-click opens the current file through the Windows shell. Executab
 
 The launch adapter uses the Windows file association through [ProcessStartInfo.UseShellExecute](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.useshellexecute?view=net-10.0). Xcmd passes the file path separately from command text.
 
-Opening View > File operations focuses the request list. Use arrows to select a request and Tab to reach cancellation and details controls. Cancelling a request or changing its status keeps focus in the history. Hiding details or pressing Escape returns focus to files. An operation waiting for a conflict decision shows its reason while the current edit or dialog finishes. Move and delete keep only surviving file marks; an empty mark set stays empty.
+Opening View > File operations focuses the request list. Use arrows to select a request and click cancellation or details controls. Tab and Shift+Tab switch file panels. Cancelling a request or changing its status keeps focus in the history. Hiding details or pressing Escape returns focus to files. An operation waiting for a conflict decision shows its reason while the current edit or dialog finishes. Move and delete keep only surviving file marks; an empty mark set stays empty.
 
 ## Command line
 
@@ -259,7 +296,12 @@ Already running terminals keep their existing environment. If an external applic
 
 The single command row below the panels starts programs and opens files through Windows ShellExecute. Every launch uses the active panel's current directory. Type a program name such as `cmd`, a file, a shortcut or a URL, then press Enter. Quote a program path that contains spaces. Xcmd passes the argument text to Windows without a command interpreter. To use interpreter commands, invoke the interpreter explicitly, for example `cmd /c dir`. There is no embedded terminal or shell selector.
 
-Plain typing from files inserts text in the command line. Left, Right and Ctrl+L focus the line. Up or Down returns focus to the active panel without moving its cursor. Escape clears the line and file marks, then returns focus to that panel without moving the cursor. Alt+Up and Alt+Down recall commands and restore an unfinished draft after the latest command. From files, Alt+Up recalls a command; Alt+Down keeps directory history. Tab from the line switches to the other panel.
+If Windows cannot find a program, Xcmd checks the program name against the installed
+keyboard layouts. A single matching executable is launched automatically, and
+history records the corrected name. Arguments stay unchanged. Ambiguous matches,
+access errors and failures after a program starts do not trigger another launch.
+
+Plain typing from files, main-window buttons, operation history or the read-only commit message inserts text in the command line. Tab and Shift+Tab switch file panels even when one of these controls has focus. Open menus, dialogs, active name search and inline rename keep their own input rules. Left, Right and Ctrl+L focus the line from files. Up or Down returns focus to the active panel without moving its cursor. Escape clears the line and file marks, then returns focus to that panel without moving the cursor. Alt+Up and Alt+Down recall commands and restore an unfinished draft after the latest command. From files, Alt+Up recalls a command; Alt+Down keeps directory history. Tab from the line switches to the other panel.
 
 Ctrl+Space in the command line offers matching file and folder names at the caret, programs from PATH in the first word, and environment names after `%`. Up/Down chooses a suggestion; Enter inserts it without running the command. Escape dismisses suggestions and keeps the draft. Paths with spaces are quoted. Tab continues to switch panels. Alt+Up/Down filters command history by the original typed prefix, skips unrelated entries and restores the unfinished draft after the newest match.
 
@@ -311,7 +353,7 @@ Automatic updates run only from release directories. Development builds and auto
 
 Choose **Feedback** or press F12, then move the pointer to highlight an element and click it. Every application dialog has its own Feedback button and F12 shortcut. The comment window belongs to the window being annotated, so its draft, selection and workflow stay intact. This also works for the comment editor itself. Labels, status messages, errors and disabled actions can all be selected for a comment. Selection uses the visible element instead of its outer window and does not activate the underlying control. Write a comment and choose **Add comment** or press Ctrl+Enter. Escape first cancels selection; when not selecting, Escape closes the comment dialog. The selected element stays outlined while the comment dialog is open.
 
-Double-click an enabled control during selection to send one ordinary click and keep feedback mode active. For example, double-click a menu heading to open it, then single-click a menu command to comment on that command. Single-click selection waits for the system double-click interval before opening the comment form. Disabled controls remain available for comments and are never activated. The comment form shows the transient action path; only the final target is stored.
+Click a control during selection to open the comment form immediately. Ctrl+click an enabled control to use it and keep feedback mode active. For example, Ctrl+click a menu heading to open it, then click a menu command to comment on that command. Disabled controls remain available for comments and are never activated. The comment form shows the transient action path; only the final target is stored.
 
 Choose **Notes** to see issues. The Open tab contains new and in-progress issues;
 closed issues have a separate Closed tab. Both tabs show counts and put newer
@@ -346,7 +388,7 @@ lists, the favorite editor and action buttons. Only the active list has a
 selection, and each list remembers its cursor. Shortened rows have full-path
 tooltips. The History link has no dropdown arrow; its tooltip shows Alt+Down.
 
-Frequent locations exclude filesystem roots. A visit qualifies after ten active seconds in the current panel's directory, once per stay. Background windows, dialogs, busy operations and more than a minute without input pause attention tracking. Timer suspension does not count as work. Qualified visit weight halves every three days. Quick pass-through navigation, reloads and failed reads earn no visits. Statistics keep up to 512 locations and persist with the session; history seeds fallback candidates. Directory history, favorites and panel state are preserved.
+Frequent locations exclude filesystem roots, archives and Git history. A visit qualifies after ten active seconds in the current panel's directory, once per stay. Background windows, dialogs, busy operations and more than a minute without input pause attention tracking. Timer suspension does not count as work. Qualified visit weight halves every three days. Quick pass-through navigation, reloads and failed reads earn no visits. Statistics keep up to 512 locations and persist with the session; history seeds fallback candidates. Directory history, favorites and panel state are preserved.
 
 History contains successful visits only. It excludes the current directory, merges repeated paths without regard to letter case, and keeps up to 100 locations including the current one. Refresh, sorting, failed reads and cancelled reads do not add visits. History and directory cursors are saved with the session. Back/forward shortcuts are not implemented yet.
 

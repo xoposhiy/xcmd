@@ -1,4 +1,5 @@
 using Xcmd.Core;
+using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
@@ -22,6 +23,7 @@ public sealed partial class CommanderWindow
     {
         if (runningCommand || string.IsNullOrWhiteSpace(CommandLine.Editor.Text)) return;
         var text = CommandLine.Editor.Text;
+        var original = text;
         var panel = ActivePanel;
         var directory = ArchivePath.WorkingDirectory(panel.Session.DirectoryPath);
         runningCommand = true;
@@ -34,9 +36,14 @@ public sealed partial class CommanderWindow
                 var path = Core.CommandLine.DirectoryPath(command.Target, directory, PanelView.HomeDirectory);
                 if (!await panel.LoadAsync(path)) throw new IOException(panel.Session.Error ?? "The directory could not be opened.");
             }
-            else await LaunchExternalAsync(LaunchPlans.RunCommand(command, directory));
+            else
+            {
+                var launched = await CommandLayoutRecovery.LaunchAsync(LaunchPlans.RunCommand(command, directory), LaunchExternalAsync);
+                if (launched.Target != command.Target)
+                    text = Core.CommandLine.FormatArgument(launched.Target) + (launched.Arguments.Length == 0 ? "" : " " + launched.Arguments);
+            }
             CommandLine.AddHistory(text.Trim());
-            if (CommandLine.Editor.Text == text)
+            if (CommandLine.Editor.Text == original)
             {
                 CommandLine.Clear();
                 if (ActivePanel == panel && CommandLine.HasKeyboardFocus && !HasOpenDialog && !IsMenuOpen) panel.FocusCurrent(scrollIntoView: false);

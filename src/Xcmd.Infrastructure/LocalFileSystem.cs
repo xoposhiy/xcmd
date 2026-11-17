@@ -17,14 +17,14 @@ public sealed class LocalFileSystem : IFileSystem
         return entries;
     }, cancellationToken);
 
-    public Task RenameAsync(FileEntry entry, string newName) => Task.Run(() =>
+    public Task RenameAsync(FileEntry entry, string newName) => FileLockDiagnostics.RunAsync(() => Task.Run(() =>
     {
         if (entry.IsParent) throw new IOException("The parent navigation item cannot be renamed.");
         var target = Path.Combine(Path.GetDirectoryName(entry.FullPath)!, newName);
         if (entry.FullPath.Equals(target, StringComparison.Ordinal)) return;
         if (entry.IsDirectory) Directory.Move(entry.FullPath, target);
         else File.Move(entry.FullPath, target, overwrite: false);
-    });
+    }), [entry.FullPath, Path.Combine(Path.GetDirectoryName(entry.FullPath)!, newName)]);
 
     public Task CreateDirectoryAsync(string parent, string name) => Task.Run(() =>
     {

@@ -9,6 +9,15 @@ namespace Xcmd.Probe.Infrastructure;
 
 public static class OperationInputProbe
 {
+    public static async Task ClickActionAsync(ProbeContext context, Control control)
+    {
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), context.Window)!.Value;
+        context.Input.MovePointer(point);
+        context.Input.PressPointer(point, MouseButton.Left);
+        context.Input.ReleasePointer(point, MouseButton.Left);
+        await DrainRenderingAsync(context);
+    }
+
     public static async Task FocusByTabAsync(ProbeContext context, Window window, Control control)
     {
         for (var step = 0; step < 20 && !control.IsFocused; step++)

@@ -40,6 +40,8 @@ public sealed class ZipNameDialog : Window
         {
             if (feedback.IsPickingIn(this) || feedback.ActiveComment != null) return;
             if (e.Key == Key.Escape) { Close(); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == Key.N) { Close(); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == Key.C) { Submitted?.Invoke(Editor.Text ?? ""); e.Handled = true; }
             else if (e.Key == Key.Enter && Editor.IsKeyboardFocusWithin) { Submitted?.Invoke(Editor.Text ?? ""); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
     }

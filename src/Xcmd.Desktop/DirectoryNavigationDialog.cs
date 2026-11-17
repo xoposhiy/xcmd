@@ -74,7 +74,7 @@ public sealed partial class DirectoryNavigationDialog : Window
             };
             var column = new Grid { RowDefinitions = new RowDefinitions("Auto,*"), RowSpacing = 8 }.WithFeedbackId("DirectoryNavigationDialog.column");
             var heading = new TextBlock { Text = headings[i], FontWeight = FontWeight.SemiBold }.WithFeedbackId("DirectoryNavigationDialog.heading");
-            if (list == Favorites) ToolTip.SetTip(heading, "Starred favorites stay at the top. Below them are frequent directories: locations used for at least ten active seconds. Roots and quick pass-through visits are excluded. Weight halves every three days. Type to find a name or path.");
+            if (list == Favorites) ToolTip.SetTip(heading, "Starred favorites stay at the top. Below them are frequent directories, ranked by visits of at least ten active seconds. Directories opened only briefly follow without a score. Roots, archives and Git history are excluded. Weight halves every three days. Type to find a name or path.");
             column.Children.Add(heading); Grid.SetRow(list, 1); column.Children.Add(list);
             Grid.SetColumn(column, i); columns.Children.Add(column);
         }

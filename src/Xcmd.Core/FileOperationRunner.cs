@@ -101,7 +101,7 @@ public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConf
         {
             if (resolveError == null || skippedErrors.Contains(error.GetType())) return FileErrorAction.Skip;
             job.State = FileOperationState.WaitingForError; changed();
-            var action = await resolveError(new(source, destination, error.Message), Token);
+            var action = await resolveError(FileOperationError.FromException(source, destination, error), Token);
             if (action == FileErrorAction.Cancel) job.Cancel();
             Token.ThrowIfCancellationRequested();
             if (action == FileErrorAction.SkipAll) skippedErrors.Add(error.GetType());

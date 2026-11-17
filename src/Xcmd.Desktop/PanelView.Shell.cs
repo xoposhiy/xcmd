@@ -10,6 +10,15 @@ public sealed partial class PanelView
 {
     public event Action<PanelView, FileRow, PixelPoint, bool>? ShellMenuRequested;
     private FileRow? shellPressedRow;
+    internal void CancelShellPress() => shellPressedRow = null;
+    internal void FocusDragRow(FileRow row) { cursorName = row.Name; FocusCurrent(scrollIntoView: false); }
+    internal void SelectClickedRow(FileRow row, bool toggle)
+    {
+        keyboardMarks = toggle; rangeAnchor = null;
+        if (toggle) Table.SelectedItems?.Remove(row);
+        else { Table.SelectedItems?.Clear(); Table.SelectedItem = row; }
+        FocusDragRow(row);
+    }
 
     private void AttachShellInput()
     {

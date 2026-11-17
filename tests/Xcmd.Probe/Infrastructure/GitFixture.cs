@@ -5,6 +5,12 @@ namespace Xcmd.Probe.Infrastructure;
 
 public static class GitFixture
 {
+    public static async Task InitializeAsync(string directory)
+    {
+        await RunAsync(directory, "init", "--template=", "-b", "main");
+        await RunAsync(directory, "config", "core.excludesFile", Path.Combine(directory, ".git", "info", "exclude"));
+    }
+
     public static void AllowCleanup(string directory)
     {
         foreach (var file in Directory.EnumerateFiles(Path.Combine(directory, ".git"), "*", SearchOption.AllDirectories))
@@ -34,6 +40,10 @@ public static class GitFixture
 
 public sealed class DelayedGitReader : IGitStatusReader
 {
+    public string? Root { get; set; }
+    public TaskCompletionSource<string?>? RootRead { get; set; }
+    public Task<string?> FindRootAsync(string directory, CancellationToken cancellationToken) =>
+        RootRead?.Task ?? Task.FromResult(Root);
     public TaskCompletionSource<GitStatus[]>? Children { get; set; }
     public TaskCompletionSource ChildReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken)

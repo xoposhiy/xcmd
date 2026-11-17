@@ -13,6 +13,7 @@ namespace Xcmd.Desktop;
 public sealed class GitStatusView : Border
 {
     private readonly IGitStatusReader reader;
+    private readonly List<GitStatus> snapshots = [];
     private readonly TextBlock branch = new TextBlock() { MaxWidth = 150, LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Focus, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("GitStatusView.branch");
     private readonly TextBlock state = new TextBlock() { LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("GitStatusView.state");
     private readonly PathIcon remote = new PathIcon()
@@ -53,6 +54,7 @@ public sealed class GitStatusView : Border
     public event Action<string>? CommitRequested;
     public event Action? StatusChanged;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
+    public Task DirectoryReady { get; private set; } = Task.CompletedTask;
     public GitStatus? Status { get; private set; }
     public GitStatus[] ChildRepositories { get; private set; } = [];
     public string Summary => branch.Text + statusText;
@@ -93,8 +95,13 @@ public sealed class GitStatusView : Border
         Actions.Close();
         directory = value;
         request?.Cancel();
-        Apply(null);
-        StartRead();
+        if (value.Length == 0 || ArchivePath.IsEntry(value))
+        {
+            Apply(null);
+            DirectoryReady = Task.CompletedTask;
+            return;
+        }
+        StartRead(prepareDirectory: true);
     }
 
     public void Refresh()
@@ -102,19 +109,39 @@ public sealed class GitStatusView : Border
         if (PendingWork.IsCompleted) StartRead();
     }
 
-    private void StartRead()
+    private void StartRead(bool prepareDirectory = false)
     {
         if (directory.Length == 0 || ArchivePath.IsEntry(directory)) return;
         request = new CancellationTokenSource();
-        PendingWork = UpdateAsync(directory, request);
+        DirectoryReady = prepareDirectory ? PrepareDirectoryAsync(directory, request) : Task.CompletedTask;
+        PendingWork = UpdateAsync(directory, request, DirectoryReady);
     }
 
-    private async Task UpdateAsync(string path, CancellationTokenSource owner)
+    private async Task PrepareDirectoryAsync(string path, CancellationTokenSource owner)
+    {
+        GitStatus? cached = null;
+        try
+        {
+            if (snapshots.Count > 0)
+            {
+                var root = await reader.FindRootAsync(path, owner.Token);
+                cached = snapshots.FirstOrDefault(status => string.Equals(status.Root, root, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or OperationCanceledException) { }
+        if (!owner.IsCancellationRequested && directory == path) Apply(cached);
+    }
+
+    private async Task UpdateAsync(string path, CancellationTokenSource owner, Task prepared)
     {
         try
         {
+            await prepared;
+            if (owner.IsCancellationRequested || directory != path) return;
             var result = await reader.ReadAsync(path, owner.Token);
             if (owner.IsCancellationRequested || directory != path) return;
+            if (result == null && Status?.Root is { } root)
+                snapshots.RemoveAll(status => string.Equals(status.Root, root, StringComparison.OrdinalIgnoreCase));
             Apply(result, ChildRepositories);
             var children = await reader.ReadChildRepositoriesAsync(path, owner.Token);
             if (!owner.IsCancellationRequested && directory == path) Apply(result, children);
@@ -126,6 +153,8 @@ public sealed class GitStatusView : Border
 
     private void Apply(GitStatus? value, GitStatus[]? children = null)
     {
+        foreach (var child in children ?? []) Remember(child);
+        Remember(value);
         Status = value;
         ChildRepositories = children ?? [];
         StatusChanged?.Invoke();
@@ -152,6 +181,14 @@ public sealed class GitStatusView : Border
         ToolTip.SetTip(ActionsButton, description + "\nClick for repository actions.");
         AutomationProperties.SetName(ActionsButton, "Repository actions · " + value.Branch);
         AutomationProperties.SetName(this, description);
+    }
+
+    private void Remember(GitStatus? value)
+    {
+        if (value?.Root == null) return;
+        snapshots.RemoveAll(status => string.Equals(status.Root, value.Root, StringComparison.OrdinalIgnoreCase));
+        snapshots.Insert(0, value);
+        if (snapshots.Count > 8) snapshots.RemoveAt(snapshots.Count - 1);
     }
 
     private void AddCounts(GitStatus value)

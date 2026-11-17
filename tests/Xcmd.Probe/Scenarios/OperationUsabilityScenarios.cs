@@ -38,7 +38,7 @@ public static class OperationUsabilityScenarios
             Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "Cancelled operations preserve the source");
             Check(!File.Exists(Path.Combine(c.RightPath, "alpha.txt")), "Cancelled transfers create no destination.");
         }),
-        new("review-queue-keyboard-selection-and-cancel", "UC33; Open and cancel queued work with the keyboard", async c =>
+        new("review-queue-keyboard-selection-and-cancel", "UC33; Cancel selected queued work while Tab keeps switching panels", async c =>
         {
             await c.SelectAsync("alpha.txt"); var gate = c.FileSystem.PauseNextCopy(Path.Combine(c.LeftPath, "alpha.txt"));
             c.PressKey(Key.F5); ConfirmTransfer(c); await WaitUntilAsync(() => gate.Entered.Task.IsCompleted);
@@ -47,8 +47,11 @@ public static class OperationUsabilityScenarios
                 var queued = c.Window.Operations.Enqueue(new(FileOperationKind.Copy, [c.Window.Left.Rows.Single(row => row.Name == "file2.log").Entry], c.RightPath));
                 await OpenOperationsMenuAsync(c);
                 Check(c.Window.OperationsView.DetailsVisible && c.Window.OperationsView.IsKeyboardFocusWithin, "Opening operation history focuses the queue.");
+                c.PressKey(Key.Tab); await DrainRenderingAsync(c);
+                Check(c.Window.Right.Table.IsKeyboardFocusWithin, "Tab from operation history switches to the other file panel");
+                c.PressKey(Key.Tab, RawInputModifiers.Shift); await DrainRenderingAsync(c);
                 var cancel = c.Window.OperationsView.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "CancelSelectedOperation");
-                await FocusByTabAsync(c, c.Window, cancel); c.PressKey(Key.Enter);
+                await ClickActionAsync(c, cancel);
                 await WaitUntilAsync(() => queued.State == FileOperationState.Cancelled);
                 await DrainRenderingAsync(c);
                 Check(c.Window.OperationsView.IsKeyboardFocusWithin, "Cancelling a queued request keeps focus in its history.");
@@ -56,7 +59,7 @@ public static class OperationUsabilityScenarios
                 await WaitUntilAsync(() => c.Window.Operations.Jobs[0].IsFinished); await DrainRenderingAsync(c);
                 Check(c.Window.OperationsView.IsKeyboardFocusWithin, "A changed operation label keeps focus in its history.");
                 var hide = c.Window.OperationsView.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "ToggleOperationDetails");
-                await FocusByTabAsync(c, c.Window, hide); c.PressKey(Key.Enter); await DrainRenderingAsync(c);
+                await ClickActionAsync(c, hide);
                 Check(!c.Window.OperationsView.DetailsVisible && c.Window.Left.Table.IsKeyboardFocusWithin, "Hiding operation history returns focus to files.");
             }
             finally { gate.Release.TrySetResult(); }

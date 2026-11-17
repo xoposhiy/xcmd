@@ -52,7 +52,8 @@ public sealed class PanelClipboardController
     public void CopyPath()
     {
         if (owner.ActivePanel.Current is not { } row) return;
-        var path = row.Entry.FullPath;
+        if (GitPath.IsEntry(row.Entry.FullPath)) { owner.SetError("Copying paths from Git history is not available. F3 views the selected file."); return; }
+        var path = ArchivePath.Display(row.Entry.FullPath);
         owner.Execute(() => RunAsync(async () =>
         {
             await Clipboard.SetTextAsync(path);
@@ -67,7 +68,7 @@ public sealed class PanelClipboardController
         var panel = owner.ActivePanel;
         var destination = panel.Session.DirectoryPath;
         if (panel.IsSearchResults) { owner.SetError("Open a destination folder first (Escape leaves search results)."); return; }
-        if (ArchivePath.IsEntry(destination)) { owner.SetError("Archives are read-only. Choose a regular destination folder."); return; }
+        if (ArchivePath.IsEntry(destination)) { owner.SetError(ArchivePath.ReadOnlyMessage(destination, "Archives are read-only. Choose a regular destination folder.")); return; }
         owner.Execute(() => RunAsync(async () =>
         {
             var files = await ReadAsync();

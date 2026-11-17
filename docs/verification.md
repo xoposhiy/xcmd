@@ -1,5 +1,69 @@
 # Verification coverage
 
+`command-line-layout-recovery` uses installed English and Russian keyboard layouts
+and a hidden native helper to verify automatic program-name correction, preserved
+arguments and corrected history. Existing launch failure and pending-launch cases
+check that other errors keep the draft and held Enter does not repeat a launch.
+`command-line-layout-recovery-fresh-path` gives the native launcher and recovery
+adapter a fresh Windows environment snapshot while the parent PATH stays stale.
+It checks executable lookup, unchanged arguments and restoration of the parent PATH.
+
+`main-keyboard-git-button` reproduces focus remaining on the repository button
+after its menu closes and checks command typing plus Tab/Shift+Tab panel switching.
+`main-keyboard-other-controls` covers footer buttons and operation history.
+`git-history-commit-message` also checks command typing and panel switching from
+the read-only message while preserving text selection and caret navigation.
+
+`file-lock-rename-file`, `file-lock-directory-and-child` and `file-lock-copy-retry`
+start a windowless helper that holds a real file or uses a folder as its working
+directory. They check the process name and PID in the rename and operation error
+dialogs, descendant lookup, release detection, preserved rename drafts and retry.
+Rename and copy also record release-to-retry latency and enforce a 333 ms bound
+for the isolated fixture's retry and visible result.
+`file-lock-process-actions` checks plain names for windowless processes, direct
+termination, compact plain process summaries, a recorded access failure and automatic
+rename retry. `file-lock-process-identity` checks native rejection of expired
+identities and self-termination. `file-lock-cancel-monitor` checks that cancellation
+stops automatic retry. `file-lock-multiple-processes` checks multiple blockers and
+automatic retry after external process exit.
+`file-lock-feedback-monitor` keeps active feedback open until it is dismissed.
+`file-lock-skip-monitor` prevents a skipped copy from restarting after process
+exit. `file-lock-monitor-failure` reports denied monitoring immediately while
+another listed process remains alive.
+`file-lock-console-host` starts two nested `cmd.exe` processes in a real ConPTY
+session with an isolated hidden native host window. It checks window ownership,
+application grouping, a single PID summary line, direct termination of the listed shells,
+lock release and automatic rename retry. This covers the console-to-host link;
+it does not launch the Windows Terminal application or verify active-tab focus.
+`file-lock-recycle-directory` checks the real Shell recycle failure, process
+diagnostics and preserved folder contents. All termination checks affect only
+isolated fixture processes. Critical system processes are never terminated by
+the tests. Process actions do not depend on Task Manager.
+The lookup covers accessible external processes. Protected processes, remote
+owners, unsupported filesystems and locks held only through memory mappings may
+remain unidentified. The current process is excluded because the lookup itself
+opens the item. These are targeted smoke checks, not a full regression result.
+
+`operations-conflict-apply-to-all-and-merge` uses Alt+A and Alt+R through the real
+conflict dialog, checks the Replace all label and verifies both replaced files.
+`operations-dialog-access-keys` checks Copy, Move, deletion and cancellation through
+their access keys. Existing conflict scenarios retain explicit Skip, Rename and
+Replace checks.
+
+`icons-navigation-unchanged-refresh` checks that background rereads keep visible
+folder icons attached at 100%, 125% and 150%, while real file changes still appear.
+`icons-navigation-cached-scale` checks that newly created name cells immediately
+reuse the cached Windows icon at the panel's scale, including 125%, 150% and 200%.
+Both cases reproduced failures before the icon refresh repair.
+
+`git-navigation-cached-ignore` delays full Git reads while exercising the real
+panel. It checks gray names on first display, tracked exceptions, deeper and
+return navigation, nested repository boundaries, fresh ignore rules and obsolete
+results. `git-navigation-root-boundaries` checks real `.git` directories, worktree
+files and metadata paths without running Git. `git-navigation-obsolete-root`
+checks cancellation during root discovery. `git-ignore-indicators` also checks
+initial row colors against a real repository before waiting for a new Git read.
+
 `git-usability-return-and-viewer`, `git-usability-empty-and-refresh` and
 `git-usability-cancel-and-deletion` cover the repaired Git review findings:
 cross-panel return state, viewer origin and read-only menus/shortcuts, unknown file
@@ -183,7 +247,7 @@ The viewer feedback scenarios inspect the actual content border, combined header
 
 The native editor check uses the production editor launch plan and Windows ShellExecute adapter with a windowless reporting executable. It verifies one literal Unicode file argument and the source working directory. It does not launch Notepad++ or prove that editor's appearance. Viewer finalization requires user acceptance, affected scenarios, static checks and independent usability review. Full regression checks require an explicit user request.
 
-`feedback-double-click-*` checks real pointer input through feedback selection. Double-click opens a menu without a comment, single-click selects a command without running it, and a forwarded command runs once while feedback remains active. The comment form shows its action path. Real session JSON and refinement Markdown retain that path. Existing label, disabled-action, dialog-draft and resolution checks cover single-click compatibility.
+`feedback-control-click-*` checks real pointer input through feedback selection. Ctrl+click opens a menu without a comment, single-click selects a command without running it, and a forwarded command runs once while feedback remains active. `feedback-first-click-immediate` verifies that the comment form opens before the next dispatcher tick, including repeated selections. The comment form shows its action path. Existing label, disabled-action, dialog-draft and resolution checks cover single-click compatibility.
 
 `appearance-main-*` checks the combined main title row, caption actions and footer Feedback/Notes controls at normal and minimum sizes. Both main and viewer checks call Avalonia's chrome hit-test to verify that menu clicks receive client input while the title remains draggable. They also open each top-level menu with one click and close it with Escape. This checks the input classification used by the Windows backend without sending native pointer events. `appearance-reader-*` checks the nine MD View theme names, real menu selection, exact cream/dark palette colors on the focused content and title, preserved search state, shared preferences across viewers, immediate session saves and restoration into a new application window. A session without the new theme field keeps a valid default. Offscreen images cover the main frame and light/dark reader palettes, including the thin status separator.
 
@@ -283,6 +347,32 @@ for the scenario mapping. The [verification record](evidence/syntax-verification
 records 24 passing selected scenarios and all static checks. The
 [independent usability review](evidence/syntax-usability-review-2026-11-15.md)
 is complete. These checks do not establish a passing full suite.
+
+## File drag and Git ignore feedback, 2026-11-16
+
+`file-drag-selection-and-target` drives real panel pointer handlers, selection,
+both drag buttons, folder hit testing and the busy state that blocks release
+handoff. `file-drag-native-shell` registers a hidden native drop target and uses
+real Shell data objects to copy files and folders, move a file on the same volume
+and create a shortcut. The application passes the original incoming data object,
+key state and allowed effects to the destination folder's Windows drop handler.
+Windows owns transfer decisions and conflict prompts.
+
+`git-ignore-indicators` checks ignored files, ignored folder contents, force-added
+files, clean committed files and folder warnings in a real Git repository. It
+also captures an offscreen render of the quiet dot and tracked-ignore warning.
+
+Run these feedback checks with `scripts/Publish-Feedback.ps1 -Filter
+'real-directory-and-render,file-drag-,git-ignore-indicators'`. These checks do
+not drive the visible Explorer window, the right-drag menu or conflict prompts.
+They provide smoke evidence, not a full regression result.
+
+## Feedback finalization, 2026-11-17
+
+The [verification record](evidence/feedback-verification-2026-11-17.md) records
+passing evidence for 54 selected scenarios, the final static checks, the
+independent usability review and remaining coverage limits. This is targeted
+verification; the full suite was not requested.
 
 ## Limits
 

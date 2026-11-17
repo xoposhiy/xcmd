@@ -16,6 +16,13 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
     private bool active;
     private bool marked;
     private bool cut;
+    private bool dropTarget;
+    public bool IsDropTarget => dropTarget;
+    public void SetDropTarget(bool value)
+    {
+        if (dropTarget == value) return;
+        dropTarget = value; Changed(nameof(IsDropTarget)); Changed(nameof(RowBackground));
+    }
     public bool IsCut => cut;
     public double ContentOpacity => cut ? 0.5 : 1;
     public void SetCut(bool value)
@@ -37,14 +44,16 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
     private static readonly IBrush activeCursor = UiPalette.Cursor;
     private static readonly IBrush inactiveCursor = UiPalette.InactiveCursor;
     public bool IsCurrent => current;
-    public IBrush RowBackground => current ? active ? activeCursor : inactiveCursor : Brushes.Transparent;
-    public IBrush NameForeground => marked ? markColor : current ? Brushes.White : fileColor;
+    public IBrush RowBackground => dropTarget ? UiPalette.Match : current ? active ? activeCursor : inactiveCursor : Brushes.Transparent;
+    public IBrush NameForeground => marked ? markColor : current ? Brushes.White :
+        Git.Ignored && !Git.TrackedIgnored ? UiPalette.GitIgnored : Brushes.White;
+    public IBrush TypeForeground => fileColor;
     public void SetMarked(bool value)
     {
         if (marked == value) return;
         marked = value; Changed(nameof(IsMarked)); Changed(nameof(MarkGlyph)); Changed(nameof(NameForeground));
     }
-    public void SetFileColor(IBrush color) { fileColor = color; Changed(nameof(NameForeground)); }
+    public void SetFileColor(IBrush color) { fileColor = color; Changed(nameof(TypeForeground)); }
     public void SetCurrent(bool value, bool panelActive)
     {
         if (current == value && active == panelActive) return;
@@ -58,7 +67,7 @@ public sealed class FileRow(FileEntry entry, string? resultName = null) : INotif
     public void SetGitStatus(GitRowStatus status)
     {
         if (Git == status) return;
-        Git = status; Changed(nameof(Git));
+        Git = status; Changed(nameof(Git)); Changed(nameof(NameForeground));
     }
     public DirectoryMeasurement? Measurement { get; private set; }
     private string EntrySize => Entry.IsParent ? "<UP>" : Entry.IsDirectory ? "<DIR>" : GitPath.IsEntry(Entry.FullPath) && GitPath.Parse(Entry.FullPath).Kind == "change" ? "—" : Entry.Size.ToString("N0");

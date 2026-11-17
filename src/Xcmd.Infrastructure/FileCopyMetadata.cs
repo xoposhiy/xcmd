@@ -26,7 +26,7 @@ internal static class FileCopyMetadata
         {
             var error = Marshal.GetLastWin32Error();
             token.ThrowIfCancellationRequested();
-            throw new IOException("Could not copy file and metadata: " + new Win32Exception(error).Message);
+            throw Failure("Could not copy file and metadata: ", error);
         }
         token.ThrowIfCancellationRequested();
         if (!Streams(source).SequenceEqual(Streams(temporary)))
@@ -57,7 +57,7 @@ internal static class FileCopyMetadata
         {
             var error = Marshal.GetLastWin32Error();
             if (error is 38 or 87 or 1 or 50) return [];
-            throw new IOException("Could not inspect additional data streams: " + new Win32Exception(error).Message);
+            throw Failure("Could not inspect additional data streams: ", error);
         }
         try
         {
@@ -65,7 +65,7 @@ internal static class FileCopyMetadata
             do { if (data.Name != "::$DATA") streams.Add(data.Name + "|" + data.Size); }
             while (FindNextStreamW(handle, out data));
             var error = Marshal.GetLastWin32Error();
-            if (error != 38) throw new IOException("Could not inspect additional data streams: " + new Win32Exception(error).Message);
+            if (error != 38) throw Failure("Could not inspect additional data streams: ", error);
             return streams.Order(StringComparer.Ordinal).ToArray();
         }
         finally { FindClose(handle); }
@@ -76,6 +76,12 @@ internal static class FileCopyMetadata
         var fullPath = Path.GetFullPath(path);
         if (fullPath.StartsWith(@"\\?\", StringComparison.Ordinal)) return fullPath;
         return fullPath.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + fullPath[2..] : @"\\?\" + fullPath;
+    }
+
+    private static IOException Failure(string message, int code)
+    {
+        var error = new Win32Exception(code);
+        return new IOException(message + error.Message, error);
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

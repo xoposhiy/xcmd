@@ -19,6 +19,7 @@ internal static class UiPalette
     public static readonly IBrush Text = Brush.Parse("#F1F5FA");
     public static readonly IBrush Secondary = Brush.Parse("#B5C0D0");
     public static readonly IBrush Divider = Brush.Parse("#354157");
+    public static readonly IBrush GitIgnored = Brush.Parse("#7B8DA5");
     public static readonly IBrush ControlBorder = Brush.Parse("#7B8DA5");
     public static readonly IBrush Cursor = Brush.Parse("#15558A");
     public static readonly IBrush InactiveCursor = Brush.Parse("#1D2532");

@@ -6,6 +6,23 @@ namespace Xcmd.Desktop;
 
 internal sealed class FileOperationDecisions(CommanderWindow owner)
 {
+    public void ShowRenameError(FileOperationError failure, PanelView panel, Action retry)
+    {
+        var dialog = new FileErrorDialog(failure, owner.Feedback, rename: true) { Background = owner.Background }.WithFeedbackId("CommanderWindow.renameError");
+        owner.OperationDialog = dialog;
+        owner.AttachOperationDialog(dialog);
+        var shouldRetry = false;
+        dialog.Decided += action => { shouldRetry = action == FileErrorAction.Retry; dialog.Close(); };
+        dialog.Closed += (_, _) =>
+        {
+            owner.OperationDialog = null;
+            owner.RecordActivity();
+            panel.RenameEditor?.Focus();
+            if (shouldRetry) retry();
+        };
+        _ = dialog.ShowDialog(owner);
+    }
+
     public async Task<ConflictDecision> ResolveConflictAsync(FileConflict conflict, CancellationToken cancellationToken)
     {
         await WaitForInteractionAsync(cancellationToken);

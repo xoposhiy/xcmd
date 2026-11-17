@@ -27,6 +27,14 @@ public static class NavigationProbe
         return ((ISolidColorBrush)text.Foreground!).Color;
     }
 
+    public static Color TypeColor(ProbeContext context, string name)
+    {
+        var kind = context.Window.Left.Rows.Single(row => row.Name == name).Kind;
+        var text = context.Row(name).GetVisualDescendants().OfType<TextBlock>()
+            .Single(text => text.Text == kind && text.GetValue(FeedbackTarget.IdProperty) == "PanelView.text");
+        return ((ISolidColorBrush)text.Foreground!).Color;
+    }
+
     public static IEnumerable<string> ObserveFor(DirectoryAttention attention, string path, DateTimeOffset start, int seconds, bool active)
     {
         for (var i = 0; i <= seconds; i++)

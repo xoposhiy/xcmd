@@ -24,7 +24,6 @@ public sealed class FeedbackController
     public ObservableCollection<FeedbackIssue> Notes { get; } = [];
     public IssueStore? Store { get; set; }
     public bool IsPicking => surfaces.Values.Any(surface => surface.IsPicking);
-    public bool HasPendingSelection => surfaces.Values.Any(surface => surface.HasPendingSelection);
     public CommentDialog? ActiveComment => comments.LastOrDefault();
     public Window? ActiveNotes { get; private set; }
     public string ReleaseId { get; set; } = "development";

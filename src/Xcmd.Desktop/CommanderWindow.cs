@@ -46,7 +46,7 @@ public sealed partial class CommanderWindow : Window
     public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null || OperationDialog != null;
     public FavoriteDirectories Favorites { get; } = new();
     public event Func<Task>? FavoritesChanged;
-    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Left.IsCommitMessageLoading || Right.IsCommitMessageLoading || Operations.HasPendingWork || viewing.IsBusy || panelClipboard?.IsBusy == true;
+    public bool IsBusy => pendingActions > 0 || Left.Session.IsLoading || Right.Session.IsLoading || Left.IsCommitMessageLoading || Right.IsCommitMessageLoading || Operations.HasPendingWork || viewing.IsBusy || panelClipboard?.IsBusy == true || shell.IsDragBusy;
     public string? LastError { get; private set; }
     public string StatusMessage => status.Text ?? "";
     public List<string> Trace { get; } = [];
@@ -64,6 +64,7 @@ public sealed partial class CommanderWindow : Window
         lastInput = Stopwatch.GetTimestamp();
         if (freshRelease) { freshRelease = false; updateMessage.Text = ""; }
     }
+    internal void EndPointerDrag() { pointerHeld = false; RecordActivity(); }
     public void RefreshUptime() => UpdateUptime(runningTime.Elapsed);
     public string UptimeText { get; private set; } = "Uptime: 0 min.";
     public string ReleaseCaption => Feedback?.ReleaseId is { } release && release != "development" ? "Xcmd · " + release : "Xcmd";
@@ -87,7 +88,7 @@ public sealed partial class CommanderWindow : Window
         FileSearch = new FileSearchController(this, viewing, archiveCacheRoot);
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
         fileSystem = GitHistory.Wrap(fileSystem);
-        var decisions = new FileOperationDecisions(this);
+        decisions = new FileOperationDecisions(this);
         Operations = new FileOperationQueue(new FileOperationRunner(operationStore, decisions.ResolveConflictAsync, decisions.ResolveErrorAsync));
         OperationsView = new FileOperationsView(Operations).WithFeedbackId("CommanderWindow.content");
         Operations.Finished += job =>
@@ -202,18 +203,13 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
         if (HasOpenDialog) return;
+        if (HandlePanelSwitch(e)) return;
         if (HandleFavoritesShortcut(e)) { e.Handled = true; return; }
         if (HasGitActionsFocus) return;
         if (GitHistory.CancelPending(e)) { e.Handled = true; return; }
         if (e.Key == Key.F7 && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); FileSearch.Open(); e.Handled = true; return; }
-        if (OperationsView.IsKeyboardFocusWithin)
-        {
-            if (e.Key == Key.Escape) { ActivePanel.FocusCurrent(); e.Handled = true; }
-            return;
-        }
-        if (CommandLine.HasKeyboardFocus) { HandleCommandLineKey(e); return; }
-        if (ActivePanel.HasCommitMessageFocus) { ActivePanel.HandleCommitMessageKey(e); return; }
+        if (HandleFocusedInput(e)) return;
         if (GitHistory.HandleKey(e)) { ResetQuickJump(); e.Handled = true; return; }
         altInput = e.KeyModifiers.HasFlag(KeyModifiers.Alt) || e.Key is Key.LeftAlt or Key.RightAlt;
         if (ActivePanel.EditingRow != null) { HandleRenameKey(e); return; }
@@ -224,6 +220,18 @@ public sealed partial class CommanderWindow : Window
         if (!HandlePanelCommand(e, ctrl, shift) && !HandlePanelNavigation(e, ctrl, shift)) return;
         Trace.Add($"key: {e.KeyModifiers}+{e.Key}; panel: {ActivePanel.Id}");
         e.Handled = true;
+    }
+
+    private bool HandleFocusedInput(KeyEventArgs e)
+    {
+        if (OperationsView.IsKeyboardFocusWithin)
+        {
+            if (e.Key == Key.Escape) { ActivePanel.FocusCurrent(); e.Handled = true; }
+            return true;
+        }
+        if (CommandLine.HasKeyboardFocus) { HandleCommandLineKey(e); return true; }
+        if (ActivePanel.HasCommitMessageFocus) { ActivePanel.HandleCommitMessageKey(e); return true; }
+        return false;
     }
 
     private async Task OpenCurrentAsync(PanelView panel)
@@ -241,10 +249,10 @@ public sealed partial class CommanderWindow : Window
 
     private void OnTextInput(object? sender, TextInputEventArgs e)
     {
-        if (restarting || Feedback.IsActive || ActivePanel.HasCommitMessageFocus) return;
+        if (restarting || Feedback.IsActive) return;
         if (ActivePanel.EditingRow != null || HasOpenDialog || IsMenuOpen || CommandLine.HasKeyboardFocus || string.IsNullOrEmpty(e.Text)) return;
         if (!nameJump.Active)
-        { if (ActivePanel.Table.IsKeyboardFocusWithin) { CommandLine.InsertText(e.Text); e.Handled = true; } return; }
+        { CommandLine.InsertText(e.Text); e.Handled = true; return; }
         if (suppressQuickText) { suppressQuickText = false; e.Handled = true; return; }
         JumpText(e.Text);
         e.Handled = true;
@@ -254,7 +262,7 @@ public sealed partial class CommanderWindow : Window
     {
         var panel = ActivePanel;
         if (panel.IsSearchResults) { SetError("Open a folder before creating a directory (Escape leaves search results)."); return; }
-        if (ArchivePath.IsEntry(panel.Session.DirectoryPath)) { SetError("Archives are read-only. Choose a regular folder."); return; }
+        if (ArchivePath.IsEntry(panel.Session.DirectoryPath)) { SetError(ArchivePath.ReadOnlyMessage(panel.Session.DirectoryPath, "Archives are read-only. Choose a regular folder.")); return; }
         var dialog = new NameDialog(Feedback) { Background = Background }.WithFeedbackId("CommanderWindow.dialog");
         Feedback.Attach(dialog);
         ActiveDialog = dialog;

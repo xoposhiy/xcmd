@@ -25,6 +25,10 @@ public static class ArchivePath
         ".xz" or ".txz" or ".lz" or ".tlz" or ".zst" or ".tzst" or ".jar" or ".war" or ".ear" or
         ".nupkg" or ".whl" or ".apk" or ".epub" or ".cbz" or ".cbr" or ".arj" or ".arc" or ".ace" or ".z";
 
+    public const string GitReadOnly = "Git history is read-only. Choose a regular folder for file operations.";
+
+    public static string ReadOnlyMessage(string path, string archiveMessage) => GitPath.IsEntry(path) ? GitReadOnly : archiveMessage;
+
     public static void RequireWritable(string path)
     {
         if (GitPath.IsEntry(path)) throw new IOException("Git history is read-only. Choose a regular folder.");

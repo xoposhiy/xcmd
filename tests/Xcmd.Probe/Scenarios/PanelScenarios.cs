@@ -213,9 +213,10 @@ public static class PanelScenarios
             await c.BeginRenameAsync("alpha.txt");
             await c.TextAsync("zeta.md");
             await c.KeyAsync(Key.Enter);
-            Check(c.Window.LastError != null && c.Window.Left.EditingRow != null, "A collision keeps the editor open and reports failure.");
+            Check(c.Window.OperationDialog != null && c.Window.Left.EditingRow != null, "A collision opens an error dialog and keeps the rename draft.");
             Equal("notes", File.ReadAllText(Path.Combine(c.LeftPath, "zeta.md")), "The destination is not overwritten");
             Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "The source is intact");
+            await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
             await c.KeyAsync(Key.A, RawInputModifiers.Control);
             await c.TextAsync("retried.txt");
             await c.KeyAsync(Key.Enter);
@@ -230,8 +231,9 @@ public static class PanelScenarios
                 await c.KeyAsync(Key.Back);
                 if (invalid.Length > 0) await c.TextAsync(invalid);
                 await c.KeyAsync(Key.Enter);
-                Check(c.Window.LastError != null && c.Window.Left.EditingRow != null, "Invalid name stays in edit mode: " + invalid);
+                Check(c.Window.OperationDialog != null && c.Window.Left.EditingRow != null, "Invalid name stays in edit mode behind the error dialog: " + invalid);
                 Check(File.Exists(Path.Combine(c.LeftPath, "alpha.txt")), "Invalid input leaves the file intact.");
+                await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
             }
         }),
         new("rename-unicode-and-spaces", "UC17", async c =>

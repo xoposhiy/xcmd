@@ -27,7 +27,8 @@ public static unsafe class WindowsRecycleBin
             throw new IOException("Recycle Bin is supported only on local fixed drives. No permanent deletion was attempted.");
         Marshal.ThrowExceptionForHR(CoInitializeEx(0, 2));
         try { Recycle(path, cancellationToken); }
-        catch (COMException error) { throw new IOException("The item could not be sent to the Recycle Bin: " + error.Message, error); }
+        catch (Exception error) when (!cancellationToken.IsCancellationRequested && error is COMException or OperationCanceledException)
+        { throw new IOException("The item could not be sent to the Recycle Bin: " + error.Message, error); }
         finally { CoUninitialize(); }
     }
 

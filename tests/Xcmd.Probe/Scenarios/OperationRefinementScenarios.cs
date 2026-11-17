@@ -127,7 +127,7 @@ public static class OperationRefinementScenarios
             var dialog = (FileDeleteDialog)c.Window.OperationDialog!;
             Check(dialog.Recycle.Content is AccessText { AccessKey: "R", ShowAccessKey: true } && dialog.Permanently.Content is AccessText { AccessKey: "P", ShowAccessKey: true }, "Both deletion options show standard underlined access keys.");
             var confirm = dialog.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "ConfirmFileDelete");
-            Check(confirm.IsDefault && Equals(confirm.Content, "Yes"), "The main button confirms without adding key names to its label.");
+            Check(confirm.IsDefault && confirm.Content is AccessText { Text: "_Yes", AccessKey: "Y", ShowAccessKey: true }, "The main button confirms and shows its standard underlined access key.");
             await c.KeyAsync(Key.P, RawInputModifiers.Alt, dialog); Equal(FileOperationKind.Delete, dialog.SelectedKind, "Alt+P selects permanent deletion");
             await c.KeyAsync(Key.R, RawInputModifiers.Alt, dialog); Equal(FileOperationKind.Recycle, dialog.SelectedKind, "Alt+R selects the Recycle Bin");
             await c.KeyAsync(Key.P, RawInputModifiers.Alt, dialog); await c.ScreenshotAsync("delete-shortcuts", dialog);

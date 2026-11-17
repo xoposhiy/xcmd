@@ -5,9 +5,17 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed class ShellInteractionController(IShellInteraction? interaction = null)
+public sealed class ShellInteractionController
 {
-    private readonly IShellInteraction shellInteraction = interaction ?? new WindowsShellInteraction();
+    private readonly IShellInteraction shellInteraction;
+    private readonly FileDragDropController fileDragDrop;
+    public ShellInteractionController() : this(null, null) { }
+    public ShellInteractionController(IShellInteraction? interaction, FileDragDropController? dragDrop = null)
+    {
+        shellInteraction = interaction ?? new WindowsShellInteraction();
+        fileDragDrop = dragDrop ?? new();
+    }
+    public bool IsDragBusy => fileDragDrop.IsBusy;
     private CommanderWindow owner = null!;
     private ZipPackingController packing = null!;
     public bool IsMenuOpen { get; private set; }
@@ -15,6 +23,7 @@ public sealed class ShellInteractionController(IShellInteraction? interaction = 
     public void Attach(CommanderWindow window, IFileOperationStore store)
     {
         owner = window;
+        fileDragDrop.Attach(window);
         packing = new ZipPackingController(window, store);
         Win32Properties.AddWndProcHookCallback(window, ShellMessage);
         window.Left.ShellMenuRequested += OpenShellMenu;
@@ -75,7 +84,9 @@ public sealed class ShellInteractionController(IShellInteraction? interaction = 
     {
         if (row.Entry.IsParent) return false;
         if (!ArchivePath.IsEntry(row.Entry.FullPath)) return true;
-        owner.SetError("Windows shell actions are unavailable inside archives. Extract the item first.");
+        owner.SetError(GitPath.IsEntry(row.Entry.FullPath)
+            ? "Windows shell actions are unavailable in Git history. F3 views the selected file."
+            : "Windows shell actions are unavailable inside archives. Extract the item first.");
         return false;
     }
 }

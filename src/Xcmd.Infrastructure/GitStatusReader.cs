@@ -5,6 +5,7 @@ namespace Xcmd.Infrastructure;
 
 public interface IGitStatusReader
 {
+    Task<string?> FindRootAsync(string directory, CancellationToken cancellationToken);
     Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken);
     Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken);
 }
@@ -17,10 +18,14 @@ public sealed record GitStatus(string Branch, int Staged, int Changed, int Untra
     public string? Root { get; init; }
     public GitPathStatus[] Paths { get; init; } = [];
     public string[] IgnoredPaths { get; init; } = [];
+    public string[] TrackedIgnoredPaths { get; init; } = [];
 }
 
 public sealed class GitStatusReader : IGitStatusReader
 {
+    public Task<string?> FindRootAsync(string directory, CancellationToken cancellationToken) =>
+        Task.Run(() => WorkTreeRoot(directory, cancellationToken), cancellationToken);
+
     public Task<GitStatus[]> ReadChildRepositoriesAsync(string directory, CancellationToken cancellationToken) =>
         Task.Run(async () =>
         {
@@ -47,7 +52,7 @@ public sealed class GitStatusReader : IGitStatusReader
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
-            var root = WorkTreeRoot(directory);
+            var root = WorkTreeRoot(directory, timeout.Token);
             if (root == null) return null;
             var output = await RunAsync(root, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal", "--ignored=matching"], timeout.Token).ConfigureAwait(false);
             if (output == null) return null;
@@ -55,7 +60,13 @@ public sealed class GitStatusReader : IGitStatusReader
             var records = output.Split('\0');
             var status = Parse(records) with { HasRemote = !string.IsNullOrWhiteSpace(remotes), Root = root };
             var paths = GitStatusPaths.Parse(records);
-            return status with { Paths = paths.Changes, IgnoredPaths = paths.Ignored };
+            var trackedIgnored = await RunAsync(root, ["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"], timeout.Token).ConfigureAwait(false);
+            return status with
+            {
+                Paths = paths.Changes,
+                IgnoredPaths = paths.Ignored,
+                TrackedIgnoredPaths = trackedIgnored?.Split('\0', StringSplitOptions.RemoveEmptyEntries) ?? []
+            };
         }
         catch (Exception error) when (error is Win32Exception or IOException or InvalidOperationException or OperationCanceledException)
         { return null; }
@@ -63,10 +74,11 @@ public sealed class GitStatusReader : IGitStatusReader
 
     // A process's working directory cannot be deleted on Windows. Running Git in the work tree root
     // instead of the displayed directory lets the user delete or rename that directory during a read.
-    private static string? WorkTreeRoot(string directory)
+    private static string? WorkTreeRoot(string directory, CancellationToken cancellationToken)
     {
         for (var current = new DirectoryInfo(directory); current != null; current = current.Parent)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (current.Name.Equals(".git", StringComparison.OrdinalIgnoreCase)) return null;
             if (Path.Exists(Path.Combine(current.FullName, ".git"))) return current.FullName;
         }

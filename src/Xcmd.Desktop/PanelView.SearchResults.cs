@@ -15,6 +15,7 @@ public sealed partial class PanelView
 
     public void ShowSearchResults(string root, IReadOnlyList<FileSearchResult> results, string? selectedPath = null)
     {
+        loadVersion++;
         gitReturnState = null;
         LoadingRequested?.Invoke(this);
         Session.CancelLoad();

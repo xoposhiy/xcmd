@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Xcmd.Core;
 using Xcmd.Desktop;
 using Xcmd.Infrastructure;
@@ -36,6 +37,15 @@ public static class GitHistoryScenarios
             Equal(expected, panel.CommitMessage.SelectedText, "The full message can be selected for copying");
             await c.KeyAsync(Key.Down);
             Equal(commitName, panel.Current?.Name, "Message caret movement does not navigate the commit list");
+            await c.TextAsync("git log");
+            Equal("git log", c.Window.CommandLine.Editor.Text, "Typing from the read-only message starts a command");
+            Check(c.Window.CommandLine.HasKeyboardFocus, "Read-only message focus does not swallow command text");
+            await c.KeyAsync(Key.Escape);
+            await c.ClickAsync(panel.CommitMessage);
+            await c.KeyAsync(Key.Tab);
+            Check(c.Window.ActivePanel == c.Window.Left && c.Window.Left.Table.IsKeyboardFocusWithin, "Tab from the message switches panels");
+            await c.KeyAsync(Key.Tab);
+            await c.ClickAsync(panel.CommitMessage);
             await c.KeyAsync(Key.Escape);
             Check(panel.Table.IsKeyboardFocusWithin, "Escape from the message returns to the commit list");
             c.PressKey(Key.Down); c.PressKey(Key.Up);
@@ -161,6 +171,13 @@ public static class GitHistoryScenarios
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.F8); await c.KeyAsync(Key.F4); await c.KeyAsync(Key.F7);
             Check(!c.Window.HasOpenDialog, "Snapshot write commands do not open file operations");
+            await c.Window.Clipboard!.SetTextAsync("unchanged");
+            await c.KeyAsync(Key.C, RawInputModifiers.Control | RawInputModifiers.Shift);
+            Equal("unchanged", await c.Window.Clipboard!.TryGetTextAsync(), "Snapshot rows do not export a virtual path");
+            Check(c.Window.LastError?.Contains("Copying paths from Git history", StringComparison.Ordinal) == true, "Path copying explains the Git history limit");
+            await c.KeyAsync(Key.F10, RawInputModifiers.Shift);
+            Equal(0, c.Shell.Menus.Count, "Snapshot rows never reach the Windows shell menu");
+            Check(c.Window.LastError?.Contains("unavailable in Git history", StringComparison.Ordinal) == true, "The shell menu explains the Git history limit");
             Equal("Staged root version\nWorking tail\n", File.ReadAllText(file), "History leaves working files unchanged");
             await c.KeyAsync(Key.Back);
             Check(GitPath.IsLog(panel.Session.DirectoryPath) && panel.Current!.Name.EndsWith(" Update root files", StringComparison.Ordinal), "Back restores the commit cursor");

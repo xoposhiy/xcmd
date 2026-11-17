@@ -7,6 +7,17 @@ public sealed partial class CommanderWindow
 {
     private bool HasGitActionsFocus => Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin;
 
+    private bool HandlePanelSwitch(KeyEventArgs e)
+    {
+        if (e.Key != Key.Tab || e.KeyModifiers is not (KeyModifiers.None or KeyModifiers.Shift) || ActivePanel.EditingRow != null) return false;
+        ResetQuickJump();
+        CommandLine.Completions.Close();
+        Activate(OppositePanel);
+        ActivePanel.FocusCurrent();
+        e.Handled = true;
+        return true;
+    }
+
     private bool HandleFavoritesShortcut(KeyEventArgs e)
     {
         if (e.Key != Key.D || e.KeyModifiers != KeyModifiers.Control) return false;
@@ -26,8 +37,6 @@ public sealed partial class CommanderWindow
         else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
         else if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Up or Key.Down)
         { Activate(ActivePanel); ActivePanel.FocusCurrent(); }
-        else if (e.Key == Key.Tab && e.KeyModifiers is KeyModifiers.None or KeyModifiers.Shift)
-        { Activate(OppositePanel); ActivePanel.FocusCurrent(); }
         else if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Control)) InsertCurrentArgument(e.KeyModifiers.HasFlag(KeyModifiers.Shift));
         else if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.None)
         { if (launchKeysHeld.Add(e.Key)) Execute(RunCommandLineAsync); }
@@ -56,15 +65,22 @@ public sealed partial class CommanderWindow
             e.Handled = true;
             var panel = ActivePanel;
             var switchPanel = e.Key == Key.Tab;
-            Execute(async () =>
-            {
-                SetError(await panel.CommitRenameAsync());
-                if (LastError == null && ActivePanel == panel)
-                {
-                    if (switchPanel) Activate(OppositePanel);
-                    ActivePanel.FocusCurrent();
-                }
-            });
+            Execute(() => CommitRenameAsync(panel, switchPanel));
+        }
+    }
+
+    private async Task CommitRenameAsync(PanelView panel, bool switchPanel)
+    {
+        var failure = await panel.CommitRenameAsync();
+        SetError(null);
+        if (failure != null)
+        {
+            decisions.ShowRenameError(failure, panel, () => Execute(() => CommitRenameAsync(panel, switchPanel)));
+        }
+        else if (ActivePanel == panel)
+        {
+            if (switchPanel) Activate(OppositePanel);
+            ActivePanel.FocusCurrent();
         }
     }
 

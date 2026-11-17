@@ -10,6 +10,12 @@ Panels and search share 28-unit rows, aligned headings and dark surfaces. Primar
 
 The directory chooser uses two columns, History and Favorites. Starred favorites stay above frequent locations in the right column, without duplicate paths. Plain typing selects the uppermost substring match in the active list. Selected-file totals use readable binary units; the exact byte total remains available in the tooltip.
 
+Ignored file and folder names use gray, including entries that inherit an ignore
+rule from an ancestor. Cursor and marked-name colors take priority. Tracked files
+that match ignore rules and their containing folders keep their normal name
+color and the Git warning. Other file names use white. The Type
+column always uses the file-type color, including current and marked rows.
+
 Directory lists use the same blue current-row fill as file panels, with no second
 hover fill. PageUp/PageDown move the current row by a visible page; Home/End move
 to the first or last row. Missing locations show `[missing]` and explain that Open
@@ -38,6 +44,8 @@ the interface language. User-entered text and file names keep their own language
 3. Keep geometry stable across hover, cursor, marking and focus. Never introduce a border, font weight or scrollbar merely because a row became current.
 4. Current row, marked files, keyboard focus and search match are independent signals. Blue background means current row; amber name plus check means marked file. The inactive file panel keeps only a faint cursor. In the navigation chooser, only the active list displays a selection.
 5. Use the existing Windows shell icons, rendered crisply for the current scale.
+   Keep visible icons during unchanged directory refreshes. New cells use the
+   panel's current scale before they join the visual tree.
 6. Display Alt access keys as underlined letters. Never append `Alt+P` to a button caption. A non-obvious command shortcut such as F3 may be shown separately. A default action is blue; do not append `Enter`.
 7. Group an option with the field it qualifies and put a group action after the complete group.
 8. Keep explanations short. Use one term consistently. Show detailed paths, rules and technical explanations on demand.

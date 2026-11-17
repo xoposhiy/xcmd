@@ -12,7 +12,7 @@ namespace Xcmd.Desktop;
 
 public sealed class FileConflictDialog : Window
 {
-    public CheckBox ApplyToAll { get; } = new CheckBox() { Content = "Apply to all", Name = "ConflictApplyToAll" }.WithFeedbackId("FileOperationDialogs.ApplyToAll");
+    public CheckBox ApplyToAll { get; } = new CheckBox() { Content = new AccessText { Text = "_Apply to all", ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.applyLabel"), Name = "ConflictApplyToAll" }.WithFeedbackId("FileOperationDialogs.ApplyToAll");
     public TextBox NewName { get; } = new TextBox() { Name = "ConflictNewName" }.WithFeedbackId("FileOperationDialogs.NewName");
     public TextBlock Error { get; } = UiLayout.Error();
     public event Action<ConflictDecision>? Decided;
@@ -32,10 +32,15 @@ public sealed class FileConflictDialog : Window
         var nameRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") }.WithFeedbackId("FileOperationDialogs.nameRow");
         nameRow.Children.Add(new TextBlock { Text = "New name", Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("FileOperationDialogs.content"));
         Grid.SetColumn(NewName, 1); nameRow.Children.Add(NewName);
-        var skip = Choice("Skip", "ConflictSkip", ConflictAction.Skip);
-        var replace = Choice("Replace", "ConflictReplace", ConflictAction.Replace); replace.IsEnabled = replaceAllowed;
-        var rename = Choice("Rename", "ConflictRename", ConflictAction.Rename);
-        var cancel = Choice("Cancel operation", "ConflictCancel", ConflictAction.Cancel);
+        var skip = Choice("_Skip", "ConflictSkip", ConflictAction.Skip);
+        var replace = Choice("_Replace", "ConflictReplace", ConflictAction.Replace); replace.IsEnabled = replaceAllowed;
+        var rename = Choice("Rena_me", "ConflictRename", ConflictAction.Rename);
+        var cancel = Choice("Ca_ncel operation", "ConflictCancel", ConflictAction.Cancel);
+        ApplyToAll.IsCheckedChanged += (_, _) =>
+        {
+            ((AccessText)skip.Content!).Text = ApplyToAll.IsChecked == true ? "_Skip all" : "_Skip";
+            ((AccessText)replace.Content!).Text = ApplyToAll.IsChecked == true ? "_Replace all" : "_Replace";
+        };
         Content = new StackPanel
         {
             Margin = UiPalette.FormMargin,
@@ -58,15 +63,31 @@ public sealed class FileConflictDialog : Window
             if (feedback.IsPickingIn(this) || feedback.ActiveComment != null) return;
             if (e.Key == Key.Escape) { Decided?.Invoke(new(ConflictAction.Cancel)); e.Handled = true; }
             else if (e.Key == Key.Enter && NewName.IsFocused) { Decide(ConflictAction.Rename); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt) e.Handled = HandleAccessKey(e.Key, replaceAllowed);
         }, RoutingStrategies.Tunnel);
 
         Button Choice(string label, string name, ConflictAction action)
         {
-            var button = new Button { Content = label, Name = name, Margin = new Thickness(0, 0, 8, 4) }.WithFeedbackId("FileOperationDialogs.button");
+            var button = new Button { Content = new AccessText { Text = label, ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.choiceLabel"), Name = name, Margin = new Thickness(0, 0, 8, 4) }.WithFeedbackId("FileOperationDialogs.button");
             AutomationProperties.SetAutomationId(button, "file-conflict." + action.ToString().ToLowerInvariant());
             button.Click += (_, _) => Decide(action);
             return button;
         }
+    }
+
+    private bool HandleAccessKey(Key key, bool replaceAllowed)
+    {
+        if (key == Key.A) { ApplyToAll.IsChecked = ApplyToAll.IsChecked != true; ApplyToAll.Focus(); return true; }
+        ConflictAction? action = key switch
+        {
+            Key.R when replaceAllowed => ConflictAction.Replace,
+            Key.S => ConflictAction.Skip,
+            Key.M => ConflictAction.Rename,
+            Key.N => ConflictAction.Cancel,
+            _ => null
+        };
+        if (action is not { } choice) return false;
+        Decide(choice); return true;
     }
 
     private static StackPanel Describe(string label, FileEntry entry)
@@ -113,12 +134,12 @@ public sealed class FileDeleteDialog : Window
         Permanently.PropertyChanged += (_, e) => { if (e.Property == RadioButton.IsCheckedProperty) UpdateQuestion(); };
         var confirm = new Button
         {
-            Content = "Yes",
+            Content = new AccessText { Text = "_Yes", ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.confirmLabel"),
             Name = "ConfirmFileDelete",
             IsDefault = true,
             Margin = new Thickness(0, 0, 8, 0)
         }.WithFeedbackId("FileOperationDialogs.confirm");
-        var cancel = new Button { Content = "Cancel", Name = "CancelFileDelete" }.WithFeedbackId("FileOperationDialogs.cancel");
+        var cancel = new Button { Content = new AccessText { Text = "Ca_ncel", ShowAccessKey = true }.WithFeedbackId("FileOperationDialogs.cancelLabel"), Name = "CancelFileDelete" }.WithFeedbackId("FileOperationDialogs.cancel");
         DialogActions.FollowFocus(this, confirm, cancel);
         AutomationProperties.SetAutomationId(confirm, "file-delete.confirm");
         confirm.Click += (_, _) => Confirmed?.Invoke(SelectedKind);
@@ -146,6 +167,8 @@ public sealed class FileDeleteDialog : Window
                 option.IsChecked = true; option.Focus(); e.Handled = true;
             }
             else if (e.Key == Key.Escape) { Close(); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == Key.Y) { Confirmed?.Invoke(SelectedKind); e.Handled = true; }
+            else if (e.KeyModifiers == KeyModifiers.Alt && e.Key == Key.N) { Close(); e.Handled = true; }
             else if (e.Key == Key.Enter && FocusManager?.GetFocusedElement() is RadioButton) { Confirmed?.Invoke(SelectedKind); e.Handled = true; }
         }, RoutingStrategies.Tunnel);
     }

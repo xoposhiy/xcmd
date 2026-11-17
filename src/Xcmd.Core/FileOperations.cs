@@ -10,7 +10,13 @@ public sealed record FileOutcome(string Source, string? Destination, FileOutcome
 public sealed record FileConflict(FileEntry Source, FileEntry Destination);
 public sealed record ConflictDecision(ConflictAction Action, string? NewName = null, bool ApplyToAll = false);
 public enum FileErrorAction { Retry, Skip, SkipAll, Cancel }
-public sealed record FileOperationError(FileEntry Source, string? Destination, string Message);
+public sealed record FileOperationError(FileEntry Source, string? Destination, string Message)
+{
+    public FileUser[] Users { get; init; } = [];
+
+    public static FileOperationError FromException(FileEntry source, string? destination, Exception error) =>
+        new(source, destination, error.Message) { Users = (error as FileInUseException)?.Users ?? [] };
+}
 
 public static class FileOperationNames
 {

@@ -16,6 +16,7 @@ internal static class Program
     public static int Main(string[] args)
     {
         if (args is ["issues", ..]) return IssueCli.Run(args[1..], Console.Out, Console.Error);
+        if (args is ["--console-window", var processId, var report]) return ConsoleWindowLookup.RunHelper(processId, report);
         TaskbarIdentity.ConfigureProcess();
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

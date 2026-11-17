@@ -121,7 +121,7 @@ public sealed partial class GitHistoryController
         else if (e.Key == Key.F3 && e.KeyModifiers == KeyModifiers.None) ViewCurrent();
         else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control) owner.SetError("Copying files from Git history is not available. F3 views the selected file.");
         else if (e.Key is Key.F4 or Key.F5 or Key.F6 or Key.F7 or Key.F8 or Key.Delete || e.KeyModifiers == KeyModifiers.Control && e.Key is Key.X or Key.V)
-            owner.SetError("Git history is read-only. Choose a regular folder for file operations.");
+            owner.SetError(ArchivePath.GitReadOnly);
         else return false;
         return true;
     }

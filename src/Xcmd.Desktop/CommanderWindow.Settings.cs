@@ -14,7 +14,7 @@ public sealed partial class CommanderWindow
             var types = await FileTypeSettings.LoadAsync(FileTypeSettingsPath);
             Left.SetFileTypes(types); Right.SetFileTypes(types);
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException or InvalidDataException)
         { SetUpdateMessage("Could not load file type settings. Keeping the current colors."); Trace.Add(error.ToString()); }
     }
 }

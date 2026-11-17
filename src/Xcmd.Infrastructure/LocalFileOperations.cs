@@ -32,7 +32,7 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
 
     public Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken cancellationToken) => fileSystem.ReadDirectoryAsync(path, cancellationToken);
 
-    public Task<bool> AreIdenticalAsync(FileEntry source, FileEntry destination, CancellationToken cancellationToken) => Task.Run(async () =>
+    public Task<bool> AreIdenticalAsync(FileEntry source, FileEntry destination, CancellationToken cancellationToken) => FileLockDiagnostics.RunAsync(() => Task.Run(async () =>
     {
         await using var left = new FileStream(source.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, FileOptions.Asynchronous | FileOptions.SequentialScan);
         await using var right = new FileStream(destination.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, FileOptions.Asynchronous | FileOptions.SequentialScan);
@@ -52,7 +52,7 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
             remaining -= length;
         }
         return true;
-    }, cancellationToken);
+    }, cancellationToken), [source.FullPath, destination.FullPath], cancellationToken);
 
     public Task CreateFolderAsync(string path, CancellationToken cancellationToken) => Task.Run(() =>
     {
@@ -61,13 +61,14 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
     }, cancellationToken);
 
     public Task<long> CopyAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken) =>
-        Task.Run(() => CopyCoreAsync(source, destination, replace, progress, cancellationToken), cancellationToken);
+        FileLockDiagnostics.RunAsync(() => Task.Run(() => CopyCoreAsync(source, destination, replace, progress, cancellationToken), cancellationToken), [source, destination], cancellationToken);
 
     public Task CopyMetadataAsync(string source, string destination, CancellationToken cancellationToken) =>
         Task.Run(() => FileCopyMetadata.Apply(source, destination), cancellationToken);
 
     public Task<long> CreateZipAsync(FileEntry[] sources, string destination, IProgress<long> progress, CancellationToken cancellationToken) =>
-        ZipArchiveWriter.CreateAsync(sources, destination, progress, cancellationToken);
+        FileLockDiagnostics.RunAsync(() => ZipArchiveWriter.CreateAsync(sources, destination, progress, cancellationToken),
+            sources.Select(source => source.FullPath).Append(destination).ToArray(), cancellationToken);
 
     private static Task<long> CopyCoreAsync(string source, string destination, bool replace, IProgress<long> progress, CancellationToken cancellationToken)
     {
@@ -89,7 +90,7 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
         }
     }
 
-    public Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken) => Task.Run(() =>
+    public Task<bool> TryMoveAsync(FileEntry source, string destination, bool replace, CancellationToken cancellationToken) => FileLockDiagnostics.RunAsync(() => Task.Run(() =>
     {
         if (!string.Equals(Path.GetPathRoot(source.FullPath), Path.GetPathRoot(destination), StringComparison.OrdinalIgnoreCase)) return false;
         try
@@ -99,17 +100,17 @@ public sealed class LocalFileOperations(IFileSystem fileSystem) : IFileOperation
             return true;
         }
         catch (IOException error) when ((error.HResult & 0xFFFF) == 17) { return false; }
-    }, cancellationToken);
+    }, cancellationToken), [source.FullPath, destination], cancellationToken);
 
     public Task RemoveAsync(FileEntry entry, bool recycle, CancellationToken cancellationToken)
     {
-        if (recycle) return WindowsRecycleBin.SendAsync(entry.FullPath, cancellationToken);
-        return Task.Run(() =>
+        if (recycle) return FileLockDiagnostics.RunAsync(() => WindowsRecycleBin.SendAsync(entry.FullPath, cancellationToken), [entry.FullPath], cancellationToken, inspectUsersOnFailure: true);
+        return FileLockDiagnostics.RunAsync(() => Task.Run(() =>
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (entry.IsDirectory) Directory.Delete(entry.FullPath, recursive: false);
             else RemoveFile(entry.FullPath);
-        }, cancellationToken);
+        }, cancellationToken), [entry.FullPath], cancellationToken);
     }
 
     private static void RemoveFile(string path)

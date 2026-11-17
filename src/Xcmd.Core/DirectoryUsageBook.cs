@@ -13,14 +13,14 @@ public sealed class DirectoryUsageBook
     public void Restore(IEnumerable<DirectoryUsage> saved)
     {
         locations.Clear();
-        foreach (var location in saved.Where(location => !IsRoot(location.Path)).Take(Capacity)) locations[location.Path] = location;
+        foreach (var location in saved.Where(location => Qualifies(location.Path)).Take(Capacity)) locations[location.Path] = location;
     }
 
     public void Seed(IEnumerable<string> paths)
     {
         foreach (var path in paths)
         {
-            if (IsRoot(path)) continue;
+            if (!Qualifies(path)) continue;
             if (locations.Count == Capacity) break;
             locations.TryAdd(path, new(path, 0, 0, DateTimeOffset.MinValue));
         }
@@ -28,7 +28,7 @@ public sealed class DirectoryUsageBook
 
     public void Visit(string path, DateTimeOffset now)
     {
-        if (IsRoot(path)) return;
+        if (!Qualifies(path)) return;
         var previous = locations.GetValueOrDefault(path);
         var weight = previous == null ? 0 : Score(previous, now);
         var visits = previous == null ? 1 : Math.Min(previous.Visits, long.MaxValue - 1) + 1;
@@ -39,7 +39,7 @@ public sealed class DirectoryUsageBook
     }
 
     public DirectorySuggestion[] Suggest(string current, DateTimeOffset now, int count = 30) => locations.Values
-        .Where(location => !IsRoot(location.Path) && !location.Path.Equals(current, StringComparison.OrdinalIgnoreCase))
+        .Where(location => !location.Path.Equals(current, StringComparison.OrdinalIgnoreCase))
         .Select(location => new DirectorySuggestion(location.Path, location.Visits, Score(location, now)))
         .OrderByDescending(location => location.Score)
         .ThenBy(location => location.Path, StringComparer.OrdinalIgnoreCase)
@@ -47,6 +47,8 @@ public sealed class DirectoryUsageBook
 
     private static double Score(DirectoryUsage location, DateTimeOffset now) =>
         location.Weight * Math.Pow(0.5, Math.Max(0, (now - location.LastVisited).TotalDays) / 3);
+
+    private static bool Qualifies(string path) => !ArchivePath.IsEntry(path) && !IsRoot(path);
 
     private static bool IsRoot(string path) => Path.TrimEndingDirectorySeparator(path).Equals(
         Path.TrimEndingDirectorySeparator(Path.GetPathRoot(path) ?? ""), StringComparison.OrdinalIgnoreCase);

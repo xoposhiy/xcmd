@@ -21,6 +21,23 @@ public static class FeedbackProbe
         await context.SettleAsync();
     }
 
+    public static void SelectImmediately(Window window, Control control)
+    {
+        window.UpdateLayout();
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
+        window.MouseMove(point); window.MouseDown(point, MouseButton.Left); window.MouseUp(point, MouseButton.Left);
+    }
+
+    public static async Task UseControlAsync(ProbeContext context, Window window, Control control)
+    {
+        window.UpdateLayout();
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
+        window.MouseMove(point);
+        window.MouseDown(point, MouseButton.Left, RawInputModifiers.Control);
+        window.MouseUp(point, MouseButton.Left, RawInputModifiers.Control);
+        await context.SettleAsync();
+    }
+
     public static async Task<FeedbackIssue> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
     {
         await context.KeyAsync(Key.F12, target: window);

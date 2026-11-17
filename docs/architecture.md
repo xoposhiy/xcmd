@@ -78,6 +78,24 @@ Current examples:
 - `LocalFileSystem` and `DirectoryMonitor`: directory enumeration, rename, folder
   creation, and change notifications. `LocalFileOperations` implements the
   `IFileOperationStore` used by the operation queue.
+- `FileLockDiagnostics` adds process details to sharing errors at filesystem
+  operation boundaries. `WindowsFileUsers` runs a bounded background lookup for
+  the item and its descendants. It uses the native
+  [file process information class](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_file_information_class),
+  which Windows reserves for system use; unsupported lookups keep the original
+  error and report that the process could not be identified. Console window lookup
+  runs in a short-lived helper so console attachment cannot alter the file
+  manager's standard handles. The console's root owner identifies the terminal
+  window. Application links exist only for a discovered window. Process
+  exit monitoring and explicit termination use native process handles, without
+  automating another application's UI. Handles are checked against the original
+  creation time; termination rejects Xcmd itself and critical Windows processes.
+  Ending processes requires an explicit Kill action on the matching row
+  and affects only the listed identities, not a process tree. The error
+  dialog cancels monitoring on close and retries once when all listed processes
+  exit. A registered wait receives the process exit signal on an owned duplicate
+  handle and cancels without blocking the UI. Feedback interaction delays
+  automatic dismissal.
 - `SessionStore` and `FileTypeSettings`: session/settings formats and atomic replacement.
 - `IssueStore`, `IssueDatabase`, and `IssueCli`: the independent repository SQLite
   tracker, parameterized SQL, transactional claims and command-line access. The
@@ -116,6 +134,11 @@ Current examples:
   handled without per-file Git processes. `FileNameCell` owns the shared name,
   native Windows icon and rename-editor template and preserves its stable
   feedback IDs. Git does not replace or recolour directory icons.
+- `GitStatusView` retains up to eight repository snapshots across navigation.
+  Infrastructure checks the nearest `.git` directory or file without starting Git.
+  The panel applies the matching snapshot before displaying new rows, then reads
+  fresh status in the background. Nested repositories use their own snapshot;
+  cancelled root checks and status reads cannot replace the current location.
 - `DirectoryUpdates`: deciding when a filesystem result can be applied without interrupting an editor, dialog, menu, or name search.
 - `WorkspaceLifecycle`: connecting workspace snapshots, window lifetime, idle update readiness, storage, and process replacement.
 - `CommandLineView`: command input, history presentation, name/path insertion, and saved editor state. Core owns command parsing and history rules; Infrastructure performs Windows ShellExecute.
@@ -139,12 +162,11 @@ the engine owns no controls or live viewer state.
 
 Keep every visible label, status, error and disabled action selectable in feedback. Keep the shared transparent background for `TextBlock`; text without a hit-test surface cannot be selected reliably. Use visual hit testing for feedback so disabled actions remain selectable. Resolve the nearest meaningful element before an outer window's identifier. Exclude only decorative feedback overlays from selection. Attach every application dialog through `FeedbackController` and check new content with real pointer input.
 
-`FeedbackSurface` owns pending single-click selection and the transient interaction
-path shown in the comment form. Wait for the platform double-click interval before
-opening a comment. A double-click forwards a pointer press with a single-click
-count and lets its release reach the control; keep selection active. Cancel the
-pending timer on cancellation or window close. Application popups use the overlay
-layer so menu contents share the window's feedback hit-test surface.
+`FeedbackSurface` owns click selection and the transient interaction path shown
+in the comment form. A released click opens a comment immediately. Ctrl+click
+forwards one ordinary click to the selected control and keeps selection active.
+Clear the interaction path on cancellation or window close. Application popups
+use the overlay layer so menu contents share the window's feedback hit-test surface.
 
 `FeedbackTarget` supplies stable literal IDs at source creation sites. The
 build-time `tools/UiChecks` Roslyn analyzer requires them on application controls
