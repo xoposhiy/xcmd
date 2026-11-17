@@ -2,7 +2,7 @@
 
 This catalogue describes implemented behavior. The stories and epic boundaries are reconstructed from the code.
 
-Reviewed on 2026-11-17 at `f8d2249b80b6d45fcca64404f264b26972ee9f8b`: **185 C# files, 14,961 physical C# lines, and 24 auxiliary files** under `src`. Every file has at least one explicit story mapping. Tests, scripts, tools, CI, and generated build outputs are outside the map.
+Reviewed on 2026-11-17 at `e22adee899ad68a59da71a9e0eb853ea9a11f882`: **187 C# files, 15,049 physical C# lines, and 24 auxiliary files** under `src`. Every file has at least one explicit story mapping. Tests, scripts, tools, CI, and generated build outputs are outside the map.
 
 Read the [analysis](analysis.md), explore the [interactive source map](map.html), or look up any file in the [source index](source-index.md). The [resolved JSON catalogue](catalogue.json) contains all locations, hashes, and metrics.
 
@@ -15,7 +15,7 @@ Read the [analysis](analysis.md), explore the [interactive source map](map.html)
 | [E03: Find files and text in a directory tree](epics/e03.md) | user | 7 | As a user, I want to find files and text in a directory tree so that I can act on relevant results without knowing their exact locations. |
 | [E04: Understand file contents](epics/e04.md) | user | 8 | As a user, I want to inspect file contents so that I can understand a file before choosing another tool or changing it. |
 | [E05: Work with packaged files](epics/e05.md) | user | 4 | As a user, I want to inspect, unpack, and package files so that I can work with content delivered as archives. |
-| [E06: Use other tools from the current location](epics/e06.md) | user | 6 | As a user, I want to use Windows programs and commands from my current file context so that I can continue work in the right tool. |
+| [E06: Use other tools from the current location](epics/e06.md) | user | 7 | As a user, I want to use Windows programs and commands from my current file context so that I can continue work in the right tool. |
 | [E07: Work with repository changes](epics/e07.md) | user | 8 | As a user, I want to inspect repository changes and history and start a commit from Xcmd so that I can understand and finish repository work. |
 | [E08: Continue work across application sessions](epics/e08.md) | user | 1 | As a user, I want to continue file work across application sessions so that closing the application does not force me to rebuild my workspace. |
 | [E09: Improve Xcmd while using it](epics/e09.md) | user-developer | 5 | As a user-developer, I want to report problems and try new local builds while using Xcmd so that development stays connected to real work. |
@@ -51,4 +51,7 @@ python docs/product-map/build.py --draft --output artifacts/product-map-preview
 
 The check resolves every anchor, rejects missing or unmapped source files, checks references, validates JSON/XML assets and image signatures, and compares every generated output including source hashes. It requires the source to match the pinned commit, so a source change makes the map stale until it is reviewed and rebuilt. The draft mode resolves the catalogue against the working tree; use it while a source change is still uncommitted. Without `--output` it writes nothing; with `--output` it writes preview views to that folder. Preview line numbers come from the working tree, while links still pin the reviewed commit.
 
-Source snapshot SHA-256: `1c2bee6961ba840d7fa06b310458f61645186f2b62bc00492f689987fb3cab81`.
+Text source hashes use LF line endings, matching the repository's Git attributes.
+Binary source hashes use the original bytes.
+
+Source snapshot SHA-256: `1375dd957aadb6192a2a53e53fd09ed1603c100b34fffde5cafcf38d76be7bd3`.

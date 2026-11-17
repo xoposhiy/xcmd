@@ -111,6 +111,7 @@ A future virtual-location change should name physical, archive, and Git kinds ex
 - **Archive browsing and archive search have different depth.** Browsing opens nested archives; search reports nested archives as skipped. [U26](epics/e03.md#u26), [U39–U42](epics/e05.md)
 - **The viewer is a bounded reader.** It reads file windows and streams searches. Copy and Select all apply to the loaded document window. [U31–U38](epics/e04.md)
 - **Git work is inspection plus a commit handoff.** Reads keep the checkout unchanged; diffs are text; commit comparison uses the first parent; Claude Code performs the commit. [U49–U56](epics/e07.md)
+- **Two-panel comparison opens VS Code.** The two cursor files must exist on disk. Panel order determines diff order, and marks do not select the pair. This is separate from a Git diff. [U58](epics/e06.md#u58)
 - **Cancellation keeps completed changes.** Copy, move, and ZIP creation reject links; size calculation skips them; search lists them as failed paths with the reason Link. [U15](epics/e02.md#u15), [U22](epics/e02.md#u22)
 - **Workspace restore covers panels, search, and preferences.** Viewers and the operation queue start empty. A new build starts as a replacement process. [U57](epics/e08.md#u57), [UD04](epics/e09.md#ud04)
 

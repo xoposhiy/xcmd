@@ -39,4 +39,7 @@ python docs/product-map/build.py --draft --output artifacts/product-map-preview
 
 The check resolves every anchor, rejects missing or unmapped source files, checks references, validates JSON/XML assets and image signatures, and compares every generated output including source hashes. It requires the source to match the pinned commit, so a source change makes the map stale until it is reviewed and rebuilt. The draft mode resolves the catalogue against the working tree; use it while a source change is still uncommitted. Without `--output` it writes nothing; with `--output` it writes preview views to that folder. Preview line numbers come from the working tree, while links still pin the reviewed commit.
 
+Text source hashes use LF line endings, matching the repository's Git attributes.
+Binary source hashes use the original bytes.
+
 Source snapshot SHA-256: `{{count source_hash}}`.

@@ -15,7 +15,7 @@ from catalogue import EPICS, STORIES
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 PROJECTS = {"C": "Xcmd.Core", "D": "Xcmd.Desktop", "I": "Xcmd.Infrastructure"}
-REVIEWED_COMMIT = "f8d2249b80b6d45fcca64404f264b26972ee9f8b"
+REVIEWED_COMMIT = "e22adee899ad68a59da71a9e0eb853ea9a11f882"
 REVIEW_DATE = "2026-11-17"
 SOURCE_URL = "https://github.com/xoposhiy/xcmd/blob/" + REVIEWED_COMMIT + "/"
 UI_FAMILIES = {"Xcmd.Desktop/CommanderWindow", "Xcmd.Desktop/PanelView", "Xcmd.Desktop/FileViewerWindow"}
@@ -40,6 +40,8 @@ def collect(draft=False):
     for path in sorted(set(paths)):
         raw = (ROOT / path).read_bytes()
         binary = Path(path).suffix in {".ico", ".png"}
+        if not binary:
+            raw = raw.replace(b"\r\n", b"\n")
         lines = None if binary else raw.decode("utf-8-sig").splitlines()
         if path.endswith(".json"):
             json.loads(raw)

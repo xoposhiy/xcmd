@@ -115,7 +115,7 @@ story("U09", "E01", "See external directory changes without losing my place", "r
           loc("D:CommanderWindow.Keyboard", "private void ReloadActivePanel(", "Manual reload keeps selection and restores focus")], ["T04"])
 
 story("U10", "E01", "See the shortcuts for the current context", "read the main shortcuts for the active panel at the bottom of the window", "I can find the next action without opening a menu",
-      "A hint row lists the main file, search, and command-line shortcuts. In a Git log it lists snapshot, commit details, refresh, back, return, and panel shortcuts. In a Git snapshot it lists view, changed files, diff, refresh, back, return, and panel shortcuts. The row updates when the active panel or its location changes.", [
+      "A hint row lists the main file, comparison, search, and command-line shortcuts. In a Git log it lists snapshot, commit details, refresh, back, return, and panel shortcuts. In a Git snapshot it lists view, changed files, diff, refresh, back, return, and panel shortcuts. The row updates when the active panel or its location changes.", [
           loc("D:CommanderFrame", "public static Control BuildKeyboardHelp(", "Context-specific shortcut hints")], ["T13"])
 
 # E02: Organize files across locations
@@ -416,7 +416,7 @@ story("U46", "E06", "Complete the command token at the caret", "choose a path, e
           loc("D:CommandCompletionPopup", None, "Async suggestions, selection, and outdated-draft guard")], ["T05"])
 
 story("U47", "E06", "Reuse names and paths without retyping", "insert the current name or path into a command or copy the full path", "I can pass the intended file to another tool accurately",
-      "Ctrl+Enter inserts the current name and Ctrl+Shift+Enter inserts the full path, both quoted for the command line. Ctrl+C in the command line copies all text when nothing is selected. Ctrl+Shift+C copies the full path of the current entry; for an archive member it copies the displayed archive path with '!'. Git history rows show a message instead.", [
+      "Ctrl+Enter inserts and selects the current name and Ctrl+Shift+Enter inserts and selects the full path, both quoted for the command line. Ctrl+C copies the selected argument, or the whole command when nothing is selected. File > Copy full path copies the current entry's full path without quotes; for an archive member it copies the displayed archive path with '!'. Git history rows show a message instead. Ctrl+Shift+C belongs to file comparison.", [
           loc("D:CommanderWindow.Launching", "private void InsertCurrentArgument(", "Insert selected name/path and quote it"),
           loc("D:CommandLineView", None, "Insert text and copy the command"),
           loc("D:PanelClipboardController", "public void CopyPath(", "Copy the full or displayed path"),
@@ -428,6 +428,12 @@ story("U48", "E06", "Use Windows file actions and properties", "open the Windows
           loc("D:PanelView.Shell", None, "Pointer/current-item selection rules"),
           loc("D:ShellInteractionController", None, "Resolve same-folder targets and request menu/properties"),
           route("D:CommanderWindow.Keyboard", "private bool HandleShellKey(", "Context-menu and properties shortcuts")], ["T03"], ["E02"])
+
+story("U58", "E06", "Compare the current files in both panels", "compare the file under each panel cursor in VS Code", "I can inspect differences between two files without entering their paths",
+      "Ctrl+Shift+C in a file panel or File > Compare files in VS Code opens a new VS Code diff window. The left panel supplies the left file and the right panel supplies the right file, regardless of the active panel or marked files. Names may differ. Both files must exist on disk; folders, archive members, and Git history entries are rejected with a message. Missing VS Code and launch failures explain the error. Cursors, marks, the clipboard, and the command draft stay unchanged. Holding the shortcut does not repeat the launch; command input and rename keep their own keys. VS Code provides the text diff; binary comparison, directory comparison, and merge workflows are outside this story.", [
+          loc("C:FileComparison", None, "Validate the two cursor files and retain panel order"),
+          loc("D:FileViewingController", "public async Task CompareCurrentFilesAsync(", "Capture the pair, prevent overlapping comparisons, and report the launch result"),
+          loc("I:VisualStudioCodeComparison", "public Task<ExternalLaunch> PrepareAsync(", "Require existing files and open a new VS Code diff window")], ["T05", "T17"], ["E04"])
 
 # E07: Work with repository changes
 
@@ -580,13 +586,14 @@ story("T04", "E10", "Observe and recover filesystem locations", "receive bounded
           loc("I:DirectoryAvailability", None, "Availability and existing-parent lookup"),
           loc("I:UserDirectories", None, "Home-directory environment boundary")])
 
-story("T05", "E10", "Reuse command and editor adapters", "resolve and launch external tools through explicit adapters", "I can add entry workflows without duplicating Windows process rules",
-      "ShellExecute keeps raw arguments and refreshes the user and system environment for each launch. Completion uses a bounded filesystem and PATH lookup. The editor adapter finds Notepad++ and creates new files safely. The Claude Code adapter finds the repository root and starts the installed tool.", [
+story("T05", "E10", "Reuse command, editor, and comparison adapters", "resolve and launch external tools through explicit adapters", "I can add entry workflows without duplicating Windows process rules",
+      "ShellExecute keeps raw arguments and refreshes the user and system environment for each launch. Completion uses a bounded filesystem and PATH lookup. The editor adapter finds Notepad++ and creates new files safely. The comparison adapter finds VS Code through App Paths, standard installation locations, or PATH and quotes the two file arguments. The Claude Code adapter finds the repository root and starts the installed tool.", [
           loc("I:WindowsExternalLauncher", None, "ShellExecute and error translation"),
           loc("I:WindowsLaunchEnvironment", None, "Serialized fresh environment scope and restoration"),
           loc("I:CommandLayoutRecovery", None, "Unique installed program recovery using keyboard layouts and the fresh PATH"),
           loc("I:CommandCompletions", None, "Environment/path/executable candidates"),
           loc("I:ExternalEditor", None, "Notepad++ resolution, safe file creation, and launch"),
+          loc("I:VisualStudioCodeComparison", None, "VS Code discovery and comparison launch arguments"),
           loc("I:ClaudeCommitLauncher", None, "Repository root and installed Claude process launch")])
 
 story("T06", "E10", "Expose archive formats through file-like adapters", "catalog, read, write temporary copies of, and create supported archive content behind common boundaries", "I can reuse file workflows for packaged content",
@@ -749,6 +756,7 @@ MAIN_MENU = {
     "U23": ['Item("Calculate folder sizes"'], "U24": ['Item("Find files"'], "U31": ['Item("View file or commit"'],
     "U39": ['Item("Open as archive"'], "U41": ['Item("Copy to other panel"'],
     "U43": ['Item("Edit in Notepad++"', 'Item("Open with Windows"'], "U44": ['Item("Focus command line"'], "U47": ['Item("Copy full path"'],
+    "U58": ['Item("Compare files in VS Code"'],
     "U50": ['Item("Log of selected file or folder"', 'Item("Log of current folder"'], "U53": ['Item("Changed files in current commit"'],
     "U55": ['Item("Diff selected file"'], "UD01": ['Item("Comment on an element"'], "UD02": ['Item("Refinement list"'],
 }
@@ -765,7 +773,8 @@ KEYBOARD = {
     "U17": ["private bool HandleClipboardKey("], "U19": ["private bool HandleFileOperationKey("],
     "U31": ["private bool HandleViewOrEditKey("], "U41": ["private bool HandleFileOperationKey("],
     "U45": ["private void HandleCommandLineKey("], "U46": ["private void HandleCommandLineKey("],
-    "U47": ["private bool HandleClipboardKey("],
+    "U47": ["private void HandleCommandLineKey(", "private bool HandleCommandLineShortcut("],
+    "U58": ["private bool HandleComparisonKey("],
 }
 for item in STORIES:
     for table, file in [(MAIN_MENU, "D:CommanderWindow.Menu"), (VIEWER_MENU, "D:FileViewerWindow.Menu"), (KEYBOARD, "D:CommanderWindow.Keyboard")]:
