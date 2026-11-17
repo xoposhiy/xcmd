@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- @implements BrowseStories, TraceStoryFiles -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xcmd · Story explorer</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to story</a>
+  <header class="masthead">
+    <div><span class="brand">XCMD / ENGINEERING</span><h1>Story explorer</h1></div>
+    <div class="refresh"><span id="summary" role="status">Reading the catalogue…</span><button id="reload" type="button">Reload map</button></div>
+  </header>
+  <div id="error" role="alert" hidden></div>
+  <details id="issues" hidden><summary id="issue-summary"></summary><ul id="issue-list"></ul></details>
+  <div class="workspace">
+    <aside aria-label="Catalogue">
+      <label for="search">Find a story</label>
+      <input id="search" type="search" placeholder="Name, need or file path" autocomplete="off">
+      <div class="nav-caption"><span>EPICS / READING ORDER</span><span id="match-count"></span></div>
+      <nav id="epics" aria-label="Epics and user stories"></nav>
+    </aside>
+    <main id="content" tabindex="-1"><p class="empty">Loading stories and source links…</p></main>
+  </div>
+  <footer>Living stories · Current source annotations <span id="scan-time"></span></footer>
+</body>
+</html>

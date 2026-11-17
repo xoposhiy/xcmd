@@ -75,3 +75,16 @@ evidence. CI retains reports and failure diagnostics in its artifacts.
 Documentation-only changes need checks of their links, structure and consistency.
 They do not require application scenarios or a new release. Changes to a check or
 report tool need its relevant checks, not an unrelated application regression run.
+
+For the story explorer, run `./scripts/Explore-Stories.ps1 -Check` and the parser
+and local HTTP scenarios:
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path tools/story-explorer).Path
+python -m unittest discover -s tools/story-explorer/tests -v
+```
+
+The browser scenario in `tools/story-explorer/tests/browser.js` runs through
+`playwright-cli run-code` on an open explorer page. It checks navigation, source
+links, search, reload, failure messages, keyboard access and narrow layouts. Run
+the browser headless and keep its screenshots under `artifacts/story-explorer`.

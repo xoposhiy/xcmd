@@ -7,6 +7,11 @@ Read the ordered [epics and user stories](docs/stories/README.md) to learn the
 product and its developer capabilities. This catalogue is the LivingDoc.
 The [agent instructions](AGENTS.md) link to the development processes.
 
+Browse the catalogue and current source links with `./scripts/Explore-Stories.ps1`.
+Open the local URL printed by the command. Expand an epic, select a story and
+inspect its implementation and test files. Use **Reload map** after source edits.
+Python 3.11 or later and Git are required; no extra packages are needed.
+
 ## Run
 
 Run the permanent `Xcmd.exe` next to the `releases` folder. It starts the selected

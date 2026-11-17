@@ -53,6 +53,16 @@ that I can detect platform failures without changing the user's files or desktop
 As a developer, I want automated checks of code boundaries and quality limits so that I
 can catch violations before delivering a change.
 
+## BrowseStories
+
+As a developer, I want to browse epics and their user stories in reading order so that
+I can learn the product and find the need behind a change.
+
+## TraceStoryFiles
+
+As a developer, I want to see the files that implement or test a user story so that
+I can locate related code and review how responsibilities are spread across files.
+
 ## CodeHealth
 
 As a developer, I want to inspect code measurements and their verification evidence so

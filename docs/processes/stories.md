@@ -57,14 +57,25 @@ callers. A test driver without assertions does not test every story that uses it
 use a relevant developer story for its own capability. Generated and third-party
 files, binaries and formats without comments are outside this annotation format.
 
-Source comments own the file-to-story relations. Future browsing views derive both
+Source comments own the file-to-story relations. Browsing views derive both
 directions from them; do not maintain parallel file lists in the stories. Counts
 are review aids, not automatic refactoring rules or proof of test coverage.
 
 Authored production code, tests, test helpers, scripts, build configuration and
 text assets now have source annotations. Archived documentation is outside the
-current source map. A mapping checker and specification browser are not installed
-yet; check references and completeness when changing files.
+current source map. Run `./scripts/Explore-Stories.ps1` and open the printed local
+URL to browse epics, stories and their implementation and test files. The explorer
+reads the current worktree on startup and when reloading the map. It includes new
+files that Git does not ignore, and excludes documentation and generated files.
+Source links open plain text in a new tab.
+
+Use `./scripts/Explore-Stories.ps1 -Check` to validate catalogue structure and story
+references without starting the server. The explorer uses Python 3.11 or later and
+Git, with no extra packages. It reports malformed annotations and unknown story
+IDs. It does not establish that every responsibility is mapped; review completeness
+and meaning when changing files. The front matter uses scalar fields, and story
+headings use `## StoryId`. Extra story sections remain visible as source text in
+the explorer; they are not a second copy of the documentation.
 
 ## Commit responsibility
 
