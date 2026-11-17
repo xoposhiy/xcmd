@@ -1,3 +1,4 @@
+// @implements OpenViewers, OpenViewedFile, BrowseSnapshot
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

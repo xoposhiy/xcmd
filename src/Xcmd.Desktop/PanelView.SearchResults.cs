@@ -1,3 +1,4 @@
+// @implements SortEntries, RefreshEntries, RenameEntry, SearchResultPanel, RestoreWorkspace
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

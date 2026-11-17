@@ -1,3 +1,5 @@
+// @implements QualityChecks
+// @tests DomainBoundaries, PackageInputs, QualityChecks
 using System.Diagnostics;
 using System.Text.Json;
 

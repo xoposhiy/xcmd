@@ -1,3 +1,4 @@
+// @implements ImageDecoding
 using Avalonia.Media.Imaging;
 using SkiaSharp;
 

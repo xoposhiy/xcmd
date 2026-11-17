@@ -1,3 +1,4 @@
+// @implements ApplicationLifecycle
 namespace Xcmd.Infrastructure;
 
 public static class StartupDiagnostics

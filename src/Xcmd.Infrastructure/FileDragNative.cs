@@ -1,3 +1,4 @@
+// @implements WindowsFileActions
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 

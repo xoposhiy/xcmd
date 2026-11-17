@@ -1,3 +1,4 @@
+// @tests NavigatePanels, OpenOtherPanel, SortEntries, JumpToName, RecentLocations, ReadablePanels, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, TransferEntries, ResolveConflicts, RecoverOperations, FileSystemAccess, AsyncCoordination, HeadlessVerification
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

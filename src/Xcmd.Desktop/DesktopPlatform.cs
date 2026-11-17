@@ -1,3 +1,4 @@
+// @implements ApplicationLifecycle
 using Avalonia;
 
 namespace Xcmd.Desktop;

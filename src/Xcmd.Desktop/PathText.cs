@@ -1,3 +1,4 @@
+// @implements SharedControls
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

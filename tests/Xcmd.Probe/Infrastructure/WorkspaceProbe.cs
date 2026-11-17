@@ -1,3 +1,4 @@
+// @implements HeadlessVerification, IntegrationVerification
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia.Controls;

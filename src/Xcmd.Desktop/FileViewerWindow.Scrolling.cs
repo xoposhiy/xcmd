@@ -1,3 +1,4 @@
+// @implements ReadLargeFiles, FollowLog
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;

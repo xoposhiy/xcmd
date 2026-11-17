@@ -1,3 +1,4 @@
+// @implements BrowseHistory, InspectCommitChanges, DomainBoundaries
 namespace Xcmd.Core;
 
 public sealed record GitHistoryScope(string Root, string Path, string Revision)

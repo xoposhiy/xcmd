@@ -1,3 +1,4 @@
+// @tests NavigatePanels, ReadablePanels, DiscoverShortcuts, MeasureFolders, RunCommand, RestoreWorkspace, TryLocalRelease, WorkspaceStorage
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

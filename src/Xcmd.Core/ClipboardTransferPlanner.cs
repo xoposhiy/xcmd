@@ -1,3 +1,4 @@
+// @implements ClipboardTransfer
 namespace Xcmd.Core;
 
 public static class ClipboardTransferPlanner

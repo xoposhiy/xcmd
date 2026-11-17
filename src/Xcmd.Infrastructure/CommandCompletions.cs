@@ -1,3 +1,4 @@
+// @implements CompleteCommand, ExternalLaunch
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

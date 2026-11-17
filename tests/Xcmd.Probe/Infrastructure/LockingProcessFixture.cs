@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

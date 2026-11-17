@@ -1,3 +1,4 @@
+// @tests SortEntries, DiscoverShortcuts, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff, RepositoryLocations, RepositoryDocuments
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Xcmd.Core;

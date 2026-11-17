@@ -1,3 +1,4 @@
+// @implements DeleteEntries, ResolveConflicts
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

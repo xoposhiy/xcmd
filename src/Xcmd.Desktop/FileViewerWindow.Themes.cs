@@ -1,3 +1,4 @@
+// @implements ReaderThemes, ReportHighlighting
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;

@@ -1,3 +1,4 @@
+// @implements FeedbackQueue
 namespace Xcmd.Core;
 
 public sealed record IssueTarget(string Id, string Name);

@@ -1,3 +1,4 @@
+// @implements NavigatePanels, SortEntries, RecentLocations, RestoreWorkspace
 namespace Xcmd.Core;
 
 public sealed class PanelSession(IFileSystem fileSystem)

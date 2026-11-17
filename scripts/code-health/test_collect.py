@@ -1,3 +1,4 @@
+# @tests CodeHealth
 """Check report aggregation and source selection with small fixtures."""
 
 import tempfile

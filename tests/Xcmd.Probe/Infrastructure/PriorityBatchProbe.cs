@@ -1,3 +1,4 @@
+// @implements HeadlessVerification
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

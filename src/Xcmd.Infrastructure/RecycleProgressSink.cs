@@ -1,3 +1,4 @@
+// @implements DeleteEntries, WindowsFileActions
 using System.Runtime.InteropServices;
 
 namespace Xcmd.Infrastructure;

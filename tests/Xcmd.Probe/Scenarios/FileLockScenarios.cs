@@ -1,3 +1,4 @@
+// @tests RenameEntry, TransferEntries, DeleteEntries, RecoverOperations, ReportControl, WindowsFileActions
 using Avalonia.Input;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

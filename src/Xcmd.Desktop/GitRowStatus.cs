@@ -1,3 +1,4 @@
+// @implements SeeRepositoryState
 using Avalonia.Media;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

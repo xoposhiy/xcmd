@@ -1,3 +1,4 @@
+// @implements HeadlessVerification, IntegrationVerification
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia;

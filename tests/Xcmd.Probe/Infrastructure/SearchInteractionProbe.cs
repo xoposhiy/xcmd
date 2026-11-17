@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests JumpToName
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.VisualTree;

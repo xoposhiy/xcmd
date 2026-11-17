@@ -61,9 +61,10 @@ Source comments own the file-to-story relations. Future browsing views derive bo
 directions from them; do not maintain parallel file lists in the stories. Counts
 are review aids, not automatic refactoring rules or proof of test coverage.
 
-The source annotation migration is incomplete. A mapping checker and specification
-browser are not installed yet. Do not claim complete mapping coverage during this
-transition.
+Authored production code, tests, test helpers, scripts, build configuration and
+text assets now have source annotations. Archived documentation is outside the
+current source map. A mapping checker and specification browser are not installed
+yet; check references and completeness when changing files.
 
 ## Commit responsibility
 

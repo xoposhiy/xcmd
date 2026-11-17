@@ -1,3 +1,4 @@
+// @tests NavigatePanels, RunCommand
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

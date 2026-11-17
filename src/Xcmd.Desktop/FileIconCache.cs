@@ -1,3 +1,4 @@
+// @implements FileIcons
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;

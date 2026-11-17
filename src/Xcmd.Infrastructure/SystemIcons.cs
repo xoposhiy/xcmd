@@ -1,3 +1,4 @@
+// @implements FileIcons
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Xcmd.Core;

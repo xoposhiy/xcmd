@@ -1,3 +1,4 @@
+// @implements ExternalLaunch
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;

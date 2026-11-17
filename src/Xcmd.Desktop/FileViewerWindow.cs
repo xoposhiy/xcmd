@@ -1,3 +1,4 @@
+// @implements OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, ReportControl
 using System.Text;
 using Avalonia;
 using Avalonia.Automation;

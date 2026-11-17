@@ -1,3 +1,4 @@
+// @implements QueueOperations, RecoverOperations
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Automation;

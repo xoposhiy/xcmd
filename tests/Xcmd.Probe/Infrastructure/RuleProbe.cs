@@ -1,3 +1,4 @@
+// @implements HeadlessVerification
 namespace Xcmd.Probe.Infrastructure;
 
 public static class RuleProbe

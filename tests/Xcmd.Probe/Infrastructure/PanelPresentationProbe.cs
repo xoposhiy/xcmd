@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests NavigatePanels, ReadablePanels
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

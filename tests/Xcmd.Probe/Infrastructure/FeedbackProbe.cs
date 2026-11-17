@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests ReportControl, KeepFeedback, FeedbackIdentity
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

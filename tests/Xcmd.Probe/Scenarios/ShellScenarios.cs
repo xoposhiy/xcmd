@@ -1,3 +1,4 @@
+// @tests NavigatePanels, MarkEntries, ShellActions, WindowsFileActions
 using Avalonia;
 using Avalonia.Input;
 using Xcmd.Infrastructure;

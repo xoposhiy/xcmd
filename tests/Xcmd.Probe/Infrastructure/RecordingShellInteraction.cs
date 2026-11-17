@@ -1,3 +1,4 @@
+// @implements HeadlessVerification
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

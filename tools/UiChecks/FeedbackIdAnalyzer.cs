@@ -1,3 +1,4 @@
+// @implements FeedbackIdentity, QualityChecks
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;

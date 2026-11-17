@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests NavigatePanels, RenameEntry, HeadlessVerification
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;

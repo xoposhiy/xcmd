@@ -1,3 +1,4 @@
+// @tests MarkEntries, DragFiles, TryLocalRelease, WindowsFileActions
 using Avalonia;
 using Avalonia.Input;
 using Xcmd.Probe.Infrastructure;

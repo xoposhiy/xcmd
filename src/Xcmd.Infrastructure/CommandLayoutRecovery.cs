@@ -1,3 +1,4 @@
+// @implements RunCommand, ExternalLaunch
 using System.ComponentModel;
 using Xcmd.Core;
 

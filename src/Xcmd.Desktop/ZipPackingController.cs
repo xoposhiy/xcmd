@@ -1,3 +1,4 @@
+// @implements CreateArchive
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

@@ -1,3 +1,4 @@
+// @tests JumpToName, FindFiles, FindFileText, InspectSearchScope, ControlSearch, RestoreWorkspace, ReportControl
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;

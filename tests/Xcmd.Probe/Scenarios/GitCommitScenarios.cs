@@ -1,3 +1,4 @@
+// @tests SeeRepositoryState, DelegateCommit, ExternalLaunch
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

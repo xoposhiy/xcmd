@@ -1,3 +1,4 @@
+// @tests DuplicateEntry, ClipboardTransfer, ResolveConflicts, RunCommand, ReusePaths, ClipboardInterop
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;

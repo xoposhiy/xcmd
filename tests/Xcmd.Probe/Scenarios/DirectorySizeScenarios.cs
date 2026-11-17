@@ -1,3 +1,4 @@
+// @tests SortEntries, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, RestoreWorkspace, TryLocalRelease, AsyncCoordination
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

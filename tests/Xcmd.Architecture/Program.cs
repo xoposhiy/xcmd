@@ -1,3 +1,4 @@
+// @implements QualityChecks
 using ArchUnitNET.Loader;
 using Xcmd.Architecture.Infrastructure;
 

@@ -1,3 +1,4 @@
+// @implements MeasureFolders
 using Avalonia.Input;
 using Xcmd.Core;
 

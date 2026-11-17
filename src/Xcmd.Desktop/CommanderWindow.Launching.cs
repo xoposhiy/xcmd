@@ -1,3 +1,4 @@
+// @implements InspectArchives, OpenExternalTool, RunCommand, CommandHistory, ReusePaths
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

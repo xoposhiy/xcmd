@@ -1,3 +1,4 @@
+// @implements BrowseArchives, InspectArchives
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

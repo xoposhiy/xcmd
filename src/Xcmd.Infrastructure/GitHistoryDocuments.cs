@@ -1,3 +1,4 @@
+// @implements RepositoryDocuments
 using System.Text;
 using Xcmd.Core;
 

@@ -1,3 +1,4 @@
+// @implements FeedbackQueue
 namespace Xcmd.Infrastructure;
 
 public static class IssueCli

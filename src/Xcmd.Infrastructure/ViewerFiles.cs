@@ -1,3 +1,4 @@
+// @implements StreamingReads
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

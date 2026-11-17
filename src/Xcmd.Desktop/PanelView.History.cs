@@ -1,3 +1,4 @@
+// @implements BrowseHistory
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

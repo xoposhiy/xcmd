@@ -1,3 +1,4 @@
+// @implements RecentLocations, RestoreWorkspace
 using Avalonia;
 using Avalonia.Controls;
 using Xcmd.Core;

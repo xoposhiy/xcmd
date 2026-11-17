@@ -1,3 +1,5 @@
+// @implements HeadlessVerification, IntegrationVerification
+// @tests FindFiles, FindFileText, FileIcons
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

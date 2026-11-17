@@ -1,3 +1,4 @@
+// @tests RecentLocations, FavoriteLocations, FindSavedLocation, DeleteEntries, ReadLargeFiles, BrowseHistory, BrowseSnapshot, WindowsFileActions, SharedControls
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;

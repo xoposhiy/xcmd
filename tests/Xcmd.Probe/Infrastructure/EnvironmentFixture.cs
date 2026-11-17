@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 using Microsoft.Win32;
 using System.Text;
 

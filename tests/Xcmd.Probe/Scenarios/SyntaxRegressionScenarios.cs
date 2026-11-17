@@ -1,3 +1,4 @@
+// @tests ReadLargeFiles, HighlightSource, FollowLog, ReportHighlighting, ArchiveAccess, RepositoryDocuments, SyntaxSpans, AsyncCoordination
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;

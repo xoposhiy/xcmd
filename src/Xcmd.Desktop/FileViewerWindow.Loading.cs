@@ -1,3 +1,4 @@
+// @implements OpenViewers, ChooseViewMode, ReadLargeFiles, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReportHighlighting
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

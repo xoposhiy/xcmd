@@ -1,3 +1,4 @@
+// @implements CompleteCommand
 namespace Xcmd.Core;
 
 public sealed record CommandToken(int Start, int End, string Prefix, bool Program)

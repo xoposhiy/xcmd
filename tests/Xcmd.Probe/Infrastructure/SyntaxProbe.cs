@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests HighlightSource, ReaderThemes, ReportHighlighting, SyntaxSpans, HeadlessVerification
 using System.Text;
 using System.Text.Json;
 using Avalonia.Controls;

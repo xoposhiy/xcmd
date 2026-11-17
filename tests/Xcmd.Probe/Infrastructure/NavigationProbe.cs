@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests RecentLocations, FavoriteLocations
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

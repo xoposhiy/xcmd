@@ -1,3 +1,4 @@
+// @implements RecentLocations
 namespace Xcmd.Core;
 
 public sealed record DirectoryUsage(string Path, long Visits, double Weight, DateTimeOffset LastVisited);

@@ -1,3 +1,4 @@
+# @implements PackageInputs, HeadlessVerification, IntegrationVerification, QualityChecks, CodeHealth
 name: Verify
 
 on:

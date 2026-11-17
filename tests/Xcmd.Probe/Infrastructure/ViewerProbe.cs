@@ -1,3 +1,5 @@
+// @implements HeadlessVerification, IntegrationVerification
+// @tests ChooseViewMode, ReadLargeFiles, FindViewerText, OpenExternalTool, ReportControl, ExternalLaunch, SharedControls
 using System.Diagnostics;
 using System.Text;
 using SkiaSharp;

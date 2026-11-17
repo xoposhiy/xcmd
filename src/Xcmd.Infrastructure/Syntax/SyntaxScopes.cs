@@ -1,3 +1,4 @@
+// @implements SyntaxSpans
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

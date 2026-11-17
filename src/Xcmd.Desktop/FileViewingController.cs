@@ -1,3 +1,4 @@
+// @implements CreateFile, OpenSearchMatch, OpenViewers, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

@@ -1,3 +1,4 @@
+// @implements TransferEntries
 namespace Xcmd.Core;
 
 public static class FileTransferPlanner

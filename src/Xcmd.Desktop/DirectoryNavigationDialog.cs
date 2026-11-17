@@ -1,3 +1,4 @@
+// @implements RecentLocations, FavoriteLocations, FindSavedLocation
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

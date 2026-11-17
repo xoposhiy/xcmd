@@ -1,3 +1,4 @@
+// @implements TransferEntries, DuplicateEntry, DeleteEntries, QueueOperations, ExtractEntries
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;

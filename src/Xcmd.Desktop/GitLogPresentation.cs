@@ -1,3 +1,4 @@
+// @implements BrowseHistory, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;

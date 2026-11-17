@@ -1,3 +1,5 @@
+// @implements IntegrationVerification
+// @tests IntegrationVerification
 using System.Diagnostics;
 using System.Text.Json;
 using static Xcmd.Probe.Infrastructure.WorkspaceProbe;

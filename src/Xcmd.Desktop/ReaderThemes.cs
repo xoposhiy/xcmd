@@ -1,3 +1,4 @@
+// @implements ReaderThemes
 using Avalonia.Media;
 
 namespace Xcmd.Desktop;

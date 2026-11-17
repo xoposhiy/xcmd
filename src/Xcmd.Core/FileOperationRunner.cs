@@ -1,3 +1,4 @@
+// @implements TransferEntries, DeleteEntries, ResolveConflicts, RecoverOperations, ExtractEntries, CreateArchive
 namespace Xcmd.Core;
 
 public sealed class FileOperationRunner(IFileOperationStore store, Func<FileConflict, CancellationToken, Task<ConflictDecision>> resolveConflict,

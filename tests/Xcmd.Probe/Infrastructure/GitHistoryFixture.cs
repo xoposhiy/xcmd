@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 namespace Xcmd.Probe.Infrastructure;
 
 public sealed class GitHistoryFixture(string root) : IDisposable

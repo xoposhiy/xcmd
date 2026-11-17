@@ -1,3 +1,4 @@
+// @implements ArchiveAccess
 using SharpCompress.Common;
 using SharpCompress.Providers;
 

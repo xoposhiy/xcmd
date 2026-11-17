@@ -1,3 +1,4 @@
+// @tests DiscoverShortcuts, OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, OpenViewedFile, OpenExternalTool, ReportControl, TryLocalRelease, ExternalLaunch, SharedControls, ImageDecoding, ApplicationLifecycle
 using System.Text;
 using Avalonia.Input;
 using Xcmd.Core;

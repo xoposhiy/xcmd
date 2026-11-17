@@ -1,3 +1,4 @@
+// @implements OpenSearchMatch, FindViewerText
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

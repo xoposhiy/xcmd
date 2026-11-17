@@ -1,3 +1,4 @@
+// @implements HighlightSource, ReportHighlighting
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

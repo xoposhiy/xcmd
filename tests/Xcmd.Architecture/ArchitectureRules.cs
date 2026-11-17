@@ -1,3 +1,5 @@
+// @implements QualityChecks
+// @tests DomainBoundaries
 using System.Reflection;
 using ArchUnitNET.Fluent;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;

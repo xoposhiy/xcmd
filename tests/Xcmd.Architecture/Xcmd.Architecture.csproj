@@ -1,3 +1,4 @@
+<!-- @implements PackageInputs, QualityChecks -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>

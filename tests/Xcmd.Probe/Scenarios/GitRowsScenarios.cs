@@ -1,3 +1,4 @@
+// @tests ReadablePanels, SeeRepositoryState, RestoreWorkspace, RepositoryStatus, FileIcons
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

@@ -1,3 +1,4 @@
+// @implements ComparePanelFiles
 namespace Xcmd.Core;
 
 public sealed record FileComparison(string LeftPath, string RightPath)

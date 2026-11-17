@@ -1,3 +1,4 @@
+// @implements SharedControls
 namespace Xcmd.Desktop;
 
 public static class FileSizeText

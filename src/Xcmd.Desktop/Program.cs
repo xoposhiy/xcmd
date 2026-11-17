@@ -1,3 +1,4 @@
+// @implements ApplicationLifecycle
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;

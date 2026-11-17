@@ -1,3 +1,4 @@
+# @implements FeedbackQueue
 param(
     [Parameter(Position = 0)][ValidateSet('list', 'start', 'close', 'release', 'reopen', 'import-legacy', 'help')][string]$Command = 'list',
     [Parameter(Position = 1, ValueFromRemainingArguments)][string[]]$Id

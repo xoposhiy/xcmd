@@ -1,3 +1,4 @@
+// @implements WindowsFileActions
 namespace Xcmd.Infrastructure;
 
 public sealed record ShellMenuInspection(IReadOnlyList<string> Verbs, double ParseMilliseconds,

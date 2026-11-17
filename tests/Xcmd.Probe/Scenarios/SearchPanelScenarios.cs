@@ -1,3 +1,4 @@
+// @tests OpenOtherPanel, SortEntries, RefreshEntries, MarkEntries, RenameEntry, TransferEntries, SearchResultPanel, OpenViewers, BrowseArchives, RunCommand, RestoreWorkspace
 using Avalonia.Input;
 using Avalonia.Automation;
 using Avalonia.Controls;

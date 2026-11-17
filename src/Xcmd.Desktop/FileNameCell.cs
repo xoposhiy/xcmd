@@ -1,3 +1,4 @@
+// @implements JumpToName, ReadablePanels, MarkEntries, RenameEntry, FileIcons
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

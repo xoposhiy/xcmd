@@ -1,3 +1,4 @@
+// @tests ReadablePanels, ControlSearch, OpenSearchMatch, SearchResultPanel, RestoreWorkspace
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

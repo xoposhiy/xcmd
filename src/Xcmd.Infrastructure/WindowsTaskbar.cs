@@ -1,3 +1,4 @@
+// @implements WindowsIdentity
 using System.Runtime.InteropServices;
 
 namespace Xcmd.Infrastructure;

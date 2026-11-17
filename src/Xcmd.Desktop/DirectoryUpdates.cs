@@ -1,3 +1,4 @@
+// @implements RefreshEntries, InspectWorkingChanges
 using Avalonia.Threading;
 using System.Diagnostics;
 using Xcmd.Core;

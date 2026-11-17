@@ -1,3 +1,4 @@
+// @implements FindFiles, FindFileText, PrioritizeSearch, InspectSearchScope, ControlSearch
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 

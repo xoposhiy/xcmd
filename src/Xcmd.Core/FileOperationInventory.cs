@@ -1,3 +1,4 @@
+// @implements TransferEntries, QueueOperations, CreateArchive, FileSystemAccess
 namespace Xcmd.Core;
 
 public sealed record OperationWork(long Files, long Bytes);

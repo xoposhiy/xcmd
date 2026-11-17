@@ -1,3 +1,4 @@
+// @tests OpenOtherPanel, RefreshEntries, DiscoverShortcuts, BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff, AsyncCoordination
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

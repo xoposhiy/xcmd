@@ -1,3 +1,4 @@
+// @implements RecentLocations
 namespace Xcmd.Core;
 
 public sealed class DirectoryHistory

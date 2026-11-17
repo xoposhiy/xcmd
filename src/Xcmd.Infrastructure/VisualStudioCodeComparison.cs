@@ -1,3 +1,4 @@
+// @implements ComparePanelFiles, ExternalLaunch
 using Microsoft.Win32;
 using Xcmd.Core;
 

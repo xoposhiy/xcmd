@@ -1,3 +1,4 @@
+// @implements StreamingReads
 using System.Text;
 using Xcmd.Core;
 

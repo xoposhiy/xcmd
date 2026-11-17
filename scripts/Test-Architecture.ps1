@@ -1,3 +1,4 @@
+# @implements QualityChecks
 . (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
 Push-Location $projectRoot
 try {

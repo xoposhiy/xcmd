@@ -1,3 +1,4 @@
+// @implements ResolveConflicts, RecoverOperations
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Xcmd.Core;

@@ -1,3 +1,4 @@
+// @tests FindViewerText, ReaderThemes, RestoreWorkspace, ReportControl, KeepFeedback, SharedControls
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Input;

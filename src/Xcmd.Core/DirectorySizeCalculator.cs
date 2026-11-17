@@ -1,3 +1,4 @@
+// @implements MeasureFolders
 namespace Xcmd.Core;
 
 public sealed record DirectorySize(long Bytes, long Files, int SkippedLinks, int Errors)

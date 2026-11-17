@@ -1,3 +1,4 @@
+// @implements RepositoryStatus
 namespace Xcmd.Infrastructure;
 
 [Flags]

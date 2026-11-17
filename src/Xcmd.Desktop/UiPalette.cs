@@ -1,3 +1,4 @@
+// @implements SharedControls
 using Avalonia;
 using Avalonia.Media;
 

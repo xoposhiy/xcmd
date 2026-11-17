@@ -1,3 +1,4 @@
+// @implements DragFiles
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;

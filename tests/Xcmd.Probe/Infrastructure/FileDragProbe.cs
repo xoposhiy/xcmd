@@ -1,3 +1,5 @@
+// @implements HeadlessVerification, IntegrationVerification
+// @tests DragFiles, WindowsFileActions, IntegrationVerification
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Input;

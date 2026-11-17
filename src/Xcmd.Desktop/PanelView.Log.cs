@@ -1,3 +1,4 @@
+// @implements BrowseHistory
 namespace Xcmd.Desktop;
 
 public sealed partial class PanelView

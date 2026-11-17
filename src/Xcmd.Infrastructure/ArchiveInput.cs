@@ -1,3 +1,4 @@
+// @implements ArchiveAccess
 namespace Xcmd.Infrastructure;
 
 internal sealed class ArchiveInput : Stream

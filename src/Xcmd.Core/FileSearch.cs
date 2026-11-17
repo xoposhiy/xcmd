@@ -1,3 +1,4 @@
+// @implements FindFiles, FindFileText, PrioritizeSearch, DomainBoundaries
 using System.Text.RegularExpressions;
 
 namespace Xcmd.Core;

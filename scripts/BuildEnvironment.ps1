@@ -1,3 +1,4 @@
+# @implements PackageInputs
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $env:DOTNET_CLI_HOME = Join-Path $projectRoot '.dotnet'

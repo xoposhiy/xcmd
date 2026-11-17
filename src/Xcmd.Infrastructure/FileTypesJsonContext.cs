@@ -1,3 +1,4 @@
+// @implements PackageInputs
 using System.Text.Json.Serialization;
 using Xcmd.Core;
 

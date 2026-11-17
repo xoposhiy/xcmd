@@ -1,3 +1,4 @@
+// @implements RenameEntry, BrowseArchives, OpenExternalTool
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

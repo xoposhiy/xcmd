@@ -1,3 +1,4 @@
+// @tests QualityChecks
 using ArchUnitNET.Fluent;
 using ArchUnitNET.Loader;
 

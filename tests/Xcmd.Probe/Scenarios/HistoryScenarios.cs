@@ -1,3 +1,4 @@
+// @tests NavigatePanels, RecentLocations, RenameEntry, AsyncCoordination
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

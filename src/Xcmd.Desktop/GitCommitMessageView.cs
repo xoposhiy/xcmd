@@ -1,3 +1,4 @@
+// @implements ReadCommitMessage
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

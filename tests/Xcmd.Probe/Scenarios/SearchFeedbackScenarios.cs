@@ -1,3 +1,4 @@
+// @tests NavigatePanels, JumpToName, CreateFolder, FindFiles, FindFileText, InspectSearchScope, ControlSearch, RestoreWorkspace, TryLocalRelease
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

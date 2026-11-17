@@ -1,3 +1,4 @@
+// @implements RepositoryLocations
 using System.Globalization;
 using Xcmd.Core;
 

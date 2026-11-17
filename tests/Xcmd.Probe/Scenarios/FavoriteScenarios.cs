@@ -1,3 +1,4 @@
+// @tests RecentLocations, FavoriteLocations, RestoreWorkspace, ReportControl, TryLocalRelease
 using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Input;

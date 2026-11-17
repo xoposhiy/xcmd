@@ -1,3 +1,4 @@
+// @implements SyntaxSpans
 namespace Xcmd.Core;
 
 public enum SyntaxKind { Plain, Comment, Keyword, String, Number, Type, Function, Property, Tag, Heading, Operator }

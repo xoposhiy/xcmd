@@ -1,3 +1,4 @@
+// @implements TransferEntries, DuplicateEntry
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

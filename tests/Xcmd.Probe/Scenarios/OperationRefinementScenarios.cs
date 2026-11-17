@@ -1,3 +1,4 @@
+// @tests DiscoverShortcuts, MarkEntries, TransferEntries, DeleteEntries, ResolveConflicts, QueueOperations
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;

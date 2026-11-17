@@ -1,3 +1,4 @@
+// @implements FavoriteLocations
 namespace Xcmd.Core;
 
 public sealed record FavoriteDirectory(string Id, string Name, string Path);

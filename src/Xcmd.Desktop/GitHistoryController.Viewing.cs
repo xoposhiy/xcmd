@@ -1,3 +1,4 @@
+// @implements BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

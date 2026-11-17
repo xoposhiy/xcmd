@@ -1,3 +1,4 @@
+// @implements BrowseArchives, InspectArchives, ExtractEntries, ArchiveAccess
 using System.Text;
 using SharpCompress.Archives;
 using SharpCompress.Common;

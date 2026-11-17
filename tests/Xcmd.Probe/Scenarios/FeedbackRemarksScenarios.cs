@@ -1,3 +1,4 @@
+// @tests NavigatePanels, FindFileText, InspectSearchScope, ControlSearch, OpenViewers, FindViewerText, RestoreWorkspace, KeepFeedback, FileIcons
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

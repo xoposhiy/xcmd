@@ -1,3 +1,4 @@
+// @implements WindowsFileActions
 using System.ComponentModel;
 using Xcmd.Core;
 

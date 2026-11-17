@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 using System.Text.Json;
 
 if (args.FirstOrDefault() is "--hold-file" or "--hold-directory")

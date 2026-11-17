@@ -1,3 +1,4 @@
+// @tests QualityChecks
 using System.Diagnostics;
 
 namespace Xcmd.Architecture.Infrastructure;

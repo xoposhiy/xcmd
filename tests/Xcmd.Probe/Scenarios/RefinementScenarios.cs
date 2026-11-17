@@ -1,3 +1,4 @@
+// @tests NavigatePanels, SortEntries, JumpToName, RecentLocations, ReadablePanels, RefreshEntries, DiscoverShortcuts, CreateFolder, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, SharedControls, FileIcons, KeyboardLayouts, FeedbackQueue
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;

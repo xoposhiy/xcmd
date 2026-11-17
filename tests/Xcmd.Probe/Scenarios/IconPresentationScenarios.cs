@@ -1,3 +1,4 @@
+// @tests RefreshEntries, FileIcons
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 

@@ -1,3 +1,4 @@
+// @implements SearchSources
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

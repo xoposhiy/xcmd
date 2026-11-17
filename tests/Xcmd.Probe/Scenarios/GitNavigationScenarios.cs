@@ -1,3 +1,4 @@
+// @tests SeeRepositoryState, RepositoryStatus, AsyncCoordination
 using Avalonia.Media;
 using Xcmd.Desktop;
 using Xcmd.Infrastructure;

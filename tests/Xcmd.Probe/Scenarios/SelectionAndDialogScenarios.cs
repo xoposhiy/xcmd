@@ -1,3 +1,4 @@
+// @tests RecentLocations, FavoriteLocations, ReadablePanels, MarkEntries, RenameEntry, CreateFolder, TransferEntries, DeleteEntries, ResolveConflicts, ReportControl, SharedControls
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

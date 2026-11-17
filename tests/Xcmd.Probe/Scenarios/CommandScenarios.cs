@@ -1,3 +1,4 @@
+// @tests OpenExternalTool, ExternalLaunch, IntegrationVerification
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests NavigatePanels, HeadlessVerification
 using Avalonia.Headless;
 using Avalonia.Input;
 

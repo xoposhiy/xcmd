@@ -1,3 +1,4 @@
+// @implements DirectoryMonitoring
 using System.Diagnostics;
 
 namespace Xcmd.Infrastructure;

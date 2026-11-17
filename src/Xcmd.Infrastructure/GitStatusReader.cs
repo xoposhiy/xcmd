@@ -1,3 +1,4 @@
+// @implements RepositoryStatus
 using System.ComponentModel;
 using System.Diagnostics;
 

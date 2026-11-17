@@ -1,3 +1,5 @@
+// @implements IntegrationVerification
+// @tests StableShortcut, IntegrationVerification, WindowsIdentity
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Xcmd.Infrastructure;

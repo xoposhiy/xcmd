@@ -1,3 +1,4 @@
+// @implements RunCommand, CommandHistory, ReusePaths, RestoreWorkspace
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

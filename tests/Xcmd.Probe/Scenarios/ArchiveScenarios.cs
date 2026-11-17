@@ -1,3 +1,4 @@
+// @tests OpenViewers, BrowseArchives, InspectArchives, ExtractEntries, OpenExternalTool, RunCommand, ReusePaths, RestoreWorkspace, ArchiveAccess
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

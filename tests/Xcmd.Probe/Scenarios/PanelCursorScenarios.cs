@@ -1,3 +1,4 @@
+// @tests NavigatePanels, JumpToName, ReadablePanels, MarkEntries, RestoreWorkspace
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

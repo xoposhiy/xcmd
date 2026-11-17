@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests ReaderThemes, RestoreWorkspace, ReportControl, SharedControls, HeadlessVerification
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Chrome;

@@ -1,3 +1,4 @@
+// @implements SeeRepositoryState
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

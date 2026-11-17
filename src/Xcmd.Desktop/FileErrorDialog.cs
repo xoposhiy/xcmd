@@ -1,3 +1,4 @@
+// @implements RecoverOperations
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

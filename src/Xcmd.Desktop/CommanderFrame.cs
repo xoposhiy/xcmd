@@ -1,3 +1,4 @@
+// @implements DiscoverShortcuts, ReportControl, KeepFeedback, TryLocalRelease, AsyncCoordination
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

@@ -1,3 +1,4 @@
+// @implements StableShortcut, ReleaseHandoff
 using System.Text.Json;
 using System.Text.RegularExpressions;
 

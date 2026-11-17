@@ -1,3 +1,4 @@
+// @implements ReadablePanels
 using System.Text.Json;
 using Xcmd.Infrastructure;
 

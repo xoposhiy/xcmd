@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests SeeRepositoryState, DelegateCommit
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

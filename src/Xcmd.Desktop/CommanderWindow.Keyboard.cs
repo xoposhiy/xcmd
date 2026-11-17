@@ -1,3 +1,4 @@
+// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, CommandHistory, CompleteCommand, ReusePaths, ShellActions, ComparePanelFiles, AsyncCoordination
 using Avalonia.Input;
 using Xcmd.Core;
 

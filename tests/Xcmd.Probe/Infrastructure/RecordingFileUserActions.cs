@@ -1,3 +1,4 @@
+// @implements HeadlessVerification, IntegrationVerification
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

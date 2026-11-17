@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 using System.Runtime.InteropServices;
 
 namespace Xcmd.Probe.Infrastructure;

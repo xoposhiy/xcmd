@@ -1,3 +1,4 @@
+// @implements FileSystemAccess
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

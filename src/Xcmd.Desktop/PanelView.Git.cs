@@ -1,3 +1,4 @@
+// @implements SeeRepositoryState, BrowseSnapshot
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;

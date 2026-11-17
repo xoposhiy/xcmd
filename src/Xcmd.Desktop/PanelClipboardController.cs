@@ -1,3 +1,4 @@
+// @implements ClipboardTransfer, ReusePaths, ClipboardInterop
 using System.Runtime.InteropServices;
 using Avalonia.Input;
 using Avalonia.Input.Platform;

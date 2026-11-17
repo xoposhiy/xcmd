@@ -1,3 +1,5 @@
+# @implements HeadlessVerification, IntegrationVerification
+# @tests RestoreWorkspace, StableShortcut, ApplicationLifecycle, HeadlessVerification, IntegrationVerification
 param(
     [Parameter(Mandatory)][string]$ApplicationPath,
     [string]$OutputPath,

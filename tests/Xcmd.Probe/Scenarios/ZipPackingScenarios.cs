@@ -1,3 +1,4 @@
+// @tests RefreshEntries, MarkEntries, QueueOperations, RecoverOperations, CreateArchive, ShellActions, ArchiveAccess
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

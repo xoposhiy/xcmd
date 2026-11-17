@@ -1,3 +1,4 @@
+// @tests ReadablePanels, MarkEntries, MeasureFolders, CreateFile, TransferEntries, QueueOperations, RecoverOperations, FollowLog, CommandHistory, CompleteCommand, ShellActions, WindowsFileActions, ExternalLaunch
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

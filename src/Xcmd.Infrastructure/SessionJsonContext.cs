@@ -1,3 +1,4 @@
+// @implements WorkspaceStorage
 using System.Text.Json.Serialization;
 using Xcmd.Core;
 

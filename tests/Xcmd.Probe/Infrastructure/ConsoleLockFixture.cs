@@ -1,3 +1,5 @@
+// @implements IntegrationVerification
+// @tests WindowsFileActions, IntegrationVerification
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;

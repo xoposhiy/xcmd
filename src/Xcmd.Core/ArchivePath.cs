@@ -1,3 +1,4 @@
+// @implements RenameEntry, BrowseArchives, ReusePaths, DomainBoundaries
 namespace Xcmd.Core;
 
 public static class ArchivePath

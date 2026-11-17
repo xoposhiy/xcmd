@@ -1,3 +1,4 @@
+// @implements DomainBoundaries
 namespace Xcmd.Core;
 
 public enum FileViewMode { Text, Binary, Hex, Image }

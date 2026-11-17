@@ -1,3 +1,4 @@
+# @implements PackageInputs
 * text=auto eol=lf
 *.ico binary
 *.png binary

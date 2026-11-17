@@ -1,3 +1,5 @@
+// @implements HeadlessVerification, IntegrationVerification
+// @tests RestoreWorkspace, StableShortcut, ApplicationLifecycle, IntegrationVerification, ReleaseHandoff
 using System.Diagnostics;
 using System.Text.Json;
 using Xcmd.Core;

@@ -1,3 +1,4 @@
+// @implements NavigatePanels, SortEntries, RenameEntry, CreateFolder
 namespace Xcmd.Core;
 
 public sealed record FileEntry(string FullPath, string Name, bool IsDirectory, long Size, DateTime ModifiedUtc, bool IsParent = false, bool IsLink = false)

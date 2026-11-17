@@ -1,3 +1,4 @@
+// @implements BrowseHistory, DelegateCommit
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;

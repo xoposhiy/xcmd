@@ -1,3 +1,4 @@
+// @implements JumpToName
 namespace Xcmd.Core;
 
 public sealed class NameJump

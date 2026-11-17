@@ -1,3 +1,4 @@
+// @implements CompleteCommand
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

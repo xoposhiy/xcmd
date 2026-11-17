@@ -1,3 +1,4 @@
+// @implements DelegateCommit, ExternalLaunch
 using System.ComponentModel;
 using System.Diagnostics;
 using Xcmd.Core;

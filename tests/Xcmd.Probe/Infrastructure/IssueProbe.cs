@@ -1,3 +1,4 @@
+// @implements IntegrationVerification
 using System.Diagnostics;
 using Xcmd.Desktop;
 

@@ -1,3 +1,4 @@
+// @implements WindowsIdentity
 using Avalonia.Controls;
 using Xcmd.Infrastructure;
 

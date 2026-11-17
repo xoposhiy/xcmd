@@ -1,3 +1,4 @@
+// @implements TryLocalRelease, WorkspaceStorage
 namespace Xcmd.Core;
 
 public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cursor, string[] Selected,

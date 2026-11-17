@@ -1,3 +1,4 @@
+// @tests ReadablePanels, SeeRepositoryState, RepositoryStatus
 using Avalonia.Media;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

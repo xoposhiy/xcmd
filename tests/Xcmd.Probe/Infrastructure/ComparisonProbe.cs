@@ -1,3 +1,5 @@
+// @implements IntegrationVerification
+// @tests ComparePanelFiles, ExternalLaunch
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

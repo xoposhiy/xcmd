@@ -1,3 +1,4 @@
+// @tests RestoreWorkspace, StableShortcut, ApplicationLifecycle, HeadlessVerification, IntegrationVerification, ReleaseHandoff, WindowsIdentity
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 using static Xcmd.Probe.Infrastructure.WorkspaceProbe;

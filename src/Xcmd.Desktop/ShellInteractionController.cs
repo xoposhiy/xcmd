@@ -1,3 +1,4 @@
+// @implements CreateArchive, ShellActions, WindowsFileActions
 using Avalonia;
 using Avalonia.Controls;
 using Xcmd.Core;

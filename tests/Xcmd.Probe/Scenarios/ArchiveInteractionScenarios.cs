@@ -1,3 +1,4 @@
+// @tests OpenOtherPanel, RefreshEntries, ResolveConflicts, QueueOperations, SearchResultPanel, ChooseViewMode, BrowseArchives, InspectArchives, ExtractEntries, OpenExternalTool, AsyncCoordination
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

@@ -1,3 +1,4 @@
+# @implements HeadlessVerification, IntegrationVerification, QualityChecks
 param(
     [string]$Filter,
     [string]$OutputPath,

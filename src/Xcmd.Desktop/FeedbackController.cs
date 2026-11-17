@@ -1,3 +1,4 @@
+// @implements ReportControl, KeepFeedback, ReportHighlighting, FeedbackIdentity
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Automation;

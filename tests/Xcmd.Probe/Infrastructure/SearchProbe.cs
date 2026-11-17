@@ -1,3 +1,5 @@
+// @implements HeadlessVerification, IntegrationVerification
+// @tests FindFiles
 using System.Diagnostics;
 using Avalonia.Input;
 using Xcmd.Core;

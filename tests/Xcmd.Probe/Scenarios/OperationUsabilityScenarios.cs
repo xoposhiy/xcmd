@@ -1,3 +1,4 @@
+// @tests MarkEntries, TransferEntries, DeleteEntries, ResolveConflicts, QueueOperations
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

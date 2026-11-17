@@ -1,3 +1,4 @@
+// @implements RunCommand, CommandHistory, ReusePaths
 namespace Xcmd.Core;
 
 public sealed record CommandLineState(string Draft, string[] History,

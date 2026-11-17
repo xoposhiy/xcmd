@@ -1,3 +1,4 @@
+// @implements BrowseHistory, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;

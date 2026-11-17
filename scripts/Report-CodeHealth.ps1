@@ -1,3 +1,4 @@
+# @implements PackageInputs, CodeHealth
 param(
     [string]$OutputPath,
     [switch]$SkipVerification

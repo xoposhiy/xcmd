@@ -1,3 +1,4 @@
+# @implements QualityChecks
 param([string]$SourcePath = 'src')
 
 $ErrorActionPreference = 'Stop'

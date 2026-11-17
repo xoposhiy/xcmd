@@ -1,3 +1,4 @@
+// @tests NavigatePanels, JumpToName, RecentLocations, DiscoverShortcuts, RenameEntry, RunCommand, CommandHistory, ReusePaths, RestoreWorkspace, ReportControl, TryLocalRelease, ExternalLaunch, AsyncCoordination, KeyboardLayouts
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Automation;

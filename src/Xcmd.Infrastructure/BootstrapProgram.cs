@@ -1,3 +1,4 @@
+// @implements StableShortcut, ReleaseHandoff
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 

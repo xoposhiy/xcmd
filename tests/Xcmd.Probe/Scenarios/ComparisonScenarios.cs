@@ -1,3 +1,4 @@
+// @tests SearchResultPanel, ComparePanelFiles, ExternalLaunch
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Xcmd.Core;

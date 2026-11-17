@@ -1,3 +1,4 @@
+// @implements FindFiles, OpenSearchMatch, SearchResultPanel, RestoreWorkspace
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

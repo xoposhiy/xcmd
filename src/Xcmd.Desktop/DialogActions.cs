@@ -1,3 +1,4 @@
+// @implements SharedControls
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;

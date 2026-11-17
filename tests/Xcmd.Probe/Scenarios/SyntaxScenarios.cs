@@ -1,3 +1,4 @@
+// @tests ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, ReaderThemes, ReportHighlighting, SyntaxSpans, FeedbackIdentity
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;

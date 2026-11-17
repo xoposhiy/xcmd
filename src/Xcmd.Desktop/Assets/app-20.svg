@@ -1,3 +1,4 @@
+<!-- @implements PackageInputs -->
 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <rect x="0" y="3" width="20" height="14" fill="#8792A4" />
   <rect x="1" y="4" width="18" height="12" fill="#171E2B" />

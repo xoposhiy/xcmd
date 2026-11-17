@@ -1,1 +1,2 @@
+<!-- @implements PackageInputs -->
 <Project Sdk="Microsoft.NET.Sdk" />

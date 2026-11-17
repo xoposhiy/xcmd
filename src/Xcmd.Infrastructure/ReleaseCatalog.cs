@@ -1,3 +1,4 @@
+// @implements ReleaseHandoff
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

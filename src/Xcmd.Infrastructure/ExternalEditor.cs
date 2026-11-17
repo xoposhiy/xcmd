@@ -1,3 +1,4 @@
+// @implements CreateFile, OpenExternalTool, ExternalLaunch
 using Microsoft.Win32;
 using Xcmd.Core;
 

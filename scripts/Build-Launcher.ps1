@@ -1,3 +1,4 @@
+# @implements StableShortcut, PackageInputs
 param([string]$OutputPath = 'artifacts/launcher/publish')
 
 . (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')

@@ -1,3 +1,4 @@
+# @implements TryLocalRelease, ReleaseHandoff
 . (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
 $releaseId = (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 8)
 $testOutput = Join-Path $projectRoot ('artifacts/probe/release-' + $releaseId)

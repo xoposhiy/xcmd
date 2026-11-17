@@ -1,3 +1,4 @@
+// @implements DomainBoundaries
 namespace Xcmd.Infrastructure;
 
 public enum ShellMenuAction { None, AddToZip }

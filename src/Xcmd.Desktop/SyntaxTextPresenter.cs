@@ -1,3 +1,4 @@
+// @implements SyntaxSpans
 using Avalonia;
 using Avalonia.Controls.Presenters;
 using Avalonia.Media;

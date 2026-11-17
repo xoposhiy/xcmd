@@ -1,3 +1,4 @@
+// @implements RecentLocations, FavoriteLocations, ReaderThemes, RestoreWorkspace, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage
 using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Threading;

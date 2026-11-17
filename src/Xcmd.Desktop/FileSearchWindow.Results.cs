@@ -1,3 +1,4 @@
+// @implements FindFiles, FindFileText, InspectSearchScope
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;

@@ -1,3 +1,5 @@
+// @implements HeadlessVerification
+// @tests ReadablePanels, ReaderThemes, SharedControls
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

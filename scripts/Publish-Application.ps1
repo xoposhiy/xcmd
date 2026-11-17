@@ -1,3 +1,4 @@
+# @implements TryLocalRelease, PackageInputs, ReleaseHandoff
 param(
     [Parameter(Mandatory)][string]$ReleaseId,
     [Parameter(Mandatory)][psobject]$Verification,

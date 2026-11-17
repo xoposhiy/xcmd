@@ -1,3 +1,4 @@
+// @implements FindFiles, FindFileText, PrioritizeSearch, InspectSearchScope, ControlSearch, OpenSearchMatch, SearchResultPanel, RestoreWorkspace, ReportControl
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using Avalonia;

@@ -1,3 +1,4 @@
+// @implements HighlightSource, SyntaxSpans
 using TextMateSharp.Grammars;
 using TextMateSharp.Internal.Grammars.Reader;
 using TextMateSharp.Internal.Types;

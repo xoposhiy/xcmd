@@ -1,3 +1,4 @@
+// @implements PackageInputs
 using Avalonia.Controls;
 using Avalonia.Platform;
 

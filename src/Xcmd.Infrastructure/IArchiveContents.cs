@@ -1,3 +1,4 @@
+// @implements DomainBoundaries
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;
