@@ -128,7 +128,7 @@ public sealed partial class CommanderWindow
     private bool HandlePanelCommand(KeyEventArgs e, bool ctrl, bool shift)
     {
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.Shift) { OpenCreateFileDialog(); return true; }
-        if (HandleClipboardKey(e) || HandleShellKey(e) || HandleViewOrEditKey(e) || HandleDirectorySizeShortcut(e, shift)) return true;
+        if (HandleComparisonKey(e) || HandleClipboardKey(e) || HandleShellKey(e) || HandleViewOrEditKey(e) || HandleDirectorySizeShortcut(e, shift)) return true;
         if (e.Key == Key.Tab)
         {
             Activate(OppositePanel);
@@ -161,6 +161,14 @@ public sealed partial class CommanderWindow
         return true;
     }
 
+    private bool HandleComparisonKey(KeyEventArgs e)
+    {
+        if (!ActivePanel.Table.IsKeyboardFocusWithin || e.Key != Key.C || e.KeyModifiers != (KeyModifiers.Control | KeyModifiers.Shift)) return false;
+        if (launchKeysHeld.Add(e.Key)) Execute(viewing.CompareCurrentFilesAsync);
+        ResetQuickJump();
+        return true;
+    }
+
     private bool HandleViewOrEditKey(KeyEventArgs e)
     {
         if (e.KeyModifiers != KeyModifiers.None || e.Key is not (Key.F3 or Key.F4)) return false;
@@ -172,8 +180,7 @@ public sealed partial class CommanderWindow
     private bool HandleClipboardKey(KeyEventArgs e)
     {
         if (!ActivePanel.Table.IsKeyboardFocusWithin) return false;
-        if (e.Key == Key.C && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift)) panelClipboard.CopyPath();
-        else if (e.KeyModifiers == KeyModifiers.Control && e.Key is Key.C or Key.X or Key.V)
+        if (e.KeyModifiers == KeyModifiers.Control && e.Key is Key.C or Key.X or Key.V)
         {
             if (e.Key == Key.V) panelClipboard.Paste();
             else panelClipboard.Copy(e.Key == Key.X);

@@ -102,6 +102,15 @@ The main window combines menus and window controls in one title row. Drag the fr
 
 File clipboard commands use Windows file-list and copy/move formats for exchange with Explorer. Copying into the source folder creates a free `name (copy)` or numbered copy; cutting and pasting into the source folder leaves the original in place. Conflicts use the existing Skip, Rename and Replace choices; a partial cut retains the remaining source items on the clipboard. Search result panels and archives are not paste destinations. Use F5 to extract archive members before putting them on the file clipboard. Text inputs retain ordinary text copy, cut and paste.
 
+File > Compare files in VS Code or Ctrl+Shift+C compares the current file in each
+panel. VS Code must be installed. The left panel supplies the left file, even when
+the right panel is active. Files can have different names. Xcmd opens a new VS Code
+window with `--diff` and keeps the panel cursors, marks, clipboard and command draft.
+Both files must exist on disk; folders, archive members and Git history entries are
+not supported. VS Code provides the text diff; Xcmd does not provide a binary diff
+or directory comparison. To copy a path with the keyboard, press Ctrl+Shift+Enter,
+then Ctrl+C.
+
 | Input | Action |
 | --- | --- |
 | Up / Down, Home / End, Ctrl+Home / Ctrl+End | Move the file cursor and keep marks |
@@ -111,7 +120,8 @@ File clipboard commands use Windows file-list and copy/move formats for exchange
 | Ctrl+A, Ctrl+click, Shift+click | Select all, toggle a row, select a range |
 | Ctrl+C / Ctrl+X in a file panel | Put marked files/folders (or the current item) on the Windows clipboard for copy / move; cut items are dimmed until the clipboard changes or the move completes |
 | Ctrl+V in a file panel | Paste into the folder displayed in that panel, regardless of the highlighted folder; use the operation queue and conflict choices |
-| Ctrl+Shift+C in a file panel | Copy the current item's complete path as text; an archive member copies its displayed `archive!entry` path, and Git history rows show a message |
+| Ctrl+Shift+C in a file panel | Compare the files under the left and right panel cursors in a new VS Code window; marked files do not change the pair |
+| File > Copy full path | Copy the current item's complete path as text; an archive member copies its displayed `archive!entry` path, and Git history rows show a message |
 | Tab / Shift+Tab | Switch panels |
 | Enter / double-click a directory | Open the directory |
 | Enter / double-click a file | Enter a common archive, or open another file through its Windows association |

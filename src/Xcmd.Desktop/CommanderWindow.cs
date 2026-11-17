@@ -76,14 +76,14 @@ public sealed partial class CommanderWindow : Window
     }
     public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
 
-    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null)
+    public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null, string? comparisonExecutable = null)
     {
         shell = shellInteraction ?? new ShellInteractionController();
         archives = new ArchiveController(this, archiveCacheRoot, archiveContents);
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
         fileSystem ??= new LocalFileSystem();
         fileSystem = archives.Wrap(fileSystem);
-        viewing = new FileViewingController(this, editorPath, archives.Files);
+        viewing = new FileViewingController(this, editorPath, archives.Files, comparisonExecutable);
         GitHistory = viewing.CreateGitHistory();
         FileSearch = new FileSearchController(this, viewing, archiveCacheRoot);
         operationStore = fileSystem as IFileOperationStore ?? new LocalFileOperations(fileSystem);
@@ -109,15 +109,7 @@ public sealed partial class CommanderWindow : Window
         Right = new PanelView("right", fileSystem, fileTypes).WithFeedbackId("CommanderWindow.content.3");
         ActivePanel = Left;
         panelClipboard = new PanelClipboardController(this, operationStore);
-        OperationsView.FilesRequested += () => ActivePanel.FocusCurrent();
-        foreach (var panel in new[] { Left, Right })
-        {
-            panel.Activated += Activate;
-            panel.OpenRequested += source => Execute(() => OpenCurrentAsync(source));
-            panel.HistoryRequested += panel => OpenNavigation(panel, DirectoryList.History);
-            panel.LocationVisited += path => { if (!restoringVisits && !ArchivePath.IsEntry(path)) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(ArchivePath.WorkingDirectory(path)); GitHistory.UpdateCommands(); };
-            panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
-        }
+        AttachPanelEvents();
         var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) }.WithFeedbackId("CommanderWindow.layout");
         frame = new CommanderFrame(this, mainMenu = BuildMenu(), status, updateMessage);
         var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") }.WithFeedbackId("CommanderWindow.panels");
@@ -140,6 +132,26 @@ public sealed partial class CommanderWindow : Window
         GitCommitController.Attach(this, claudeExecutable);
         shell.Attach(this, operationStore);
         frame.AttachFeedback(Feedback);
+        AttachWindowEvents();
+        Left.SetActive(true);
+        RefreshUptime();
+    }
+
+    private void AttachPanelEvents()
+    {
+        OperationsView.FilesRequested += () => ActivePanel.FocusCurrent();
+        foreach (var panel in new[] { Left, Right })
+        {
+            panel.Activated += Activate;
+            panel.OpenRequested += source => Execute(() => OpenCurrentAsync(source));
+            panel.HistoryRequested += panel => OpenNavigation(panel, DirectoryList.History);
+            panel.LocationVisited += path => { if (!restoringVisits && !ArchivePath.IsEntry(path)) DirectoryUsage.Seed([path]); if (panel == ActivePanel) CommandLine.SetDirectory(ArchivePath.WorkingDirectory(path)); GitHistory.UpdateCommands(); };
+            panel.LoadingRequested += source => { if (source == sizePanel) CancelDirectorySizes(); };
+        }
+    }
+
+    private void AttachWindowEvents()
+    {
         AddHandler(PointerMovedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, (_, _) => { RecordActivity(); pointerHeld = false; }, RoutingStrategies.Tunnel);
@@ -151,8 +163,6 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
-        Left.SetActive(true);
-        RefreshUptime();
     }
 
     public async Task InitializeAsync(string left, string right)

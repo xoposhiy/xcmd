@@ -3,10 +3,12 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-internal sealed class FileViewingController(CommanderWindow owner, string? editorPath, IArchiveContents archives)
+internal sealed class FileViewingController(CommanderWindow owner, string? editorPath, IArchiveContents archives, string? comparisonExecutable = null)
 {
     private readonly IViewerFiles files = new ArchiveViewerFiles(archives);
     private readonly ExternalEditor editor = new(editorPath);
+    private readonly VisualStudioCodeComparison comparison = new(comparisonExecutable);
+    private bool comparing;
     private readonly List<FileViewerWindow> viewers = [];
     private string lastSearch = "";
     public IReadOnlyList<FileViewerWindow> Viewers => viewers;
@@ -67,6 +69,19 @@ internal sealed class FileViewingController(CommanderWindow owner, string? edito
         var panel = owner.ActivePanel;
         if (panel.Current is not { Entry.IsDirectory: false } row) { owner.SetError("Select a file to edit."); return; }
         await EditFileAsync(row.Entry.FullPath, panel.OperationDirectory);
+    }
+
+    public async Task CompareCurrentFilesAsync()
+    {
+        if (comparing) return;
+        var pair = FileComparison.FromEntries(owner.Left.Current?.Entry, owner.Right.Current?.Entry);
+        comparing = true;
+        try
+        {
+            await owner.LaunchExternalAsync(await comparison.PrepareAsync(pair));
+            owner.SetStatusMessage("Opened file comparison in VS Code");
+        }
+        finally { comparing = false; }
     }
 
     public Task<ExternalLaunch> CreateFileAsync(string path, string directory) => editor.CreateAsync(path, directory);

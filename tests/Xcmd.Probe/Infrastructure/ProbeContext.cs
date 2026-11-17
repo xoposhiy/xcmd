@@ -33,7 +33,7 @@ public sealed class ProbeContext : IDisposable
     {
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
         DragDrop = new FileDragDropController(FileDrag);
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell, DragDrop), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
+        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell, DragDrop), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), comparisonExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
         OutputPath = outputPath;
         Window.Feedback.Store = new Xcmd.Infrastructure.IssueStore(Path.Combine(outputPath, "issues"));
         Window.Feedback.ListPath = Window.Feedback.Store.DatabasePath;

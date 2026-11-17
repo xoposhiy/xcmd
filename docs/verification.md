@@ -1,5 +1,18 @@
 # Verification coverage
 
+UC24 uses `comparison-current-files-and-menu`,
+`comparison-invalid-targets-and-recovery`, `comparison-held-key-and-input-focus`,
+`comparison-search-results`, `comparison-empty-and-git-targets`, and
+`comparison-native-launch-boundary`. These scenarios check the actual panel
+shortcut and menu, cursor order with unrelated marks, preserved clipboard and
+command draft, invalid targets, launch failures, retries, held keys, text focus,
+physical search-result paths, empty cursors, and Git snapshot rejection.
+The native check sends comparison arguments through the production Windows
+launcher to an isolated windowless executable, including spaces, Unicode and
+shell metacharacters. It does not verify the VS Code user interface or its diff
+algorithm. `clipboard-path-and-selected-command-argument` checks the remaining
+menu path export and Ctrl+Shift+Enter followed by Ctrl+C.
+
 `command-line-layout-recovery` uses installed English and Russian keyboard layouts
 and a hidden native helper to verify automatic program-name correction, preserved
 arguments and corrected history. Existing launch failure and pending-launch cases

@@ -32,7 +32,10 @@ public static class GitHistoryScenarios
                 GitHistoryProbe.CheckLogPresentation(c, panel);
             }
             var commitName = panel.Current!.Name;
+            await c.KeyAsync(Key.Tab);
+            Check(c.Window.ActivePanel == c.Window.Left && GitHistoryProbe.KeyboardHelp(c).Contains("Ctrl+Shift+C", StringComparison.Ordinal), "The physical panel shows the file comparison shortcut");
             await c.ClickAsync(panel.CommitMessage);
+            Check(c.Window.ActivePanel == panel && GitHistoryProbe.KeyboardHelp(c).Contains("Full repository snapshot", StringComparison.Ordinal), "Focusing the opposite commit message updates the active panel before its shortcut hints");
             await c.KeyAsync(Key.A, RawInputModifiers.Control);
             Equal(expected, panel.CommitMessage.SelectedText, "The full message can be selected for copying");
             await c.KeyAsync(Key.Down);
@@ -173,8 +176,9 @@ public static class GitHistoryScenarios
             Check(!c.Window.HasOpenDialog, "Snapshot write commands do not open file operations");
             await c.Window.Clipboard!.SetTextAsync("unchanged");
             await c.KeyAsync(Key.C, RawInputModifiers.Control | RawInputModifiers.Shift);
-            Equal("unchanged", await c.Window.Clipboard!.TryGetTextAsync(), "Snapshot rows do not export a virtual path");
-            Check(c.Window.LastError?.Contains("Copying paths from Git history", StringComparison.Ordinal) == true, "Path copying explains the Git history limit");
+            Equal("unchanged", await c.Window.Clipboard!.TryGetTextAsync(), "Unsupported comparison keeps the clipboard unchanged");
+            Check(c.Window.LastError?.Contains("cannot be compared in VS Code", StringComparison.Ordinal) == true, "Comparison explains the Git history limit");
+            Equal(0, c.Launcher.Requests.Count, "Snapshot paths never reach VS Code");
             await c.KeyAsync(Key.F10, RawInputModifiers.Shift);
             Equal(0, c.Shell.Menus.Count, "Snapshot rows never reach the Windows shell menu");
             Check(c.Window.LastError?.Contains("unavailable in Git history", StringComparison.Ordinal) == true, "The shell menu explains the Git history limit");

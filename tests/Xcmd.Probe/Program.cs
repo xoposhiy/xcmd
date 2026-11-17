@@ -53,6 +53,7 @@ internal static class Program
         scenarios = scenarios.Concat(GitHistoryScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitUsabilityFixScenarios.All).ToArray();
         scenarios = scenarios.Concat(ClipboardScenarios.All).ToArray();
+        scenarios = scenarios.Concat(ComparisonScenarios.All).ToArray();
         scenarios = scenarios.Concat(FileDragScenarios.All).ToArray();
         scenarios = scenarios.Concat(PriorityBatchScenarios.All).ToArray();
         scenarios = scenarios.Concat(ZipPackingScenarios.All).ToArray();
