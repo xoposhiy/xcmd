@@ -10,12 +10,23 @@ An epic describes a broad need that changes rarely. A user story describes a mor
 specific need and changes when that need is understood differently. Its main text
 is a short statement: `As a <role>, I want <capability> so that <benefit>.`
 
-Use an optional `### Implementation decisions` section under a story for decisions
-explicitly stated in a development conversation. Include enough conversation
-context or a reference to distinguish an agreement from an inference. These
-decisions can change through experiments; they are less stable than the need.
-Do not treat an observed implementation or an archived description as proof of an
-agreement. Do not add empty decision sections or mandatory acceptance checklists.
+Record each implementation decision the user explicitly states or accepts under
+`### Implementation decisions` in the relevant story. Include the Codex session
+ID with each decision and enough context to explain what the user agreed to.
+These decisions can change through experiments. Do not treat an observed
+implementation or an archived description as proof of an agreement. Do not add
+empty decision sections or mandatory acceptance checklists.
+
+Run this PowerShell command from the current Codex session to get its ID.
+
+```powershell
+$env:CODEX_SESSION_ID
+```
+
+Record the ID in the story as `Codex session ID <session-id>`. After the session
+ends and an export is available, add a link to the relevant turn with its
+`#turn-N` anchor. When adding an export to Git, commit the export and its links
+together.
 
 ## Catalogue format
 
