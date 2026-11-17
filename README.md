@@ -1,103 +1,31 @@
 # Xcmd
 
-Xcmd is a Windows file manager with two panels and keyboard controls. It uses C# on .NET 10 and Avalonia 12.1.6.
+Xcmd is a Windows file manager with two panels and keyboard controls, built with
+C# and Avalonia.
 
-The current version supports directory navigation, history and favorites, file selection and sorting, inline rename, folder creation, folder sizes, automatic directory refresh, and opening files through Windows associations. A compact command line runs programs through Windows ShellExecute from the active panel directory and handles `cd` locally.
-
-The file-operations prototype adds recursive copy, move, Recycle Bin and permanent deletion, a background queue, cancellation, and Skip/Rename/Replace conflict choices. Viewers support text, binary data and images. Archive feedback builds add read-only panel browsing, archive reports, member viewing and extraction, including nested archives, Office containers and recognized self-extracting EXEs. Feedback builds receive focused smoke checks. Git status appears in the header and Git column, including summaries of direct child repositories. The Git menu opens file or folder history in the other panel, browses commit snapshots and shows a basic text diff. See [requirements and status](docs/use-cases.md).
+Read the ordered [epics and user stories](docs/stories/README.md) to learn the
+product and its developer capabilities. This catalogue is the LivingDoc.
+The [agent instructions](AGENTS.md) link to the development processes.
 
 ## Run
 
-Run the permanent `Xcmd.exe` next to the `releases` folder. It starts the latest verified release and exits. Windows x64 and the .NET 10 runtime are required. Keep the release directories with their published dependencies.
+Run the permanent `Xcmd.exe` next to the `releases` folder. It starts the selected
+local release. Keep that release and its dependencies together. Windows x64 and
+the .NET runtime selected by the application are required.
 
 ```powershell
 & ./Xcmd.exe
 & ./Xcmd.exe C:/work C:/work/projects
 ```
 
-Without directory arguments, Xcmd restores the saved workspace. On the first launch it opens the working directory in both panels. Explicit directory arguments replace the saved panel locations. File operations affect real files.
+Use `Xcmd.lnk` for a stable shortcut across releases. See the
+[delivery process](docs/processes/delivery.md) for building and publishing.
 
-Pin `Xcmd.lnk` to the taskbar, or pin the running Xcmd window. On Windows 11, the shortcut's context menu may require **Show more options > Pin to taskbar**. Replace any old pin that points directly into a release directory once. The permanent shortcut keeps working after later releases. See the [launch instructions](docs/user-guide.md#run) for details.
+## Develop
 
-Each release updates the permanent shortcut. Shortcut icons use separate files under `releases/icons`, with a new path when the image changes so Windows can refresh its icon cache. Existing icon files stay available for older pins. Publishing does not change taskbar pins.
+See [verification](docs/processes/verification.md) for the environment and commands,
+[UI work](docs/processes/ui.md) for interface changes, and
+[feedback batches](docs/processes/feedback.md) for the local issue tracker.
 
-See the [user guide](docs/user-guide.md) for all controls, command history, settings, session restore, local release updates and interface feedback.
-
-## Develop and verify
-
-Use Windows, PowerShell 7, Python 3.11 or later, and the .NET SDK selected by [global.json](global.json). Dependencies are pinned in package lock files and [requirements-lint.txt](scripts/requirements-lint.txt).
-
-Use only Release / Windows x64 for application builds, tests, and local releases. Follow the [development workflow](docs/development-workflow.md): use smoke checks under 60 seconds and automatic local feedback builds while the behavior is being refined; run affected scenarios and static checks before committing accepted work. Run the complete regression suite locally only when the user explicitly requests it. GitHub Actions runs the full gate automatically.
-
-Run the complete verification path only for an explicit full-regression request:
-
-```powershell
-./scripts/Test-Xcmd.ps1
-```
-
-The script restores dependencies, builds the projects, checks architecture, analyzer rules, formatting and code metrics, and runs the actual application through Avalonia.Headless with Skia rendering. Tests use isolated fixtures and create no visible application windows. The first run downloads dependencies into `.packages` and lint tools into `artifacts/lint-venv`.
-
-For focused work:
-
-```powershell
-./scripts/Test-Architecture.ps1
-./scripts/Test-Xcmd.ps1 -Filter command-line
-./scripts/Test-Xcmd.ps1 -Filter command-line -OutputPath artifacts/probe/my-run -KeepFixtures
-dotnet format whitespace Xcmd.slnx --no-restore
-```
-
-After building, list scenarios or run a group directly:
-
-```powershell
-dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --list
-dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --filter rename
-```
-
-Results, input and state traces, failure details and offscreen images are written under `artifacts`. Successful fixtures are removed unless `-KeepFixtures` is set. A failed check returns a nonzero exit code. GitHub Actions runs all tests and static checks on Windows for pushes and pull requests to `main`, and for manual runs. The `code-health` artifact retains reports and test diagnostics for 14 days, including failed runs.
-
-See [automated checks](docs/automated-checks.md) for enforced rules and limits, and [verification coverage](docs/verification.md) for current evidence and native coverage limits.
-
-Generate the [code health report](docs/automated-checks.md#code-health-report) with `./scripts/Report-CodeHealth.ps1 -SkipVerification` to inspect measured values by project, folder, file, function, and type. Omit `-SkipVerification` only when the user explicitly requests full regression checks. CI publishes the report as a `code-health` artifact.
-
-## Build a ready release
-
-Publish a feedback build with selected smoke checks:
-
-```powershell
-./scripts/Publish-Feedback.ps1 -Filter '<targeted-scenario-filters>'
-```
-
-When the user explicitly requests a full regression run with the release:
-
-```powershell
-./scripts/Release-Xcmd.ps1
-```
-
-This command includes the full regression suite and requires an explicit request for that suite. Both publishing paths create a Release build with dependencies in a new `releases/<release-id>` directory. Each build includes verification evidence and a restart-protocol manifest, prepares the permanent `Xcmd.exe` and `Xcmd.lnk`, then atomically updates `releases/latest.txt` after success. Publishing does not open the application. Existing releases stay unchanged and can remain open during development. An in-use launcher keeps its existing file and defers a launcher replacement without blocking the application release.
-
-A running release can switch to a newer locally published release after the application becomes idle. The workspace is saved and restored through a process handoff. This is local release discovery, not a network update service.
-
-## Project layout
-
-| Path | Purpose |
-| --- | --- |
-| `src/Xcmd.Core` | Application values, rules, state and contracts |
-| `src/Xcmd.Infrastructure` | Filesystem, persistence, Windows integration and process adapters |
-| `src/Xcmd.Desktop` | Avalonia controls, input routing and interaction coordination |
-| `tests/Xcmd.Probe/Scenarios` | Behavioral scenarios with requirement references |
-| `tests/Xcmd.Probe/Infrastructure` | Fixtures, input drivers, native setup and process control |
-| `tests/Xcmd.Architecture` | Dependency policies, analyzer fixtures and architecture self-checks |
-| `tests/Xcmd.LaunchProbe` | Windowless endpoint for real Windows Shell launch checks |
-| `config` | Banned API policies |
-| `scripts` | Verification, publishing and icon generation |
-
-Generated builds, releases, caches, local review sessions and IDE state are excluded from Git. Keep the SVG, PNG and ICO application assets in source; regenerate the PNG and ICO with `./scripts/Build-AppIcon.ps1` after changing the SVG. Small frames use the matching `app-16.svg` through `app-48.svg` files at their native pixel size. Keep their rectangle edges on whole pixels. The main `app.svg` defines the detailed large icon.
-
-## Design and requirements
-
-- [Technology decision](docs/technology-decision.md)
-- [Code architecture](docs/architecture.md)
-- [Development and delivery requirements](docs/development-requirements.md)
-- [Feedback and finalization workflow](docs/development-workflow.md)
-- [Use cases and implementation status](docs/use-cases.md)
-- [Search design proposal](docs/search.md)
+The previous guides, design documents, evidence and source map are in
+[the archive](docs/archive/README.md). They describe past work and may be stale.

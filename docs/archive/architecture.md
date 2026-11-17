@@ -178,7 +178,7 @@ share a source identity; target names distinguish clicked instances.
 projection of `IssueStore`, not a second persistence owner. Add/remove operations
 change individual rows and refresh the projection; workspace saves cannot replace
 tracker state. `FeedbackNote` remains only as a legacy session import DTO.
-New snapshots omit `WorkspaceState.Notes`. See [the issue workflow](../issues/README.md).
+New snapshots omit `WorkspaceState.Notes`. See [the issue workflow](../../issues/README.md).
 
 ## State and background work
 

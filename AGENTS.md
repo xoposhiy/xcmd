@@ -1,31 +1,53 @@
-# Agent orientation
+# Working on Xcmd
 
-- Use only `main`. Isolated checks may use a separate copy or a detached worktree;
-  do not create feature or repair branches. Put verified background repairs into
-  `main` without overwriting active work. See the development workflow.
+Deliver the requested outcome and use judgment about implementation and verification.
+Ask about material product choices or blockers. Choose routine methods independently.
 
-- Keep all application-authored UI text in English. The language used in chat
-  does not change the language of the interface.
+## Documentation
 
-- For in-app feedback, use `scripts/Issues.ps1 list`, then claim the entire batch
-  with `scripts/Issues.ps1 start ID...` before implementation. Stop if another
-  batch is in progress; coordinate instead of bypassing the guard. Close finished
-  work through the CLI or release unfinished claims. Do not edit `issues/issues.db`
-  directly. See [the issue workflow](issues/README.md).
-  Before finishing a feedback batch, list issues again and handle newly arrived
-  feedback. Claim each additional batch through the same guard. To expand an
-  unfinished batch, release only this session's own claims and claim the enlarged
-  batch; stop if the guard detects other work. Do not leave new feedback unnoticed.
-- Every application-authored control needs a unique literal `.WithFeedbackId("...")`
-  at its creation site. The Desktop build enforces this. Keep IDs stable when
-  changing layout, and search a reported target ID to locate its source definition.
+- Start with the ordered [epics and user stories](docs/stories/README.md). This is
+  the LivingDoc for product and developer needs. Keep needs stable; record explicit
+  implementation agreements separately within the relevant story.
+- Before every commit, keep the changed work, story descriptions and source
+  mappings consistent. See [story maintenance](docs/processes/stories.md) for the
+  format and mapping rollout. A code edit does not by itself require a new story.
+- [Archived documents](docs/archive/AGENTS.md) are historical ChangeDocs. They are
+  not maintained and do not define current behavior or instructions.
 
-- Read [the technology decision](docs/technology-decision.md) and [development requirements](docs/development-requirements.md) before changing application behavior.
-- Use [the code architecture](docs/architecture.md) for responsibilities, dependency direction, and state ownership. Keep the three production projects; there is no planned four-project migration.
-- For UI work, read [the design system](docs/design-system.md) and its [visual examples](docs/design-system.html). Apply confirmed feedback rules across analogous controls; proposed tokens and backlog items remain proposals until reviewed. Do not turn visual changes into unrequested behavior changes.
-- Use [automated checks](docs/automated-checks.md) for enforced rules, metric limits, exceptions, and commands.
-- Follow the [development workflow](docs/development-workflow.md): publish smoke-checked feedback builds without asking. Before committing, run the affected feature scenarios and the static checks. Local full regression runs require a user request; GitHub Actions runs the full gate automatically.
-- Keep scenario cases in `tests/Xcmd.Probe/Scenarios` and drivers, native setup, fixtures, process control, and timing in `tests/Xcmd.Probe/Infrastructure`.
-- Follow the ready-build workflow in the development requirements. Keep releases immutable and do not open visible windows without a user request.
-- During finalization of a changed user workflow, use an independent usability reviewer and the criteria in the code architecture. This is not required for documentation, formatting, or checks that preserve user behavior.
-- Do not edit generated files under `bin`, `obj`, `artifacts`, or `releases` as source changes. Analyzer self-checks intentionally create failing source fixtures under `artifacts/architecture`.
+## Rules for all work
+
+- Chat in Russian. Write code, UI text, documentation, commits and other artifacts
+  in simple English, except when the user requests otherwise or source text must
+  remain verbatim.
+- Use only `main`. Isolated checks may use a copy or detached worktree. Preserve
+  concurrent work; do not create feature or repair branches. Push only when asked.
+- Keep domain rules separate from I/O and UI. Keep the three production projects:
+  Core owns UI-independent rules, state and contracts; Infrastructure owns external
+  operations; Desktop owns controls and interaction. Core has no outer dependency;
+  Infrastructure depends on Core; Desktop may use both. This keeps behavior testable
+  without the desktop or operating system.
+- Give live state and background work clear owners. Keep scenario cases in
+  `tests/Xcmd.Probe/Scenarios` and drivers, fixtures, native setup, process control
+  and timing in `tests/Xcmd.Probe/Infrastructure`, so cases read as user behavior.
+- Use Release / Windows x64 for builds and tests. Do not edit generated files under
+  `bin`, `obj`, `artifacts` or `releases` as source changes.
+- Keep work off the user's desktop. Do not open visible windows without a request.
+  Start background build/test helpers with `WindowStyle Hidden` and log redirection;
+  suppress console creation in application hosts. Leave the user's terminal alone.
+- Before committing code, run affected scenarios and static checks. Documentation
+  changes need relevant document checks. Local full regression runs require an
+  explicit request; GitHub Actions runs the full gate automatically. This keeps
+  local feedback fast while retaining broad verification in CI.
+- Use commit subjects of the form `type(scope): summary`. Explain the reason for
+  the change in the body, together with relevant verification and its limits.
+
+## Processes to read when needed
+
+| Work | Process |
+| --- | --- |
+| Add or change needs, decisions or source mappings | [Maintain stories](docs/processes/stories.md) |
+| Build, verify or inspect code health | [Verification](docs/processes/verification.md) |
+| Deliver a behavior change or finalize accepted work | [Delivery](docs/processes/delivery.md) |
+| Change controls, layout or user interaction | [UI work](docs/processes/ui.md) |
+| Handle in-app feedback | [Feedback batches](docs/processes/feedback.md) |
+| Run requested full regression checks or monitor commits | [Regression work](docs/processes/regression.md) |

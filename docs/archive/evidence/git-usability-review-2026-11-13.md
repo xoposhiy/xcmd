@@ -33,10 +33,10 @@ is feedback-smoke evidence, not a full regression gate. An independent re-review
 of the current source, results and 100/150% renders found no remaining application
 blockers for these review findings.
 
-- [Release evidence](../../releases/20261114-011636-600-cb8da35f/verification.json).
-- [Repaired walkthrough observations](../../artifacts/git-usability/fixed-2026-11-14/observations.json).
-- [Actionable changed-file list](../../artifacts/git-usability/fixed-2026-11-14/changed-files.png).
-- [Deleted-file diff](../../artifacts/git-usability/fixed-2026-11-14/deleted-file-diff.png).
+- [Release evidence](../../../releases/20261114-011636-600-cb8da35f/verification.json).
+- [Repaired walkthrough observations](../../../artifacts/git-usability/fixed-2026-11-14/observations.json).
+- [Actionable changed-file list](../../../artifacts/git-usability/fixed-2026-11-14/changed-files.png).
+- [Deleted-file diff](../../../artifacts/git-usability/fixed-2026-11-14/deleted-file-diff.png).
 - Regression cases: `git-history-*`, `git-usability-*`, `git-commit-menu`, and `git-rows-file-states`.
 
 ## Original review
@@ -63,11 +63,11 @@ study with new users or a measured command-latency benchmark.
 
 Local evidence:
 
-- [Recorded observations](../../artifacts/git-usability/evidence-2/observations.json).
-- [Cross-panel return state](../../artifacts/git-usability/evidence-2/cross-panel-escape.png).
-- [Historical-file viewer](../../artifacts/git-usability/evidence-2/snapshot-viewer.png).
-- [Empty history](../../artifacts/git-usability/evidence-2/empty-history.png).
-- [Audit driver](../../tests/Xcmd.Probe/Infrastructure/GitUsabilityAudit.cs).
+- [Recorded observations](../../../artifacts/git-usability/evidence-2/observations.json).
+- [Cross-panel return state](../../../artifacts/git-usability/evidence-2/cross-panel-escape.png).
+- [Historical-file viewer](../../../artifacts/git-usability/evidence-2/snapshot-viewer.png).
+- [Empty history](../../../artifacts/git-usability/evidence-2/empty-history.png).
+- [Audit driver](../../../tests/Xcmd.Probe/Infrastructure/GitUsabilityAudit.cs).
 - Existing log and snapshot renders under `artifacts/probe/feedback-20261113-231713-682-058d775b`.
 
 Severity: P1 breaks an expected navigation path. P2 can mislead the user or block

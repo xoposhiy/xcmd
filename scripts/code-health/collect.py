@@ -1,3 +1,4 @@
+# @implements CodeHealth
 """Collect source metrics and render the code health report."""
 
 import argparse
@@ -244,7 +245,7 @@ def generate(root, output):
     projects, folders = enrich(files, functions, projects, symbols, types)
     current_fingerprint = fingerprint(root)
     verification = assess_verification(json.loads((output / "verification.json").read_text(encoding="utf-8-sig")), current_fingerprint)
-    historical_path = root / "docs/evidence/architecture-checks-2026-11-10.json"
+    historical_path = root / "docs/archive/evidence/architecture-checks-2026-11-10.json"
     historical = json.loads(historical_path.read_text(encoding="utf-8-sig")) if historical_path.exists() else None
     report = {
         "schemaVersion": 1, "generatedAt": datetime.now(timezone.utc).isoformat(),

@@ -377,7 +377,7 @@ Agents use `scripts/Issues.ps1 list`, `start ID...`, `close ID...`, `release ID.
 and `reopen ID...`. A new work batch cannot start while any issue is in progress.
 Changes appear in the running application without publishing a release. Older
 session comments are imported by ID at startup; subsequent session snapshots do
-not contain feedback. See [the issue workflow](../issues/README.md).
+not contain feedback. See [the issue workflow](../../issues/README.md).
 
 Current defaults: select the full name for rename, keep focus in the source panel after Ctrl+Left/Right, cancel an uncommitted rename when clicking another row or panel, sort directories by ascending name before files, and use natural numeric name order. These are the current defaults. Future requirements are listed in [the use cases](use-cases.md).
 
