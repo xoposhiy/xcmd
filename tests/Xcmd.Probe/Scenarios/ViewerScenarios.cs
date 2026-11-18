@@ -1,6 +1,7 @@
 // @tests DiscoverShortcuts, OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, OpenViewedFile, OpenExternalTool, ReportControl, TryLocalRelease, ExternalLaunch, SharedControls, ImageDecoding, ApplicationLifecycle
 using System.Text;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
@@ -39,6 +40,26 @@ public static class ViewerScenarios
             Check(c.Window.Viewer == null && c.Window.Left.Table.IsKeyboardFocusWithin, "Escape restores panel focus");
             Equal("viewer-notes.txt", c.Window.Left.Current?.Name, "Closing keeps the original cursor");
             await c.KeyAsync(Key.F4); Equal(2, c.Launcher.Requests.Count, "F4 also works from the panel");
+        }),
+        new("viewer-text-caret-and-copy", "Read-only text supports keyboard movement, selection, and copying", async c =>
+        {
+            const string source = "first\nsecond line\nthird";
+            c.AddFile("caret.txt", source);
+            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("caret.txt"); await c.KeyAsync(Key.F3);
+            var viewer = c.Window.Viewer!;
+            var text = viewer.Reader.TextContent;
+            Check(text.IsFocused && text.IsReadOnly, "Opening text focuses the read-only reader");
+            await c.KeyAsync(Key.Down, target: viewer);
+            Equal(source.IndexOf("second", StringComparison.Ordinal), text.CaretIndex, "Down moves the caret to the next line");
+            await c.KeyAsync(Key.End, RawInputModifiers.Shift, viewer);
+            await c.KeyAsync(Key.C, RawInputModifiers.Control, viewer);
+            Equal("second line", await viewer.Clipboard!.TryGetTextAsync(), "Ctrl+C copies the selection made with Shift+End");
+            await c.KeyAsync(Key.Home, target: viewer);
+            Equal(source.IndexOf("second", StringComparison.Ordinal), text.CaretIndex, "Home goes to the start of the current line");
+            await c.KeyAsync(Key.Up, target: viewer);
+            Equal(0, text.CaretIndex, "Up returns to the first line");
+            await c.TextAsync("unchanged", viewer);
+            Equal(source, text.Text, "Typing leaves the displayed file contents intact");
         }),
         new("viewer-encodings-and-page-boundaries", "UC10; real text encodings and Unicode page boundaries", async c =>
         {
@@ -196,12 +217,12 @@ public static class ViewerScenarios
             Check(viewer.Reader.VisibleEnd > firstEnd, "The mouse wheel updates actual visible progress");
             for (var i = 0; i < 20; i++) await c.KeyAsync(Key.PageDown, target: viewer);
             Check(viewer.Reader.ByteOffset > 0 && viewer.Reader.ViewedPercent < 100, "PageDown crosses the initial read boundary without a false end");
-            await c.KeyAsync(Key.End, target: viewer);
-            Check(viewer.Reader.TextContent.Text!.EndsWith("ACTUAL FILE END", StringComparison.Ordinal), "End loads the actual file tail");
+            await c.KeyAsync(Key.End, RawInputModifiers.Control, viewer);
+            Check(viewer.Reader.TextContent.Text!.EndsWith("ACTUAL FILE END", StringComparison.Ordinal), "Ctrl+End loads the actual file tail");
             Equal(100d, viewer.Reader.ViewedPercent, "The actual end reports 100 percent");
             await c.ScreenshotAsync("reading-end", viewer);
-            await c.KeyAsync(Key.Home, target: viewer);
-            Equal(0L, viewer.Reader.ByteOffset, "Home returns to the actual beginning");
+            await c.KeyAsync(Key.Home, RawInputModifiers.Control, viewer);
+            Equal(0L, viewer.Reader.ByteOffset, "Ctrl+Home returns to the actual beginning");
             Check(viewer.Reader.ViewedPercent < 10, "Progress returns to the visible beginning");
             viewer.Reader.FileScroll.Value = viewer.Reader.FileScroll.Maximum / 2; await c.SettleAsync();
             Check(viewer.Reader.FirstVisibleByte > viewer.Reader.FileLength / 3 && viewer.Reader.FirstVisibleByte < viewer.Reader.FileLength * 2 / 3, "The scroll bar spans the whole file");

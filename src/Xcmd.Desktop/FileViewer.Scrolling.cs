@@ -1,4 +1,4 @@
-// @implements ReadLargeFiles, FollowLog, ReadWorkingFileDiff
+// @implements OpenViewers, ReadLargeFiles, FollowLog, ReadWorkingFileDiff
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -162,9 +162,16 @@ public sealed partial class FileViewer
     private bool HandleReadingKey(KeyEventArgs e)
     {
         if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.None) { ToggleWrapping(); return true; }
-        if (e.Key is Key.Home or Key.End && e.KeyModifiers is KeyModifiers.None or KeyModifiers.Control)
+        var textHasFocus = Mode == FileViewMode.Text && TextContent.IsKeyboardFocusWithin;
+        if (e.Key is Key.Home or Key.End &&
+            (e.KeyModifiers == KeyModifiers.Control || !textHasFocus && e.KeyModifiers == KeyModifiers.None))
         { Run(token => SeekBoundaryAsync(e.Key == Key.End, token)); return true; }
         if (e.KeyModifiers != KeyModifiers.None) return false;
+        if (textHasFocus && e.Key is Key.Up or Key.Down)
+        {
+            if (e.Key == Key.Up && IsFollowing) PauseFollowing();
+            return false;
+        }
         var delta = e.Key switch
         {
             Key.Down => 20,

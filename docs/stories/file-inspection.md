@@ -29,6 +29,11 @@ so that I can read files while the panels remain usable.
   text.
   Sources: [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 2](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-2); [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 4](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-4); [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 6](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-6).
 
+- Let users move the caret and select text in the read-only viewer. Ctrl+C copies
+  the selection. Home and End move within the current line. Ctrl+Home and Ctrl+End
+  go to the file boundaries.
+  Feedback f727b48. Codex session ID 01a1ef9b-ff1b-7082-83cc-e211650ce3de.
+
 ## QuickViewFile
 
 As a user, I want to see the contents of the current file in the other panel so that

@@ -164,8 +164,10 @@ public static class PriorityBatchScenarios
             Check(viewer.Reader.IsFollowing, "Follow mode is enabled");
             var path = Path.Combine(c.LeftPath, "alpha.txt"); File.AppendAllText(path, "\nappended");
             await WaitAsync(c, () => viewer.Reader.TextContent.Text!.Contains("appended", StringComparison.Ordinal));
-            await c.KeyAsync(Key.Home, RawInputModifiers.Control, viewer);
-            Check(!viewer.Reader.IsFollowing, "Reading earlier data pauses following");
+            var tail = viewer.Reader.TextContent.CaretIndex;
+            await c.KeyAsync(Key.Up, target: viewer);
+            Check(!viewer.Reader.IsFollowing, "Moving the caret up pauses following");
+            Check(viewer.Reader.TextContent.CaretIndex < tail, "Up still moves the caret to the previous line");
             File.AppendAllText(path, "\nmore");
             await c.KeyAsync(Key.F, RawInputModifiers.Control | RawInputModifiers.Shift, viewer);
             Check(viewer.Reader.TextContent.Text!.Contains("more", StringComparison.Ordinal), "Explicit resume catches up");

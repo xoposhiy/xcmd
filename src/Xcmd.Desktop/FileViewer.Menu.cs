@@ -91,8 +91,8 @@ public sealed partial class FileViewer
         List<MenuItem> items =
         [
             previousPage, nextPage,
-            TextCommand("Beginning of file", "viewer.first-page", () => Run(token => SeekBoundaryAsync(false, token)), new(Key.Home)),
-            TextCommand("End of file", "viewer.last-page", () => Run(token => SeekBoundaryAsync(true, token)), new(Key.End))
+            TextCommand("Beginning of file", "viewer.first-page", () => Run(token => SeekBoundaryAsync(false, token)), new(Key.Home, KeyModifiers.Control)),
+            TextCommand("End of file", "viewer.last-page", () => Run(token => SeekBoundaryAsync(true, token)), new(Key.End, KeyModifiers.Control))
         ];
         if (IsEmbedded)
         {
