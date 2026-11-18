@@ -1,4 +1,4 @@
-// @implements TryLocalRelease, WorkspaceStorage
+// @implements TryLocalRelease, WorkspaceStorage, KeepFeedback
 namespace Xcmd.Core;
 
 public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cursor, string[] Selected,
@@ -10,7 +10,7 @@ public sealed record FeedbackInteraction(string Action, string ElementId, string
 public sealed record FeedbackNote(string Id, string Release, string ElementId, string ElementName,
     string PanelPath, string Text, DateTimeOffset CreatedAt, string? ResolvedIn = null, string? Resolution = null, FeedbackInteraction[]? Interactions = null);
 public sealed record WorkspaceState(int Version, PanelState Left, PanelState Right, string ActivePanel,
-    WindowPlacement Window, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] FeedbackNote[]? Notes = null, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark", FileSearchState? FileSearch = null)
+    WindowPlacement Window, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] FeedbackNote[]? Notes = null, DirectoryUsage[]? Usage = null, FavoriteDirectory[]? Favorites = null, int UsageVersion = 0, CommandLineState? CommandLine = null, string ViewerThemeId = "dark", FileSearchState? FileSearch = null, FeedbackAgent FeedbackAgent = FeedbackAgent.Codex)
 {
     public void Validate()
     {

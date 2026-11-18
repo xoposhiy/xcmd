@@ -1,4 +1,4 @@
-// @tests SeeRepositoryState, DelegateCommit, ExternalLaunch
+// @tests SeeRepositoryState, DelegateCommit, SyncRepository, ExternalLaunch
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -13,6 +13,49 @@ public static class GitCommitScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("git-remote-commands", "Push and pull the current repository and choose how to join diverged branches", async c =>
+        {
+            using var repository = await GitRemoteFixture.CreateAsync(c);
+            var status = c.Window.Left.Git;
+            await c.Window.Left.LoadAsync(Path.Combine(c.LeftPath, "folder1"));
+            await GitFixture.RefreshAsync(status);
+
+            await c.ClickAsync(status.ActionsButton);
+            var push = GitRemoteFixture.Menu(status, "Push");
+            Check(push.IsEffectivelyEnabled, "A repository with a remote offers Push");
+            await c.ClickAsync(push);
+            Check(c.Window.LastError == null, "Push sends the local commit from the panel's repository");
+            await GitFixture.RefreshAsync(status);
+            await repository.ClonePeerAsync();
+
+            await repository.CommitAsync(repository.Peer, "remote-first.txt");
+            await GitFixture.RunAsync(repository.Peer, "push");
+            await c.ClickAsync(status.ActionsButton);
+            await c.ClickAsync(GitRemoteFixture.Menu(status, "Pull"));
+            Check(File.Exists(Path.Combine(c.LeftPath, "remote-first.txt")), "Plain Pull fast-forwards the local branch");
+
+            await repository.CommitAsync(c.LeftPath, "local.txt");
+            await GitFixture.RunAsync(c.LeftPath, "branch", "--track", "merge-probe", "origin/main");
+            await GitFixture.RunAsync(c.LeftPath, "branch", "-f", "merge-probe", "HEAD");
+            await repository.CommitAsync(repository.Peer, "remote-second.txt");
+            await GitFixture.RunAsync(repository.Peer, "push");
+            await GitFixture.RunAsync(c.LeftPath, "fetch");
+            await GitFixture.RefreshAsync(status);
+            await c.ClickAsync(status.ActionsButton);
+            Check(!GitRemoteFixture.Menu(status, "Pull").IsVisible, "Plain Pull is replaced when the branches diverge");
+            Check(GitRemoteFixture.Menu(status, "PullMerge").IsVisible, "The menu offers a merge");
+            await c.ClickAsync(GitRemoteFixture.Menu(status, "PullRebase"));
+            Check(c.Window.LastError == null && File.Exists(Path.Combine(c.LeftPath, "remote-second.txt")), "Pull with rebase includes the upstream changes");
+            await GitFixture.RunAsync(c.LeftPath, "merge-base", "--is-ancestor", "origin/main", "HEAD^");
+
+            await GitFixture.RunAsync(c.LeftPath, "switch", "merge-probe");
+            await GitFixture.RunAsync(c.LeftPath, "config", "pull.ff", "only");
+            await GitFixture.RefreshAsync(status);
+            await c.ClickAsync(status.ActionsButton);
+            await c.ClickAsync(GitRemoteFixture.Menu(status, "PullMerge"));
+            Check(c.Window.LastError == null && File.Exists(Path.Combine(c.LeftPath, "remote-second.txt")), "Pull with merge includes the upstream changes");
+            await GitFixture.RunAsync(c.LeftPath, "merge-base", "--is-ancestor", "origin/main", "HEAD^2");
+        }),
         new("git-commit-menu", "UC28/UC37; Git status opens Commit and launches interactive Sonnet with medium effort at the repository root", async c =>
         {
             await GitFixture.RunAsync(c.LeftPath, "init", "-b", "main");

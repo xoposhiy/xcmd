@@ -12,19 +12,19 @@ namespace Xcmd.Desktop;
 public sealed class CommandCompletionPopup
 {
     private readonly TextBox editor;
-    private readonly Popup popup;
+    internal Popup Popup { get; }
     public ListBox Items { get; } = new ListBox() { Name = "CommandCompletionItems", MaxHeight = 240, IsTextSearchEnabled = false }.WithFeedbackId("CommandCompletionPopup.Items");
     private CancellationTokenSource? request;
     private string original = "";
     private CommandToken? token;
     private CommandSuggestion[] suggestions = [];
-    public bool IsOpen => popup.IsOpen;
+    public bool IsOpen => Popup.IsOpen;
 
     public CommandCompletionPopup(TextBox editor)
     {
         this.editor = editor;
         AutomationProperties.SetAutomationId(Items, "command-line.completions");
-        popup = new Popup
+        Popup = new Popup
         {
             PlacementTarget = editor,
             Placement = PlacementMode.Top,
@@ -54,13 +54,13 @@ public sealed class CommandCompletionPopup
             if (owner.IsCancellationRequested || draft != editor.Text || caret != editor.CaretIndex || !editor.IsKeyboardFocusWithin) return;
             suggestions = found; token = part; original = draft;
             Items.ItemsSource = found.Select(item => item.Value).ToArray(); Items.SelectedIndex = found.Length == 0 ? -1 : 0;
-            popup.Width = Math.Max(300, editor.Bounds.Width); popup.IsOpen = found.Length > 0;
+            Popup.Width = Math.Max(300, editor.Bounds.Width); Popup.IsOpen = found.Length > 0;
         }
         catch (OperationCanceledException) when (owner.IsCancellationRequested) { }
         finally { if (request == owner) request = null; }
     }
 
-    public void Close() { request?.Cancel(); popup.IsOpen = false; }
+    public void Close() { request?.Cancel(); Popup.IsOpen = false; }
 
     public bool HandleKey(KeyEventArgs e)
     {

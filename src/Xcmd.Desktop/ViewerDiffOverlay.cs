@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Xcmd.Core;
 
@@ -14,13 +15,18 @@ internal sealed class ViewerDiffOverlay : Control
 {
     public const double GutterWidth = 28;
     private ViewerDiffDisplay? display;
-    private TextPresenter? presenter;
+    private SyntaxTextPresenter? presenter;
     private int pageStart;
     private int pageLength;
     private IBrush stagedAddition = Brushes.Transparent;
     private IBrush stagedDeletion = Brushes.Transparent;
     private IBrush unstagedAddition = Brushes.Transparent;
     private IBrush unstagedDeletion = Brushes.Transparent;
+    private IBrush inlineAddition = Brushes.Transparent;
+    private IBrush inlineDeletion = Brushes.Transparent;
+    private FormattedText? plus;
+    private FormattedText? minus;
+    private (FontFamily Family, double Size) signFont;
     public IBrush Foreground { get; private set; } = Brushes.White;
     public IReadOnlyList<Color> HighlightBackgrounds { get; private set; } = [];
     private IDisposable? hoverTimer;
@@ -30,7 +36,7 @@ internal sealed class ViewerDiffOverlay : Control
 
     public void Update(ViewerDiffDisplay? document, TextPresenter? textPresenter, int start, int length)
     {
-        display = document; presenter = textPresenter; pageStart = start; pageLength = length;
+        display = document; presenter = textPresenter as SyntaxTextPresenter; pageStart = start; pageLength = length;
         InvalidateVisual();
     }
 
@@ -46,13 +52,18 @@ internal sealed class ViewerDiffOverlay : Control
         var strongRed = Blend(background, red, strong);
         var softGreen = Blend(background, green, soft);
         var softRed = Blend(background, red, soft);
+        var inlineGreen = Blend(background, green, theme.IsDark ? 0.67 : 0.48);
+        var inlineRed = Blend(background, red, theme.IsDark ? 0.67 : 0.48);
         stagedAddition = new SolidColorBrush(strongGreen);
         stagedDeletion = new SolidColorBrush(strongRed);
         unstagedAddition = new SolidColorBrush(softGreen);
         unstagedDeletion = new SolidColorBrush(softRed);
-        HighlightBackgrounds = [strongGreen, strongRed, softGreen, softRed];
-        Foreground = UiContrast.Ratio(text, strongGreen) >= 4.5 && UiContrast.Ratio(text, strongRed) >= 4.5
+        inlineAddition = new SolidColorBrush(inlineGreen);
+        inlineDeletion = new SolidColorBrush(inlineRed);
+        HighlightBackgrounds = [strongGreen, strongRed, softGreen, softRed, inlineGreen, inlineRed];
+        Foreground = HighlightBackgrounds.All(color => UiContrast.Ratio(text, color) >= 4.5)
             ? new SolidColorBrush(text) : theme.IsDark ? Brushes.White : Brushes.Black;
+        plus = minus = null;
         InvalidateVisual();
     }
 
@@ -63,28 +74,53 @@ internal sealed class ViewerDiffOverlay : Control
 
     public override void Render(DrawingContext context)
     {
-        if (display == null || presenter == null || pageLength == 0 || presenter.TranslatePoint(default, this) is not { } origin) return;
-        var layout = presenter.TextLayout;
-        var visible = layout.HitTestPoint(new Point(0, Math.Max(0, -origin.Y))).TextPosition;
-        var first = Math.Max(0, display.RowAt(pageStart + visible));
-        for (var index = first; index < display.RowCount; index++)
+        if (display == null || presenter == null || pageLength == 0 ||
+            presenter.TranslatePoint(default, this) is not { } origin) return;
+        var textLines = presenter.LinePositions;
+        var lines = textLines.Use(presenter.TextLayout);
+        PrepareSigns(presenter);
+        for (var index = textLines.At(-origin.Y); index < lines.Count; index++)
         {
-            var row = display.Row(index);
-            if (row.Start >= pageStart + pageLength) break;
+            var line = lines[index];
+            var y = origin.Y + textLines.Top(index);
+            if (y >= Bounds.Height || line.FirstTextSourceIndex >= pageLength) break;
+            var position = pageStart + line.FirstTextSourceIndex;
+            var rowIndex = display.RowAt(position);
+            var row = display.Row(rowIndex);
             if (row.Kind == ViewerDiffKind.Context) continue;
-            var top = layout.HitTestTextPosition(Math.Max(0, row.Start - pageStart));
-            var bottom = layout.HitTestTextPosition(Math.Min(pageLength - 1, row.Last - pageStart));
-            var y = origin.Y + top.Y;
-            if (y >= Bounds.Height) break;
-            if (origin.Y + bottom.Bottom <= 0) continue;
-            context.FillRectangle(ColorFor(row.Kind), new Rect(0, y, Bounds.Width, bottom.Bottom - top.Y));
-            if (row.Start >= pageStart && y >= 0)
+            var added = IsAddition(row.Kind);
+            context.FillRectangle(ColorFor(row.Kind), new Rect(0, y, Bounds.Width, line.Height));
+            DrawEdits(context, line, display.Edits(rowIndex), row.Start - pageStart, new Point(origin.X, y), added ? inlineAddition : inlineDeletion);
+            if (row.Start == position && y >= 0) context.DrawText(added ? plus! : minus!, new Point(9, y));
+        }
+    }
+
+    private static void DrawEdits(DrawingContext context, TextLine line, ViewerDiffEdit[] edits, int rowStart, Point origin, IBrush brush)
+    {
+        var lineStart = line.FirstTextSourceIndex;
+        var lineEnd = lineStart + line.Length;
+        foreach (var edit in edits)
+        {
+            var start = Math.Max(lineStart, rowStart + edit.Start);
+            var end = Math.Min(lineEnd, rowStart + edit.Start + edit.Length);
+            if (start >= end) continue;
+            foreach (var bound in line.GetTextBounds(start, end - start))
             {
-                var sign = new FormattedText(IsAddition(row.Kind) ? "+" : "−", CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                    new Typeface(presenter.FontFamily), presenter.FontSize, Foreground);
-                context.DrawText(sign, new Point(9, y));
+                var rect = bound.Rectangle.Translate(new Vector(origin.X, origin.Y));
+                if (rect.Right > GutterWidth)
+                    context.FillRectangle(brush, rect.Intersect(new Rect(GutterWidth, rect.Y, rect.Right - GutterWidth, rect.Height)));
             }
         }
+    }
+
+    private void PrepareSigns(TextPresenter textPresenter)
+    {
+        var font = (textPresenter.FontFamily, textPresenter.FontSize);
+        if (plus != null && signFont == font) return;
+        signFont = font;
+        var typeface = new Typeface(font.FontFamily);
+        plus = new FormattedText("+", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, font.FontSize, Foreground);
+        minus = new FormattedText("−", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, font.FontSize, Foreground);
     }
 
     private IBrush ColorFor(ViewerDiffKind kind) => kind switch
@@ -102,8 +138,9 @@ internal sealed class ViewerDiffOverlay : Control
     {
         if (!IsVisible || display == null || presenter == null) return;
         var point = e.GetPosition(presenter);
-        var hit = presenter.TextLayout.HitTestPoint(point);
-        var row = display.RowAt(pageStart + hit.TextPosition);
+        var textLines = presenter.LinePositions;
+        var lines = textLines.Use(presenter.TextLayout);
+        var row = lines.Count == 0 ? -1 : display.RowAt(pageStart + lines[textLines.At(point.Y)].FirstTextSourceIndex);
         var kind = row < 0 || point.Y < 0 || point.Y >= presenter.TextLayout.Height ? ViewerDiffKind.Context : display.Row(row).Kind;
         if (hoverKind == kind) return;
         ClearHint(target);

@@ -15,7 +15,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed class FeedbackController
+public sealed partial class FeedbackController
 {
     private readonly CommanderWindow owner;
     private readonly Dictionary<Window, FeedbackSurface> surfaces = [];
@@ -63,6 +63,7 @@ public sealed class FeedbackController
             Height = 24
         }.WithFeedbackId("FeedbackController.button");
         button.Classes.Add("quiet");
+        ToolTip.SetTip(button, "Start feedback. While picking, use Ctrl+click or Alt+click to open a control.");
         AutomationProperties.SetAutomationId(button, "feedback.start");
         button.Click += (_, _) => Begin(window);
         if (showButton) { Grid.SetRow(button, 1); layout.Children.Add(button); }
@@ -96,7 +97,8 @@ public sealed class FeedbackController
     internal static Control? Target(Control? source)
     {
         var ancestors = source?.GetSelfAndVisualAncestors().OfType<Control>().ToArray() ?? [];
-        return ancestors.FirstOrDefault(control => control is MenuItem or Button or TextBox) ??
+        var inPopup = ancestors.Any(control => control is OverlayPopupHost);
+        return ancestors.FirstOrDefault(control => control is MenuItem or Button or TextBox or ComboBox || inPopup && control is ListBoxItem) ??
             ancestors.FirstOrDefault(control => control.GetValue(FeedbackTarget.IdProperty) != null || control is TableViewRow or TableViewColumnHeader) ??
             ancestors.FirstOrDefault(control => control is TextBlock { Text.Length: > 0 } || !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(control))) ?? source;
     }
@@ -107,6 +109,7 @@ public sealed class FeedbackController
         var name = control switch
         {
             MenuItem menu => menu.Header?.ToString()?.Replace("_", "", StringComparison.Ordinal) ?? id,
+            ListBoxItem { Content: string text } => text,
             Button { Content: AccessText text } => text.Text?.Replace("_", "", StringComparison.Ordinal) ?? id,
             Button { Content: Control } button => AutomationProperties.GetName(button) ?? id,
             Button button => button.Content?.ToString() ?? id,
@@ -129,8 +132,8 @@ public sealed class FeedbackController
     internal CommentDialog OpenComment(Window source, Control control, FeedbackSurface surface, FeedbackInteraction[] interactions, string? context = null)
     {
         var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
-        var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault();
-        var reader = control.GetSelfAndVisualAncestors().OfType<FileViewer>().FirstOrDefault();
+        var panel = FeedbackTarget.Ancestors(control).OfType<PanelView>().FirstOrDefault();
+        var reader = FeedbackTarget.Ancestors(control).OfType<FileViewer>().FirstOrDefault();
         var target = DescribeInteraction(control, "Comment");
         var id = target.ElementId;
         var name = target.ElementName;
@@ -138,6 +141,7 @@ public sealed class FeedbackController
         if (source != owner) name = source.Title + ": " + name;
         if (panel != null) name = panel.Id + ": " + name;
         var actionPath = interactions.Length == 0 ? null : string.Join(" > ", interactions.Select(step => step.ElementName).Append(target.ElementName));
+        surface.ClosePopups();
         var dialog = new CommentDialog(name, this, actionPath, context) { Background = owner.Background }.WithFeedbackId("FeedbackController.dialog");
         comments.Add(dialog);
         Attach(dialog);
@@ -247,7 +251,7 @@ public sealed class FeedbackController
         var close = new Button { Content = "Close" }.WithFeedbackId("FeedbackController.close");
         close.Click += (_, _) => dialog.Close();
         var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new RowDefinitions("Auto,*,Auto,Auto,Auto"), RowSpacing = 8 }.WithFeedbackId("FeedbackController.layout.2");
-        layout.Children.Add(new TextBlock { Text = "Select an element with Feedback or F12 to add a comment.", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("FeedbackController.ShowNotes"));
+        layout.Children.Add(new TextBlock { Text = "Use Feedback or F12 to add a comment. Run an agent to fix and commit one group of related issues.", FontSize = UiPalette.MetaSize, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("FeedbackController.ShowNotes"));
         Grid.SetRow(tabs, 1); layout.Children.Add(tabs);
         var location = new TextBlock
         {
@@ -257,7 +261,7 @@ public sealed class FeedbackController
         }.WithFeedbackId("FeedbackController.location");
         Grid.SetRow(location, 2); layout.Children.Add(location);
         Grid.SetRow(notesError, 3); layout.Children.Add(notesError);
-        var buttons = UiLayout.Actions(remove, close);
+        var buttons = UiLayout.Actions(BuildAgentButton(notesError), remove, close);
         Grid.SetRow(buttons, 4); layout.Children.Add(buttons);
         dialog.Content = layout;
         dialog.AddHandler(InputElement.KeyDownEvent, (_, e) => { if (IsPickingIn(dialog)) return; if (e.Key == Key.Escape) { dialog.Close(); e.Handled = true; } }, RoutingStrategies.Tunnel);

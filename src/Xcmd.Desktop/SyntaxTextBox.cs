@@ -1,4 +1,4 @@
-// @implements SyntaxSpans
+// @implements SyntaxSpans, ReadLargeFiles
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -40,6 +40,17 @@ public sealed class SyntaxTextBox : TextBox
     {
         Syntax = value;
         syntaxPresenter?.SetSyntax(value, palette);
+    }
+
+    internal (int First, int End) VisibleCharacters(double top, double bottom)
+    {
+        if (syntaxPresenter == null || bottom <= top) return (0, 0);
+        var positions = syntaxPresenter.LinePositions;
+        var lines = positions.Use(syntaxPresenter.TextLayout);
+        if (lines.Count == 0) return (0, 0);
+        var last = lines[positions.At(Math.BitDecrement(bottom))];
+        return (lines[positions.At(top)].FirstTextSourceIndex,
+            Math.Min(last.FirstTextSourceIndex + last.Length, Text?.Length ?? 0));
     }
 
     internal void SetSyntaxTheme(ReaderTheme theme, IReadOnlyList<Color>? highlights)

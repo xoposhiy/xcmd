@@ -28,7 +28,7 @@ public static class GitIgnoreScenarios
                 await c.Window.Left.LoadAsync(c.LeftPath);
                 await GitFixture.RefreshAsync(c.Window.Left.Git);
                 var rows = c.Window.Left.Rows.ToDictionary(row => row.Name);
-                Equal("·", rows["ordinary.cache"].Git.WorkingGlyph, "An ignored file has a quiet dot");
+                Equal("−", rows["ordinary.cache"].Git.WorkingGlyph, "An ignored file has a gray minus");
                 Check(!rows["ordinary.cache"].Git.HasChanges, "Ignore indicators do not count as modifications");
                 Equal("!", rows["committed.cache"].Git.WorkingGlyph, "A clean committed ignored file has a warning");
                 Equal("!", rows["staged.cache"].Git.WorkingGlyph, "A force-added ignored file has a warning");
@@ -37,6 +37,8 @@ public static class GitIgnoreScenarios
                 Check(rows["committed.cache"].Git.Description.Contains("Warning:", StringComparison.Ordinal), "The warning explains that Git still tracks the file");
                 Check(!Equals(rows["ordinary.cache"].Git.WorkingBrush, rows["committed.cache"].Git.WorkingBrush), "Ignored and suspicious files use distinct colors");
                 var folder = rows["ignored-folder.cache"];
+                Equal("−", folder.Git.WorkingGlyph, "An ignored folder uses the same minus");
+                Equal(rows["ordinary.cache"].Git.WorkingBrush, folder.Git.WorkingBrush, "Ignored folders and files share the same marker color");
                 var ignoredColor = folder.NameForeground;
                 Check(!Equals(ignoredColor, rows["clean-folder"].NameForeground), "Ignored folder names are gray");
                 Equal(ignoredColor, rows["ordinary.cache"].NameForeground, "Ignored files and folders use the same gray name color");
@@ -62,7 +64,7 @@ public static class GitIgnoreScenarios
                 Equal(ignoredColor, c.Window.Left.Rows.Single(row => row.Name == "generated.bin").NameForeground, "Ignored file names are gray before waiting for Git refresh");
                 Equal("!", c.Window.Left.Rows.Single(row => row.Name == "tracked.txt").Git.WorkingGlyph, "Tracked warnings are available on the first display");
                 await GitFixture.RefreshAsync(c.Window.Left.Git);
-                Equal("·", c.Window.Left.Rows.Single(row => row.Name == "generated.bin").Git.WorkingGlyph, "Ignored folder contents inherit the quiet marker");
+                Equal("−", c.Window.Left.Rows.Single(row => row.Name == "generated.bin").Git.WorkingGlyph, "Ignored folder contents inherit the gray minus");
                 Equal("!", c.Window.Left.Rows.Single(row => row.Name == "tracked.txt").Git.WorkingGlyph, "Tracked children retain the warning inside ignored folders");
                 await c.Window.Left.LoadAsync(Path.Combine(c.LeftPath, "ignored-folder.cache"));
                 Equal(ignoredColor, c.Window.Left.Rows.Single(row => row.Name == "nested").NameForeground, "Ignored subfolders are gray on the first display");

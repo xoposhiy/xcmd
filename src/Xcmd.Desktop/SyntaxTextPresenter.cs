@@ -1,4 +1,4 @@
-// @implements SyntaxSpans
+// @implements SyntaxSpans, ReadLargeFiles, ReadWorkingFileDiff
 using Avalonia;
 using Avalonia.Controls.Presenters;
 using Avalonia.Media;
@@ -11,6 +11,7 @@ namespace Xcmd.Desktop;
 internal sealed class SyntaxTextPresenter : TextPresenter
 {
     private Size constraint;
+    internal ViewerTextLines LinePositions { get; } = new();
     private SyntaxDocument? document;
     private IReadOnlyDictionary<SyntaxKind, IBrush> colors = SyntaxPalette.Create(ReaderThemes.Default);
 

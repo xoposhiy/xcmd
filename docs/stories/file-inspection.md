@@ -147,6 +147,13 @@ my work and see what is ready to commit.
   tip with its change and stage state.
   Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
 
+- Use a stronger red or green background for changed text within paired
+  deleted and added lines that share enough text.
+  Feedback ff4d53b. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
+- Keep scrolling responsive while the diff is open, including on large files.
+  Feedback 0b9ef40. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
 - Keep syntax colors in the diff. Read the syntax of each row in its
   original Git version so a changed comment or string keeps the right color.
   Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.

@@ -12,12 +12,13 @@ internal sealed class ViewerDiffDisplay
     private readonly int[] starts;
     private readonly int[] workingPositions;
     private readonly long[] workingOffsets;
+    private readonly IReadOnlyDictionary<int, ViewerDiffEdit[]> edits;
     private SyntaxDocument? syntax;
     public string Text { get; }
     public int[] Changes { get; }
     public long WorkingLength { get; }
 
-    public ViewerDiffDisplay(ViewerGitComparison comparison)
+    public ViewerDiffDisplay(ViewerGitComparison comparison, CancellationToken token = default)
     {
         this.comparison = comparison;
         rows = comparison.Rows;
@@ -40,6 +41,7 @@ internal sealed class ViewerDiffDisplay
         }
         Text = text.ToString();
         Changes = changes.ToArray();
+        edits = ViewerDiffEdits.Find(rows, token);
     }
 
     public async Task HighlightAsync(SyntaxHighlighter highlighter, string path, string? languageId, CancellationToken token)
@@ -57,13 +59,8 @@ internal sealed class ViewerDiffDisplay
         return index >= 0 ? index : ~index - 1;
     }
 
-    public (int Start, int Last, ViewerDiffKind Kind) Row(int row)
-    {
-        var start = starts[row];
-        return (start, start + Math.Max(0, rows[row].Text.Length - 1), rows[row].Kind);
-    }
-
-    public int RowCount => rows.Count;
+    public (int Start, ViewerDiffKind Kind) Row(int row) => (starts[row], rows[row].Kind);
+    public ViewerDiffEdit[] Edits(int row) => edits.GetValueOrDefault(row) ?? [];
 
     public long WorkingOffset(int position)
     {

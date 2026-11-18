@@ -13,20 +13,12 @@ public sealed class ClaudeCommitLauncher(string? executable = null)
         Task.Run(async () =>
         {
             var repository = await RepositoryRootAsync(directory, cancellationToken).ConfigureAwait(false);
-            var claude = executable ?? FindClaude();
+            var claude = executable ?? FeedbackAgentLauncher.FindConsoleTool("claude.exe");
             if (claude == null || !File.Exists(claude))
                 throw new IOException("Claude Code was not found. Install Claude Code and sign in, then try Commit again.");
             return new ExternalLaunch(ExternalLaunchKind.Command, claude, repository,
                 "--model sonnet --effort medium " + CommandLine.FormatArgument(Prompt));
         }, cancellationToken);
-
-    private static string? FindClaude()
-    {
-        var folders = new[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin") }
-            .Concat((Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator));
-        return folders.Where(folder => !string.IsNullOrWhiteSpace(folder))
-            .Select(folder => Path.Combine(folder.Trim('"'), "claude.exe")).FirstOrDefault(File.Exists);
-    }
 
     private static async Task<string> RepositoryRootAsync(string directory, CancellationToken cancellationToken)
     {

@@ -15,6 +15,32 @@ public static class ViewerDiffScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("viewer-git-diff-inline-edits", "Similar replacement lines use a stronger background only for the changed text", async c =>
+        {
+            const string name = "replacement.txt";
+            c.AddFile(name, "version = 12345\nseparate\napple\n");
+            using var repository = await InitializeAsync(c, name);
+            c.AddFile(name, "version = 19845\nseparate\nBRICK\n");
+            var viewer = await OpenAsync(c, name);
+            await ToggleAsync(c, viewer);
+            var diff = Text(viewer);
+            var before = diff.IndexOf("12345", StringComparison.Ordinal);
+            var after = diff.IndexOf("19845", StringComparison.Ordinal);
+            var unrelated = diff.IndexOf("BRICK", StringComparison.Ordinal);
+            foreach (var theme in new[] { "dark", "github" })
+            {
+                if (theme == "github")
+                {
+                    await AppearanceProbe.ChooseThemeAsync(c, viewer, theme);
+                    viewer.SetScaleForTest(1.5);
+                }
+                var colors = await ReadBackgroundsAsync(c, viewer, "diff-inline-" + theme,
+                    before, before + 1, before + 3, after, after + 1, after + 3, unrelated);
+                Check(colors[1] != colors[0] && colors[0] == colors[2], "The removed substring alone has a stronger background");
+                Check(colors[4] != colors[3] && colors[3] == colors[5], "The inserted substring alone has a stronger background");
+                Equal(colors[3], colors[6], "An unrelated addition keeps its line background");
+            }
+        }),
         new("viewer-git-diff-partially-staged", "F3 shows what changed in the index and on disk in one view", async c =>
         {
             c.AddFile("layers.txt", "before\nold value\ncontext\nsecond old\nafter\n");
@@ -140,6 +166,11 @@ public static class ViewerDiffScenarios
             Check(anchor > 16 * 1024, "The regular viewer is on a later page");
             await ToggleAsync(c, viewer);
             Check(Math.Abs(viewer.Reader.FirstVisibleByte - anchor) < 100, "Entering diff keeps the same working line in view");
+            var diffAnchor = viewer.Reader.FirstVisibleByte;
+            await ViewerProbe.WheelAsync(c, viewer, -5);
+            Check(viewer.Reader.FirstVisibleByte > diffAnchor, "Scrolling down updates the visible position in a later diff page");
+            await ViewerProbe.WheelAsync(c, viewer, 5);
+            Equal(diffAnchor, viewer.Reader.FirstVisibleByte, "Scrolling back restores the diff position");
             await c.KeyAsync(Key.PageDown, RawInputModifiers.Control, viewer);
             Check(Text(viewer).Contains("old tail\nnew tail", StringComparison.Ordinal), "Next change can read the tail after the first page");
 

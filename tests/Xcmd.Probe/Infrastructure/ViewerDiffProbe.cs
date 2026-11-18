@@ -6,6 +6,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using SkiaSharp;
 using Xcmd.Desktop;
 
 namespace Xcmd.Probe.Infrastructure;
@@ -82,6 +83,20 @@ public static class ViewerDiffProbe
         viewer.SetScaleForTest(1.5);
         viewer.Width = viewer.MinWidth;
         await context.ScreenshotAsync("viewer-git-diff-light-150", viewer);
+    }
+
+    public static async Task<SKColor[]> ReadBackgroundsAsync(ProbeContext context, FileViewerWindow viewer, string screenshot, params int[] positions)
+    {
+        await context.ScreenshotAsync(screenshot, viewer);
+        using var image = SKBitmap.Decode(Path.Combine(context.OutputPath, screenshot + ".png"));
+        var presenter = viewer.Reader.TextContent.GetVisualDescendants().OfType<TextPresenter>().Single();
+        var scale = viewer.RenderScaling;
+        return positions.Select(position =>
+        {
+            var rect = presenter.TextLayout.HitTestTextPosition(position);
+            var point = presenter.TranslatePoint(new Point(rect.X + 1, rect.Bottom - 2), viewer)!.Value;
+            return image.GetPixel((int)(point.X * scale), (int)(point.Y * scale));
+        }).ToArray();
     }
 
     public static async Task HoverLineAsync(ProbeContext context, FileViewerWindow viewer, string text)

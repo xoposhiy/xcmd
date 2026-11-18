@@ -1,4 +1,4 @@
-// @implements RecentLocations, RestoreWorkspace
+// @implements RecentLocations, RestoreWorkspace, KeepFeedback
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;
@@ -13,7 +13,7 @@ public sealed partial class CommanderWindow
 
     public WorkspaceState CaptureWorkspace() => new(1, Left.CaptureState(), Right.CaptureState(), ActivePanel.Id,
         Placement.Capture(), null, DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2,
-        CommandLine.Capture(), ViewerThemeId, FileSearch.Capture());
+        CommandLine.Capture(), ViewerThemeId, FileSearch.Capture(), Feedback.Agent);
 
     public void TrackPlacement() => Placement.Track();
 
@@ -34,6 +34,7 @@ public sealed partial class CommanderWindow
         CommandLine.Restore(state.CommandLine);
         RestoreViewerTheme(state.ViewerThemeId);
         FileSearch.Restore(state.FileSearch);
+        Feedback.RestoreAgent(state.FeedbackAgent);
         Activate(state.ActivePanel == "right" ? Right : Left);
         restoredState = state;
         RestoreView();

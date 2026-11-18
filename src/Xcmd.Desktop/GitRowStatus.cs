@@ -30,9 +30,9 @@ public sealed record GitRowStatus(GitChange Staged, GitChange Unstaged)
     public bool HasChanges => Staged != GitChange.None || Unstaged != GitChange.None;
     private bool Conflict => (Staged | Unstaged).HasFlag(GitChange.Conflict);
     public string IndexGlyph => Conflict ? "!" : Glyph(Staged, staged: true);
-    public string WorkingGlyph => TrackedIgnored ? "!" : Conflict ? "" : Ignored && !HasChanges ? "·" : Repository != null && !HasChanges ? "✓" : Glyph(Unstaged, staged: false);
-    public IBrush IndexBrush => Conflict || Staged.HasFlag(GitChange.Deleted) ? UiPalette.Error : UiPalette.Success;
-    public IBrush WorkingBrush => TrackedIgnored ? UiPalette.Error : Ignored && !HasChanges ? UiPalette.GitIgnored : Repository != null && !HasChanges ? UiPalette.Success : Unstaged.HasFlag(GitChange.Deleted) ? UiPalette.Error : Unstaged.HasFlag(GitChange.Untracked) ? UiPalette.Focus : UiPalette.Mark;
+    public string WorkingGlyph => TrackedIgnored ? "!" : Conflict ? "" : Ignored && !HasChanges ? "−" : Repository != null && !HasChanges ? "✓" : Glyph(Unstaged, staged: false);
+    public IBrush IndexBrush => Conflict ? UiPalette.Error : Mixed(Staged) ? UiPalette.Mark : Staged.HasFlag(GitChange.Deleted) ? UiPalette.Error : UiPalette.Success;
+    public IBrush WorkingBrush => TrackedIgnored ? UiPalette.Error : Ignored && !HasChanges ? UiPalette.GitIgnored : Repository != null && !HasChanges ? UiPalette.Success : Mixed(Unstaged) ? UiPalette.Mark : Unstaged.HasFlag(GitChange.Deleted) ? UiPalette.Error : Unstaged.HasFlag(GitChange.Untracked) ? UiPalette.Focus : UiPalette.Mark;
     public string Description => (TrackedIgnored ? "Warning: tracked files match an ignore rule. Git still includes them in the index or commits.\n" : Ignored ? "Ignored by Git\n" : "") + StatusDescription;
     private string StatusDescription => Repository is { } repository ? $"Git · {repository.Branch} · {(HasChanges ? "changes" : "clean")}\nWhole repository: {repository.Staged} staged, {repository.Changed} changed, {repository.Untracked} untracked, {repository.Deleted} deleted, {repository.Conflicts} conflicts\n{repository.Ahead} ahead, {repository.Behind} behind" : ChangeDescription;
     private string ChangeDescription => !HasChanges ? "No reported changes" : Conflict ? "Unresolved merge conflict" :
@@ -41,12 +41,15 @@ public sealed record GitRowStatus(GitChange Staged, GitChange Unstaged)
     private static string Glyph(GitChange value, bool staged)
     {
         if (value == GitChange.None) return "";
+        if (Mixed(value)) return "●";
         if (value.HasFlag(GitChange.Untracked)) return "?";
         if (value.HasFlag(GitChange.Deleted)) return "−";
         if (value.HasFlag(GitChange.Added)) return "+";
         if (value.HasFlag(GitChange.Renamed) || value.HasFlag(GitChange.Copied)) return "→";
         return staged ? "✓" : "●";
     }
+
+    private static bool Mixed(GitChange value) => !System.Numerics.BitOperations.IsPow2((uint)value) && value != GitChange.None;
 
     private static string Describe(string prefix, GitChange value) => value == GitChange.None ? "" : prefix + ": " + value.ToString().Replace("TypeChanged", "type changed", StringComparison.Ordinal).ToLowerInvariant();
 }

@@ -123,7 +123,7 @@ public sealed partial class FileViewer
         try
         {
             var comparison = await gitDiff.CompareAsync(status, CurrentPath, selectedEncoding.CodePage, token);
-            display = await Task.Run(() => new ViewerDiffDisplay(comparison), token);
+            display = await Task.Run(() => new ViewerDiffDisplay(comparison, token), token);
             await display.HighlightAsync(highlighter, CurrentPath, syntaxLanguage, token);
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)

@@ -24,10 +24,20 @@ can give the development agent feedback with a stable target.
   visible surfaces selectable.
   Sources: [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 6](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-6); [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 7](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-7); [2026-11-10T17-42-56-01a1c657-5941-7960-adcb-f3b2b3198e58.md → Turn 7](../codex-sessions/2026-11-10T17-42-56-01a1c657-5941-7960-adcb-f3b2b3198e58.md#turn-7).
 
-- In feedback mode, a double-click on an element should forward a normal click, so menus
-  can be opened before selecting a nested target. Record that interaction path with the
-  comment.
-  Source: [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 4](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-4).
+- In feedback mode, Alt+click or Ctrl+click uses a control and keeps feedback
+  mode active. This lets the user open a menu or list before selecting a
+  nested target. Show the interaction path in the comment dialog.
+  Feedback 01bd18d. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
+- Show the yellow outline around the control under the pointer, including
+  items in open menus. Clear the outline when the item disappears or the
+  comment dialog opens.
+  Feedback a782ed1. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
+- Let the user select individual items in menus, submenus, and popup lists.
+  Keep each item's name in the report and use the control's source ID for
+  generated list items.
+  Feedback 031532d. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
 - Place Feedback and Notes at the right of the status bar when using the combined
   title/menu layout.
@@ -46,6 +56,11 @@ notes so that I can track refinement work without depending on the workspace sav
 
 - Show open feedback separately from closed feedback; put closed items in their own tab.
   Source: [2026-11-11T15-25-18-01a1caff-b568-7bf3-b0e2-452cad10d2ec.md → Turn 3](../codex-sessions/2026-11-11T15-25-18-01a1caff-b568-7bf3-b0e2-452cad10d2ec.md#turn-3).
+
+- Let the user run Codex or Claude Code from the refinement list. Start the
+  selected CLI in the Xcmd repository with a prompt to fix one related batch
+  of issues that fits in one commit. Remember the selected agent.
+  Feedback a0d44a8. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
 ## ReportHighlighting
 

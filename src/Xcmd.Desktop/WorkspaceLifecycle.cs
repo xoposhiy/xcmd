@@ -38,6 +38,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         window.Feedback.ListPath = window.Feedback.Store.DatabasePath;
         window.FavoritesChanged += OnFavoritesChanged;
         window.ViewerThemeChanged += OnViewerThemeChanged;
+        window.Feedback.AgentChanged += OnFeedbackAgentChanged;
         window.TrackPlacement();
         timer.Tick += OnTick;
     }
@@ -59,7 +60,14 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             var left = directories.ElementAtOrDefault(0) ?? Environment.CurrentDirectory;
             await window.InitializeAsync(left, directories.ElementAtOrDefault(1) ?? left);
-            if (state != null) { window.Favorites.Restore(state.Favorites ?? []); window.CommandLine.Restore(state.CommandLine); window.RestoreViewerTheme(state.ViewerThemeId); window.FileSearch.Restore(state.FileSearch); }
+            if (state != null)
+            {
+                window.Favorites.Restore(state.Favorites ?? []);
+                window.CommandLine.Restore(state.CommandLine);
+                window.RestoreViewerTheme(state.ViewerThemeId);
+                window.FileSearch.Restore(state.FileSearch);
+                window.Feedback.RestoreAgent(state.FeedbackAgent);
+            }
         }
         window.Closing += OnClosing;
         if (state?.Notes is { } legacy) await window.Feedback.Store!.ImportAsync(legacy, once: true);
@@ -99,6 +107,7 @@ public sealed class WorkspaceLifecycle : IDisposable
 
     private Task OnFavoritesChanged() => PendingWork = SaveFavoritesAsync();
     private Task OnViewerThemeChanged() => PendingWork = SavePreferenceAsync("Could not save the viewer theme. Keep the application open and try again.");
+    private Task OnFeedbackAgentChanged() => PendingWork = SavePreferenceAsync("Could not save the feedback agent. Keep the application open and try again.");
 
     private Task SaveFavoritesAsync() => SavePreferenceAsync("Could not save favorites. Keep the application open and try again.");
 
@@ -214,6 +223,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         lifetime.Cancel();
         window.FavoritesChanged -= OnFavoritesChanged;
         window.ViewerThemeChanged -= OnViewerThemeChanged;
+        window.Feedback.AgentChanged -= OnFeedbackAgentChanged;
         window.Closing -= OnClosing;
         window.Closed -= OnClosed;
         restoredViewers?.Delete();

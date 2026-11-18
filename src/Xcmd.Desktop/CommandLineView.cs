@@ -1,4 +1,4 @@
-// @implements RunCommand, CommandHistory, ReusePaths, RestoreWorkspace
+// @implements RunCommand, CommandHistory, CompleteCommand, ReusePaths, RestoreWorkspace
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -40,7 +40,9 @@ public sealed class CommandLineView : Border
         AutomationProperties.SetAutomationId(directory, "command-line.directory");
         var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") }.WithFeedbackId("CommandLineView.layout");
         directory.Margin = new Thickness(0, 0, 8, 0);
-        layout.Children.Add(directory); Grid.SetColumn(Editor, 1); layout.Children.Add(Editor); Child = layout;
+        layout.Children.Add(directory); Grid.SetColumn(Editor, 1); layout.Children.Add(Editor);
+        layout.Children.Add(Completions.Popup);
+        Child = layout;
         ToolTip.SetTip(Editor, "Enter: run through Windows Shell in this directory · cd <path>: change directory · Esc: clear and return to files · Ctrl+C: copy selection or the whole command · Up/Down: files · Alt+Up/Down: command history · Ctrl+Enter: name · Ctrl+Shift+Enter: full path");
         SizeChanged += (_, _) => directory.MaxWidth = Math.Min(510, Math.Max(0, Bounds.Width - 328));
         Editor.GotFocus += (_, _) => Focused?.Invoke();

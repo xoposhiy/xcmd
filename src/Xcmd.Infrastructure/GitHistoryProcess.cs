@@ -1,4 +1,4 @@
-// @implements RepositoryLocations
+// @implements RepositoryLocations, SyncRepository
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
@@ -14,10 +14,11 @@ internal static class GitHistoryProcess
         return Encoding.UTF8.GetString(buffer.ToArray());
     }
 
-    public static async Task RunAsync(string root, string[] arguments, Stream output, CancellationToken cancellationToken, bool allowExitOne = false)
+    public static async Task RunAsync(string root, string[] arguments, Stream output, CancellationToken cancellationToken, bool allowExitOne = false,
+        int timeoutSeconds = 30)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
         var start = new ProcessStartInfo("git")
         {
             WorkingDirectory = root,
@@ -47,6 +48,6 @@ internal static class GitHistoryProcess
             }
         }
         catch (Win32Exception error) { throw new IOException("Git could not be started: " + error.Message, error); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw new IOException("Git did not finish within 30 seconds. Try again."); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw new IOException($"Git did not finish within {timeoutSeconds} seconds."); }
     }
 }

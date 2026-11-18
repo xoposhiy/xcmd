@@ -128,6 +128,12 @@ public static class GitRowsScenarios
                     Check(!row.GetVisualDescendants().OfType<PathIcon>().Any(), "No coloured replacement folder icon remains");
                 }
                 Check(!ignored.Git.HasChanges, "An ignored folder has an empty Git cell");
+                File.WriteAllText(Path.Combine(c.LeftPath, "dirty", "loose.txt"), "untracked");
+                await GitFixture.RefreshAsync(c.Window.Left.Git);
+                var mixed = c.Window.Left.Rows.Single(row => row.Name == "dirty").Git;
+                Equal("●", mixed.WorkingGlyph, "A folder with modified and untracked children uses a dot");
+                Check(mixed.WorkingBrush is ISolidColorBrush brush && brush.Color == Color.Parse("#FFD278"), "Mixed changes use the yellow marker");
+                Check(mixed.Description.Contains("modified, untracked", StringComparison.Ordinal), "The tooltip lists both change types");
                 await c.SelectAsync("new-tree"); await c.KeyAsync(Key.Enter); await GitFixture.RefreshAsync(c.Window.Left.Git);
                 Equal("?", c.Window.Left.Rows.Single(row => row.Name == "loose.txt").Git.WorkingGlyph, "Files within a collapsed untracked directory inherit its untracked state");
                 Check(!c.Window.Left.Rows.Single(row => row.Name == "ignored.cache").Git.HasChanges, "Ignored descendants do not inherit untracked markers");

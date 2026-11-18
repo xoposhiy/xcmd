@@ -32,14 +32,7 @@ public sealed partial class FileViewer
         if (textScroll == null || presenter == null) return (0, 0);
         var top = textScroll.Offset.Y;
         var bottom = top + textScroll.Viewport.Height - TextContent.Padding.Bottom;
-        var first = -1; var end = 0; var y = 0d;
-        foreach (var line in presenter.TextLayout.TextLines)
-        {
-            if (y + line.Height > top && first < 0) first = line.FirstTextSourceIndex;
-            if (y < bottom) end = line.FirstTextSourceIndex + line.Length;
-            y += line.Height;
-        }
-        return (Math.Max(0, first), Math.Min(end, TextContent.Text?.Length ?? 0));
+        return TextContent.VisibleCharacters(top, bottom);
     }
 
     private long ByteAtCharacter(int position)
@@ -139,7 +132,7 @@ public sealed partial class FileViewer
     {
         if (delta < 0) PauseFollowing();
         if (Mode == FileViewMode.Image || slice == null) return;
-        BindScrolling();
+        if (textScroll == null || presenter == null) BindScrolling();
         if (textScroll == null) return;
         var target = textScroll.Offset.Y + delta;
         if (diff != null) { MoveDiffViewport(target); return; }

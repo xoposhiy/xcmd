@@ -6,7 +6,7 @@ namespace Xcmd.Desktop;
 
 internal sealed class GitPanelRows
 {
-    public const string LiveLegend = "Left: staged · Right: working tree\n✓ staged · ● modified · + added · ? untracked · → renamed/copied · − deleted · ! conflict\n· ignored · ! on the right: tracked despite an ignore rule\nClean files are blank. A green ✓ on the right marks a clean repository. Folder statuses include descendants.";
+    public const string LiveLegend = "Left: staged · Right: working tree\n✓ staged · ● modified or mixed changes · + added · ? untracked · → renamed/copied · red − deleted · ! conflict\nGray − ignored · ! on the right: tracked despite an ignore rule\nClean files are blank. A green ✓ on the right marks a clean repository. Folder statuses include descendants.";
     public string Legend(string directory) => GitPath.HasRevision(directory)
         ? "Changes in this commit compared with its first parent.\n● modified · + added · → renamed/copied · − deleted\nBlank cells: unchanged. Folder indicators include descendants."
         : LiveLegend;

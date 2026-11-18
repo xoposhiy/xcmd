@@ -28,6 +28,22 @@ that I can understand how my files relate to current repository work.
   tracked or included in the index.
   Sources: [2026-11-13T18-22-08-01a1d5ee-4f2b-77d1-ae0b-fdf502091db3.md → Turn 1](../codex-sessions/2026-11-13T18-22-08-01a1d5ee-4f2b-77d1-ae0b-fdf502091db3.md#turn-1); [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 1](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-1); [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 3](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-3).
 
+- Use a gray minus for ignored paths. Use a yellow dot when a folder has
+  more than one change type in the same status column.
+  Feedback 2e4213d and 3a65f60. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
+## SyncRepository
+
+As a user, I want to push and pull from the Git status menu so that I can
+sync the current repository without leaving Xcmd.
+
+### Implementation decisions
+
+- Offer Push and Pull in the repository actions menu. When the local branch
+  and its upstream both have unique commits, offer Pull with rebase and Pull
+  with merge.
+  Feedback 8936cf6. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+
 ## BrowseHistory
 
 As a user, I want to open a repository, directory, or file log in a panel so that I can

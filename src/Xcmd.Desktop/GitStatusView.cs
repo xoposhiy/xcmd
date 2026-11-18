@@ -1,4 +1,4 @@
-// @implements SeeRepositoryState, BrowseHistory, DelegateCommit
+// @implements SeeRepositoryState, BrowseHistory, DelegateCommit, SyncRepository
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -32,6 +32,7 @@ public sealed class GitStatusView : Border
     private CancellationTokenSource? request;
     private string directory = "";
     private string actionDirectory = "";
+    private string? actionRoot;
     private readonly PathIcon arrow = new PathIcon() { Data = Geometry.Parse("M 0,0 L 8,0 L 4,4 Z"), Width = 8, Height = 4, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), Foreground = UiPalette.Secondary, IsVisible = false }.WithFeedbackId("GitStatusView.arrow");
     public Button ActionsButton { get; } = new Button()
     {
@@ -51,8 +52,13 @@ public sealed class GitStatusView : Border
     public bool IsMenuOpen => Actions.IsOpen;
     public MenuItem CommitCommand { get; } = new MenuItem() { Header = "_Commit repository with Claude Code…" }.WithFeedbackId("GitStatusView.CommitCommand");
     public MenuItem LogCommand { get; } = new MenuItem() { Header = "_Log of current folder" }.WithFeedbackId("GitStatusView.LogCommand");
+    private readonly MenuItem push = new MenuItem { Header = "P_ush" }.WithFeedbackId("GitStatusView.Push");
+    private readonly MenuItem pull = new MenuItem { Header = "_Pull (fast-forward only)" }.WithFeedbackId("GitStatusView.Pull");
+    private readonly MenuItem pullRebase = new MenuItem { Header = "Pull with _rebase" }.WithFeedbackId("GitStatusView.PullRebase");
+    private readonly MenuItem pullMerge = new MenuItem { Header = "Pull with _merge" }.WithFeedbackId("GitStatusView.PullMerge");
     public event Action? LogRequested;
     public event Action<string>? CommitRequested;
+    public event Action<string, GitRemoteCommand>? RemoteCommandRequested;
     public event Action? StatusChanged;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public Task DirectoryReady { get; private set; } = Task.CompletedTask;
@@ -80,14 +86,47 @@ public sealed class GitStatusView : Border
         AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
         CommitCommand.Name = id + "GitCommit";
         ToolTip.SetTip(CommitCommand, "Open Claude Code to commit all changes in this repository.");
-        Actions.ItemsSource = new[] { LogCommand, CommitCommand };
+        Actions.ItemsSource = new[] { LogCommand, CommitCommand, push, pull, pullRebase, pullMerge };
+        BindRemoteCommands();
         LogCommand.Click += (_, _) => LogRequested?.Invoke();
-        Actions.Opened += (_, _) => actionDirectory = directory;
+        Actions.Opened += (_, _) =>
+        {
+            actionDirectory = directory;
+            actionRoot = Status?.Root;
+            UpdateRemoteMenu(Status);
+        };
         ActionsButton.Click += (_, _) => { if (Status != null) Actions.Open(ActionsButton); };
         CommitCommand.Click += (_, _) => { if (actionDirectory.Length > 0) CommitRequested?.Invoke(actionDirectory); };
         timer.Tick += (_, _) => Refresh();
         AttachedToVisualTree += (_, _) => { timer.Start(); Refresh(); };
         DetachedFromVisualTree += (_, _) => { timer.Stop(); request?.Cancel(); };
+    }
+
+    private void BindRemoteCommands()
+    {
+        foreach (var (item, command) in new[]
+        {
+            (push, GitRemoteCommand.Push), (pull, GitRemoteCommand.Pull),
+            (pullRebase, GitRemoteCommand.PullWithRebase), (pullMerge, GitRemoteCommand.PullWithMerge)
+        })
+            item.Click += (_, _) =>
+            {
+                if (actionRoot != null && item.IsVisible && item.IsEnabled) RemoteCommandRequested?.Invoke(actionRoot, command);
+            };
+        ToolTip.SetTip(push, "Send local commits using the repository's Git push settings.");
+        ToolTip.SetTip(pull, "Fetch from the upstream branch and advance the local branch if possible.");
+        ToolTip.SetTip(pullRebase, "Fetch from the upstream branch and replay local commits on top of it.");
+        ToolTip.SetTip(pullMerge, "Fetch from the upstream branch and merge it into the local branch.");
+    }
+
+    private void UpdateRemoteMenu(GitStatus? value)
+    {
+        var hasUpstream = value?.Upstream != null;
+        var diverged = hasUpstream && value is { Ahead: > 0, Behind: > 0 };
+        push.IsEnabled = value?.HasRemote == true;
+        pull.IsEnabled = pullRebase.IsEnabled = pullMerge.IsEnabled = hasUpstream;
+        pull.IsVisible = !diverged;
+        pullRebase.IsVisible = pullMerge.IsVisible = diverged;
     }
 
     public void SetDirectory(string value)
