@@ -33,10 +33,78 @@ Run affected scenarios and static checks through the [verification process](veri
 Keep evidence tied to a fixed source snapshot with isolated build outputs, so
 concurrent edits cannot silently invalidate a result.
 
-Commit after the selected checks pass, recording their scope and limits. The user
-accepts that targeted checks can miss unrelated regressions. A commit or final
-release does not require a local full regression run. New behavior feedback starts
-another short feedback iteration.
+Commit after the selected checks pass. The user accepts that targeted checks can
+miss unrelated regressions. A commit or final release does not require a local
+full regression run. New behavior feedback starts another short feedback iteration.
+
+## Commit messages
+
+Use `type(scope): summary` for the subject. Put the story entries first, then
+`Motivation` and `Implementation details` when needed. End with `Verification`.
+Put one blank line between blocks.
+
+```text
+type(scope): summary
+
+New <story ID> user story:
+<Full story statement from the catalogue.>
+
+Also affected user stories
+- <Story ID> (<direct effect on the story>)
+
+Motivation: <concrete reason, when known>
+
+Implementation details
+<Additional behavior, design choices, or fixes.>
+
+Verification
+<State what you checked, how, and any relevant limits.>
+```
+
+Give each new story its own label and copy its full statement from the catalogue.
+List each directly affected existing story on its own bullet. Put the semantic
+ID first and describe the direct effect in parentheses. State what the user or
+developer can do differently, what requirement changed, or what expected
+behavior a fix restores. Leave out stories that the commit only reuses, reaches
+through shared code, or verifies. Use `Affected user stories` when the commit
+only affects existing stories.
+
+Include `Motivation` only when you know a concrete reason for the work, such as a
+reported bug, a finding from logs or metrics, or a specific external request.
+Keep it to one line and include a reference when useful. If the reason is
+unknown, omit the entire block.
+
+Use `Implementation details` for concrete behavior, design choices, or fixes
+that add to the story entries. Omit the block if there are no additional details.
+In `Verification`, report the checks you ran.
+
+### Example
+
+```text
+feat(viewer): show Git changes in file previews
+
+New ReadWorkingFileDiff user story:
+As a user, I want to read Git changes in the file viewer so that I can inspect
+my work and see what is ready to commit.
+
+Also affected user stories
+- OpenViewers (new F3 windows fit the screen's work area and restore keyboard focus on key press)
+- QuickViewFile (Ctrl+D toggles the diff in the reader and still opens Favorites in the file list)
+- FindViewerText (Find matches deleted lines and staged lines later changed on disk)
+- HighlightSource (automatic and manual syntax highlighting use colors from each line's Git version)
+- SeeRepositoryState (F3 and Quick View show the file's Git status even without a diff)
+
+Implementation details
+Compare HEAD with the index and the index with the working file. Show
+both edits when they touch the same line. In F3, Ctrl+D and the View
+menu switch between text and diff without losing the reading position.
+Use Ctrl+Page Up and Ctrl+Page Down to jump between change blocks.
+
+Verification
+Passed 43 targeted scenarios and static checks on an isolated Release /
+Windows x64 snapshot. Verified Ctrl+D in the running F3 and Quick View
+readers.
+```
 
 ## Ready builds and release integrity
 

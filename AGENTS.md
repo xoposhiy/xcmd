@@ -38,8 +38,7 @@ Ask about material product choices or blockers. Choose routine methods independe
   changes need relevant document checks. Local full regression runs require an
   explicit request; GitHub Actions runs the full gate automatically. This keeps
   local feedback fast while retaining broad verification in CI.
-- Use commit subjects of the form `type(scope): summary`. Explain the reason for
-  the change in the body, together with relevant verification and its limits.
+- Follow the [commit message format](docs/processes/delivery.md#commit-messages).
 
 ## Processes to read when needed
 
