@@ -1,4 +1,4 @@
-// @implements ReadWorkingFileDiff
+// @implements ReadWorkingFileDiff, RestoreWorkspace
 using System.Text;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -77,5 +77,13 @@ internal sealed class ViewerDiffDisplay
         if (workingPositions.Length == 0 || offset <= workingOffsets[0]) return 0;
         var line = Array.BinarySearch(workingOffsets, offset);
         return workingPositions[Math.Clamp(line >= 0 ? line : ~line - 1, 0, workingPositions.Length - 1)];
+    }
+
+    public int RestorePosition(long workingOffset, int? displayPosition)
+    {
+        // Deleted rows share a working offset with the next row on disk.
+        if (displayPosition is >= 0 && displayPosition < Text.Length && WorkingOffset(displayPosition.Value) == workingOffset)
+            return displayPosition.Value;
+        return PositionAtWorkingOffset(workingOffset);
     }
 }

@@ -9,6 +9,8 @@ public sealed class GitHistoryDocuments : IDisposable
     private readonly string cache = Path.Combine(Path.GetTempPath(), "xcmd-git-" + Guid.NewGuid().ToString("N"));
     private readonly GitHistoryReader reader = new();
 
+    public bool Owns(string path) => Path.GetFullPath(path).StartsWith(cache + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+
     public Task<string> WorkingTreeAsync(string root, IReadOnlyList<GitWorkingChange> changes, CancellationToken token)
     {
         var files = string.Join("\n", changes.Select(change =>

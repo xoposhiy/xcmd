@@ -1,4 +1,4 @@
-// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles
+// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles, RestoreWorkspace, ReleaseHandoff
 using Avalonia.Controls;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -14,6 +14,7 @@ internal sealed class FileViewingController
     private readonly QuickViewPane quickView;
     private bool comparing;
     private readonly List<FileViewerWindow> viewers = [];
+    private (FileViewerWindow Window, ViewerReadingState Reading)[] restoredViewers = [];
     private string lastSearch = "";
     public Control QuickViewControl => quickView;
     public IReadOnlyList<FileViewerWindow> Viewers => viewers;
@@ -22,7 +23,7 @@ internal sealed class FileViewingController
     public bool IsQuickViewOpen => quickView.IsVisible;
     public bool IsQuickViewFocused => quickView.IsKeyboardFocusWithin;
     public bool IsQuickViewMenuOpen => quickView.Reader?.Commands.IsOpen == true;
-    public bool HasOpenViews => IsQuickViewOpen || viewers.Count > 0;
+    public bool HasActiveViewer => viewers.Any(viewer => viewer.IsActive);
     public string ThemeId { get; private set; } = "dark";
 
     public FileViewingController(CommanderWindow owner, string? editorPath, IArchiveContents archives, string? comparisonExecutable)
@@ -90,18 +91,70 @@ internal sealed class FileViewingController
 
     private FileViewerWindow OpenViewer(string[] paths, int index, string directory, Func<FileViewer, Task>? loaded = null, ViewerDocument? document = null)
     {
-        var viewer = new FileViewerWindow(paths, index, files, owner.Feedback,
-            path => EditFileAsync(path, directory),
-            path => owner.OpenFileExternallyAsync(path, directory), ThemeId, document).WithFeedbackId("FileViewingController.viewer");
+        var viewer = CreateViewer(paths, index, directory, document);
         viewer.FitInitialSize(owner);
+        viewer.TrackPlacement();
+        RegisterViewer(viewer);
+        viewer.Show();
+        owner.Execute(async () => { await viewer.Reader.OpenAsync(); if (loaded != null) await loaded(viewer.Reader); });
+        return viewer;
+    }
+
+    private FileViewerWindow CreateViewer(string[] paths, int index, string directory, ViewerDocument? document) =>
+        new FileViewerWindow(paths, index, files, owner.Feedback, path => EditFileAsync(path, directory),
+            path => owner.OpenFileExternallyAsync(path, directory), ThemeId, document)
+        { WorkingDirectory = directory }.WithFeedbackId("FileViewingController.viewer");
+
+    private void RegisterViewer(FileViewerWindow viewer)
+    {
         viewers.Add(viewer);
         ConnectReader(viewer.Reader);
         owner.Feedback.Attach(viewer, showButton: false);
         viewer.Opened += (_, _) => TaskbarIdentity.Configure(viewer, owner.Trace.Add);
         viewer.Closed += (_, _) => { viewers.Remove(viewer); owner.RecordActivity(); if (owner.IsActive) owner.ActivePanel.FocusCurrent(); };
-        viewer.Show();
-        owner.Execute(async () => { await viewer.Reader.OpenAsync(); if (loaded != null) await loaded(viewer.Reader); });
-        return viewer;
+    }
+
+    public ViewerHandoff[] CaptureViewers() => viewers.Select(viewer => viewer.CaptureHandoff()).ToArray();
+
+    public async Task PrepareViewersAsync(ViewerHandoff[] snapshots)
+    {
+        var prepared = await Task.WhenAll(snapshots.Select(PrepareViewerAsync));
+        var missing = snapshots.Where((_, index) => prepared[index] == null)
+            .Select(snapshot => snapshot.Document?.Caption ?? Path.GetFileName(ArchivePath.Display(snapshot.Paths[snapshot.Index]))).ToArray();
+        if (missing.Length > 0) owner.SetUpdateMessage("Missing after update: " + string.Join(", ", missing));
+        restoredViewers = prepared.Where(item => item.HasValue).Select(item => item.GetValueOrDefault()).ToArray();
+    }
+
+    private async Task<(FileViewerWindow, ViewerReadingState)?> PrepareViewerAsync(ViewerHandoff snapshot)
+    {
+        var viewer = CreateViewer(snapshot.Paths, snapshot.Index, snapshot.WorkingDirectory, snapshot.Document);
+        try
+        {
+            await viewer.Reader.PrepareHandoffAsync(snapshot.Reading);
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        {
+            viewer.Close();
+            return null;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            viewer.Reader.ShowReadFailure(error.Message);
+        }
+        viewer.RestorePlacement(snapshot.Window);
+        return (viewer, snapshot.Reading);
+    }
+
+    public void ShowRestoredViewers()
+    {
+        foreach (var (viewer, reading) in restoredViewers)
+        {
+            RegisterViewer(viewer);
+            viewer.Show();
+            viewer.UpdateLayout();
+            viewer.Reader.RestoreReadingPosition(reading);
+        }
+        restoredViewers = [];
     }
 
     private void ConnectReader(FileViewer reader)

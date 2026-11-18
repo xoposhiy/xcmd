@@ -10,6 +10,15 @@ An epic describes a broad need that changes rarely. A user story describes a mor
 specific need and changes when that need is understood differently. Its main text
 is a short statement: `As a <role>, I want <capability> so that <benefit>.`
 
+### Epic changes
+
+Discuss every proposed epic change with the project developer before editing the
+epic. Describe the exact change and get explicit approval for it. This applies to
+creating, removing, merging, splitting, renaming, and rewording epics, including
+changes to an epic's scope, goal, or catalogue fields.
+
+### Story decisions
+
 Record each implementation decision the user explicitly states or accepts under
 `### Implementation decisions` in the relevant story. Include the Codex session
 ID with each decision and enough context to explain what the user agreed to.

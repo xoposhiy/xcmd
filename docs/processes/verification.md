@@ -19,7 +19,8 @@ hidden with redirected logs, as required by [AGENTS.md](../../AGENTS.md).
 
 | Purpose | Command |
 | --- | --- |
-| Verify a feature before committing | `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>'` |
+| Smoke-check and publish a local feedback build | `./scripts/Test-Xcmd.ps1 -Filter '<targeted-scenario-filters>'` |
+| Verify a feature before committing without publishing | `./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>' -CheckOnly` |
 | Run architecture, analyzer self-checks, formatting and metrics | `./scripts/Test-Architecture.ps1` |
 | List scenarios in a built probe | `dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --list` |
 | Run selected built scenarios without the static stage | `dotnet tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll --filter '<filters>'` |

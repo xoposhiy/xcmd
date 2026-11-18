@@ -220,10 +220,11 @@ deliver improvements without interrupting the user's session.
   release; keep the previous working release if the new one fails.
   Sources: [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 5](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-5); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 5](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-5); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 6](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-6).
 
-- Update automatically by restarting and restoring the session when the application is
-  idle. Defer the handoff during a copy or name edit. Use this restart scheme as the
-  initial solution rather than requiring live replacement of UI code.
-  Sources: [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 5](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-5); [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 6](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-6).
+- Update automatically as soon as Xcmd is safe to restart in the background. For the
+  active main window, wait for ten seconds without input. Defer the handoff while
+  a separate viewer has focus or work such as a copy or name edit is in progress.
+  Show a pending update beside the uptime.
+  Source: Codex session ID 01a1edc9-75d1-75a0-b89d-0ffcc9a25fe1.
 
 ## WindowsIdentity
 

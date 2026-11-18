@@ -54,16 +54,22 @@ public sealed partial class CommanderWindow : Window
     public FeedbackController Feedback { get; }
     public DirectoryUsageBook DirectoryUsage { get; } = new();
     private bool restoringVisits;
-    public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || CommandLine.HasKeyboardFocus || Left.EditingRow != null || Right.EditingRow != null,
-        HasOpenDialog || FileSearch.IsOpen || IsMenuOpen || viewing.HasOpenViews || Left.HasHistory || Right.HasHistory, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
+    public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || IsActive && CommandLine.HasFocusedDraft || Left.EditingRow != null || Right.EditingRow != null,
+        HasOpenDialog || FileSearch.IsOpen || IsMenuOpen, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput),
+        MainWindowActive: IsActive, ViewerActive: viewing.HasActiveViewer);
 
+    private string updateText = "";
+    private bool updateReady;
     public string UpdateMessage => updateMessage.Text ?? "";
-    public void SetUpdateMessage(string message) { freshRelease = false; updateMessage.Text = message; }
+    public void SetUpdateMessage(string message) { freshRelease = false; updateText = message; RefreshUpdateMessage(); }
+    internal void SetUpdateReady(bool ready) { updateReady = ready; RefreshUpdateMessage(); }
+    private void RefreshUpdateMessage() => updateMessage.Text = !updateReady ? updateText
+        : updateText.Length == 0 ? "Update ready · Restarts when idle" : "Update ready · " + updateText;
     public void ShowUpdatedMessage() { SetUpdateMessage("Just updated · new version"); freshRelease = true; }
     public void RecordActivity()
     {
         lastInput = Stopwatch.GetTimestamp();
-        if (freshRelease) { freshRelease = false; updateMessage.Text = ""; }
+        if (freshRelease) SetUpdateMessage("");
     }
     internal void EndPointerDrag() { pointerHeld = false; RecordActivity(); }
     public void RefreshUptime() => UpdateUptime(runningTime.Elapsed);
@@ -75,7 +81,12 @@ public sealed partial class CommanderWindow : Window
         var title = ReleaseCaption + " · " + UptimeText;
         if (Title != title) Title = title;
     }
-    public void SetRestarting(bool value) { restarting = value; IsEnabled = !value; }
+    public void SetRestarting(bool value)
+    {
+        restarting = value;
+        IsEnabled = !value;
+        foreach (var viewer in Viewers) viewer.IsEnabled = !value;
+    }
 
     public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null, string? comparisonExecutable = null)
     {
@@ -158,7 +169,7 @@ public sealed partial class CommanderWindow : Window
         AddHandler(PointerPressedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, (_, _) => { RecordActivity(); pointerHeld = false; }, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, (_, _) => RecordActivity(), RoutingStrategies.Tunnel, handledEventsToo: true);
-        Activated += (_, _) => viewing.RefreshQuickViewAfterActivation();
+        Activated += (_, _) => { lastInput = Stopwatch.GetTimestamp(); viewing.RefreshQuickViewAfterActivation(); };
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); viewing.ResetQuickViewKeys(); ResetQuickJump(); };
         Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };

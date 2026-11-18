@@ -1,4 +1,4 @@
-// @implements ApplicationLifecycle
+// @implements ApplicationLifecycle, ReleaseHandoff
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -58,7 +58,8 @@ public sealed class App : Application
     {
         try
         {
-            await lifecycle.InitializeAsync(settings.Directories, requireSavedSession: settings.WaitForProcess != null);
+            var handoff = settings.WaitForProcess == null ? null : settings.HandoffPath;
+            await lifecycle.InitializeAsync(settings.Directories, requireSavedSession: handoff != null, handoffPath: handoff);
             TaskbarIdentity.Configure(window);
             await RestartProcess.WaitForPreviousAsync(settings);
             if (settings.WaitForProcess == null) window.ShowActivated = true;
@@ -66,6 +67,7 @@ public sealed class App : Application
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             WindowPresenter(window);
             window.RestoreView();
+            if (handoff != null) lifecycle.CompleteRestart(handoff);
         }
         catch (Exception error)
         {

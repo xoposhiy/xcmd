@@ -15,10 +15,13 @@ verification under 60 seconds so feedback stays fast. Report measured delays suc
 as a cold restore rather than silently expanding the check scope. Compiler and
 build-analyzer failures still need repair.
 
-Use `./scripts/Publish-Feedback.ps1 -Filter '<targeted-scenario-filters>'` from a
-hidden PowerShell helper with redirected logs. It builds, runs selected headless
-scenarios, publishes the application and installs the launcher. Do not delay this
-handoff for broad refactoring, full checks, benchmarks or an independent review.
+Run the normal local short check with
+`./scripts/Test-Xcmd.ps1 -Filter '<targeted-scenario-filters>'` from a hidden
+PowerShell helper with redirected logs. After the selected headless scenarios
+pass, the check publishes the tested build and installs the launcher. This can
+happen during development, before a task is complete. Use `-CheckOnly` when
+verifying a change without publishing. Do not delay the feedback build for
+broad refactoring, full checks, benchmarks or an independent review.
 
 Give the user the ready executable, the changed behavior and the smoke-check scope.
 Call it smoke-checked, then wait for feedback. An already running application may
@@ -131,7 +134,7 @@ check publishing path. Keep smoke, targeted and full evidence distinct. Use
 "fully verified" only after a requested full gate has passed.
 
 Keep package auditing enabled. If the vulnerability service is unavailable, the
-feedback-only `-SkipPackageAudit` exception requires the user's explicit request
+feedback-only `Publish-Feedback.ps1 -SkipPackageAudit` exception requires the user's explicit request
 to install despite that failure. Locked restore and smoke checks still apply, and
 the release evidence must record the skipped audit. The exception does not apply
 to final releases.

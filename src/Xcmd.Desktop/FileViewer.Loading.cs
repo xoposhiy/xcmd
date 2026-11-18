@@ -32,15 +32,7 @@ public sealed partial class FileViewer
         catch (OperationCanceledException) when (request.IsCancellationRequested) { }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or InvalidOperationException)
         {
-            if (!closed && loading == request)
-            {
-                ShowError(failure.Message); information.Text = "Could not load this view. Choose another mode or file.";
-                if (slice == null)
-                {
-                    readingStatus.Text = IsEmbedded ? "Could not load file" : "Could not load file · Alt+Left/Right changes file";
-                    Progress.Text = "—";
-                }
-            }
+            if (!closed && loading == request) ShowReadFailure(failure.Message);
         }
         finally
         {
@@ -48,12 +40,33 @@ public sealed partial class FileViewer
         }
     }
 
+    internal void ShowReadFailure(string message)
+    {
+        ShowError(message);
+        information.Text = "Could not load this view. Choose another mode or file.";
+        if (slice != null) return;
+        readingStatus.Text = IsEmbedded ? "Could not load file" : "Could not load file · Alt+Left/Right changes file";
+        Progress.Text = "—";
+    }
+
     private async Task LoadFileAsync(CancellationToken token)
+    {
+        BeginFileLoad();
+        if (!IsEmbedded) FocusReader();
+        await ReadFileAsync(token);
+        if (!IsEmbedded || IsKeyboardFocusWithin) FocusReader();
+        await RefreshGitAsync(wantDiff: false, reloadText: false, token);
+    }
+
+    private void BeginFileLoad()
     {
         ResetFile();
         information.Text = "Loading…";
         readingStatus.Text = "Loading…"; Progress.Text = "…";
-        if (!IsEmbedded) FocusReader();
+    }
+
+    private async Task ReadFileAsync(CancellationToken token)
+    {
         var path = CurrentPath;
         var page = await files.ReadAsync(path, 0, token);
         var encoding = await Task.Run(() => ViewerText.Detect(page.Bytes), token);
@@ -71,8 +84,6 @@ public sealed partial class FileViewer
         automaticMode = true;
         await RenderPageAsync(token);
         token.ThrowIfCancellationRequested();
-        if (!IsEmbedded || IsKeyboardFocusWithin) FocusReader();
-        await RefreshGitAsync(wantDiff: false, reloadText: false, token);
     }
 
     private void ResetFile()

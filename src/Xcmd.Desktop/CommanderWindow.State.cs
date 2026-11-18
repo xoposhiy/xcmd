@@ -1,6 +1,4 @@
 // @implements RecentLocations, RestoreWorkspace
-using Avalonia;
-using Avalonia.Controls;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;
@@ -8,50 +6,25 @@ namespace Xcmd.Desktop;
 public sealed partial class CommanderWindow
 {
     internal void RestoreViewerTheme(string? id) => viewing.RestoreTheme(id);
-    private WindowPlacement? normalPlacement;
+    private WorkspaceWindowPlacement? placement;
     private WorkspaceState? restoredState;
-    private WindowState lastVisibleWindowState;
 
-    public WorkspaceState CaptureWorkspace()
-    {
-        var placement = WindowState == WindowState.Normal || normalPlacement == null
-            ? new WindowPlacement(Position.X, Position.Y, Width, Height, false) : normalPlacement;
-        return new(1, Left.CaptureState(), Right.CaptureState(), ActivePanel.Id,
-            placement with
-            {
-                Maximized = WindowState == WindowState.Maximized || WindowState == WindowState.Minimized && lastVisibleWindowState == WindowState.Maximized,
-                Minimized = WindowState == WindowState.Minimized,
-                Active = IsActive
-            }, null, DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2, CommandLine.Capture(), ViewerThemeId, FileSearch.Capture());
-    }
+    private WorkspaceWindowPlacement Placement => placement ??= new(this);
 
-    public void TrackPlacement()
-    {
-        void Remember()
-        {
-            if (WindowState == WindowState.Normal) normalPlacement = new(Position.X, Position.Y, Width, Height, false);
-        }
-        Remember();
-        PositionChanged += (_, _) => Remember();
-        SizeChanged += (_, _) => Remember();
-        PropertyChanged += (_, e) =>
-        {
-            if (e.Property == WindowStateProperty && WindowState != WindowState.Minimized) lastVisibleWindowState = WindowState;
-        };
-    }
+    public WorkspaceState CaptureWorkspace() => new(1, Left.CaptureState(), Right.CaptureState(), ActivePanel.Id,
+        Placement.Capture(), null, DirectoryUsage.Capture(), Favorites.Items.ToArray(), UsageVersion: 2,
+        CommandLine.Capture(), ViewerThemeId, FileSearch.Capture());
+
+    public void TrackPlacement() => Placement.Track();
+
+    internal ViewerHandoff[] CaptureViewers() => viewing.CaptureViewers();
+    internal Task PrepareViewersAsync(ViewerHandoff[] viewers) => viewing.PrepareViewersAsync(viewers);
+    internal void ShowRestoredViewers() => viewing.ShowRestoredViewers();
 
     public async Task RestoreWorkspaceAsync(WorkspaceState state)
     {
         state.Validate();
-        Width = Math.Clamp(state.Window.Width, MinWidth, 20000);
-        Height = Math.Clamp(state.Window.Height, MinHeight, 20000);
-        var position = new PixelPoint(state.Window.X, state.Window.Y);
-        if (Screens.ScreenFromPoint(position) == null && Screens.Primary is { } primary) position = primary.WorkingArea.Position;
-        Position = position;
-        normalPlacement = state.Window;
-        WindowState = state.Window.Maximized ? WindowState.Maximized : WindowState.Normal;
-        if (state.Window.Minimized) WindowState = WindowState.Minimized;
-        ShowActivated = state.Window.Active && !state.Window.Minimized;
+        Placement.Restore(state.Window);
         restoringVisits = true;
         try { await Task.WhenAll(Left.RestoreStateAsync(state.Left), Right.RestoreStateAsync(state.Right)); }
         finally { restoringVisits = false; }

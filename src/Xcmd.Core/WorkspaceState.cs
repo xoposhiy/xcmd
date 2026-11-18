@@ -120,7 +120,9 @@ public sealed record WorkspaceState(int Version, PanelState Left, PanelState Rig
 }
 
 public sealed record ReleaseInfo(string Id, string Executable);
-public sealed record RestartReadiness(bool Busy, bool Editing, bool DialogOpen, bool FeedbackActive, TimeSpan IdleFor)
+public sealed record RestartReadiness(bool Busy, bool Editing, bool DialogOpen, bool FeedbackActive, TimeSpan IdleFor,
+    bool MainWindowActive = true, bool ViewerActive = false)
 {
-    public bool CanRestart => !Busy && !Editing && !DialogOpen && !FeedbackActive && IdleFor >= TimeSpan.FromSeconds(2);
+    public bool CanRestart => !Busy && !Editing && !DialogOpen && !FeedbackActive && !ViewerActive &&
+        (!MainWindowActive || IdleFor >= TimeSpan.FromSeconds(10));
 }

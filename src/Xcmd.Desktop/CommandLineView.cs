@@ -25,6 +25,7 @@ public sealed class CommandLineView : Border
         Padding = new Thickness(5, 2)
     }.WithFeedbackId("CommandLineView.Editor");
     public bool HasKeyboardFocus => Editor.IsKeyboardFocusWithin;
+    internal bool HasFocusedDraft => HasKeyboardFocus && !string.IsNullOrWhiteSpace(Editor.Text);
     public CommandCompletionPopup Completions { get; }
     private string currentDirectory = "";
     public Task CompleteAsync() => Completions.OpenAsync(currentDirectory);

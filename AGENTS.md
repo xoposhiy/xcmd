@@ -8,6 +8,8 @@ Ask about material product choices or blockers. Choose routine methods independe
 - Start with the ordered [epics and user stories](docs/stories/README.md). This is
   the LivingDoc for product and developer needs. Keep needs stable; record explicit
   implementation agreements separately within the relevant story.
+- Discuss every proposed epic change with the project developer and get explicit
+  approval for that specific change before editing the epic.
 - Before every commit, keep the changed work, story descriptions and source
   mappings consistent. See [story maintenance](docs/processes/stories.md) for the
   format and mapping rollout. A code edit does not by itself require a new story.

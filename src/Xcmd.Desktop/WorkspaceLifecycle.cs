@@ -1,4 +1,4 @@
-// @implements RecentLocations, FavoriteLocations, ReaderThemes, RestoreWorkspace, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage
+// @implements RecentLocations, FavoriteLocations, ReaderThemes, RestoreWorkspace, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage, ReleaseHandoff
 using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -23,6 +23,7 @@ public sealed class WorkspaceLifecycle : IDisposable
     private bool allowClose;
     private bool disposed;
     private string? failedRelease;
+    private ViewerHandoffStore? restoredViewers;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public string? UpdateError { get; private set; }
     public event Action? Initialized;
@@ -41,7 +42,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         timer.Tick += OnTick;
     }
 
-    public async Task InitializeAsync(string[] directories, bool requireSavedSession = false)
+    public async Task InitializeAsync(string[] directories, bool requireSavedSession = false, string? handoffPath = null)
     {
         window.FileTypeSettingsPath = Path.Combine(Path.GetDirectoryName(store.Path)!, "file-types.json");
         await window.ReloadFileTypesAsync();
@@ -65,18 +66,32 @@ public sealed class WorkspaceLifecycle : IDisposable
         await window.Feedback.RefreshAsync();
         window.Closed += OnClosed;
         await SaveAsync();
+        if (handoffPath != null && ViewerHandoffStore.ForRestart(handoffPath, store.Path) is { } snapshot)
+            await window.PrepareViewersAsync(await snapshot.ReadAsync());
         if (requireSavedSession && window.UpdateMessage.Length == 0) window.ShowUpdatedMessage();
-        timer.Start();
-        directoryUpdates.Start();
+        if (!requireSavedSession) StartMonitoring();
         Initialized?.Invoke();
     }
 
-    public async Task SaveAsync()
+    private void StartMonitoring()
+    {
+        timer.Start();
+        directoryUpdates.Start();
+    }
+
+    internal void CompleteRestart(string handoffPath)
+    {
+        restoredViewers = ViewerHandoffStore.ForRestart(handoffPath, store.Path);
+        window.ShowRestoredViewers();
+        StartMonitoring();
+    }
+
+    public async Task SaveAsync(WorkspaceState? captured = null)
     {
         await saving.WaitAsync();
         try
         {
-            var state = window.CaptureWorkspace();
+            var state = captured ?? window.CaptureWorkspace();
             await store.SaveAsync(state);
         }
         finally { saving.Release(); }
@@ -134,23 +149,32 @@ public sealed class WorkspaceLifecycle : IDisposable
     {
         if (releases == null) return;
         var next = await releases.FindNextAsync();
-        if (next == null || next.Id == failedRelease) return;
-        if (!window.Readiness.CanRestart || saving.CurrentCount == 0)
-        {
-            if (!window.Feedback.IsActive) window.SetUpdateMessage("Update ready. Waiting until the application is idle.");
-            return;
-        }
-        await ReplaceProcessAsync(next);
+        var canRestart = window.Readiness.CanRestart && saving.CurrentCount != 0;
+        var pending = next != null && next.Id != failedRelease;
+        window.SetUpdateReady(pending && !canRestart);
+        if (pending && canRestart) await ReplaceProcessAsync(next!);
     }
 
     private async Task ReplaceProcessAsync(ReleaseInfo release)
     {
+        var state = window.CaptureWorkspace();
+        var viewers = window.CaptureViewers();
         window.SetRestarting(true);
         window.SetUpdateMessage("Updating and restoring your session…");
-        await SaveAsync();
         var handoff = Path.Combine(Path.GetDirectoryName(store.Path)!, "handoff", Guid.NewGuid().ToString("N"));
-        try { await restart.PrepareAsync(release, store.Path, handoff, lifetime.Token); }
-        catch { failedRelease = release.Id; throw; }
+        var snapshot = new ViewerHandoffStore(handoff);
+        try
+        {
+            await SaveAsync(state);
+            if (viewers.Length > 0) await snapshot.SaveAsync(viewers, lifetime.Token);
+            await restart.PrepareAsync(release, store.Path, handoff, lifetime.Token);
+        }
+        catch
+        {
+            failedRelease = release.Id;
+            snapshot.Delete();
+            throw;
+        }
         allowClose = true;
         window.Close();
     }
@@ -192,5 +216,6 @@ public sealed class WorkspaceLifecycle : IDisposable
         window.ViewerThemeChanged -= OnViewerThemeChanged;
         window.Closing -= OnClosing;
         window.Closed -= OnClosed;
+        restoredViewers?.Delete();
     }
 }

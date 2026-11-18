@@ -54,7 +54,7 @@ public sealed partial class GitHistoryController
         }
         else { owner.SetError("Select a commit, a file, or the parent row inside a commit."); return; }
         token.ThrowIfCancellationRequested();
-        viewFile(new(report, caption));
+        viewFile(new(report, caption, IsTemporary: documents.Owns(report)));
     }
 
     public void DiffCurrent()
@@ -87,7 +87,7 @@ public sealed partial class GitHistoryController
         }
         var report = await documents.DiffAsync(root, path, revision, change, token);
         token.ThrowIfCancellationRequested();
-        viewFile(new(report, "Diff · " + path + " · " + (revision == null ? "HEAD → working tree" : "first parent → " + ShortId(revision)) + " · read-only"));
+        viewFile(new(report, "Diff · " + path + " · " + (revision == null ? "HEAD → working tree" : "first parent → " + ShortId(revision)) + " · read-only", IsTemporary: true));
     }
 
     private static string ShortId(string revision) => revision[..Math.Min(10, revision.Length)];

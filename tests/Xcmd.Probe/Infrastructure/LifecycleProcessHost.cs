@@ -1,4 +1,4 @@
-// @tests RestoreWorkspace, ApplicationLifecycle, HeadlessVerification, ReleaseHandoff
+// @tests RestoreWorkspace, ApplicationLifecycle, HeadlessVerification, ReleaseHandoff, OpenViewers
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;
@@ -45,6 +45,8 @@ public static class LifecycleProcessHost
                     {
                         await Task.Delay(100);
                         window.RestoreView();
+                        if (settings.WaitForProcess == null && Environment.GetEnvironmentVariable(ViewerHandoffProbe.Flag) != null)
+                            await ViewerHandoffProbe.OpenViewersAsync(window);
                         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
                         var handle = window.TryGetPlatformHandle();
                         ProbeContext.Check(handle?.Handle == IntPtr.Zero && handle.HandleDescriptor == "STUB", "The lifecycle host creates no native application window.");
@@ -57,7 +59,16 @@ public static class LifecycleProcessHost
                             try { using var process = Process.GetProcessById(previous); parentExited = process.HasExited; }
                             catch (ArgumentException) { }
                         }
-                        var report = new { processId = Environment.ProcessId, parentExited, consoleAttached, nativeApplicationWindows = 0, state = window.CaptureWorkspace() };
+                        var report = new
+                        {
+                            processId = Environment.ProcessId,
+                            parentExited,
+                            consoleAttached,
+                            nativeApplicationWindows = 0,
+                            state = window.CaptureWorkspace(),
+                            viewers = ViewerHandoffProbe.Describe(window),
+                            window.UpdateMessage
+                        };
                         await WriteReportAsync(Path.Combine(reports, id + ".json"), report);
                         if (settings.WaitForProcess != null) { lifecycle.Dispose(); window.Close(); }
                         else failureWatch.Start();

@@ -262,7 +262,9 @@ public static class ViewerScenarios
             Equal("Nested file", second.Reader.TextContent.Text, "The second viewer has independent contents");
             await c.ClickAsync(first.Reader.TextContent, target: first); await c.KeyAsync(Key.F4, target: first);
             Equal(c.LeftPath, c.Launcher.Requests.Last().WorkingDirectory, "Editing uses the original source directory after panel navigation");
-            Check(c.Window.Readiness.DialogOpen, "Open viewers delay automatic release replacement");
+            first.Activate();
+            var readiness = c.Window.Readiness;
+            Check(!readiness.DialogOpen && readiness.ViewerActive && !readiness.CanRestart, "The focused viewer delays an update without acting as a dialog");
             await c.ClickAsync(second.Reader.TextContent, target: second); await c.KeyAsync(Key.Escape, target: second);
             Check(first.IsVisible && c.Window.Viewers.Count == 1, "Closing one viewer keeps the other open");
             c.Window.Close();

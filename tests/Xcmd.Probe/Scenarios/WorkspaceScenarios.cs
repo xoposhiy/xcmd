@@ -1,4 +1,4 @@
-// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff
+// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff, OpenViewers
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -91,13 +91,17 @@ public static class WorkspaceScenarios
         }),
         new("workspace-idle-policy", "UC38; Automatic release update", c =>
         {
-            var ready = new RestartReadiness(false, false, false, false, TimeSpan.FromSeconds(3));
+            var ready = new RestartReadiness(false, false, false, false, TimeSpan.FromSeconds(10));
             Check(ready.CanRestart, "An idle application can update.");
             Check(!(ready with { Busy = true }).CanRestart, "File work delays updates.");
             Check(!(ready with { Editing = true }).CanRestart, "Inline rename delays updates.");
             Check(!(ready with { DialogOpen = true }).CanRestart, "Dialogs delay updates.");
             Check(!(ready with { FeedbackActive = true }).CanRestart, "Feedback selection and comments delay updates.");
-            Check(!(ready with { IdleFor = TimeSpan.FromSeconds(1) }).CanRestart, "Recent input delays updates.");
+            Check(!(ready with { IdleFor = TimeSpan.FromSeconds(9) }).CanRestart, "Recent input delays updates in the active main window.");
+            var background = ready with { IdleFor = TimeSpan.Zero, MainWindowActive = false };
+            Check(background.CanRestart, "An inactive application can update immediately.");
+            Check(!(background with { ViewerActive = true }).CanRestart, "The active viewer delays the update.");
+            Check(!(background with { Busy = true }).CanRestart, "Background file work delays the update.");
             return Task.CompletedTask;
         }),
         new("workspace-release-validation", "UC38; Automatic release update", async c =>
@@ -116,11 +120,13 @@ public static class WorkspaceScenarios
         new("workspace-update-waits-for-rename-and-fails-safely", "UC38; Automatic release update; UC17", async c =>
         {
             var root = Path.Combine(c.FixturePath, "releases"); AddRelease(root, NewId, false);
-            File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
             using var lifecycle = new WorkspaceLifecycle(c.Window, new SessionStore(Path.Combine(c.FixturePath, "session.json")), new ReleaseCatalog(root, OldId, "Xcmd.Probe.exe"));
             await lifecycle.InitializeAsync(new[] { c.LeftPath, c.RightPath });
-            await c.BeginRenameAsync("alpha.txt"); await Task.Delay(2200); await lifecycle.PollAsync();
+            await c.BeginRenameAsync("alpha.txt");
+            File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
+            await lifecycle.PollAsync();
             Check(c.Window.IsVisible && c.Window.Left.EditingRow != null && lifecycle.UpdateError == null, "A pending update leaves the rename draft untouched.");
+            Check(c.Window.UpdateMessage.Contains("Update ready"), "The title shows the pending update.");
             await c.KeyAsync(Key.Escape);
             await WaitAsync(() => lifecycle.UpdateError != null);
             Check(c.Window.IsVisible && c.Window.IsEnabled, "A launch failure leaves the current application open and usable.");
@@ -129,7 +135,6 @@ public static class WorkspaceScenarios
         new("workspace-update-waits-for-copy", "UC38; Automatic release update; UC04", async c =>
         {
             var root = Path.Combine(c.FixturePath, "releases"); AddRelease(root, NewId, false);
-            File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
             using var lifecycle = new WorkspaceLifecycle(c.Window, new SessionStore(Path.Combine(c.FixturePath, "session.json")), new ReleaseCatalog(root, OldId, "Xcmd.Probe.exe"));
             await lifecycle.InitializeAsync(new[] { c.LeftPath, c.RightPath });
             await c.SelectAsync("alpha.txt");
@@ -137,7 +142,8 @@ public static class WorkspaceScenarios
             c.PressKey(Key.F5); ConfirmTransfer(c); await gate.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             try
             {
-                await Task.Delay(2200); await lifecycle.PollAsync();
+                File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
+                await lifecycle.PollAsync();
                 Check(c.Window.IsVisible && c.Window.IsBusy && lifecycle.UpdateError == null, "A real pending copy blocks the update.");
             }
             finally { gate.Release.TrySetResult(); }
@@ -212,6 +218,41 @@ public static class WorkspaceScenarios
                 Equal(string.Join('|', expected.CommandLine.History), string.Join('|', actual.CommandLine.History), "The command history survives a release update");
                 Equal(4, actual.CommandLine.Caret, "The command caret survives a release update");
                 c.Measurements["processHandoffVerified"] = true;
+            }
+            finally { await old.StopAsync(); }
+        }),
+        new("workspace-update-reopens-inactive-viewers", "Open viewers survive a release handoff", async c =>
+        {
+            var root = Path.Combine(c.FixturePath, "releases");
+            var reports = Path.Combine(c.FixturePath, "reports");
+            var session = Path.Combine(c.FixturePath, "session.json");
+            var oldExe = AddRelease(root, OldId, true);
+            AddRelease(root, NewId, true);
+            using var repository = await ViewerHandoffProbe.PrepareFilesAsync(c);
+            await new SessionStore(session).SaveAsync(c.Window.CaptureWorkspace());
+            using var old = StartHost(oldExe, session, root, reports, openViewers: true);
+            try
+            {
+                using var before = await ReadWorkspaceReportAsync(Path.Combine(reports, OldId + ".json"));
+                File.Delete(Path.Combine(c.LeftPath, ViewerHandoffProbe.MissingFile));
+                using var locked = File.Open(Path.Combine(c.LeftPath, ViewerHandoffProbe.LockedFile), FileMode.Open, FileAccess.Read, FileShare.None);
+                File.WriteAllText(Path.Combine(root, "latest.txt"), NewId);
+                using var after = await ReadWorkspaceReportAsync(Path.Combine(reports, NewId + ".json"));
+                var opened = after.RootElement.GetProperty("viewers");
+                Equal(4, opened.GetArrayLength(), "The remaining viewers reopen");
+                var beforeViewers = before.RootElement.GetProperty("viewers");
+                var prior = beforeViewers[0];
+                Equal(prior.GetProperty("CurrentPath").GetString(), opened[0].GetProperty("CurrentPath").GetString(), "The first viewer opens the same file");
+                Equal((int)FileViewMode.Hex, opened[0].GetProperty("Mode").GetInt32(), "The viewer stays in hex mode");
+                Equal(prior.GetProperty("FirstVisibleByte").GetInt64(), opened[0].GetProperty("FirstVisibleByte").GetInt64(), "The first visible byte stays the same");
+                Equal(prior.GetProperty("X").GetInt32(), opened[0].GetProperty("X").GetInt32(), "The window returns to its position");
+                Equal((int)WindowState.Minimized, opened[1].GetProperty("WindowState").GetInt32(), "The second viewer remains minimized");
+                Equal(locked.Name, opened[2].GetProperty("CurrentPath").GetString(), "The locked file keeps its viewer");
+                Check(!string.IsNullOrEmpty(opened[2].GetProperty("Error").GetString()), "The viewer explains its read error without blocking the update.");
+                Check(opened[3].GetProperty("ReadingStatus").GetString()!.StartsWith("Diff", StringComparison.Ordinal), "The Git diff stays open.");
+                Equal(beforeViewers[4].GetProperty("DiffPosition").GetDouble(), opened[3].GetProperty("DiffPosition").GetDouble(), "The diff returns to the same position inside the deleted rows");
+                Check(opened.EnumerateArray().All(item => !item.GetProperty("ShowActivated").GetBoolean()), "Reopened viewers do not request focus.");
+                Check(after.RootElement.GetProperty("UpdateMessage").GetString()!.Contains(ViewerHandoffProbe.MissingFile), "The title reports the missing file.");
             }
             finally { await old.StopAsync(); }
         }),

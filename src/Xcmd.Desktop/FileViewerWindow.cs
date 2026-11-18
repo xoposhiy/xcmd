@@ -12,12 +12,18 @@ public sealed class FileViewerWindow : Window
 {
     private const uint KeyDownMessage = 0x0100;
     private const uint SystemKeyDownMessage = 0x0104;
+    private readonly WorkspaceWindowPlacement placement;
+    private readonly string[] paths;
+    private readonly ViewerDocument? document;
 
     public FileViewer Reader { get; }
+    internal string WorkingDirectory { get; init; } = "";
 
     public FileViewerWindow(string[] paths, int index, IViewerFiles files, FeedbackController feedback,
         Func<string, Task> edit, Func<string, Task> open, string themeId = "dark", ViewerDocument? document = null)
     {
+        this.paths = paths;
+        this.document = document;
         Reader = new FileViewer(paths, index, files, feedback, edit, open, Close, document).WithFeedbackId("FileViewerWindow.reader");
         Width = 1120; Height = 760; MinWidth = 640; MinHeight = 300;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -38,6 +44,17 @@ public sealed class FileViewerWindow : Window
         Deactivated += (_, _) => Reader.ResetKeys();
         Closed += (_, _) => Reader.Stop();
         Content = Reader;
+        placement = new(this);
+    }
+
+    internal ViewerHandoff CaptureHandoff() => new(paths, Reader.CurrentIndex, WorkingDirectory, document, placement.Capture(), Reader.CaptureReadingState());
+    internal void TrackPlacement() => placement.Track();
+
+    internal void RestorePlacement(WindowPlacement saved)
+    {
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        TrackPlacement();
+        placement.Restore(saved with { Active = false });
     }
 
     private nint RestoreKeyboardFocus(nint window, uint message, nint wParam, nint lParam, ref bool handled)

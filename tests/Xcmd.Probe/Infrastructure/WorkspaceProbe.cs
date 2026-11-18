@@ -63,13 +63,14 @@ public static class WorkspaceProbe
         return Path.Combine(directory, "Xcmd.Probe.exe");
     }
 
-    public static RunningApplication StartHost(string executable, string session, string releases, string reports, string? failRelease = null)
+    public static RunningApplication StartHost(string executable, string session, string releases, string reports, string? failRelease = null, bool openViewers = false)
     {
         var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(executable)! };
         start.ArgumentList.Add("--lifecycle-host"); start.ArgumentList.Add("--session"); start.ArgumentList.Add(session);
         start.Environment["XCMD_TEST_RELEASES"] = releases;
         start.Environment["XCMD_TEST_REPORTS"] = reports;
         if (failRelease != null) start.Environment["XCMD_TEST_FAIL_RELEASE"] = failRelease;
+        if (openViewers) start.Environment[ViewerHandoffProbe.Flag] = "1";
         return new(Process.Start(start) ?? throw new InvalidOperationException("The headless lifecycle host did not start."));
     }
 }

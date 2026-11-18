@@ -77,6 +77,29 @@ idle so that I can test improvements during normal use.
   commit; the later targeted-test rule applies at that stage.
   Sources: [2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md → Turn 3](../codex-sessions/2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md#turn-3); [2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md → Turn 4](../codex-sessions/2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md#turn-4); [2026-11-13T17-28-34-01a1d5bd-4601-7fb0-a4f5-3574d19f78e3.md → Turn 7](../codex-sessions/2026-11-13T17-28-34-01a1d5bd-4601-7fb0-a4f5-3574d19f78e3.md#turn-7).
 
+- Publish the tested build automatically when the normal local short check passes,
+  including during an unfinished task. The agent has no separate publish step.
+  Source: Codex session ID 01a1edc9-75d1-75a0-b89d-0ffcc9a25fe1.
+
+## RestoreWorkspace
+
+As a user-developer, I want Xcmd to restore my workspace after an update so that
+I can keep working while trying a new local build.
+
+### Implementation decisions
+
+- Use restart with session restoration for local updates. Preserve both panel paths,
+  cursors, marks, sorting, history, scroll positions, column widths and window position,
+  restoring the main application window.
+  Sources: [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 5](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-5); [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 6](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-6).
+
+- Reopen separate viewer windows after an automatic update. Restore each file or
+  document, reading mode, reading position and window placement. Keep the current
+  application's focus during a background update. Reset Quick View and return from
+  Git Log to its previous panel state. Restore viewer windows only on automatic
+  updates.
+  Source: Codex session ID 01a1edc9-75d1-75a0-b89d-0ffcc9a25fe1.
+
 ## StableShortcut
 
 As a user-developer, I want to use a permanent application entry point across releases
