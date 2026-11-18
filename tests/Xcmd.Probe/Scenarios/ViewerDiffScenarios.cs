@@ -53,6 +53,29 @@ public static class ViewerDiffScenarios
             await ToggleAsync(c, viewer);
             Check(!Text(viewer).Contains("index value", StringComparison.Ordinal), "Returning to text shows only the working copy");
         }),
+        new("viewer-git-diff-status-click", "Clicking the Git status switches between the working text and its diff", async c =>
+        {
+            const string name = "changed.txt";
+            c.AddFile(name, "original\n");
+            using var repository = await InitializeAsync(c, name);
+            c.AddFile(name, "working\n");
+            var viewer = await OpenAsync(c, name);
+            var status = GitStatus(viewer);
+            Equal("Git: Changed · Show Diff (Ctrl+D)", ToolTip.GetTip(status), "The status explains how to open the diff");
+            await c.ClickAsync(status, target: viewer);
+            Equal("original\nworking\n", Text(viewer), "The Git status opens the diff");
+            Equal("Git: Changed · Show Text (Ctrl+D)", ToolTip.GetTip(status), "The status explains how to return to the working text");
+
+            await c.KeyAsync(Key.F12, target: viewer);
+            await c.ClickAsync(status, target: viewer);
+            var comment = c.Window.Feedback.ActiveComment;
+            Check(comment != null, "The Git status remains selectable for feedback");
+            Equal("original\nworking\n", Text(viewer), "Selecting the status for feedback leaves the diff open");
+            await c.KeyAsync(Key.Escape, target: comment);
+
+            await c.ClickAsync(status, target: viewer);
+            Equal("working\n", Text(viewer), "The Git status returns to the working text");
+        }),
         new("viewer-git-diff-status-and-rename", "F3 reports the Git state even when a text diff is unavailable or empty", async c =>
         {
             using var external = new ChildRepositoryFixture();
@@ -74,6 +97,10 @@ public static class ViewerDiffScenarios
             viewer = await OpenAsync(c, "binary.dat");
             CheckGitState(viewer, "Unchanged");
             Check(!ViewerProbe.Command(viewer, "viewer.diff").IsVisible, "Binary mode has no text comparison");
+            var binaryStatus = GitStatus(viewer);
+            Equal("Git: Unchanged", ToolTip.GetTip(binaryStatus), "The Git status only reports the state when a diff is unavailable");
+            await c.ClickAsync(binaryStatus, target: viewer);
+            Equal(FileViewMode.Hex, viewer.Reader.Mode, "Clicking the passive status leaves the binary view open");
             await c.KeyAsync(Key.Escape, target: viewer);
 
             await GitFixture.RunAsync(c.LeftPath, "mv", "--", "original.txt", "renamed 日本語.txt");
@@ -216,8 +243,8 @@ public static class ViewerDiffScenarios
             await ReleaseDiffKeyAsync(c, c.Window);
             Equal("original\nworking\n", reader.TextContent.Text, "The reader shortcut shows the combined diff");
             Equal<Window?>(null, c.Window.ActiveNavigationDialog, "The reader shortcut stays in Quick View");
-            await c.KeyAsync(Key.D, RawInputModifiers.Control);
-            Equal("working\n", reader.TextContent.Text, "The reader shortcut returns to the working text");
+            await c.ClickAsync(GitStatus(reader));
+            Equal("working\n", reader.TextContent.Text, "Clicking the status also returns Quick View to the working text");
         })
     ];
 }

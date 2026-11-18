@@ -157,6 +157,9 @@ my work and see what is ready to commit.
   to the file on disk. Report an empty text diff as `No changes`.
   Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
 
+- Click the Git status to switch between the diff and the working text when
+  the viewer offers a diff. Codex session ID 01a1eee1-a068-74a2-bc82-957994e5e017.
+
 - Keep all visible text searchable and copyable, including deleted and
   intermediate lines. Keep change markers outside the copied text. Provide
   menu commands and keys for switching the view and moving to the previous

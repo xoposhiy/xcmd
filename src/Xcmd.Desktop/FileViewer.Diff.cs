@@ -1,9 +1,7 @@
 // @implements ReadWorkingFileDiff
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -14,16 +12,7 @@ public sealed partial class FileViewer
 {
     private readonly ViewerGitDiff gitDiff = new();
     private readonly ViewerDiffOverlay diffOverlay = new ViewerDiffOverlay().WithFeedbackId("FileViewer.diffOverlay");
-    private readonly TextBlock gitStatus = new TextBlock
-    {
-        Name = "ViewerGitStatus",
-        Margin = new Thickness(8, 2),
-        FontSize = UiPalette.MetaSize,
-        FontWeight = FontWeight.SemiBold,
-        HorizontalAlignment = HorizontalAlignment.Left,
-        TextTrimming = TextTrimming.CharacterEllipsis,
-        IsVisible = false
-    }.WithFeedbackId("FileViewer.gitStatus");
+    private readonly ViewerGitStatusLabel gitStatus = new ViewerGitStatusLabel().WithFeedbackId("FileViewer.gitStatus");
     private ViewerGitFile? gitFile;
     private ViewerDiffDisplay? diff;
     private int diffPageStart;
@@ -49,7 +38,7 @@ public sealed partial class FileViewer
         status.Children.Add(gitStatus);
         status.Children.Add(readingStatus);
         status.Children.Add(feedbackStatus);
-        AutomationProperties.SetAutomationId(gitStatus, "viewer.git-status");
+        gitStatus.ToggleRequested += ToggleDiff;
         return status;
     }
 
@@ -64,7 +53,9 @@ public sealed partial class FileViewer
     private void UpdateDiffCommands()
     {
         diffItem.IsVisible = DiffAvailable || diff != null;
-        diffItem.Header = diff == null ? "Show Diff" : "Show Text";
+        var action = diff == null ? "Show Diff" : "Show Text";
+        diffItem.Header = action;
+        gitStatus.SetAction(diffItem.IsVisible ? action : null);
         nextChange.IsVisible = previousChange.IsVisible = diff != null;
         nextChange.IsEnabled = previousChange.IsEnabled = diff?.Changes.Length > 0;
     }
@@ -81,7 +72,6 @@ public sealed partial class FileViewer
     {
         gitStatus.Text = status == null ? null : "Git: " + status;
         gitStatus.IsVisible = status != null;
-        ToolTip.SetTip(gitStatus, gitStatus.Text);
     }
 
     private static string StatusText(ViewerGitStatus status) => status switch

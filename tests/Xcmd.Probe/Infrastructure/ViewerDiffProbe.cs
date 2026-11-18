@@ -33,9 +33,11 @@ public static class ViewerDiffProbe
         return context.Window.Viewer!;
     }
 
+    public static TextBlock GitStatus(Control reader) => reader.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "ViewerGitStatus");
+
     public static void CheckGitState(FileViewerWindow viewer, string expected)
     {
-        var status = viewer.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "ViewerGitStatus");
+        var status = GitStatus(viewer);
         ProbeContext.Equal("Git: " + expected, status.Text, "The status bar identifies the Git state");
         var point = status.TranslatePoint(default, viewer);
         ProbeContext.Check(status.IsVisible && status.Bounds.Height > 0 && point is { X: >= 0 and <= 16 } position
