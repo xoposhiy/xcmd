@@ -134,9 +134,17 @@ the information that matters in the space available.
 
 ### Implementation decisions
 
-- Let the last column fill the remaining width without an extra rightmost resize
-  divider. Provide a way to restore default column widths, including enough space for
-  sizes up to 10 GB. Center cell and header text vertically and keep headers readable.
+- Resize one file column at a time and restore saved widths with the workspace.
+  Reset Columns restores compact widths for metadata and gives the remaining room to Name.
+  Feedback 1b88afc. Codex session ID 01a1ef9b-ff1b-7082-83cc-e211650ce3de.
+
+- When the panel width changes, keep the metadata widths and let Name fill the remaining
+  space. Apply the same rule when returning from search results or Git history after a
+  resize. Use horizontal scrolling if the visible columns and the minimum Name width cannot
+  fit in the panel.
+  Codex session ID 01a1ef9c-5407-74e1-98d4-2d74a32c1b5e.
+
+- Center cell and header text vertically and keep headers readable.
   Sources: [2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md → Turn 7](../codex-sessions/2026-11-09T19-49-39-01a1c1a4-fdf2-7172-84c8-c549a746618d.md#turn-7); [2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md → Turn 1](../codex-sessions/2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md#turn-1).
 
 - Keep file-type categories and their color mapping in configuration. Distinguish text,

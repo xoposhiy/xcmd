@@ -1,4 +1,4 @@
-// @tests OpenOtherPanel, SortEntries, RefreshEntries, MarkEntries, RenameEntry, TransferEntries, SearchResultPanel, OpenViewers, BrowseArchives, RunCommand, RestoreWorkspace
+// @tests OpenOtherPanel, SortEntries, ReadablePanels, RefreshEntries, MarkEntries, RenameEntry, TransferEntries, SearchResultPanel, OpenViewers, BrowseArchives, RunCommand, RestoreWorkspace
 using Avalonia.Input;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -57,11 +57,13 @@ public static class SearchPanelScenarios
             SearchProbe.TextFile(c, "second/same.txt", "second");
             await c.Window.Left.LoadAsync(c.LeftPath);
             await c.SelectAsync("first");
-            var before = c.Window.Left.CaptureState();
+            var panel = c.Window.Left;
+            panel.Table.Columns[0].Width = new GridLength(100);
+            panel.Table.Columns[1].Width = new GridLength(125);
+            var before = panel.CaptureState();
             var search = await SearchProbe.OpenAsync(c, "same.txt");
             Equal(2, SearchProbe.Results(search).Length, "Both same-named files found");
             await c.KeyAsync(Key.P, RawInputModifiers.Alt, search);
-            var panel = c.Window.Left;
             Check(panel.IsSearchResults && c.Window.FileSearch.Window == null, "Alt+P transfers results and closes search");
             Equal(2, panel.Rows.Count, "No parent or unrelated rows in result panel");
             Equal(2, panel.Rows.Select(row => row.Name).Distinct().Count(), "Relative paths distinguish duplicate names");
@@ -79,11 +81,15 @@ public static class SearchPanelScenarios
             var sessionFile = Path.Combine(c.FixturePath, "search-panel-session.json");
             var store = new SessionStore(sessionFile);
             await store.SaveAsync(saved);
+            c.Window.Width = 1480;
+            await c.SettleAsync();
             await c.KeyAsync(Key.Escape);
             Check(!panel.IsSearchResults, "Escape leaves results");
             Equal(before.DirectoryPath, panel.Session.DirectoryPath, "Escape restores original folder");
             Equal(before.Cursor, panel.Current?.Name, "Escape restores original cursor");
             Check(before.Selected.SequenceEqual(panel.SelectedNames()), "Escape restores original selection");
+            Check(panel.Table.Columns[0].ActualWidth > 100, "Name fits the resized window when leaving search results");
+            Equal(125d, panel.Table.Columns[1].Width.Value, "Leaving search results preserves the custom Type width");
             await c.Window.RestoreWorkspaceAsync((await store.ReadAsync())!);
             Check(panel.IsSearchResults && panel.Rows.Count == 2, "Saved workspace restores results");
             Equal(wanted, panel.Current?.Entry.FullPath, "Saved workspace restores result cursor");

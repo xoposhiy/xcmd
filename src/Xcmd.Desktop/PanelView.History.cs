@@ -5,12 +5,12 @@ namespace Xcmd.Desktop;
 
 public sealed partial class PanelView
 {
-    private PanelState? gitReturnState;
+    private (PanelState State, double Width)? gitReturnState;
     public bool HasHistory => GitPath.IsEntry(Session.DirectoryPath);
 
     public async Task<bool> OpenHistoryAsync(string location, CancellationToken cancellationToken = default)
     {
-        var saved = gitReturnState ?? CaptureState();
+        var saved = gitReturnState ?? (CaptureState(), Table.Bounds.Width);
         if (!await LoadAsync(location, cancellationToken: cancellationToken)) return false;
         gitReturnState = saved;
         if (Rows.FirstOrDefault(row => !row.Entry.IsParent) is { } first) SelectRow(first);
@@ -25,7 +25,7 @@ public sealed partial class PanelView
             FocusCurrent(); return;
         }
         gitReturnState = null;
-        await RestoreStateAsync(saved); RestoreScroll(saved); FocusCurrent(scrollIntoView: false);
+        await RestoreTemporaryViewAsync(saved);
     }
 
     public async Task BackHistoryAsync(CancellationToken cancellationToken = default)

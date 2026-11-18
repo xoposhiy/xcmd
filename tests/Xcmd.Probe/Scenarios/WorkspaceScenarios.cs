@@ -23,8 +23,9 @@ public static class WorkspaceScenarios
             await c.SelectAsync("folder1"); await c.KeyAsync(Key.Enter); await c.SelectAsync("inside.txt"); await c.KeyAsync(Key.Back);
             await c.ClickAsync(c.Row("alpha.txt")); await c.ClickAsync(c.Row("file2.log"), RawInputModifiers.Control);
             await c.ClickHeaderAsync("Size");
-            c.Window.Left.Table.Columns[0].Width = new GridLength(240);
             c.Window.Width = 1120; c.Window.Height = 640; c.Window.Position = new PixelPoint(20, 30);
+            await c.SettleAsync();
+            c.Window.Left.Table.Columns[0].Width = new GridLength(240);
             await c.KeyAsync(Key.Tab);
             var expected = c.Window.CaptureWorkspace();
             var store = new SessionStore(Path.Combine(c.FixturePath, "session.json"));

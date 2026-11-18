@@ -165,7 +165,7 @@ public static class GitRowsScenarios
                 Equal(97d, panel.Table.Columns[1].Width.Value, "A four-column session keeps its type width");
                 Equal(144d, panel.Table.Columns[2].Width.Value, "A four-column session keeps its size width");
                 Equal(56d, panel.Table.Columns[3].Width.Value, "The new Git column receives its compact default");
-                Check(panel.Table.Columns[^1].Width.IsStar, "The modified column retains its final stretch position");
+                Check(panel.Table.Columns[^1].Width.IsAbsolute, "The former stretch column receives its default fixed width");
                 var store = new SessionStore(Path.Combine(c.FixturePath, "columns.json"));
                 await store.SaveAsync(c.Window.CaptureWorkspace());
                 Equal(5, (await store.ReadAsync())!.Left.Columns.Length, "The new session persists all five column preferences");
@@ -179,7 +179,8 @@ public static class GitRowsScenarios
                         c.Window.Width = width; await c.SettleAsync();
                         Check(panel.Table.Columns[3].IsVisible, "The Git icons remain visible at the minimum window width");
                         var scroll = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
-                        Check(scroll.Extent.Width <= scroll.Viewport.Width + 1, "The new column does not cause horizontal overflow");
+                        Check(width == 840 ? scroll.Extent.Width > scroll.Viewport.Width : scroll.Extent.Width <= scroll.Viewport.Width + 1,
+                            "Horizontal scrolling is available when the default columns exceed the viewport");
                         Equal("alpha.txt", panel.Current?.Name, "Column adaptation preserves the file cursor");
                         await c.ScreenshotAsync("git-columns-" + width + "-" + scale * 100);
                     }

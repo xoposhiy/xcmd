@@ -27,6 +27,7 @@ public sealed partial class PanelView : Border
     private int loadVersion;
     private string? rangeAnchor;
     private FileTypes fileTypes;
+    private readonly FilePanelColumns columns;
     private FileRow? currentRow;
     private bool isActive;
     private HashSet<FileRow> markedRows = [];
@@ -67,14 +68,14 @@ public sealed partial class PanelView : Border
 
     public PanelState CaptureState()
     {
-        if (HasHistory && gitReturnState != null) return gitReturnState;
+        if (HasHistory && gitReturnState is { } saved) return saved.State;
         if (searchResults != null) return CaptureSearchState();
         Session.RememberCursor(Current?.Name);
         var offset = Scroll?.Offset ?? default;
         return new(Session.DirectoryPath, Session.SortOrder, Current?.Name,
             CaptureRowSelection(),
             Session.PreviousDirectories.ToArray(), Session.CaptureCursors(),
-            Table.Columns.Select(column => new ColumnState(column.Width.Value, column.Width.IsStar)).ToArray(), offset.X, offset.Y, sizes.Values.ToArray(), keyboardMarks || SelectedNames().Length > 1);
+            columns.Capture(), offset.X, offset.Y, sizes.Values.ToArray(), keyboardMarks || SelectedNames().Length > 1);
     }
 
     public async Task RestoreStateAsync(PanelState state)
@@ -86,7 +87,7 @@ public sealed partial class PanelView : Border
         keyboardMarks = state.HasMarks || state.Selected.Length > 1 || state.Selected.Length > 0 && !state.Selected.Contains(state.Cursor, StringComparer.OrdinalIgnoreCase);
         ApplyEntries(state.Selected, state.Cursor);
         if (state.Selected.Length == 0) Table.SelectedItems?.Clear();
-        RestoreColumnWidths(state.Columns);
+        columns.Restore(state.Columns);
         UpdateHeaders();
         UpdateSummary();
         if (state.SearchResults is { } results) RestoreSearchState(results);
@@ -96,6 +97,14 @@ public sealed partial class PanelView : Border
     {
         Table.UpdateLayout();
         if (Scroll is { } scroll) scroll.Offset = state.SearchResults is { } results ? new Vector(results.ScrollX, results.ScrollY) : new Vector(state.ScrollX, state.ScrollY);
+    }
+
+    private async Task RestoreTemporaryViewAsync((PanelState State, double Width) saved)
+    {
+        await RestoreStateAsync(saved.State);
+        columns.FitNameAfterResize(saved.Width);
+        RestoreScroll(saved.State);
+        FocusCurrent(scrollIntoView: false);
     }
 
     private ScrollViewer? Scroll => Table.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
@@ -204,6 +213,7 @@ public sealed partial class PanelView : Border
         Table.IsTextSearchEnabled = false;
         ScrollViewer.SetBringIntoViewOnFocusChange(Table, false);
         ScrollViewer.SetAllowAutoHide(Table, false);
+        ScrollViewer.SetHorizontalScrollBarVisibility(Table, ScrollBarVisibility.Auto);
         Table.Resources["TableViewColumnResizerMargin"] = new Thickness(0);
         Table.Resources["TableViewRowPadding"] = new Thickness(0);
         Table.ItemContainerTheme = FileRowTheme.Create();
@@ -214,14 +224,12 @@ public sealed partial class PanelView : Border
         Table.Columns.Add(MakeGitColumn());
         Table.Columns.Add(Column(SortField.Modified, "Modified", new GridLength(145)));
         logPresentation = new GitLogPresentation(Table);
+        columns = new FilePanelColumns(Table, logPresentation);
         Git.StatusChanged += ApplyGitStatus;
         ResetColumns();
-        Table.Loaded += (_, _) => { ConfigureHeaders(); QueueColumnAdaptation(); };
+        Table.Loaded += (_, _) => ConfigureHeaders();
         Table.TemplateApplied += (_, _) => headersConfigured = false;
         Table.LayoutUpdated += (_, _) => { if (!headersConfigured) ConfigureHeaders(); };
-        Table.SizeChanged += (_, _) => QueueColumnAdaptation();
-        foreach (var column in Table.Columns)
-            column.PropertyChanged += OnColumnChanged;
         Table.SelectionChanged += (_, _) => UpdateSummary();
         Table.GotFocus += (_, e) =>
         {
@@ -309,26 +317,13 @@ public sealed partial class PanelView : Border
         UpdateHeaders();
     }
 
-    public void ResetColumns()
-    {
-        if (logPresentation.ResetWidths()) return;
-        headersConfigured = false;
-        Table.Columns[0].Width = new GridLength(3, GridUnitType.Star);
-        Table.Columns[1].Width = new GridLength(88);
-        Table.Columns[1].MinWidth = 72;
-        Table.Columns[2].Width = new GridLength(128);
-        Table.Columns[2].MinWidth = 112;
-        Table.Columns[GitColumnIndex].Width = new GridLength(56);
-        Table.Columns[^1].Width = new GridLength(1, GridUnitType.Star);
-        Table.Columns[^1].MinWidth = 150;
-        Table.Columns[^1].CanUserResize = false;
-        ConfigureHeaders();
-    }
+    public void ResetColumns() => columns.Reset();
 
     private void ConfigureHeaders()
     {
         foreach (var viewer in Table.GetVisualDescendants().OfType<ScrollViewer>()) viewer.AllowAutoHide = false;
         foreach (var presenter in Table.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ScrollContentPresenter>()) presenter.ClipToBounds = true;
+        columns.ClipHeaders();
         var headers = Table.GetVisualDescendants().OfType<TableViewColumnHeader>().ToArray();
         if (headers.Length < Table.Columns.Count(column => column.IsVisible)) return;
         headersConfigured = true;
@@ -338,8 +333,6 @@ public sealed partial class PanelView : Border
             header.VerticalContentAlignment = VerticalAlignment.Stretch;
             header.VerticalAlignment = VerticalAlignment.Stretch;
             header.Padding = new Thickness(0); header.MinHeight = UiPalette.RowHeight;
-            if (header.Column == Table.Columns[^1])
-                foreach (var thumb in header.GetVisualDescendants().OfType<Thumb>()) thumb.IsVisible = false;
         }
     }
 
@@ -398,7 +391,7 @@ public sealed partial class PanelView : Border
     public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default, bool nearestExistingParent = false)
     {
         var version = ++loadVersion;
-        var gitReturn = GitPath.IsEntry(directory) && !HasHistory ? CaptureState() : null;
+        (PanelState State, double Width)? gitReturn = GitPath.IsEntry(directory) && !HasHistory ? (CaptureState(), Table.Bounds.Width) : null;
         LoadingRequested?.Invoke(this);
         CancelRename();
         if (!preserveSelection) keyboardMarks = false;
@@ -418,7 +411,7 @@ public sealed partial class PanelView : Border
         return true;
     }
 
-    private void ApplyDirectoryLoad(string previousPath, PanelState? gitReturn, string[] selected, string? selectName)
+    private void ApplyDirectoryLoad(string previousPath, (PanelState State, double Width)? gitReturn, string[] selected, string? selectName)
     {
         gitReturnState = HasHistory ? gitReturn ?? gitReturnState : null;
         searchResults = null;
@@ -451,6 +444,7 @@ public sealed partial class PanelView : Border
         foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
         Table.ItemsSource = Rows;
         ApplyGitStatus();
+        columns.UpdateRows(Rows);
         ShowNameMatches(nameSearch);
         Table.SelectedItems?.Clear();
         foreach (var row in Rows.Where(row => selected.Contains(row.Name, StringComparer.OrdinalIgnoreCase)))

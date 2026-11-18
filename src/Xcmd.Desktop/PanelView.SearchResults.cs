@@ -9,7 +9,7 @@ namespace Xcmd.Desktop;
 public sealed partial class PanelView
 {
     private FileSearchResult[]? searchResults;
-    private PanelState? searchReturnState;
+    private (PanelState State, double Width)? searchReturnState;
     private string searchRoot = "";
     public bool IsSearchResults => searchResults != null;
     public string OperationDirectory => IsSearchResults && Current is { } row ? ArchivePath.Parent(row.Entry.FullPath) ?? Session.DirectoryPath : Session.DirectoryPath;
@@ -21,7 +21,7 @@ public sealed partial class PanelView
         LoadingRequested?.Invoke(this);
         Session.CancelLoad();
         CancelRename();
-        searchReturnState ??= CaptureState();
+        searchReturnState ??= (CaptureState(), Table.Bounds.Width);
         searchRoot = root;
         searchResults = results.DistinctBy(result => result.Entry.FullPath, StringComparer.OrdinalIgnoreCase).ToArray();
         keyboardMarks = false;
@@ -36,9 +36,7 @@ public sealed partial class PanelView
     public async Task ExitSearchResultsAsync()
     {
         if (searchReturnState is not { } saved) return;
-        await RestoreStateAsync(saved);
-        RestoreScroll(saved);
-        FocusCurrent(scrollIntoView: false);
+        await RestoreTemporaryViewAsync(saved);
     }
 
     private PanelState CaptureSearchState()
@@ -46,9 +44,9 @@ public sealed partial class PanelView
         var offset = Scroll?.Offset ?? default;
         var results = new SearchPanelState(searchRoot, searchResults!, Current?.Name, CaptureRowSelection(),
             keyboardMarks, Session.SortOrder, offset.X, offset.Y);
-        return searchReturnState! with
+        return searchReturnState!.Value.State with
         {
-            Columns = Table.Columns.Select(column => new ColumnState(column.Width.Value, column.Width.IsStar)).ToArray(),
+            Columns = columns.Capture(),
             SearchResults = results
         };
     }
@@ -56,7 +54,7 @@ public sealed partial class PanelView
     private void RestoreSearchState(SearchPanelState saved)
     {
         ShowSearchResults(saved.Root, saved.Results);
-        Session.RestoreNavigation(searchReturnState! with { Sort = saved.Sort });
+        Session.RestoreNavigation(searchReturnState!.Value.State with { Sort = saved.Sort });
         keyboardMarks = saved.HasMarks;
         ApplyEntries(saved.Selected, saved.Cursor);
         if (saved.Selected.Length == 0) Table.SelectedItems?.Clear();

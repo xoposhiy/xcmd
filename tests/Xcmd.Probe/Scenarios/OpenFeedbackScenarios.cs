@@ -14,7 +14,7 @@ public static class OpenFeedbackScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
-        new("open-feedback-resize-boundaries", "UC20; continuous window resizing across column visibility boundaries remains responsive", async c =>
+        new("open-feedback-resize-boundaries", "Continuous window resizing with fixed column widths remains responsive", async c =>
         {
             var layouts = 0;
             c.Window.Right.Table.Columns[0].Width = new GridLength(369.33333333333326);
@@ -62,7 +62,7 @@ public static class OpenFeedbackScenarios
             await c.KeyAsync(Key.P, RawInputModifiers.Alt, search);
             Check(c.Window.Left.IsSearchResults, "Alt+P still transfers results");
         }),
-        new("open-feedback-responsive-columns", "UC20; shrink names and hide rightmost columns without losing saved widths or selection", async c =>
+        new("open-feedback-responsive-columns", "Narrow panels keep every column reachable without changing saved widths or selection", async c =>
         {
             var panel = c.Window.Left;
             await c.SelectAsync("alpha.txt");
@@ -73,25 +73,30 @@ public static class OpenFeedbackScenarios
             foreach (var scale in new[] { 1d, 1.5d })
             {
                 c.Window.SetScaleForTest(scale);
-                foreach (var (width, visible) in new[] { (600d, 5), (520d, 4), (400d, 4), (350d, 3), (250d, 2), (140d, 1), (600d, 5) })
+                foreach (var width in new[] { 600d, 520d, 400d, 250d, 140d, 600d })
                 {
                     panel.Width = width;
                     await c.SettleAsync();
-                    Equal(visible, panel.Table.Columns.Count(column => column.IsVisible), "Columns hide from the right at width " + width);
-                    Check(panel.Table.Columns.Take(visible).All(column => column.IsVisible), "Available columns hide from the right");
+                    Check(panel.Table.Columns.All(column => column.IsVisible), "Every column remains available");
                     var scroll = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
-                    Check(scroll.Extent.Width <= scroll.Viewport.Width + 1, "No horizontal overflow while the name minimum fits");
+                    if (width <= 400) Check(scroll.Extent.Width > scroll.Viewport.Width, "Narrow panels make overflow reachable");
                     Equal(cursor, panel.Current?.Name, "Resize preserves cursor");
                     Check(marks.SequenceEqual(panel.SelectedNames()), "Resize preserves marks");
                     Check(widths.SequenceEqual(panel.CaptureState().Columns), "Responsive layout preserves saved column widths");
                 }
                 panel.Width = 250; await c.SettleAsync();
+                var narrow = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
+                narrow.Offset = new Vector(narrow.Extent.Width - narrow.Viewport.Width, narrow.Offset.Y);
+                await c.SettleAsync();
+                var modified = panel.Table.GetVisualDescendants().OfType<TableViewColumnHeader>().Last();
+                var rightEdge = modified.TranslatePoint(new Point(modified.Bounds.Width, 0), panel.Table)!.Value.X;
+                Check(narrow.Offset.X > 0 && rightEdge <= narrow.Viewport.Width + 2, "Horizontal scrolling brings the Modified header into view");
                 await c.ScreenshotAsync("responsive-columns-" + scale * 100);
             }
             panel.Table.Columns[0].Width = new GridLength(900);
             await c.SettleAsync();
             var viewer = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
-            Check(viewer.Extent.Width <= viewer.Viewport.Width + 1, "An oversized restored name width shrinks to available space");
+            Check(viewer.Extent.Width > viewer.Viewport.Width, "An oversized name width can be scrolled");
             Equal(900d, panel.CaptureState().Columns[0].Width, "Preferred name width remains saved");
         })
     ];

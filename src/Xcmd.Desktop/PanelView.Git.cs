@@ -10,15 +10,12 @@ namespace Xcmd.Desktop;
 
 public sealed partial class PanelView
 {
-    private const int GitColumnIndex = 3;
     private readonly GitPanelRows gitRows = new();
-    private bool showGitColumn;
 
     private void ApplyGitStatus()
     {
-        showGitColumn = gitRows.Apply(Rows, Git, Session.DirectoryPath, IsSearchResults);
-        ToolTip.SetTip((Control)Table.Columns[GitColumnIndex].Header!, gitRows.Legend(Session.DirectoryPath));
-        QueueColumnAdaptation();
+        columns.ShowGit(gitRows.Apply(Rows, Git, Session.DirectoryPath, IsSearchResults));
+        ToolTip.SetTip((Control)Table.Columns[FilePanelColumns.GitIndex].Header!, gitRows.Legend(Session.DirectoryPath));
     }
 
     private static TableViewColumn MakeGitColumn()

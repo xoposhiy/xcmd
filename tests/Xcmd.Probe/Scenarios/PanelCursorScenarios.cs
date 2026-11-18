@@ -1,6 +1,7 @@
 // @tests NavigatePanels, JumpToName, ReadablePanels, MarkEntries, RestoreWorkspace
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using Avalonia.Media;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
@@ -68,23 +69,29 @@ public static class PanelCursorScenarios
         {
             for (var index = 0; index < 80; index++) c.AddFile($"viewport-{index:D3}.txt", "viewport");
             await c.Window.Left.LoadAsync(c.LeftPath); c.Window.Height = 550;
+            var scroll = c.Window.Left.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
             foreach (var scale in new[] { 1d, 1.5d })
             foreach (var width in new[] { 1000d, 1280d })
             {
                 c.Window.SetScaleForTest(scale); c.Window.Width = width;
                 await c.KeyAsync(Key.Escape); await c.SelectAsync("alpha.txt");
-                var layout = Geometry(c.Window.Left, "alpha.txt"); NoHorizontalScroll(c.Window.Left);
-                await c.KeyAsync(Key.Down); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt")); NoHorizontalScroll(c.Window.Left);
+                var layout = Geometry(c.Window.Left, "alpha.txt");
+                var scrollWidth = scroll.Extent.Width - scroll.Viewport.Width;
+                await c.KeyAsync(Key.Down); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt"));
                 await c.KeyAsync(Key.Up); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt"));
-                await c.KeyAsync(Key.Down, RawInputModifiers.Shift); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt")); NoHorizontalScroll(c.Window.Left);
-                await c.KeyAsync(Key.Up); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt")); NoHorizontalScroll(c.Window.Left);
-                await c.KeyAsync(Key.End); NoHorizontalScroll(c.Window.Left);
-                await c.KeyAsync(Key.Home); NoHorizontalScroll(c.Window.Left);
+                await c.KeyAsync(Key.Down, RawInputModifiers.Shift); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt"));
+                await c.KeyAsync(Key.Up); SameGeometry(layout, Geometry(c.Window.Left, "alpha.txt"));
+                await c.KeyAsync(Key.End);
+                await c.KeyAsync(Key.Home);
+                Equal(scrollWidth, scroll.Extent.Width - scroll.Viewport.Width, "Cursor and mark changes keep the same horizontal overflow.");
+                if (width == 1280) NoHorizontalScroll(c.Window.Left);
                 await c.ScreenshotAsync($"stable-table-{width}-{scale * 100}");
             }
             c.Window.Left.Table.Columns[0].Width = new GridLength(900); await c.SettleAsync();
+            var extent = scroll.Extent.Width;
+            Check(extent > scroll.Viewport.Width, "An explicitly widened column adds horizontal overflow.");
             await c.KeyAsync(Key.End); await c.KeyAsync(Key.Home);
-            NoHorizontalScroll(c.Window.Left);
+            Equal(extent, scroll.Extent.Width, "The cursor leaves the manual horizontal extent unchanged.");
         }),
         new("cursor-single-mark-session-roundtrip", "UC38; Preserve one marked file under the cursor", async c =>
         {

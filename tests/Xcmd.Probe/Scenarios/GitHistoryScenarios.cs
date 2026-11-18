@@ -1,4 +1,5 @@
-// @tests SortEntries, DiscoverShortcuts, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff, RepositoryLocations, RepositoryDocuments
+// @tests SortEntries, ReadablePanels, DiscoverShortcuts, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff, RepositoryLocations, RepositoryDocuments
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Xcmd.Core;
@@ -81,6 +82,8 @@ public static class GitHistoryScenarios
             using var fixture = await GitHistoryFixture.CreateAsync(c.LeftPath);
             var panel = c.Window.Right;
             var originalTable = panel.Table;
+            originalTable.Columns[0].Width = new GridLength(100);
+            originalTable.Columns[1].Width = new GridLength(125);
             await c.SelectAsync("folder1");
             await c.KeyAsync(Key.L, RawInputModifiers.Control | RawInputModifiers.Alt);
             Equal(panel, c.Window.ActivePanel, "The adjacent history panel receives focus");
@@ -95,6 +98,8 @@ public static class GitHistoryScenarios
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.Enter);
             Equal("tree", GitPath.Parse(panel.Session.DirectoryPath).Kind, "Enter opens the complete commit tree");
+            c.Window.Width = 1480;
+            await c.SettleAsync();
             Equal(originalTable, panel.Table, "The same file table renders the log and snapshot");
             Check(panel.Session.FileSystem is GitFileSystem, "PanelSession reads through the Git virtual filesystem");
             Check(panel.IsCommitMessageVisible && panel.CommitMessage.Text!.Contains("Full nested commit message.", StringComparison.Ordinal), "The full message identifies the opened commit");
@@ -129,6 +134,8 @@ public static class GitHistoryScenarios
             Check(GitPath.IsLog(panel.Session.DirectoryPath) && panel.Current!.Name.EndsWith(" Update nested files", StringComparison.Ordinal), "Back returns to the same commit");
             await c.KeyAsync(Key.Escape);
             Equal(c.RightPath, panel.Session.DirectoryPath, "Escape restores the original adjacent folder");
+            Check(originalTable.Columns[0].ActualWidth > 100, "Name fits the resized window when leaving history");
+            Equal(125d, originalTable.Columns[1].Width.Value, "Leaving history preserves the custom Type width");
             c.Window.SetScaleForTest(1);
             c.Window.Activate(c.Window.Left);
             await GitFixture.RefreshAsync(c.Window.Left.Git);

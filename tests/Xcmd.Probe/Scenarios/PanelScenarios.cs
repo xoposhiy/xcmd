@@ -448,19 +448,48 @@ public static class PanelScenarios
             await c.ScreenshotAsync("large-directory");
             RenderingProbe.MeasurePaging(c);
         }),
-        new("column-resize-pointer", "UC13; UC20", async c =>
+        new("column-resize-pointer", "Dragging a divider changes only its column and follows the pointer", async c =>
         {
             var table = c.Window.Left.Table;
-            var header = table.GetVisualDescendants().OfType<TableViewColumnHeader>().First();
+            var header = table.GetVisualDescendants().OfType<TableViewColumnHeader>().Single(item => item.Column == table.Columns[1]);
             var thumb = header.GetVisualDescendants().OfType<Thumb>().First();
             var origin = thumb.TranslatePoint(new Point(thumb.Bounds.Width / 2, thumb.Bounds.Height / 2), c.Window)!.Value;
-            var before = table.Columns[0].ActualWidth;
+            var before = table.Columns.Select(column => column.ActualWidth).ToArray();
             c.Input.MovePointer(origin);
             c.Input.PressPointer(origin, MouseButton.Left);
-            c.Input.MovePointer(origin - new Vector(40, 0), RawInputModifiers.LeftMouseButton);
-            c.Input.ReleasePointer(origin - new Vector(40, 0), MouseButton.Left);
+            foreach (var delta in new[] { 20, 50, 30 })
+            {
+                c.Input.MovePointer(origin + new Vector(delta, 0), RawInputModifiers.LeftMouseButton);
+                await c.SettleAsync();
+                Check(Math.Abs(table.Columns[1].ActualWidth - before[1] - delta) < 2, "The Type divider follows each pointer move");
+                Check(table.Columns.Where((_, index) => index != 1).Select(column => column.ActualWidth)
+                    .SequenceEqual(before.Where((_, index) => index != 1)), "All other column widths stay fixed");
+            }
+            c.Input.ReleasePointer(origin + new Vector(30, 0), MouseButton.Left);
             await c.SettleAsync();
-            Check(table.Columns[0].ActualWidth < before - 20, "Dragging the real column separator shrinks the name column within the panel.");
+            var state = c.Window.Left.CaptureState();
+            await c.Window.Left.RestoreStateAsync(state);
+            await c.SettleAsync();
+            Check(state.Columns.SequenceEqual(c.Window.Left.CaptureState().Columns), "The manual widths survive workspace restore");
+
+            var otherColumns = table.Columns.Skip(1).ToArray();
+            var otherWidths = otherColumns.Select(column => column.ActualWidth).ToArray();
+            var panelWidth = table.Bounds.Width;
+            var nameWidth = table.Columns[0].ActualWidth;
+            var scroll = table.GetVisualDescendants().OfType<ScrollViewer>().First();
+            foreach (var width in new[] { 1120d, 1480d, 1240d })
+            {
+                c.Window.Width = width;
+                await c.SettleAsync();
+                Check(Math.Sign(table.Columns[0].ActualWidth - nameWidth) == Math.Sign(table.Bounds.Width - panelWidth),
+                    "Name shrinks and grows with the window after a manual resize");
+                Check(otherWidths.SequenceEqual(otherColumns.Select(column => column.ActualWidth)), "Window resize keeps the other column widths");
+                var visibleWidth = table.Columns.Where(column => column.IsVisible).Sum(column => column.ActualWidth);
+                Check(scroll.Viewport.Width - visibleWidth is >= -1 and <= 19 && scroll.Extent.Width <= scroll.Viewport.Width + 1,
+                    "Name uses the remaining width and all columns fit without horizontal scrolling");
+                panelWidth = table.Bounds.Width;
+                nameWidth = table.Columns[0].ActualWidth;
+            }
         }),
         new("double-click-directory", "UC20", async c =>
         {

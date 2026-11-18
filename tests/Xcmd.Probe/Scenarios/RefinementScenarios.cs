@@ -218,9 +218,9 @@ public static class RefinementScenarios
             c.Window.Left.Table.Columns[2].Width = new GridLength(250);
             c.Window.Left.ResetColumns(); await c.SettleAsync();
             Check(c.Window.Left.Table.Columns[2].ActualWidth >= 112, "The size column fits a ten-gigabyte byte count.");
-            Check(c.Window.Left.Table.Columns[^1].Width.IsStar && c.Window.Left.Table.Columns[^1].CanUserResize == false, "The final column fills the panel and has no resize action.");
+            Check(c.Window.Left.Table.Columns[^1].Width.IsAbsolute && c.Window.Left.Table.Columns[^1].CanUserResize != false, "The Modified column has its own resizable width.");
             var header = c.Window.Left.Table.GetVisualDescendants().OfType<TableViewColumnHeader>().Last();
-            Check(header.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Thumb>().All(thumb => !thumb.IsVisible), "The final resize divider is hidden.");
+            Check(header.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Thumb>().Any(thumb => thumb.IsVisible), "The Modified divider is visible.");
             var row = c.Row("alpha.txt");
             var texts = row.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text is "TXT" or "3").ToArray();
             Check(texts.Length >= 2 && texts.All(text => Math.Abs(text.TranslatePoint(new Avalonia.Point(0, text.Bounds.Height / 2), row)!.Value.Y - row.Bounds.Height / 2) < 2), "Type and size values are visually centered within the file row.");

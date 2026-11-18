@@ -30,10 +30,12 @@ internal sealed class GitLogPresentation(TableView table)
             SetColumn(1, "Subject", 0, 90);
             SetColumn(2, "Author", 110, 85);
             SetColumn(4, "Date", 145, 130);
+            table.Columns[^1].CanUserResize = false;
             table.Columns[3].IsVisible = false;
         }
         else if (fileColumns != null)
         {
+            table.Columns[^1].CanUserResize = true;
             for (var index = 0; index < table.Columns.Count; index++)
             {
                 var column = table.Columns[index]; var saved = fileColumns[index];

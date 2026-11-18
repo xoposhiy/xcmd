@@ -7,7 +7,7 @@ public sealed partial class PanelView
 
     private void ConfigureLogPresentation()
     {
-        logPresentation.Update(Session);
+        columns.ShowLocation(Session);
         headersConfigured = false;
     }
 }

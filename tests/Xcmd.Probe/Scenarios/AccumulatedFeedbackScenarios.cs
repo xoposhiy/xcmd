@@ -104,13 +104,13 @@ public static class AccumulatedFeedbackScenarios
             Check(type.Width.IsAbsolute && type.ActualWidth >= 88 && type.ActualWidth < 120, "The type column is readable without taking excessive name space");
             var text = c.Row("sample.longconfig").GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "LONGCONFIG");
             Equal("LONGCONFIG", ToolTip.GetTip(text) as string, "The full type remains available in a tooltip");
-            var state = c.Window.Left.CaptureState();
-            Equal(88d, state.Columns[1].Width, "The session records the chosen width");
+            var width = type.Width.Value;
             var store = new SessionStore(Path.Combine(c.FixturePath, "auto-session.json"));
             await store.SaveAsync(c.Window.CaptureWorkspace());
-            Equal(88d, (await store.ReadAsync())!.Left.Columns[1].Width, "The width round-trips through the real validated session format");
+            var state = (await store.ReadAsync())!.Left;
+            Equal(0, state.Columns.Length, "The session keeps automatic sizing");
             await c.Window.Left.RestoreStateAsync(state); await c.SettleAsync();
-            Equal(88d, type.Width.Value, "Restoring a session preserves the width");
+            Equal(width, type.Width.Value, "Automatic sizing restores the same width for the same folder");
             await c.ScreenshotAsync("type-column-readable");
         }),
         new("accumulated-startup-age", "Title bar shows whole minutes and a fresh-update message clears on input", async c =>

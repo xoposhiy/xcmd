@@ -27,6 +27,7 @@ internal static class FileNameCell
             TextTrimming = TextTrimming.CharacterEllipsis,
             FontWeight = row.Entry.IsDirectory ? FontWeight.SemiBold : FontWeight.Normal
         }.WithFeedbackId("PanelView.text.2");
+        ToolTip.SetTip(text, row.Name);
         text.Bind(Control.IsVisibleProperty, new Binding(nameof(FileRow.IsReading)));
         text.Bind(TextBlock.ForegroundProperty, new Binding(nameof(FileRow.NameForeground)));
         text.Bind(FileNameText.MatchStartProperty, new Binding(nameof(FileRow.NameMatchStart)));
