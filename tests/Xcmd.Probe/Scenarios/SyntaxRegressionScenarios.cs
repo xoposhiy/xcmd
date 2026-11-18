@@ -1,4 +1,4 @@
-// @tests ReadLargeFiles, HighlightSource, FollowLog, ReportHighlighting, ArchiveAccess, RepositoryDocuments, SyntaxSpans, AsyncCoordination
+// @tests OpenViewers, ReadLargeFiles, HighlightSource, FollowLog, ReportHighlighting, ArchiveAccess, RepositoryDocuments, SyntaxSpans, AsyncCoordination
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -15,6 +15,26 @@ public static class SyntaxRegressionScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("syntax-page-pointer-drag", "Drag across a highlighted source page", async c =>
+        {
+            var viewer = await SyntaxDragProbe.OpenAsync(c);
+            try
+            {
+                var box = viewer.Reader.TextContent;
+                Check(box.Syntax!.Spans.Count > 500, "The page has dense syntax highlighting");
+                var selected = string.Concat(Enumerable.Repeat(SyntaxDragProbe.SampleLine, 6));
+                c.Measurements["dragStepMedianMs"] = SyntaxDragProbe.Drag(viewer, selected.Length, 0);
+                Equal(selected, box.SelectedText, "Dragging backward selects the exact source text");
+                await c.KeyAsync(Key.C, RawInputModifiers.Control, viewer);
+                Equal(selected, await viewer.Clipboard!.TryGetTextAsync(), "Copy preserves the selected Unicode text");
+                await SyntaxDragProbe.CheckSelectionColorAsync(c, viewer);
+
+                await SyntaxProbe.ChooseLanguageAsync(c, viewer, "plain");
+                SyntaxDragProbe.Drag(viewer, 0, selected.Length);
+                Equal(selected, box.SelectedText, "Dragging forward selects the same plain text");
+            }
+            finally { viewer.Close(); }
+        }),
         new("syntax-report-current-selection-and-copy", "UC09; reports use current selection after menus, support pointer entry and confirm saving", async c =>
         {
             c.AddFile("report.cs", "public class Sample { string first = \"alpha\"; string second = \"beta 😀\"; }\n");
