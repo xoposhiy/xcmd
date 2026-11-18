@@ -11,6 +11,7 @@ public sealed class ConsoleLockFixture : IAsyncDisposable
 {
     private nint console;
     private SafeFileHandle? input;
+    private SafeFileHandle? shellInput;
     private FileStream? output;
     private Task? drain;
     private Process? process;
@@ -33,33 +34,72 @@ public sealed class ConsoleLockFixture : IAsyncDisposable
     {
         if (!CreatePipe(out var inputRead, out var inputWrite, 0, 0)) throw new Win32Exception();
         input = inputWrite;
-        using (inputRead)
-        {
-            if (!CreatePipe(out var outputRead, out var outputWrite, 0, 0)) throw new Win32Exception();
-            output = new FileStream(outputRead, FileAccess.Read);
-            drain = Task.Run(async () => { try { await output.CopyToAsync(Stream.Null); } catch (IOException) { } });
-            using (outputWrite) Marshal.ThrowExceptionForHR(CreatePseudoConsole(new Coord { X = 80, Y = 25 }, inputRead, outputWrite, 0, out console));
-        }
+        using var consoleInput = inputRead;
+        if (!CreatePipe(out var outputRead, out var outputWrite, 0, 0)) throw new Win32Exception();
+        using var consoleOutput = outputWrite;
+        output = new FileStream(outputRead, FileAccess.Read);
+        drain = Task.Run(async () => { try { await output.CopyToAsync(Stream.Null); } catch (IOException) { } });
+        Marshal.ThrowExceptionForHR(CreatePseudoConsole(new Coord { X = 80, Y = 25 }, consoleInput, consoleOutput, 0, out console));
+
+        if (!CreatePipe(out var shellRead, out var shellWrite, 0, 0)) throw new Win32Exception();
+        shellInput = shellWrite;
+        using var standardInput = shellRead;
+        const uint inheritHandle = 1;
+        if (!SetHandleInformation(standardInput, inheritHandle, inheritHandle) ||
+            !SetHandleInformation(consoleOutput, inheritHandle, inheritHandle)) throw new Win32Exception();
+        StartShell(directory, standardInput.DangerousGetHandle(), consoleOutput.DangerousGetHandle());
+    }
+
+    private void StartShell(string directory, nint standardInput, nint standardOutput)
+    {
+        const uint useStandardHandles = 0x100;
+        const uint extendedStartupInfoPresent = 0x80000;
+        const uint pseudoConsoleAttribute = 0x20016;
+        const uint handleListAttribute = 0x20002;
         nuint size = 0;
-        InitializeProcThreadAttributeList(0, 1, 0, ref size);
+        InitializeProcThreadAttributeList(0, 2, 0, ref size);
         var attributes = Marshal.AllocHGlobal((nint)size);
+        nint handles = 0;
         try
         {
-            if (!InitializeProcThreadAttributeList(attributes, 1, 0, ref size)) throw new Win32Exception();
+            handles = Marshal.AllocHGlobal(2 * IntPtr.Size);
+            if (!InitializeProcThreadAttributeList(attributes, 2, 0, ref size)) throw new Win32Exception();
             try
             {
-                if (!UpdateProcThreadAttribute(attributes, 0, 0x20016, console, (nuint)IntPtr.Size, 0, 0)) throw new Win32Exception();
-                var startup = new StartupEx { Info = new Startup { Size = Marshal.SizeOf<StartupEx>() }, Attributes = attributes };
+                Marshal.WriteIntPtr(handles, standardInput);
+                Marshal.WriteIntPtr(handles, IntPtr.Size, standardOutput);
+                if (!UpdateProcThreadAttribute(attributes, 0, pseudoConsoleAttribute, console, (nuint)IntPtr.Size, 0, 0) ||
+                    !UpdateProcThreadAttribute(attributes, 0, handleListAttribute, handles, (nuint)(2 * IntPtr.Size), 0, 0))
+                    throw new Win32Exception();
+
+                // Keep both prompts waiting on the fixture's pipe even when the runner's input is closed.
+                var startup = new StartupEx
+                {
+                    Info = new Startup
+                    {
+                        Size = Marshal.SizeOf<StartupEx>(),
+                        Flags = useStandardHandles,
+                        Input = standardInput,
+                        Output = standardOutput,
+                        Error = standardOutput
+                    },
+                    Attributes = attributes
+                };
                 var cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
                 // Escape redirection so the nested shell writes the readiness file.
                 var command = new StringBuilder("cmd.exe /d /q /k cmd.exe /d /q /k echo ready ^> " + ReadyFile);
-                if (!CreateProcess(cmd, command, 0, 0, false, 0x80000, 0, directory, ref startup, out var created)) throw new Win32Exception();
-                CloseHandle(created.Thread); CloseHandle(created.Process);
-                process = Process.GetProcessById(created.ProcessId);
+                if (!CreateProcess(cmd, command, 0, 0, true, extendedStartupInfoPresent, 0, directory, ref startup, out var created))
+                    throw new Win32Exception();
+                try { process = Process.GetProcessById(created.ProcessId); }
+                finally { CloseHandle(created.Thread); CloseHandle(created.Process); }
             }
             finally { DeleteProcThreadAttributeList(attributes); }
         }
-        finally { Marshal.FreeHGlobal(attributes); }
+        finally
+        {
+            Marshal.FreeHGlobal(handles);
+            Marshal.FreeHGlobal(attributes);
+        }
     }
 
     public Task WaitForExitAsync() => process!.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(3));
@@ -77,6 +117,7 @@ public sealed class ConsoleLockFixture : IAsyncDisposable
             if (!process.HasExited) process.Kill(entireProcessTree: true);
             await process.WaitForExitAsync(); process.Dispose(); process = null;
         }
+        shellInput?.Dispose();
         CloseConsole();
         input?.Dispose();
         if (drain != null) await drain.WaitAsync(TimeSpan.FromSeconds(3));
@@ -99,5 +140,6 @@ public sealed class ConsoleLockFixture : IAsyncDisposable
     [DllImport("kernel32.dll", SetLastError = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool UpdateProcThreadAttribute(nint list, uint flags, nuint attribute, nint value, nuint size, nint previous, nint returned);
     [DllImport("kernel32.dll")] private static extern void DeleteProcThreadAttributeList(nint list);
     [DllImport("kernel32.dll", EntryPoint = "CreateProcessW", CharSet = CharSet.Unicode, SetLastError = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool CreateProcess(string app, StringBuilder command, nint processSecurity, nint threadSecurity, bool inherit, uint flags, nint environment, string directory, ref StartupEx startup, out ProcessInfo process);
+    [DllImport("kernel32.dll", SetLastError = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool SetHandleInformation(SafeFileHandle handle, uint mask, uint flags);
     [DllImport("kernel32.dll")][return: MarshalAs(UnmanagedType.Bool)] private static extern bool CloseHandle(nint handle);
 }
