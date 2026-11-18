@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, ClipboardTransfer, QuickViewFile, BrowseArchives, RestoreWorkspace, RecentLocations
+// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, SearchResultPanel, QuickViewFile, BrowseHistory, RestoreWorkspace, RecentLocations
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -9,7 +9,6 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -21,30 +20,22 @@ public sealed partial class PanelView : Border
     private readonly TextBlock path = new TextBlock() { FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.LeadingCharacterEllipsis }.WithFeedbackId("PanelView.path");
     private readonly TextBlock summary = new TextBlock() { FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("PanelView.summary");
     private readonly Dictionary<SortField, Button> headers = [];
-    private string? cursorName;
     private bool headersConfigured;
-    private bool keyboardMarks;
-    private int loadVersion;
-    private string? rangeAnchor;
-    private FileTypes fileTypes;
+    private readonly PanelContentLoader loader;
+    private readonly PanelSelection selection;
+    private readonly PanelRows panelRows;
+    private readonly PanelFooter footer;
+    private readonly PanelRename rename;
+    private readonly PanelReturnLocations returnLocations = new();
     private readonly FilePanelColumns columns;
-    private FileRow? currentRow;
-    private bool isActive;
-    private HashSet<FileRow> markedRows = [];
-    private HashSet<string> cutPaths = new(StringComparer.OrdinalIgnoreCase);
-    public void SetCutPaths(IEnumerable<string> paths)
-    {
-        cutPaths = paths.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
-    }
-    private readonly Dictionary<string, DirectoryMeasurement> sizes = new(StringComparer.OrdinalIgnoreCase);
+    public void SetCutPaths(IEnumerable<string> paths) => panelRows.SetCutPaths(paths);
     public PanelSession Session { get; }
     public string DisplayPath => PathText.Display(Session.FileSystem is GitFileSystem git ? git.Display(Session.DirectoryPath) : Session.DirectoryPath);
     public TableView Table { get; }
-    public List<FileRow> Rows { get; private set; } = [];
-    public FileRow? EditingRow { get; private set; }
-    public bool IsCommitting { get; private set; }
-    public FileRow? Current => Rows.FirstOrDefault(row => row.Name == cursorName) ?? Table.SelectedItem as FileRow;
+    public List<FileRow> Rows => panelRows.Items;
+    public FileRow? EditingRow => rename.EditingRow;
+    public bool IsCommitting => rename.IsCommitting;
+    public FileRow? Current => selection.Current;
     public string Id { get; }
     public event Action<PanelView>? Activated;
     public event Action<PanelView>? OpenRequested;
@@ -54,43 +45,34 @@ public sealed partial class PanelView : Border
     internal event Action? CurrentEntryChanged;
     public FileIconCache Icons { get; }
     public GitStatusView Git { get; }
-    private NameJump? nameSearch;
-    public void ShowNameMatches(NameJump? search)
-    {
-        nameSearch = search;
-        foreach (var row in Rows)
-        {
-            var match = row.Entry.IsParent ? null : search?.Match(row.Name);
-            row.SetNameMatch(match?.Start ?? 0, match?.Length ?? 0);
-        }
-    }
+    public void ShowNameMatches(NameJump? search) => panelRows.ShowNameMatches(search);
     public static string HomeDirectory => UserDirectories.Home;
 
     public PanelState CaptureState()
     {
-        if (HasHistory && gitReturnState is { } saved) return saved.State;
-        if (searchResults != null) return CaptureSearchState();
+        if (HasHistory && returnLocations.History is { } saved) return saved.State;
+        if (IsSearchResults) return CaptureSearchState();
         Session.RememberCursor(Current?.Name);
         var offset = Scroll?.Offset ?? default;
         return new(Session.DirectoryPath, Session.SortOrder, Current?.Name,
             CaptureRowSelection(),
             Session.PreviousDirectories.ToArray(), Session.CaptureCursors(),
-            columns.Capture(), offset.X, offset.Y, sizes.Values.ToArray(), keyboardMarks || SelectedNames().Length > 1);
+            columns.Capture(), offset.X, offset.Y, panelRows.CaptureMeasurements(), selection.HasMarks);
     }
 
-    public async Task RestoreStateAsync(PanelState state)
+    public async Task<bool> RestoreStateAsync(PanelState state)
     {
-        await LoadAccessibleAsync(state.DirectoryPath);
+        if (!await LoadAccessibleAsync(state.DirectoryPath)) return false;
         Session.RestoreNavigation(state);
-        if (Session.DirectoryPath.Equals(state.DirectoryPath, StringComparison.OrdinalIgnoreCase))
-            foreach (var measurement in state.Sizes ?? []) sizes[measurement.Name] = measurement;
-        keyboardMarks = state.HasMarks || state.Selected.Length > 1 || state.Selected.Length > 0 && !state.Selected.Contains(state.Cursor, StringComparer.OrdinalIgnoreCase);
+        if (Session.DirectoryPath.Equals(state.DirectoryPath, StringComparison.OrdinalIgnoreCase)) panelRows.RestoreMeasurements(state.Sizes);
+        selection.RestoreMarkMode(state);
         ApplyEntries(state.Selected, state.Cursor);
-        if (state.Selected.Length == 0) Table.SelectedItems?.Clear();
+        selection.RestoreEmptySelection(state.Selected);
         columns.Restore(state.Columns);
         UpdateHeaders();
         UpdateSummary();
         if (state.SearchResults is { } results) RestoreSearchState(results);
+        return true;
     }
 
     public void RestoreScroll(PanelState state)
@@ -99,9 +81,11 @@ public sealed partial class PanelView : Border
         if (Scroll is { } scroll) scroll.Offset = state.SearchResults is { } results ? new Vector(results.ScrollX, results.ScrollY) : new Vector(state.ScrollX, state.ScrollY);
     }
 
-    private async Task RestoreTemporaryViewAsync((PanelState State, double Width) saved)
+    internal PanelReturnPoint CaptureReturnPoint() => new(CaptureState(), Table.Bounds.Width);
+
+    private async Task RestoreTemporaryViewAsync(PanelReturnPoint saved)
     {
-        await RestoreStateAsync(saved.State);
+        if (!await RestoreStateAsync(saved.State)) return;
         columns.FitNameAfterResize(saved.Width);
         RestoreScroll(saved.State);
         FocusCurrent(scrollIntoView: false);
@@ -109,45 +93,27 @@ public sealed partial class PanelView : Border
 
     private ScrollViewer? Scroll => Table.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
 
-    public async Task<bool> LoadAccessibleAsync(string directory)
-    {
-        while (!await LoadAsync(directory))
-        {
-            var parent = ArchivePath.Parent(directory);
-            if (parent == null || Session.Error == null) return false;
-            directory = parent;
-        }
-        return true;
-    }
+    public Task<bool> LoadAccessibleAsync(string directory) => loader.LoadAccessibleAsync(directory);
 
-    public async Task<bool> RefreshAsync(Func<bool> canApply, Func<bool> canFocus)
+    public Task<bool> RefreshAsync(Func<bool> canApply, Func<bool> canFocus) => IsSearchResults
+        ? RefreshSearchResultsAsync(canApply) : loader.RefreshDirectoryAsync(canApply, canFocus);
+
+    internal void ApplyDirectoryRefresh()
     {
-        if (IsSearchResults) return await RefreshSearchResultsAsync(canApply);
-        var directory = Session.DirectoryPath;
-        var hadFocus = Table.IsKeyboardFocusWithin;
-        if (!await Session.LoadAsync(directory))
-        {
-            return await RecoverDirectoryAsync(directory, hadFocus, canApply, canFocus);
-        }
-        if (!canApply() || EditingRow != null || Session.DirectoryPath != directory) return false;
         if (Rows.Select(row => row.Entry).SequenceEqual(Session.Entries)) UpdateSummary();
         else ApplyRefreshedEntries();
-        return true;
     }
 
     private void ApplyRefreshedEntries()
     {
-        var previous = Rows.ToDictionary(row => row.Entry.FullPath, row => row.Entry, StringComparer.OrdinalIgnoreCase);
-        var unchanged = Session.Entries.Where(entry => previous.TryGetValue(entry.FullPath, out var old) && CanKeepMeasurement(entry, old))
-            .Select(entry => entry.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var name in sizes.Keys.Where(name => !unchanged.Contains(name)).ToArray()) sizes.Remove(name);
+        panelRows.RetainMeasurements(Session.Entries);
         var selected = CaptureRowSelection();
         var current = Current?.Name;
         var index = Current == null ? 0 : Rows.IndexOf(Current);
         var focused = Table.IsKeyboardFocusWithin;
         var offset = Scroll?.Offset ?? default;
         ApplyEntries(selected, current);
-        RestoreRefreshCursorAndSelection(current, index, selected.Length > 0);
+        selection.RestoreRefreshCursor(current, index, selected.Length > 0);
         Table.UpdateLayout();
         if (Scroll is { } scroll) scroll.Offset = offset;
         Table.UpdateLayout();
@@ -156,43 +122,18 @@ public sealed partial class PanelView : Border
         UpdateSummary();
     }
 
-    private bool CanKeepMeasurement(FileEntry entry, FileEntry previous)
-    {
-        if (entry == previous) return true;
-        // Windows can refresh a directory's cached timestamp after its contents were measured.
-        return sizes.TryGetValue(entry.Name, out var measurement) && entry.ModifiedUtc <= measurement.MeasuredAt.UtcDateTime &&
-            entry with { ModifiedUtc = previous.ModifiedUtc } == previous;
-    }
-
-    private async Task<bool> RecoverDirectoryAsync(string directory, bool hadFocus, Func<bool> canApply, Func<bool> canFocus)
-    {
-        if (Session.Error == null || Session.DirectoryPath != directory || !canApply()) return false;
-        var loaded = await LoadAccessibleAsync(directory);
-        if (loaded && hadFocus && canApply() && canFocus()) FocusCurrent();
-        return loaded;
-    }
-
-    private void RestoreRefreshCursorAndSelection(string? current, int index, bool hadSelection)
-    {
-        if (!Rows.Any(row => row.Name == current) && Rows.Count > 0)
-        {
-            var next = Rows[Math.Clamp(index, 0, Rows.Count - 1)]; cursorName = next.Name;
-            if (!keyboardMarks && Table.SelectedItems?.Count == 0 && hadSelection) Table.SelectedItem = next;
-        }
-        if (!hadSelection) Table.SelectedItems?.Clear();
-    }
-
     public PanelView(string id, IFileSystem fileSystem, FileTypes? fileTypes = null)
         : this(id, fileSystem, fileTypes, null) { }
 
     public PanelView(string id, IFileSystem fileSystem, FileTypes? fileTypes, IGitStatusReader? gitReader)
     {
-        this.fileTypes = fileTypes ?? FileTypeSettings.Bundled();
+        panelRows = new PanelRows(fileTypes ?? FileTypeSettings.Bundled());
         Id = id;
         Icons = new FileIconCache(this);
         Git = new GitStatusView(id, gitReader).WithFeedbackId("PanelView.Git");
         Name = id;
         Session = new PanelSession(fileSystem);
+        loader = new PanelContentLoader(this);
         Background = UiPalette.Surface;
         BorderBrush = UiPalette.Divider;
         BorderThickness = new Thickness(0, 2, 0, 0);
@@ -209,6 +150,8 @@ public sealed partial class PanelView : Border
             FontSize = UiPalette.BodySize,
             Background = Brushes.Transparent
         }.WithFeedbackId("PanelView.Table");
+        selection = new PanelSelection(Table, () => Rows, UpdateSummary);
+        rename = new PanelRename(Table, Session.FileSystem, () => Current, ApplyRenameAsync);
         AutomationProperties.SetAutomationId(Table, id + ".files");
         Table.IsTextSearchEnabled = false;
         ScrollViewer.SetBringIntoViewOnFocusChange(Table, false);
@@ -224,6 +167,7 @@ public sealed partial class PanelView : Border
         Table.Columns.Add(MakeGitColumn());
         Table.Columns.Add(Column(SortField.Modified, "Modified", new GridLength(145)));
         logPresentation = new GitLogPresentation(Table);
+        footer = new PanelFooter(summary, logPresentation);
         columns = new FilePanelColumns(Table, logPresentation);
         Git.StatusChanged += ApplyGitStatus;
         ResetColumns();
@@ -238,8 +182,8 @@ public sealed partial class PanelView : Border
                 var row = control.GetSelfAndVisualAncestors().OfType<TableViewRow>().FirstOrDefault();
                 if (row?.DataContext is FileRow file)
                 {
-                    if (EditingRow != null && file != EditingRow && !IsCommitting) CancelRename();
-                    cursorName = file.Name;
+                    rename.CancelOnFocusChange(file);
+                    selection.SetCursor(file);
                     UpdateSummary();
                 }
             }
@@ -249,8 +193,7 @@ public sealed partial class PanelView : Border
         {
             if (e.Source is Control control && control.GetSelfAndVisualAncestors().OfType<TableViewRow>().Any())
             {
-                rangeAnchor = null;
-                keyboardMarks = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                selection.BeginPointerSelection(e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Shift));
                 UpdateSummary();
             }
             Activated?.Invoke(this);
@@ -388,35 +331,23 @@ public sealed partial class PanelView : Border
         return text;
     }
 
-    public async Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null, CancellationToken cancellationToken = default, bool nearestExistingParent = false)
+    public Task<bool> LoadAsync(string directory, bool preserveSelection = false, string? selectName = null,
+        CancellationToken cancellationToken = default, bool nearestExistingParent = false) =>
+        loader.LoadAsync(directory, preserveSelection, selectName, cancellationToken, nearestExistingParent);
+
+    internal void PrepareDirectoryLoad(bool preserveSelection)
     {
-        var version = ++loadVersion;
-        (PanelState State, double Width)? gitReturn = GitPath.IsEntry(directory) && !HasHistory ? (CaptureState(), Table.Bounds.Width) : null;
         LoadingRequested?.Invoke(this);
         CancelRename();
-        if (!preserveSelection) keyboardMarks = false;
-        var selected = preserveSelection ? SelectedNames() : [];
+        if (!preserveSelection) selection.SetKeyboardMarks(false);
         if (!IsSearchResults) Session.RememberCursor(Current?.Name);
-        var previousPath = Session.DirectoryPath;
-        if (!await Session.LoadAsync(directory, cancellationToken, nearestExistingParent))
-        {
-            UpdateSummary();
-            return false;
-        }
-        Git.SetDirectory(Session.DirectoryPath);
-        await Git.DirectoryReady;
-        if (version != loadVersion || cancellationToken.IsCancellationRequested) return false;
-        selectName ??= preserveSelection ? Current?.Name : Session.RememberedCursor;
-        ApplyDirectoryLoad(previousPath, gitReturn, selected, selectName);
-        return true;
     }
 
-    private void ApplyDirectoryLoad(string previousPath, (PanelState State, double Width)? gitReturn, string[] selected, string? selectName)
+    internal void ApplyDirectoryLoad(string previousPath, PanelReturnPoint? gitReturn, string[] selected, string? selectName)
     {
-        gitReturnState = HasHistory ? gitReturn ?? gitReturnState : null;
+        returnLocations.ApplyDirectory(HasHistory, gitReturn);
         searchResults = null;
-        searchReturnState = null;
-        sizes.Clear();
+        panelRows.ClearMeasurements();
         ApplyEntries(selected, selectName);
         path.Text = DisplayPath;
         path.TextTrimming = TextTrimming.LeadingCharacterEllipsis;
@@ -438,193 +369,42 @@ public sealed partial class PanelView : Border
 
     private void ApplyEntries(string[] selected, string? current)
     {
-        rangeAnchor = null;
+        selection.ResetRange();
         ConfigureLogPresentation();
-        Rows = ResultRows();
-        foreach (var row in Rows) row.SetCut(cutPaths.Contains(row.Entry.FullPath));
+        panelRows.Replace(ResultRows(), showMeasurements: !IsSearchResults);
         Table.ItemsSource = Rows;
         ApplyGitStatus();
         columns.UpdateRows(Rows);
-        ShowNameMatches(nameSearch);
-        Table.SelectedItems?.Clear();
-        foreach (var row in Rows.Where(row => selected.Contains(row.Name, StringComparer.OrdinalIgnoreCase)))
-            Table.SelectedItems?.Add(row);
-        var cursor = Rows.FirstOrDefault(row => row.Name.Equals(current, StringComparison.OrdinalIgnoreCase));
-        if (!keyboardMarks && Table.SelectedItems?.Count == 0) Table.SelectedItem = cursor ?? Rows.FirstOrDefault();
-        cursorName = (cursor ?? Table.SelectedItem as FileRow ?? Rows.FirstOrDefault())?.Name;
+        panelRows.RefreshNameMatches();
+        selection.ApplyRows(selected, current);
         UpdateSummary();
     }
 
-    public string[] SelectedNames() => Table.SelectedItems?.OfType<FileRow>().Where(row => !row.Entry.IsParent).Select(row => row.Name).ToArray() ?? [];
+    public string[] SelectedNames() => selection.SelectedNames();
+    private string[] CaptureRowSelection() => selection.CaptureRowSelection();
+    public void FocusCurrent(bool scrollIntoView = true) => selection.FocusCurrent(scrollIntoView);
+    public void SelectBoundary(bool last, bool extend) => selection.SelectBoundary(last, extend);
+    public void SelectRow(FileRow row) => selection.SelectRow(row);
+    public void MovePage(bool down, bool extend) => selection.MovePage(down, extend);
+    public void MoveCursor(bool down, bool mark) => selection.MoveCursor(down, mark);
+    public void ClearMarks() => selection.ClearMarks();
 
-    private string[] CaptureRowSelection() => Table.SelectedItems?.OfType<FileRow>().Select(row => row.Name).ToArray() ?? [];
+    public TextBox? RenameEditor => rename.Editor;
+    public void BeginRename() => rename.Begin();
+    public void FocusRenameEditor() => rename.FocusEditor();
+    public void CancelRename() => rename.Cancel();
+    public Task<FileOperationError?> CommitRenameAsync() => rename.CommitAsync();
 
-    public void FocusCurrent(bool scrollIntoView = true)
+    private async Task ApplyRenameAsync(FileEntry entry, string name)
     {
-        UpdateSummary();
-        Table.UpdateLayout();
-        var index = Current is { } current ? Rows.IndexOf(current) : -1;
-        if (index >= 0)
-        {
-            if (scrollIntoView) Table.ScrollIntoView(index);
-            Table.UpdateLayout();
-            if (Table.ContainerFromIndex(index) is Control container) { container.Focus(); return; }
-        }
-        Table.Focus();
-    }
-
-    public void SelectBoundary(bool last, bool extend)
-    {
-        if (Rows.Count == 0) return;
-        var index = last ? Rows.Count - 1 : 0;
-        MoveTo(index, extend);
-        cursorName = Rows[index].Name;
-        FocusCurrent();
-    }
-
-    public TextBox? RenameEditor => Table.GetVisualDescendants().OfType<TextBox>()
-        .FirstOrDefault(editor => editor.Name == "RenameEditor" && editor.IsVisible && editor.DataContext == EditingRow);
-
-    public void SelectRow(FileRow row)
-    {
-        MoveTo(Rows.IndexOf(row), extend: false);
-        cursorName = row.Name;
-        FocusCurrent();
-    }
-
-    public void MovePage(bool down, bool extend)
-    {
-        if (Rows.Count == 0) return;
-        var rowHeight = Table.GetRealizedContainers().FirstOrDefault()?.Bounds.Height ?? 36;
-        var page = Math.Max(1, (int)(Table.Bounds.Height / Math.Max(1, rowHeight)) - 2);
-        var current = Current is { } row ? Rows.IndexOf(row) : 0;
-        var index = Math.Clamp(current + (down ? page : -page), 0, Rows.Count - 1);
-        MoveTo(index, extend);
-        cursorName = Rows[index].Name;
-        FocusCurrent();
-    }
-
-    private void MoveTo(int index, bool extend)
-    {
-        if (extend) ToggleRange(index);
-        else
-        {
-            rangeAnchor = null;
-            if (!keyboardMarks && SelectedNames().Length <= 1) Table.SelectedIndex = index;
-        }
-    }
-
-    private void ToggleRange(int index)
-    {
-        rangeAnchor ??= Current?.Name;
-        var anchor = Math.Max(0, Rows.FindIndex(row => row.Name == rangeAnchor));
-        var range = Rows.Skip(Math.Min(anchor, index)).Take(Math.Abs(index - anchor) + 1).Where(row => !row.Entry.IsParent).ToArray();
-        var selected = keyboardMarks || SelectedNames().Length > 1
-            ? CaptureRowSelection().ToHashSet(StringComparer.OrdinalIgnoreCase) : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var remove = range.All(row => selected.Contains(row.Name));
-        foreach (var row in range)
-        {
-            if (remove) selected.Remove(row.Name);
-            else selected.Add(row.Name);
-        }
-        keyboardMarks = true;
-        Table.SelectedItems?.Clear();
-        foreach (var row in Rows.Where(row => !row.Entry.IsParent && selected.Contains(row.Name))) Table.SelectedItems?.Add(row);
-        UpdateSummary();
-    }
-
-    public void MoveCursor(bool down, bool mark)
-    {
-        rangeAnchor = null;
-        if (Current is not { } current || Rows.Count == 0) return;
-        var index = Rows.IndexOf(current);
-        var next = Math.Clamp(index + (down ? 1 : -1), 0, Rows.Count - 1);
-        var hadMarks = keyboardMarks || SelectedNames().Length > 1;
-        if (mark || hadMarks) keyboardMarks = true;
-        if (keyboardMarks)
-        {
-            var selected = hadMarks ? CaptureRowSelection().Where(name => name != "..").ToHashSet(StringComparer.OrdinalIgnoreCase) : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (mark && !current.Entry.IsParent && !selected.Add(current.Name)) selected.Remove(current.Name);
-            cursorName = Rows[next].Name;
-            FocusCurrent();
-            Table.SelectedItems?.Clear();
-            foreach (var row in Rows.Where(row => selected.Contains(row.Name))) Table.SelectedItems?.Add(row);
-            UpdateSummary();
-        }
-        else { Table.SelectedIndex = next; cursorName = Rows[next].Name; FocusCurrent(); }
-    }
-
-    public void ClearMarks()
-    {
-        rangeAnchor = null;
-        keyboardMarks = false;
-        Table.SelectedItems?.Clear();
-        UpdateSummary();
-        FocusCurrent(scrollIntoView: false);
-    }
-
-    public void BeginRename()
-    {
-        if (Current is not { Entry.IsParent: false } row) return;
-        CancelRename();
-        EditingRow = row;
-        row.DraftName = row.Entry.Name;
-        row.IsEditing = true;
-        Table.ScrollIntoView(row);
-        Table.UpdateLayout();
-        FocusRenameEditor();
-        Dispatcher.UIThread.Post(FocusRenameEditor, DispatcherPriority.Input);
-    }
-
-    public void FocusRenameEditor()
-    {
-        if (RenameEditor is { } editor)
-        {
-            editor.Focus();
-            editor.SelectAll();
-        }
-    }
-
-    public void CancelRename()
-    {
-        if (EditingRow == null) return;
-        EditingRow.IsEditing = false;
-        EditingRow = null;
-    }
-
-    public async Task<FileOperationError?> CommitRenameAsync()
-    {
-        if (IsCommitting || EditingRow is not { } row) return null;
-        var name = row.DraftName;
-        var validation = PanelRules.ValidateName(name);
-        if (validation != null) return new(row.Entry, null, validation);
-        IsCommitting = true;
-        var editor = RenameEditor;
-        if (editor != null) editor.IsReadOnly = true;
-        try
-        {
-            await Session.FileSystem.RenameAsync(row.Entry, name);
-            CancelRename();
-            RenameSearchResult(row.Entry, name);
-            if (IsSearchResults) await RefreshSearchResultsAsync(() => true);
-            else await LoadAsync(Session.DirectoryPath, selectName: name);
-            return null;
-        }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)
-        {
-            return FileOperationError.FromException(row.Entry, null, error);
-        }
-        finally
-        {
-            IsCommitting = false;
-            if (editor != null) editor.IsReadOnly = false;
-        }
+        RenameSearchResult(entry, name);
+        if (IsSearchResults) await RefreshSearchResultsAsync(() => true);
+        else await LoadAsync(Session.DirectoryPath, selectName: name);
     }
 
     public void SetActive(bool active)
     {
-        isActive = active;
-        currentRow?.SetCurrent(true, active);
+        selection.SetActive(active);
         BorderBrush = active ? UiPalette.Focus : Brushes.Transparent;
     }
 
@@ -637,61 +417,17 @@ public sealed partial class PanelView : Border
         }
     }
 
-    public void SetFileTypes(FileTypes types) { fileTypes = types; foreach (var row in Rows) ApplyFileColor(row); }
+    public void SetFileTypes(FileTypes types) => panelRows.SetFileTypes(types);
     public void SetDirectorySize(DirectoryMeasurement measurement)
     {
-        var row = Rows.FirstOrDefault(row => row.Name.Equals(measurement.Name, StringComparison.OrdinalIgnoreCase) && row.Entry.IsDirectory && !row.Entry.IsParent);
-        if (row == null) return;
-        sizes[row.Name] = measurement; row.SetMeasurement(measurement); UpdateSummary();
+        if (panelRows.SetMeasurement(measurement)) UpdateSummary();
     }
-    private void ApplyFileColor(FileRow row) => row.SetFileColor(fileTypes.Match(row.Name, row.Entry.IsDirectory) is { } rule ? Brush.Parse(rule.Color) : Brushes.White);
-    private void UpdateSummary()
+
+    internal void UpdateSummary()
     {
-        var selection = Table.SelectedItems?.OfType<FileRow>().ToHashSet() ?? [];
-        var current = Current;
-        var previous = currentRow;
-        if (currentRow != current) currentRow?.SetCurrent(false, isActive);
-        currentRow = current;
-        currentRow?.SetCurrent(true, isActive);
-        var marked = keyboardMarks || selection.Count > 1 ? selection.Where(row => !row.Entry.IsParent).ToHashSet() : [];
-        foreach (var row in markedRows.Except(marked)) row.SetMarked(false);
-        foreach (var row in marked.Except(markedRows)) row.SetMarked(true);
-        markedRows = marked;
-        UpdateSelectionTotal();
+        var previous = selection.UpdateHighlights();
+        footer.Update(Session, Rows, SelectedNames(), IsSearchResults);
         UpdateCommitMessage();
-        NotifyCurrentEntryChanged(previous);
-    }
-
-    private void NotifyCurrentEntryChanged(FileRow? previous)
-    {
-        var before = previous?.Entry;
-        var after = currentRow?.Entry;
-        if (before?.IsDirectory != after?.IsDirectory || !string.Equals(before?.FullPath, after?.FullPath, StringComparison.Ordinal))
-            CurrentEntryChanged?.Invoke();
-    }
-
-    private void UpdateSelectionTotal()
-    {
-        var selectedNames = SelectedNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (HasHistory)
-        {
-            summary.Text = Session.Error ?? logPresentation.Footer(Session.DirectoryPath, Rows, selectedNames.Count);
-            ToolTip.SetTip(summary, summary.Text); return;
-        }
-        var selectedRows = Rows.Where(row => selectedNames.Contains(row.Name) && !row.Entry.IsParent).ToArray();
-        var selectedBytes = selectedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
-        var incomplete = selectedRows.Any(IsIncompleteDirectory);
-        var total = (incomplete ? "≥ " : "") + FileSizeText.Format(selectedBytes) + IncompleteNote(incomplete);
-        summary.Text = Session.Error ?? $"{LocationPrefix()}{Rows.Count(row => !row.Entry.IsParent):N0} items    {selectedNames.Count:N0} selected · {total}";
-        ToolTip.SetTip(summary, Session.Error == null ? $"Selected: {selectedBytes:N0} bytes{IncompleteNote(incomplete)}" : null);
-    }
-
-    private static bool IsIncompleteDirectory(FileRow row) => row.Entry.IsDirectory && (row.Measurement == null || row.Measurement.Size.Incomplete);
-    private static string IncompleteNote(bool incomplete) => incomplete ? " (incomplete)" : "";
-    private string LocationPrefix()
-    {
-        if (HasHistory) return GitPath.IsLog(Session.DirectoryPath) ? "Git log · Enter opens · F3 details · Esc returns · " : "Git (read-only) · F3 on .. lists changes · Esc returns · ";
-        if (IsSearchResults) return "Search results · Esc returns · Ctrl+←/→ locates · ";
-        return ArchivePath.IsEntry(Session.DirectoryPath) ? "Archive (read-only) · " : "";
+        if (selection.CurrentEntryChanged(previous)) CurrentEntryChanged?.Invoke();
     }
 }

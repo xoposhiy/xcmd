@@ -25,6 +25,8 @@ public sealed partial class CommanderWindow : Window
     private bool pointerHeld;
     private Menu? mainMenu;
     private readonly CommanderFrame frame;
+    private readonly CommandLineController commandLineController;
+    public CommandLineView CommandLine { get; } = new CommandLineView().WithFeedbackId("CommanderWindow.Launching.CommandLine");
     public Grid TitleBar => frame.TitleBar;
     private readonly FileViewingController viewing;
     public FileSearchController FileSearch { get; }
@@ -92,6 +94,7 @@ public sealed partial class CommanderWindow : Window
     {
         shell = shellInteraction ?? new ShellInteractionController();
         archives = new ArchiveController(this, archiveCacheRoot, archiveContents);
+        commandLineController = new CommandLineController(this, archives.Files, () => launchKeysHeld.Add(Key.Enter), EscapeCommandLine);
         this.externalLauncher = externalLauncher ?? new WindowsExternalLauncher();
         fileSystem ??= new LocalFileSystem();
         fileSystem = archives.Wrap(fileSystem);
@@ -239,9 +242,9 @@ public sealed partial class CommanderWindow : Window
         altInput = e.KeyModifiers.HasFlag(KeyModifiers.Alt) || e.Key is Key.LeftAlt or Key.RightAlt;
         if (ActivePanel.EditingRow != null) { HandleRenameKey(e); return; }
         if (HandleQuickViewKey(e)) { e.Handled = true; return; }
+        if (HandlePanelShortcut(e)) { e.Handled = true; return; }
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-        if (HandleCommandLineShortcut(e, ctrl, shift)) return;
         if (HandleNameSearchKey(e, ctrl)) return;
         if (!HandlePanelCommand(e, ctrl, shift) && !HandlePanelNavigation(e, ctrl, shift)) return;
         Trace.Add($"key: {e.KeyModifiers}+{e.Key}; panel: {ActivePanel.Id}");
@@ -264,7 +267,11 @@ public sealed partial class CommanderWindow : Window
             if (e.Key == Key.Escape) { ActivePanel.FocusCurrent(); e.Handled = true; }
             return true;
         }
-        if (CommandLine.HasKeyboardFocus) { HandleCommandLineKey(e); return true; }
+        if (CommandLine.HasKeyboardFocus)
+        {
+            if (HandleDirectoryDestinationKey(e) || commandLineController.HandleEditorKey(e)) e.Handled = true;
+            return true;
+        }
         if (ActivePanel.HasCommitMessageFocus) { ActivePanel.HandleCommitMessageKey(e); return true; }
         return false;
     }

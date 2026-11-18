@@ -12,14 +12,8 @@ public sealed partial class PanelView
     public event Action<PanelView, FileRow, PixelPoint, bool>? ShellMenuRequested;
     private FileRow? shellPressedRow;
     internal void CancelShellPress() => shellPressedRow = null;
-    internal void FocusDragRow(FileRow row) { cursorName = row.Name; FocusCurrent(scrollIntoView: false); }
-    internal void SelectClickedRow(FileRow row, bool toggle)
-    {
-        keyboardMarks = toggle; rangeAnchor = null;
-        if (toggle) Table.SelectedItems?.Remove(row);
-        else { Table.SelectedItems?.Clear(); Table.SelectedItem = row; }
-        FocusDragRow(row);
-    }
+    internal void FocusDragRow(FileRow row) => selection.FocusPointerRow(row);
+    internal void SelectClickedRow(FileRow row, bool toggle) => selection.SelectClickedRow(row, toggle);
 
     private void AttachShellInput()
     {
@@ -31,8 +25,7 @@ public sealed partial class PanelView
             var row = control.GetSelfAndVisualAncestors().OfType<TableViewRow>().FirstOrDefault()?.DataContext as FileRow;
             if (row == null) return;
             Activated?.Invoke(this);
-            cursorName = row.Name;
-            FocusCurrent(scrollIntoView: false);
+            selection.FocusPointerRow(row);
             shellPressedRow = row;
             e.Handled = true;
         }, RoutingStrategies.Tunnel);

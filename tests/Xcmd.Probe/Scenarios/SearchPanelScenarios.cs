@@ -97,6 +97,44 @@ public static class SearchPanelScenarios
             await c.KeyAsync(Key.Escape);
             Equal(before.Cursor, panel.Current?.Name, "Restored results retain original return cursor");
         }),
+        new("search-panel-return-yields-to-navigation", "A newer transition owns the rows and focus when returning from search is interrupted", async c =>
+        {
+            SearchProbe.TextFile(c, "return-race.txt", "Search result");
+            await c.SelectAsync("alpha.txt");
+            var panel = c.Window.Left;
+            var folderSort = panel.Session.SortOrder;
+            var search = await SearchProbe.OpenAsync(c, "return-race.txt");
+            await c.KeyAsync(Key.P, RawInputModifiers.Alt, search);
+            await c.KeyAsync(Key.F6, RawInputModifiers.Control);
+            var resultSort = panel.Session.SortOrder;
+            var resultCursor = panel.Current?.Name;
+            var resultSelection = panel.SelectedNames();
+            Check(resultSort != folderSort, "Search results use a different sort from the saved folder.");
+
+            var returnRead = c.FileSystem.PauseNextRead(c.LeftPath);
+            var returning = panel.ExitSearchResultsAsync();
+            await returnRead.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var destination = Path.Combine(c.LeftPath, "folder1");
+            var nextRead = c.FileSystem.PauseNextRead(destination);
+            var navigating = panel.LoadAsync(destination, selectName: "inside.txt");
+            try
+            {
+                await nextRead.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                c.Window.Right.FocusCurrent();
+                await returning.WaitAsync(TimeSpan.FromSeconds(5));
+                Check(returnRead.WasCancelled, "The newer navigation cancels the return read.");
+                Check(panel.IsSearchResults, "The displayed results stay in place until the destination is ready.");
+                Equal(resultSort, panel.Session.SortOrder, "The interrupted return preserves the current sort");
+                Equal(resultCursor, panel.Current?.Name, "The interrupted return preserves the current cursor");
+                Check(resultSelection.SequenceEqual(panel.SelectedNames()), "The interrupted return preserves the current selection.");
+                Check(c.Window.Right.Table.IsKeyboardFocusWithin, "Focus stays in the panel the user chose.");
+            }
+            finally { nextRead.Release.TrySetResult(); }
+
+            Check(await navigating.WaitAsync(TimeSpan.FromSeconds(5)), "The newer navigation finishes.");
+            Equal(destination, panel.Session.DirectoryPath, "The newer destination stays open");
+            Equal("inside.txt", panel.Current?.Name, "The newer navigation supplies the cursor");
+        }),
         new("search-panel-file-operations", "UC31; viewing, renaming, copying and moving real nested search results", async c =>
         {
             SearchProbe.TextFile(c, "nested/work.txt", "search panel content");

@@ -1,9 +1,10 @@
-// @tests SeeRepositoryState, RepositoryStatus, AsyncCoordination
+// @tests NavigatePanels, RefreshEntries, SeeRepositoryState, RepositoryStatus, AsyncCoordination
 using Avalonia.Media;
 using Xcmd.Desktop;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
+using static Xcmd.Probe.Infrastructure.WorkspaceProbe;
 
 namespace Xcmd.Probe.Scenarios;
 
@@ -74,6 +75,37 @@ public static class GitNavigationScenarios
             File.WriteAllText(Path.Combine(nested, ".git"), "gitdir: elsewhere");
             Equal(nested, await reader.FindRootAsync(descendant, default), "A worktree Git file also stops inheritance");
             Equal<string?>(null, await reader.FindRootAsync(Path.Combine(root, ".git", "objects"), default), "Git metadata is not a working tree");
+        }),
+        new("git-navigation-refresh-waits-for-directory", "Refresh defers while navigation prepares its first display", async c =>
+        {
+            var destination = Path.Combine(c.LeftPath, "folder1");
+            File.WriteAllText(Path.Combine(destination, "loaded.txt"), "Next directory");
+            var reader = new DelayedGitReader { Root = c.LeftPath };
+            var panel = new PanelView("refresh-during-navigation", new LocalFileSystem(), null, reader);
+            await panel.LoadAsync(c.LeftPath);
+            reader.Requests[0].SetResult(new("cached", 0, 0, 0, 0, 0, 0) { Root = c.LeftPath });
+            await panel.Git.PendingWork;
+
+            var root = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            reader.RootRead = root;
+            var navigation = panel.LoadAsync(destination);
+            bool refreshed;
+            bool keptRows;
+            try
+            {
+                await WaitAsync(() => !panel.Git.DirectoryReady.IsCompleted);
+                refreshed = await panel.RefreshAsync(() => true, () => false).WaitAsync(TimeSpan.FromSeconds(5));
+                keptRows = panel.Rows.Any(row => row.Name == "alpha.txt");
+            }
+            finally { root.TrySetResult(c.LeftPath); }
+            Check(await navigation.WaitAsync(TimeSpan.FromSeconds(5)), "Navigation publishes the destination after Git is ready.");
+            await WaitAsync(() => reader.Requests.Count == 2);
+            reader.Requests[1].SetResult(null);
+            await panel.Git.PendingWork;
+            panel.Icons.Dispose();
+
+            Check(!refreshed && keptRows, "Refresh leaves the displayed rows in place while navigation prepares.");
+            Check(panel.Rows.Any(row => row.Name == "loaded.txt"), "The destination rows appear after navigation.");
         }),
         new("git-navigation-obsolete-root", "An obsolete root check cannot apply its cached status or launch Git", async c =>
         {

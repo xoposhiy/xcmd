@@ -1,4 +1,4 @@
-// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, CommandHistory, CompleteCommand, ReusePaths, ShellActions, ComparePanelFiles, AsyncCoordination
+// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, AsyncCoordination
 using Avalonia.Input;
 using Xcmd.Core;
 
@@ -6,6 +6,8 @@ namespace Xcmd.Desktop;
 
 public sealed partial class CommanderWindow
 {
+    // Enter can move focus to the file panel before the key is released.
+    private readonly HashSet<Key> launchKeysHeld = [];
     private bool HasGitActionsFocus => Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin;
 
     private bool HandlePanelSwitch(KeyEventArgs e)
@@ -24,25 +26,6 @@ public sealed partial class CommanderWindow
         if (e.Key != Key.D || e.KeyModifiers != KeyModifiers.Control) return false;
         OpenNavigation(ActivePanel, DirectoryList.Favorites);
         return true;
-    }
-
-    private void HandleCommandLineKey(KeyEventArgs e)
-    {
-        if (HandleDirectoryDestinationKey(e)) { e.Handled = true; return; }
-        if (CommandLine.Completions.HandleKey(e)) { e.Handled = true; return; }
-        if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Control) Execute(CommandLine.CompleteAsync);
-        else if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None)
-            EscapeCommandLine();
-        else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && CommandLine.Editor.SelectionStart == CommandLine.Editor.SelectionEnd)
-            Execute(CommandLine.CopyAllAsync);
-        else if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) CommandLine.BrowseHistory(e.Key == Key.Up);
-        else if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Up or Key.Down)
-        { Activate(ActivePanel); ActivePanel.FocusCurrent(); }
-        else if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Control)) InsertCurrentArgument(e.KeyModifiers.HasFlag(KeyModifiers.Shift));
-        else if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.None)
-        { if (launchKeysHeld.Add(e.Key)) Execute(RunCommandLineAsync); }
-        else return;
-        e.Handled = true;
     }
 
     private void EscapeCommandLine()
@@ -86,25 +69,15 @@ public sealed partial class CommanderWindow
         }
     }
 
-    private bool HandleCommandLineShortcut(KeyEventArgs e, bool ctrl, bool shift)
+    private bool HandlePanelShortcut(KeyEventArgs e) => HandleDirectoryDestinationKey(e) ||
+        commandLineController.HandlePanelShortcut(e) || HandlePanelEscape(e);
+
+    private bool HandlePanelEscape(KeyEventArgs e)
     {
-        if (HandleDirectoryDestinationKey(e)) { e.Handled = true; return true; }
-        if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.Left or Key.Right && ActivePanel.Table.IsKeyboardFocusWithin)
-        {
-            ResetQuickJump(); CommandLine.FocusCommand(); e.Handled = true; return true;
-        }
-        if (ctrl && e.Key == Key.Enter) { ResetQuickJump(); InsertCurrentArgument(shift); e.Handled = true; return true; }
-        if (e.Key == Key.L && e.KeyModifiers == KeyModifiers.Control)
-        { ResetQuickJump(); CommandLine.FocusCommand(); e.Handled = true; return true; }
-        if (e.Key == Key.Up && e.KeyModifiers == KeyModifiers.Alt)
-        { ResetQuickJump(); CommandLine.BrowseHistory(true); e.Handled = true; return true; }
-        if (e.Key == Key.Escape && e.KeyModifiers == KeyModifiers.None && directorySizes == null && !nameJump.Active)
-        {
-            if (ActivePanel.IsSearchResults) Execute(ActivePanel.ExitSearchResultsAsync);
-            else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); }
-            e.Handled = true; return true;
-        }
-        return false;
+        if (e.Key != Key.Escape || e.KeyModifiers != KeyModifiers.None || directorySizes != null || nameJump.Active) return false;
+        if (ActivePanel.IsSearchResults) Execute(ActivePanel.ExitSearchResultsAsync);
+        else if (!CancelOpeningArchives()) { CommandLine.Clear(); SetError(null); ActivePanel.ClearMarks(); }
+        return true;
     }
 
     private bool HandleDirectoryDestinationKey(KeyEventArgs e)

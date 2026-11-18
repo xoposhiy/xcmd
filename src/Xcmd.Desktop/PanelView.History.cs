@@ -5,26 +5,25 @@ namespace Xcmd.Desktop;
 
 public sealed partial class PanelView
 {
-    private (PanelState State, double Width)? gitReturnState;
     public bool HasHistory => GitPath.IsEntry(Session.DirectoryPath);
 
     public async Task<bool> OpenHistoryAsync(string location, CancellationToken cancellationToken = default)
     {
-        var saved = gitReturnState ?? (CaptureState(), Table.Bounds.Width);
+        var saved = returnLocations.History ?? CaptureReturnPoint();
         if (!await LoadAsync(location, cancellationToken: cancellationToken)) return false;
-        gitReturnState = saved;
+        returnLocations.EnterHistory(saved);
         if (Rows.FirstOrDefault(row => !row.Entry.IsParent) is { } first) SelectRow(first);
         return true;
     }
 
     public async Task ExitHistoryAsync()
     {
-        if (gitReturnState is not { } saved)
+        if (returnLocations.History is not { } saved)
         {
-            if (HasHistory) await LoadAccessibleAsync(GitPath.Parse(Session.DirectoryPath).Repository);
+            if (HasHistory && !await LoadAccessibleAsync(GitPath.Parse(Session.DirectoryPath).Repository)) return;
             FocusCurrent(); return;
         }
-        gitReturnState = null;
+        returnLocations.LeaveHistory();
         await RestoreTemporaryViewAsync(saved);
     }
 

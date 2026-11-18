@@ -1,4 +1,4 @@
-// @tests NavigatePanels, JumpToName, RecentLocations, DiscoverShortcuts, RenameEntry, RunCommand, CommandHistory, ReusePaths, RestoreWorkspace, ReportControl, TryLocalRelease, ExternalLaunch, AsyncCoordination, KeyboardLayouts
+// @tests NavigatePanels, JumpToName, RecentLocations, DiscoverShortcuts, RenameEntry, RunCommand, CommandHistory, ReusePaths, OpenExternalTool, RestoreWorkspace, ReportControl, TryLocalRelease, ExternalLaunch, AsyncCoordination, KeyboardLayouts
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Automation;
@@ -182,6 +182,20 @@ public static class CommandLineScenarios
             Equal("right", c.Window.ActivePanel.Id, "Late completion preserves the chosen panel");
             Check(c.Window.Right.Table.IsKeyboardFocusWithin, "Late completion leaves focus in the chosen panel");
             Equal(c.LeftPath, c.Launcher.Requests.Single().WorkingDirectory, "The captured launch directory is unaffected");
+        }),
+        new("command-line-held-enter-crosses-focus", "Holding Enter after a command does not open the selected file", async c =>
+        {
+            await c.SelectAsync("alpha.txt"); await c.TextAsync("tool");
+            c.Input.KeyDown(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            await c.SettleAsync();
+            Equal(ExternalLaunchKind.Command, c.Launcher.Requests.Single().Kind, "The press runs the command");
+            Check(c.Window.Left.Table.IsKeyboardFocusWithin, "The completed command returns focus to the files.");
+            c.Input.KeyDown(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            await c.SettleAsync();
+            Equal(1, c.Launcher.Requests.Count, "The repeat does not open the file across the focus change");
+            c.Input.KeyUp(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            await c.KeyAsync(Key.Enter);
+            Equal(ExternalLaunchKind.File, c.Launcher.Requests.Last().Kind, "A fresh press opens the selected file");
         }),
         new("command-line-native-quoted-exe-and-raw-arguments", "UC02; actual Windows ShellExecute", async c =>
         {
