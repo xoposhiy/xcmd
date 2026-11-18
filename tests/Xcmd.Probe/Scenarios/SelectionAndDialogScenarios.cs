@@ -87,7 +87,8 @@ public static class SelectionAndDialogScenarios
             Check(File.Exists(Path.Combine(c.RightPath, "file2.log")) && !File.Exists(Path.Combine(c.LeftPath, "file2.log")), "Enter confirms moving.");
             await c.SelectAsync("file10.bin"); await c.KeyAsync(Key.Delete, RawInputModifiers.Shift);
             var deletion = (FileDeleteDialog)c.Window.OperationDialog!;
-            Equal("Yes", Primary(deletion, "ConfirmFileDelete").Content, "The confirmation label contains no Enter hint");
+            Check(Primary(deletion, "ConfirmFileDelete").Content is AccessText { Text: "_Yes", AccessKey: "Y", ShowAccessKey: true },
+                "The confirmation label is Yes with an underlined access key");
             Check(deletion.Recycle.Content is AccessText { AccessKey: "R", ShowAccessKey: true } && deletion.Permanently.Content is AccessText { AccessKey: "P", ShowAccessKey: true }, "Deletion modes use underlined Windows access keys.");
             await c.ScreenshotAsync("delete-access-keys", deletion); await c.KeyAsync(Key.Enter, target: deletion);
             Check(!File.Exists(Path.Combine(c.LeftPath, "file10.bin")), "Enter confirms permanent deletion.");

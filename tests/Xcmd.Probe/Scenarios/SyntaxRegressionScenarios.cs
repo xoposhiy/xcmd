@@ -46,12 +46,17 @@ public static class SyntaxRegressionScenarios
             var viewer = await SyntaxProbe.OpenAsync(c, path, gate);
             try
             {
-                gate.Arm(); c.PressKey(Key.End, target: viewer); await gate.WaitForContextAsync();
-                c.PressKey(Key.Down, target: viewer);
+                gate.Arm(); c.PressKey(Key.End, RawInputModifiers.Control, viewer); await gate.WaitForContextAsync();
+                var page = viewer.Reader.ByteOffset;
+                viewer.UpdateLayout();
+                var scroll = viewer.Reader.TextContent.GetVisualDescendants().OfType<ScrollViewer>().Single();
+                var previousY = scroll.Offset.Y;
+                c.PressKey(Key.PageDown, target: viewer);
+                Check(scroll.Offset.Y > previousY && viewer.Reader.ByteOffset == page, "Page Down scrolls within the displayed page");
                 await gate.ReleaseAsync(c); await SyntaxProbe.WaitForSyntaxAsync(viewer);
                 Check(!gate.WasCancelled, "Scrolling within displayed text does not cancel its pending syntax");
                 Equal("C#", viewer.Reader.SyntaxStatus, "Syntax appears after the pending context arrives");
-                gate.Arm(); c.PressKey(Key.End, target: viewer); await gate.WaitForContextAsync();
+                gate.Arm(); c.PressKey(Key.End, RawInputModifiers.Control, viewer); await gate.WaitForContextAsync();
                 await viewer.Reader.OpenAsync();
                 await gate.ReleaseAsync(c);
                 Check(gate.WasCancelled, "Reload cancels obsolete syntax context");

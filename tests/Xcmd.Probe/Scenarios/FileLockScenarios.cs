@@ -14,27 +14,54 @@ public static class FileLockScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
-        new("file-lock-console-host", "Nested command processors share a terminal row and ending them retries the rename", async c =>
+        new("file-lock-console-host", "Ending both command processors in a headless pseudoconsole retries the rename", async c =>
         {
             var folder = Path.Combine(c.LeftPath, "folder1");
             await using var terminal = await ConsoleLockFixture.StartAsync(folder);
             var users = await WindowsFileUsers.FindAsync([folder], default);
             var shells = users.Where(user => user.ExecutableName == "cmd.exe").ToArray();
-            Check(shells.Length >= 2, "A nested cmd command has two real process IDs holding the directory");
-            Equal(1, shells.Select(user => user.WindowKey).Distinct().Count(), "Both command processors resolve to the same terminal host");
-            Check(shells.All(user => user.WindowTitle == "Xcmd hidden terminal fixture"), "Console attachment resolves the owning terminal window");
+            Equal(2, shells.Length, "Both nested command processors hold the directory");
+            Check(shells.All(user => user.WindowKey == null), "A headless pseudoconsole has no application window");
             await c.BeginRenameAsync("folder1"); await c.TextAsync("renamed-folder"); await c.KeyAsync(Key.Enter);
             var dialog = (FileErrorDialog)c.Window.OperationDialog!;
-            Equal(1, dialog.GetVisualDescendants().OfType<Button>().Count(button => button.Name == "FileUserWindow"), "The dialog shows one application link for the shared window");
-            FileLockProbe.CheckCompact(dialog, 1);
+            Check(!dialog.GetVisualDescendants().OfType<Button>().Any(button => button.Name == "FileUserWindow"), "The dialog offers no link for a headless pseudoconsole");
+            FileLockProbe.CheckCompact(dialog, 2);
             Check(shells.All(shell => LockingProcessFixture.ErrorText(c).Contains("PID " + shell.ProcessId, StringComparison.Ordinal)), "Every shell remains in the plain process summary");
-            await c.ScreenshotAsync("locked-terminal-compact", dialog);
+            await c.ScreenshotAsync("locked-headless-console", dialog);
             Check(!dialog.GetVisualDescendants().OfType<RadioButton>().Any(), "Process actions need no radio selection");
-            await c.ClickAsync(dialog.GetVisualDescendants().OfType<Button>().Single(button => button.Name == "FileUserEnd"), target: dialog);
+            var endButtons = dialog.GetVisualDescendants().OfType<Button>().Where(button => button.Name == "FileUserEnd").ToArray();
+            Equal(2, endButtons.Length, "Each process has its own Kill button");
+            await c.ClickAsync(endButtons[0], target: dialog);
+            Check(dialog.IsVisible && Directory.Exists(folder), "The other command processor keeps the folder locked");
+            await c.ClickAsync(endButtons[1], target: dialog);
             await terminal.WaitForExitAsync();
             await FileOperationProbe.WaitUntilAsync(() => Directory.Exists(Path.Combine(c.LeftPath, "renamed-folder")));
             await c.SettleAsync();
             Check(c.Window.OperationDialog == null, "Ending the listed shells releases the folder and dismisses the error");
+        }),
+        new("file-lock-shared-window", "Processes with the same window share a row and an application link", async c =>
+        {
+            var path = Path.Combine(c.LeftPath, "folder1");
+            FileUser first = new(101, "Command Prompt", path, DateTime.UnixEpoch) { ExecutableName = "cmd.exe", WindowKey = "terminal" };
+            var second = first with { ProcessId = 102 };
+            var actions = new RecordingFileUserActions { TerminateProcesses = false };
+            var view = new FileUsersView([first, second]) { Actions = actions };
+            var window = new Window { Content = view, Width = 620, Height = 180 };
+            window.Show(c.Window);
+            try
+            {
+                await c.SettleAsync();
+                var controls = view.GetVisualDescendants().ToArray();
+                var summary = controls.OfType<TextBlock>().Single(control => control.Name == "FileUserProcesses");
+                Equal("cmd.exe (PID 101), cmd.exe (PID 102)", summary.Text, "The shared row lists both processes");
+                var end = controls.OfType<Button>().Single(button => button.Name == "FileUserEnd");
+                var link = controls.OfType<Button>().Single(button => button.Name == "FileUserWindow");
+                await c.ClickAsync(link, target: window);
+                Equal(("window", first), actions.Calls.Single(), "The application link opens the shared window");
+                await c.ClickAsync(end, target: window);
+                Check(actions.Calls.Skip(1).SequenceEqual([("end", first), ("end", second)]), "The shared Kill button ends both listed processes");
+            }
+            finally { window.Close(); }
         }),
         new("file-lock-recycle-directory", "Recycling a locked folder opens the same process dialog and keeps its contents", async c =>
         {

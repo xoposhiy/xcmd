@@ -57,9 +57,10 @@ public static class CommandLineScenarios
                     Check(c.Window.CommandLine.Editor.Bounds.Width >= 300, "The editor remains usable beside a long path.");
                     Check(width != 1280 || label.Bounds.Width is >= 490 and <= 510, "The directory can use the wider 510-pixel limit.");
                     var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
-                    Equal(11, help.Children.Count, "Useful shortcut groups omit deletion hints");
-                    Check(help.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "Alt+F7  Find files"), "File search is discoverable in keyboard help");
                     var hints = help.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToArray();
+                    Check(!hints.Any(hint => hint?.EndsWith("  Delete", StringComparison.Ordinal) == true), "Keyboard help leaves out deletion shortcuts");
+                    Check(hints.Contains("Alt+F7  Find files"), "File search is discoverable in keyboard help");
+                    Check(hints.Contains("Ctrl+Shift+C  Compare"), "File comparison is discoverable in keyboard help");
                     Check(hints.Contains("F3  View") && hints.Contains("F4  Edit"), "File viewing and editing shortcuts remain discoverable");
                     Check(help.Children.OfType<Border>().Skip(1).All(border => border.BorderThickness.Left == 1), "Shortcut groups have visible separators.");
                     Check(help.Children.All(group => group.Bounds.Right <= help.Bounds.Width && group.Bounds.Bottom <= help.Bounds.Height), "All shortcut groups fit without clipping.");
