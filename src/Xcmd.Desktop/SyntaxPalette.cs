@@ -1,4 +1,4 @@
-// @implements SyntaxSpans
+// @implements SyntaxSpans, ReadWorkingFileDiff
 using Avalonia.Media;
 using Xcmd.Core;
 
@@ -21,8 +21,12 @@ internal static class SyntaxPalette
             [SyntaxKind.Operator] = ("#ebafcc", "#99416c")
         };
 
-    public static IReadOnlyDictionary<SyntaxKind, IBrush> Create(ReaderTheme theme) => Enum.GetValues<SyntaxKind>()
-        .ToDictionary(kind => kind, kind => (IBrush)new SolidColorBrush(Readable(BaseColor(kind, theme), Color.Parse(theme.Background))));
+    public static IReadOnlyDictionary<SyntaxKind, IBrush> Create(ReaderTheme theme, IReadOnlyList<Color>? highlights = null)
+    {
+        var background = Color.Parse(theme.Background);
+        return Enum.GetValues<SyntaxKind>().ToDictionary(kind => kind, kind =>
+            (IBrush)new SolidColorBrush(Readable(BaseColor(kind, theme), background, highlights ?? [])));
+    }
 
     private static Color BaseColor(SyntaxKind kind, ReaderTheme theme)
     {
@@ -30,10 +34,10 @@ internal static class SyntaxPalette
         return Color.Parse(theme.IsDark ? pair.Dark : pair.Light);
     }
 
-    private static Color Readable(Color color, Color background)
+    private static Color Readable(Color color, Color background, IReadOnlyList<Color> highlights)
     {
         var target = UiContrast.Ratio(Colors.White, background) >= UiContrast.Ratio(Colors.Black, background) ? Colors.White : Colors.Black;
-        while (UiContrast.Ratio(color, background) < 4.5)
+        while (color != target && (UiContrast.Ratio(color, background) < 4.5 || highlights.Any(highlight => UiContrast.Ratio(color, highlight) < 4.5)))
             color = Color.FromRgb(Step(color.R, target.R), Step(color.G, target.G), Step(color.B, target.B));
         return color;
     }

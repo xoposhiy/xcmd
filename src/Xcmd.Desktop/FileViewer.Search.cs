@@ -1,4 +1,4 @@
-// @implements OpenSearchMatch, FindViewerText
+// @implements OpenSearchMatch, FindViewerText, ReadWorkingFileDiff
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -58,6 +58,7 @@ public sealed partial class FileViewer
     {
         PauseFollowing();
         match = null;
+        diffMatchPosition = null;
         if (updating) return;
         if (string.IsNullOrEmpty(Search.Text))
         {
@@ -75,7 +76,7 @@ public sealed partial class FileViewer
     private void ClearSearch(bool focus = true)
     {
         altSearchArmed = false; suppressSearchText = false;
-        searching?.Cancel(); match = null;
+        searching?.Cancel(); match = null; diffMatchPosition = null;
         updating = true; Search.Text = ""; updating = false;
         searchStatus.Text = ""; searchPanel.IsVisible = false;
         if (focus) FocusReader();
@@ -102,6 +103,7 @@ public sealed partial class FileViewer
     {
         if (Mode == FileViewMode.Image || slice == null) return;
         if (string.IsNullOrEmpty(Search.Text)) { FocusSearch(); return; }
+        if (diff != null) { SearchDiff(direction, Search.Text); return; }
         searching?.Cancel(); loading?.Cancel();
         using var request = new CancellationTokenSource();
         searching = request; IsSearching = true;

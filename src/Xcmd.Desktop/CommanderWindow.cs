@@ -158,6 +158,7 @@ public sealed partial class CommanderWindow : Window
         AddHandler(PointerPressedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); pointerHeld = true; }, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, (_, _) => { RecordActivity(); pointerHeld = false; }, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, (_, _) => RecordActivity(), RoutingStrategies.Tunnel, handledEventsToo: true);
+        Activated += (_, _) => viewing.RefreshQuickViewAfterActivation();
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); viewing.ResetQuickViewKeys(); ResetQuickJump(); };
         Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };

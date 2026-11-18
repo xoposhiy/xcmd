@@ -1,4 +1,4 @@
-// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles
+// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles, ReadWorkingFileDiff
 using Avalonia.Controls;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -64,6 +64,7 @@ internal sealed class FileViewingController
     public bool CloseQuickView() => quickView.HidePreview();
     public void SwitchQuickViewFocus() => quickView.SwitchFocus();
     public void ResetQuickViewKeys() => quickView.Reader?.ResetKeys();
+    public void RefreshQuickViewAfterActivation() => quickView.Reader?.RefreshAfterActivation();
 
     public void ViewCurrent()
     {
@@ -92,6 +93,7 @@ internal sealed class FileViewingController
         var viewer = new FileViewerWindow(paths, index, files, owner.Feedback,
             path => EditFileAsync(path, directory),
             path => owner.OpenFileExternallyAsync(path, directory), ThemeId, document).WithFeedbackId("FileViewingController.viewer");
+        viewer.FitInitialSize(owner);
         viewers.Add(viewer);
         ConnectReader(viewer.Reader);
         owner.Feedback.Attach(viewer, showButton: false);

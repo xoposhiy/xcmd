@@ -1,4 +1,4 @@
-// @implements SyntaxSpans
+// @implements SyntaxSpans, ReadWorkingFileDiff
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -42,9 +42,9 @@ public sealed class SyntaxTextBox : TextBox
         syntaxPresenter?.SetSyntax(value, palette);
     }
 
-    internal void SetSyntaxTheme(ReaderTheme theme)
+    internal void SetSyntaxTheme(ReaderTheme theme, IReadOnlyList<Color>? highlights)
     {
-        palette = SyntaxPalette.Create(theme);
+        palette = SyntaxPalette.Create(theme, highlights);
         syntaxPresenter?.SetSyntax(Syntax, palette);
     }
 

@@ -48,6 +48,11 @@ I can inspect files while moving through the list.
   focus between the list and the reader.
   Codex session ID 01a1ebe8-bedb-74f3-9cfc-bc539aa090d0.
 
+- Use the same Git status and diff commands as F3. Apply `Ctrl+D` to the
+  diff when the reader has focus and to Favorites when the file list has
+  focus.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
+
 ## ChooseViewMode
 
 As a user, I want to switch between text, binary, hex, and image inspection so that I
@@ -122,6 +127,42 @@ can reach relevant content beyond the visible page.
 - Reuse the last search text across files so F3 can continue the same search in another
   viewer. Select that text when opening Find so typing replaces it immediately.
   Source: [2026-11-11T15-25-18-01a1caff-b568-7bf3-b0e2-452cad10d2ec.md → Turn 3](../codex-sessions/2026-11-11T15-25-18-01a1caff-b568-7bf3-b0e2-452cad10d2ec.md#turn-3).
+
+## ReadWorkingFileDiff
+
+As a user, I want to read Git changes in the file viewer so that I can inspect
+my work and see what is ready to commit.
+
+### Implementation decisions
+
+- Open working files in the usual view. Use `Show Diff`, `Show Text`, or
+  `Ctrl+D` to switch in the same viewer and keep the reading position. Offer the diff
+  for tracked text, including files added to the index for the first time.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
+
+- Show the full file in one diff, with deleted lines in place. Compare HEAD
+  to the index and the index to the file on disk, and show both edits when
+  they affect the same line. Use green for additions and red for deletions.
+  Use a stronger shade for staged changes and give each changed line a hover
+  tip with its change and stage state.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
+
+- Keep syntax colors in the diff. Read the syntax of each row in its
+  original Git version so a changed comment or string keeps the right color.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
+
+- Show the Git state first in the status bar in every F3 mode. Refresh when the
+  viewer opens, enters diff, or regains focus. Compare with the old HEAD path
+  for a staged rename. For a conflict, show `Conflicted` and compare HEAD
+  to the file on disk. Report an empty text diff as `No changes`.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
+
+- Keep all visible text searchable and copyable, including deleted and
+  intermediate lines. Keep change markers outside the copied text. Provide
+  menu commands and keys for switching the view and moving to the previous
+  or next block of adjacent changes. Stop at the first or last block. The
+  first version is read-only.
+  Codex session ID 01a1ebfd-4ca2-75a2-b740-45c3c26055f6.
 
 ## HighlightSource
 

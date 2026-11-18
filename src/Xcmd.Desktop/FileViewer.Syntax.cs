@@ -1,4 +1,4 @@
-// @implements HighlightSource, ReportHighlighting
+// @implements HighlightSource, ReportHighlighting, ReadWorkingFileDiff
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -58,12 +58,18 @@ public sealed partial class FileViewer
             pair.Value.IsEnabled = enabled;
             pair.Value.IsChecked = pair.Key == (syntaxLanguage ?? "auto");
         }
-        reportSyntax.IsEnabled = enabled;
-        reportSyntaxContext.IsEnabled = enabled;
+        reportSyntax.IsEnabled = enabled && diff == null;
+        reportSyntaxContext.IsEnabled = reportSyntax.IsEnabled;
     }
 
     private async Task HighlightPageAsync(CancellationToken token)
     {
+        if (diff is { } display)
+        {
+            await display.HighlightAsync(highlighter, CurrentPath, syntaxLanguage, token);
+            TextContent.SetSyntax(display.SyntaxPage(diffPageStart, diffPageLength));
+            return;
+        }
         TextContent.SetSyntax(null);
         if (Mode != FileViewMode.Text || slice == null || IsArchiveReport) return;
         SyntaxDocument syntax;
@@ -78,7 +84,7 @@ public sealed partial class FileViewer
 
     private void ReportSyntaxProblem(ReaderSelection? selection)
     {
-        if (feedback.IsActive || Mode != FileViewMode.Text || slice == null || IsArchiveReport) return;
+        if (feedback.IsActive || Mode != FileViewMode.Text || slice == null || IsArchiveReport || diff != null) return;
         var (start, end) = ReportSelection(selection);
         var text = TextContent.Text ?? "";
         var sampleLength = Math.Min(end - start, 4096);

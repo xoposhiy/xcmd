@@ -1,4 +1,4 @@
-// @implements ReadLargeFiles, FollowLog
+// @implements ReadLargeFiles, FollowLog, ReadWorkingFileDiff
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -45,6 +45,7 @@ public sealed partial class FileViewer
     private long ByteAtCharacter(int position)
     {
         if (slice == null) return 0;
+        if (diff != null) return diff.WorkingOffset(diffPageStart + position);
         if (Mode == FileViewMode.Text)
             return ViewerText.ByteOffset(slice, CurrentEncoding(), position);
         var text = TextContent.Text ?? "";
@@ -57,6 +58,7 @@ public sealed partial class FileViewer
     private void UpdateReadingPosition()
     {
         if (slice == null || Mode == FileViewMode.Image || textScroll == null || presenter == null) return;
+        if (diff != null) { UpdateDiffReadingPosition(); return; }
         var visible = VisibleCharacters();
         FirstVisibleByte = ByteAtCharacter(visible.First);
         VisibleEnd = Math.Clamp(ByteAtCharacter(visible.End), 0, FileLength);
@@ -83,6 +85,12 @@ public sealed partial class FileViewer
     private async Task SeekBoundaryAsync(bool end, CancellationToken token)
     {
         PauseFollowing();
+        if (diff != null)
+        {
+            diffNavigationPosition = null;
+            PlaceDiff(end ? diff.Text.Length : 0);
+            return;
+        }
         await LoadPageAsync(end ? Math.Max(0, FileLength - FileSlice.PageSize) / 4 * 4 : 0, token);
         token.ThrowIfCancellationRequested();
         BindScrolling();
@@ -95,6 +103,12 @@ public sealed partial class FileViewer
     // PauseFollowing resets the scroll bar to the current position, so the requested offset is read first.
     private void SeekFromScrollBar(long offset)
     {
+        if (diff != null)
+        {
+            diffNavigationPosition = null;
+            PlaceDiff(offset >= FileScroll.Maximum ? diff.Text.Length : (int)offset);
+            return;
+        }
         PauseFollowing();
         Run(token => SeekByteAsync(offset, token));
     }
@@ -128,6 +142,7 @@ public sealed partial class FileViewer
         BindScrolling();
         if (textScroll == null) return;
         var target = textScroll.Offset.Y + delta;
+        if (diff != null) { MoveDiffViewport(target); return; }
         var maximum = Math.Max(0, textScroll.Extent.Height - textScroll.Viewport.Height);
         if ((target > maximum && slice.HasNext) || (target < 0 && slice.Offset > 0))
         {

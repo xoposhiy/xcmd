@@ -1,4 +1,4 @@
-// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReportHighlighting
+// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReadWorkingFileDiff, ReportHighlighting
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
@@ -66,22 +66,25 @@ public sealed partial class FileViewer
         else if (page.Length > ViewerFiles.MaximumImageBytes) imageUnavailable = "Image preview is limited to 32 MiB. Use Open externally for this image.";
         var imageReady = CanUseImage && await PrepareImageAsync(token);
         token.ThrowIfCancellationRequested();
-        Mode = imageReady ? FileViewMode.Image : imageSignature || ViewerText.IsBinary(page.Bytes, encoding.Encoding) ? FileViewMode.Hex : FileViewMode.Text;
+        binaryFile = imageSignature || ViewerText.IsBinary(page.Bytes, encoding.Encoding);
+        Mode = imageReady ? FileViewMode.Image : binaryFile ? FileViewMode.Hex : FileViewMode.Text;
         automaticMode = true;
         await RenderPageAsync(token);
         token.ThrowIfCancellationRequested();
         if (!IsEmbedded || IsKeyboardFocusWithin) FocusReader();
+        await RefreshGitAsync(wantDiff: false, reloadText: false, token);
     }
 
     private void ResetFile()
     {
         PauseFollowing();
         ClearSearch(focus: false);
+        ResetGitView();
         slice = null; TextContent.Text = "";
         ReleaseImage();
         TextContent.SetSyntax(null); syntaxLanguage = null;
         FirstVisibleByte = 0; VisibleEnd = 0;
-        imageUnavailable = null; imageSignature = false;
+        imageUnavailable = null; imageSignature = false; binaryFile = false;
         IsArchiveReport = false;
         Mode = FileViewMode.Text;
         selectedEncoding = EncodingChoice.All[0];
@@ -108,6 +111,8 @@ public sealed partial class FileViewer
         if (IsArchiveReport && mode != FileViewMode.Text) return;
         if (mode == FileViewMode.Image && (!CanUseImage || !await PrepareImageAsync(token))) return;
         ClearSearch();
+        var anchor = FirstVisibleByte;
+        if (diff != null) await ReloadTextAsync(anchor, token);
         Mode = mode;
         automaticMode = false;
         if (slice == null) slice = await files.ReadAsync(CurrentPath, 0, token);
@@ -181,8 +186,12 @@ public sealed partial class FileViewer
         UpdateSyntaxControls();
         var text = Mode != FileViewMode.Image;
         UpdateTextItems(text);
-        previousPage.IsEnabled = text && FirstVisibleByte > 0;
-        nextPage.IsEnabled = text && VisibleEnd < FileLength;
+        if (diff == null)
+        {
+            previousPage.IsEnabled = text && FirstVisibleByte > 0;
+            nextPage.IsEnabled = text && VisibleEnd < FileLength;
+        }
+        UpdateDiffCommands();
         if (previousFile != null) previousFile.IsEnabled = index > 0;
         if (nextFile != null) nextFile.IsEnabled = index + 1 < paths.Length;
         UpdateWrapping();
@@ -214,7 +223,7 @@ public sealed partial class FileViewer
         wrapItem.IsEnabled = Mode == FileViewMode.Text && slice != null;
         wrapItem.IsChecked = wrapLines;
         informationItem.IsChecked = information.IsVisible;
-        followItem.IsEnabled = slice != null && text && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
+        followItem.IsEnabled = slice != null && text && diff == null && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
         UpdateExternalItems();
     }
@@ -254,7 +263,12 @@ public sealed partial class FileViewer
     private bool HandleNavigationKey(KeyEventArgs e)
     {
         if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.PageDown or Key.PageUp)
-        { Run(token => LoadPageAsync(ByteOffset + (e.Key == Key.PageDown ? FileSlice.PageSize : -FileSlice.PageSize), token)); return true; }
+        {
+            var delta = e.Key == Key.PageDown ? FileSlice.PageSize : -FileSlice.PageSize;
+            if (diff == null) Run(token => LoadPageAsync(ByteOffset + delta, token));
+            else PlaceDiff(DiffTop + delta);
+            return true;
+        }
         if (e.KeyModifiers == KeyModifiers.None && e.Key is >= Key.D1 and <= Key.D4)
         { Run(token => ChangeModeAsync((FileViewMode)(e.Key - Key.D1), token)); return true; }
         return false;

@@ -1,4 +1,4 @@
-// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, ReportControl
+// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, ReadWorkingFileDiff, ReportControl
 using System.Text;
 using Avalonia;
 using Avalonia.Automation;
@@ -57,6 +57,7 @@ public sealed partial class FileViewer : UserControl
     private IDisposable? feedbackNotice;
     private bool automaticMode = true;
     private bool imageSignature;
+    private bool binaryFile;
     private string? imageUnavailable;
     public FileViewMode Mode { get; private set; }
     public bool IsLoading { get; private set; }
@@ -117,12 +118,19 @@ public sealed partial class FileViewer : UserControl
         AutomationProperties.SetAutomationId(readingStatus, "viewer.reading-status");
         AutomationProperties.SetAutomationId(Progress, "viewer.progress");
         AutomationProperties.SetAutomationId(FileScroll, "viewer.file-scroll");
+        if (IsEmbedded)
+        {
+            AddHandler(KeyDownEvent, HandleDiffKey, RoutingStrategies.Tunnel);
+            AddHandler(KeyUpEvent, ReleaseDiffKey, RoutingStrategies.Tunnel, handledEventsToo: true);
+        }
         AddHandler(KeyDownEvent, OnViewerKey, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => { if (e.Key == Key.F4) editKeyHeld = false; if (e.Key is Key.LeftAlt or Key.RightAlt) { altSearchArmed = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnSearchText, RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, OnViewerWheel, RoutingStrategies.Tunnel);
         image.PointerPressed += (_, _) => FocusReader();
         TextContent.SizeChanged += (_, _) => UpdateReadingPosition();
+        viewerBody.PointerMoved += UpdateDiffHint;
+        viewerBody.PointerExited += (_, _) => ClearDiffHint();
         FileScroll.PropertyChanged += (_, e) => { if (e.Property == ScrollBar.ValueProperty && !updatingScroll && slice != null) SeekFromScrollBar((long)FileScroll.Value); };
         Search.TextChanging += (_, _) => SearchChanged();
     }
@@ -133,7 +141,8 @@ public sealed partial class FileViewer : UserControl
         layout.Children.Add(BuildTitleBar());
         ScrollViewer.SetHorizontalScrollBarVisibility(TextContent, ScrollBarVisibility.Auto);
         ScrollViewer.SetVerticalScrollBarVisibility(TextContent, ScrollBarVisibility.Hidden);
-        viewerBody.Children.Add(TextContent); viewerBody.Children.Add(image);
+        diffOverlay.IsVisible = false;
+        viewerBody.Children.Add(diffOverlay); viewerBody.Children.Add(TextContent); viewerBody.Children.Add(image);
         Grid.SetColumn(FileScroll, 1); viewerBody.Children.Add(FileScroll);
         Grid.SetRow(viewerBody, 1); layout.Children.Add(viewerBody);
         if (IsEmbedded)
@@ -149,7 +158,7 @@ public sealed partial class FileViewer : UserControl
         Grid.SetRow(searchPanel, 2); layout.Children.Add(searchPanel);
         Grid.SetRow(error, 3); layout.Children.Add(error);
         Grid.SetRow(information, 4); layout.Children.Add(information);
-        statusBar.Child = new Grid { Children = { readingStatus, feedbackStatus } }.WithFeedbackId("FileViewerWindow.BuildContent.2");
+        statusBar.Child = BuildStatusBar();
         Grid.SetRow(statusBar, 5); layout.Children.Add(statusBar);
         return layout;
     }
@@ -175,7 +184,7 @@ public sealed partial class FileViewer : UserControl
         if (!TextContent.IsVisible || !TextContent.Focus()) Focus();
     }
 
-    internal void ResetKeys() { editKeyHeld = false; altSearchArmed = false; suppressSearchText = false; }
+    internal void ResetKeys() { editKeyHeld = false; diffKeyHeld = false; altSearchArmed = false; suppressSearchText = false; }
 
     internal void Stop()
     {
@@ -183,6 +192,7 @@ public sealed partial class FileViewer : UserControl
         IsFollowing = false;
         followTimer.Stop();
         feedbackNotice?.Dispose();
+        ClearDiffHint();
         loading?.Cancel();
         searching?.Cancel();
         ReleaseImage();

@@ -1,4 +1,4 @@
-// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, ReaderThemes, FollowLog, OpenViewedFile, ReportControl, ReportHighlighting
+// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, ReaderThemes, FollowLog, OpenViewedFile, ReadWorkingFileDiff, ReportControl, ReportHighlighting
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -42,6 +42,7 @@ public sealed partial class FileViewer
             item.ToggleType = MenuItemToggleType.Radio; item.GroupName = "mode";
             modeItems[mode] = item; view.Add(item);
         }
+        AddDiffCommands(view);
         wrapItem = MenuCommand("Word wrap", "viewer.wrap", ToggleWrapping, new(Key.W));
         wrapItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(wrapItem);
         informationItem = MenuCommand("File information", "viewer.information", ToggleInformation, new(Key.I, KeyModifiers.Control));
@@ -104,6 +105,8 @@ public sealed partial class FileViewer
             items.Add(previousFile);
             items.Add(nextFile);
         }
+        items.Add(previousChange);
+        items.Add(nextChange);
         return items;
     }
 
@@ -117,8 +120,11 @@ public sealed partial class FileViewer
     private void ToggleWrapping()
     {
         var anchor = FirstVisibleByte;
+        var diffTop = DiffTop;
         wrapLines = !wrapLines; UpdateControls(); TextContent.UpdateLayout();
-        RestoreTopByte(anchor); TextContent.Focus();
+        if (diff == null) RestoreTopByte(anchor);
+        else PlaceDiff(diffTop);
+        TextContent.Focus();
     }
 
     private void ToggleInformation() { information.IsVisible = !information.IsVisible; UpdateControls(); TextContent.Focus(); }
@@ -127,7 +133,8 @@ public sealed partial class FileViewer
     {
         selectedEncoding = choice;
         ClearSearch();
-        Run(RenderPageAsync);
+        if (diff == null) Run(RenderPageAsync);
+        else Run(token => RefreshGitAsync(wantDiff: true, reloadText: false, token));
         TextContent.Focus();
     }
 }

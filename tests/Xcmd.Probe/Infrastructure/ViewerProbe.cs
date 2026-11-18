@@ -18,7 +18,9 @@ public static class ViewerProbe
 {
     public static Button Button(FileViewerWindow viewer, string name) => viewer.GetVisualDescendants().OfType<Button>().Single(button => button.Name == name);
 
-    public static MenuItem Command(FileViewerWindow viewer, string name) => viewer.Reader.Commands.Items.OfType<MenuItem>()
+    public static MenuItem Command(FileViewerWindow viewer, string name) => Command(viewer.Reader, name);
+
+    public static MenuItem Command(FileViewer reader, string name) => reader.Commands.Items.OfType<MenuItem>()
         .SelectMany(menu => menu.Items.OfType<MenuItem>()).Single(item => item.Name == name);
 
     public static void CheckTextActions(FileViewerWindow viewer, bool enabled)

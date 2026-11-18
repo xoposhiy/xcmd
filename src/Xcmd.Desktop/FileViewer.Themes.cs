@@ -59,7 +59,6 @@ public sealed partial class FileViewer
         var start = TextContent.SelectionStart;
         var end = TextContent.SelectionEnd;
         activeTheme = ReaderThemes.Find(id);
-        TextContent.SetSyntaxTheme(activeTheme);
         var background = Brush.Parse(activeTheme.Background);
         var foreground = Brush.Parse(activeTheme.Foreground);
         var surface = Brush.Parse(activeTheme.Surface);
@@ -68,21 +67,20 @@ public sealed partial class FileViewer
         Background = background; Foreground = foreground;
         viewerBody.Background = background; TitleBar.Background = background;
         statusBar.BorderBrush = new SolidColorBrush(Color.Parse(activeTheme.Border), 0.5);
-        TextContent.Background = background; TextContent.Foreground = foreground; TextContent.CaretBrush = foreground;
         var selection = Color.Parse(activeTheme.Accent);
         TextContent.SelectionBrush = new SolidColorBrush(Color.FromArgb(110, selection.R, selection.G, selection.B));
         TextContent.SelectionForegroundBrush = UiContrast.SelectionText(selection, Color.Parse(activeTheme.Background));
         foreach (var state in new[] { "", "Focused", "PointerOver", "Disabled" })
         {
-            TextContent.Resources["TextControlBackground" + state] = background;
             Search.Resources["TextControlBackground" + state] = surface;
         }
+        ApplyDiffAppearance();
         Search.Background = surface; Search.Foreground = foreground; Search.CaretBrush = foreground;
         Search.BorderBrush = UiContrast.Ratio(Color.Parse(activeTheme.Border), Color.Parse(activeTheme.Surface)) >= 3
             ? Brush.Parse(activeTheme.Border) : foreground;
         Search.Resources["TextControlBorderBrushFocused"] = UiContrast.Ratio(selection, Color.Parse(activeTheme.Surface)) >= 3 ? accent : foreground;
         searchPanel.Background = surface;
-        foreach (var text in new[] { titlePath, Progress, readingStatus, feedbackStatus, searchStatus, information }) text.Foreground = foreground;
+        foreach (var text in new[] { titlePath, Progress, readingStatus, feedbackStatus, searchStatus, information, gitStatus }) text.Foreground = foreground;
         error.Foreground = Brush.Parse(activeTheme.IsDark ? "#ffb4ab" : "#b42318");
         Commands.Foreground = foreground;
         foreach (var root in Commands.Items.OfType<MenuItem>()) ApplyMenuColor(root, foreground);
