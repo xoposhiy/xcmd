@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests FileSystemAccess
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

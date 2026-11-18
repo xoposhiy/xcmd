@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests ShellActions
 using Avalonia;
 using Avalonia.Input;
 

@@ -1,4 +1,4 @@
-// @implements FileSystemAccess
+// @implements FileSystemAccess, WindowsFileActions
 namespace Xcmd.Core;
 
 public sealed record FileUser(int ProcessId, string Name, string Path, DateTime StartedAtUtc)

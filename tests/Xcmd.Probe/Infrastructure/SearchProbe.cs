@@ -1,5 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
-// @tests FindFiles
+// @tests FindFiles, FindFileText
 using System.Diagnostics;
 using Avalonia.Input;
 using Xcmd.Core;

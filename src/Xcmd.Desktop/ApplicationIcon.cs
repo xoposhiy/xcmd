@@ -1,4 +1,4 @@
-// @implements PackageInputs
+// @implements WindowsIdentity
 using Avalonia.Controls;
 using Avalonia.Platform;
 

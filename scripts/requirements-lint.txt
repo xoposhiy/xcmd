@@ -1,4 +1,4 @@
-# @implements PackageInputs, QualityChecks, CodeHealth
+# @implements QualityChecks, CodeHealth
 lizard==1.25.1
 pathspec==1.1.1
 Pygments==2.21.0

@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @tests RecentLocations, DeleteEntries, BrowseHistory, BrowseSnapshot
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia;

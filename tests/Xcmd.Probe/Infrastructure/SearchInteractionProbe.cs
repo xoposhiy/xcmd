@@ -1,5 +1,4 @@
-// @implements HeadlessVerification
-// @tests JumpToName
+// @tests JumpToName, FindFiles, FindFileText
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.VisualTree;

@@ -1,4 +1,4 @@
-// @implements QualityChecks
+// @tests QualityChecks
 namespace Xcmd.Architecture.Samples.Core
 {
     internal sealed class UsesUi : Avalonia.Controls.Control;

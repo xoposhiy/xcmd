@@ -40,8 +40,16 @@ def read_snapshot(root):
                  for path in sorted((root / "docs/stories").glob("*.md")) if path.name != "README.md"]
     epics = parse_catalogue(documents)
     paths = list(source_paths(root))
-    sources = ((path, (root / path).read_text(encoding="utf-8-sig")) for path in paths)
-    snapshot = map_sources(epics, sources)
+    sizes = {}
+
+    def sources():
+        for path in paths:
+            raw = (root / path).read_bytes()
+            sizes[path] = len(raw)
+            yield path, raw.decode("utf-8-sig")
+
+    snapshot = map_sources(epics, sources())
+    snapshot["fileSizes"] = {path: sizes[path] for path in snapshot["files"]}
     snapshot["scannedFiles"] = len(paths)
     snapshot["generatedAt"] = datetime.now(timezone.utc).isoformat()
     return snapshot

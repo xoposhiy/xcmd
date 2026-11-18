@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @tests MeasureFolders, ViewSelectionSize
 using System.Diagnostics;
 using Xcmd.Core;
 

@@ -1,4 +1,4 @@
-// @implements SyntaxSpans, ReadWorkingFileDiff
+// @implements SyntaxSpans
 using Avalonia.Media;
 using Xcmd.Core;
 

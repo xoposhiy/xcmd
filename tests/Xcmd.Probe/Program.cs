@@ -100,9 +100,7 @@ internal static class Program
                     catch
                     {
                         context.SaveSnapshot();
-                        context.CaptureFailure("failure");
-                        if (context.Window.ActiveNavigationDialog is { } history) context.CaptureFailure("failure-history", history);
-                        if (context.Window.FileSearch.Window is { } search) context.CaptureFailure("failure-search", search);
+                        context.CaptureFailure();
                         throw;
                     }
                     return true;

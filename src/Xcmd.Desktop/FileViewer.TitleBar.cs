@@ -1,4 +1,4 @@
-// @implements QuickViewFile, SharedControls
+// @implements QuickViewFile, OpenViewers
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

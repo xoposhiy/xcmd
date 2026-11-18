@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests OpenExternalTool, ExternalLaunch, StableShortcut, WindowsIdentity
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;

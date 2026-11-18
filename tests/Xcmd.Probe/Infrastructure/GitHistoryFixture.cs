@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges
 namespace Xcmd.Probe.Infrastructure;
 
 public sealed class GitHistoryFixture(string root) : IDisposable

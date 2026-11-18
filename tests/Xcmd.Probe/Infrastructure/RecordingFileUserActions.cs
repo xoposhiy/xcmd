@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @tests RecoverOperations, WindowsFileActions
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

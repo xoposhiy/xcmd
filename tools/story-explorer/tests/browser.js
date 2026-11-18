@@ -1,6 +1,7 @@
 // @tests BrowseStories, TraceStoryFiles
 async page => {
   const assert = (condition, message) => { if (!condition) throw new Error(message); };
+  const waitForHeading = title => page.waitForFunction(expected => document.querySelector('main h2')?.textContent === expected, title);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
@@ -15,7 +16,7 @@ async page => {
   assert(await page.locator('.epic').count() === data.counts.epics, 'Every epic must appear in order.');
   assert(await page.locator('main h2').textContent() === epic.title, 'Start with the first epic.');
   await page.getByRole('navigation', {name: 'Epics and user stories'}).getByRole('link', {name: story.id, exact: true}).click();
-  assert(await page.locator('main h2').textContent() === story.id, 'Selecting a story must show its details.');
+  await waitForHeading(story.id);
   assert(await page.getByRole('table', {name: 'Implementation files', exact: true}).locator('tbody tr').count() === story.implements.length,
     'Implementation rows must match source annotations.');
   assert(await page.getByRole('table', {name: 'Test files', exact: true}).locator('tbody tr').count() === story.tests.length,
@@ -28,15 +29,16 @@ async page => {
   assert((await popup.locator('body').innerText()).includes('@implements'), 'A file link must open actual source text.');
   await popup.close();
   await page.getByRole('navigation', {name: 'Reading order'}).getByRole('link').last().click();
-  assert(await page.locator('main h2').textContent() === epic.stories[1].id, 'Next must follow catalogue order.');
+  await waitForHeading(epic.stories[1].id);
   await page.goBack();
-  assert(await page.locator('main h2').textContent() === story.id, 'Browser Back must restore the selected story.');
+  await waitForHeading(story.id);
   const secondEpic = page.locator('.epic').nth(1);
   await secondEpic.locator('summary').click();
   assert(await secondEpic.evaluate(node => node.open), 'An epic must expand to show its stories.');
   await secondEpic.getByRole('link', {name: 'Epic overview'}).click();
-  assert(await page.locator('main h2').textContent() === data.epics[1].title, 'Each epic must have its own overview.');
+  await waitForHeading(data.epics[1].title);
   await page.goBack();
+  await waitForHeading(story.id);
   await page.getByRole('searchbox').fill(story.implements[0].path);
   assert(await page.locator('.story-link').count() > 0, 'Search must find stories by file path.');
   await page.getByRole('searchbox').fill('no-such-story-or-file');
@@ -50,12 +52,15 @@ async page => {
   await page.getByRole('alert').waitFor({state: 'visible'});
   assert((await page.getByRole('alert').textContent()).includes('previous map'), 'Failed reload must identify the stale map.');
   await page.unroute('**/api/catalogue');
+  await page.getByRole('button', {name: 'Reload map'}).click();
+  await page.waitForFunction(() => !document.getElementById('reload').disabled);
+  assert(await page.getByRole('alert').count() === 0, 'A successful reload must clear the error.');
   await page.goto(base + '/#story=DirectoryMonitoring');
   await page.waitForFunction(() => !document.getElementById('reload').disabled);
   assert((await page.locator('main').textContent()).includes('No test files'), 'Stories without mapped tests need an empty state.');
   await page.goto(base + '/#story=' + story.id);
   await page.waitForFunction(() => !document.getElementById('reload').disabled);
-  await page.getByRole('link', {name: 'Skip to story'}).focus();
+  await page.getByRole('link', {name: 'Skip to content'}).focus();
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => document.activeElement.id === 'content');
   assert(new URL(page.url()).hash === '#story=' + story.id, 'Skip link must not change the URL.');
@@ -72,10 +77,190 @@ async page => {
   await page.goto(base + '/#story=MissingStory');
   await page.waitForFunction(() => !document.getElementById('reload').disabled);
   assert(await page.locator('main h2').textContent() === 'Story not found', 'A stale deep link must be explained.');
+  await page.setViewportSize({width: 1280, height: 900});
+  const views = page.getByRole('navigation', {name: 'Explorer views'});
+  const countRows = name => page.getByRole('table', {name, exact: true}).locator('tbody tr').evaluateAll(rows =>
+    rows.map(row => [row.querySelector('a').textContent, ...[...row.querySelectorAll('td')].map(cell => Number(cell.textContent))]));
+  const expectRows = async (name, rows, sort) => {
+    await page.getByRole('table', {name, exact: true}).locator(`th[aria-sort="descending"]`).filter({hasText: sort.label}).waitFor();
+    const expected = [...rows].sort((a, b) => b[sort.column] - a[sort.column] || a[0].localeCompare(b[0]));
+    assert(JSON.stringify(await countRows(name)) === JSON.stringify(expected), `${name} must rank every row by ${sort.label}.`);
+  };
+  const storyCounts = data.epics.flatMap(item => item.stories.map(entry => [entry.id, entry.implements.length, entry.tests.length]));
+  await views.getByRole('link', {name: 'Story rankings'}).click();
+  await expectRows('Story rankings', storyCounts, {label: 'Implementation files', column: 1});
+  await page.getByRole('link', {name: 'Test files', exact: true}).click();
+  await expectRows('Story rankings', storyCounts, {label: 'Test files', column: 2});
+  await page.screenshot({path: 'artifacts/story-explorer/rankings.png'});
+  await page.getByRole('searchbox', {name: 'Filter stories'}).fill(story.id);
+  assert((await countRows('Story rankings')).some(([name]) => name === story.id), 'Filter must find a known ranked story.');
+  await page.getByRole('table', {name: 'Story rankings'}).getByRole('link', {name: story.id, exact: true}).click();
+  await waitForHeading(story.id);
+
+  const fileCounts = data.files.map(path => {
+    const links = data.epics.map(item => item.stories.filter(entry =>
+      [...entry.implements, ...entry.tests].some(file => file.path === path)));
+    return [path, links.flat().length, links.filter(group => group.length).length];
+  });
+  await views.getByRole('link', {name: 'File rankings'}).click();
+  await expectRows('File rankings', fileCounts, {label: 'Stories', column: 1});
+  await page.getByRole('link', {name: 'Epics', exact: true}).click();
+  await expectRows('File rankings', fileCounts, {label: 'Epics', column: 2});
+  const sharedPath = (await countRows('File rankings'))[0][0];
+  await page.getByRole('searchbox', {name: 'Filter paths'}).fill(sharedPath);
+  assert((await countRows('File rankings')).length === 1, 'Filter must find a known ranked file.');
+  await page.getByRole('link', {name: 'Stories', exact: true}).click();
+  await page.getByRole('table', {name: 'File rankings'}).locator('th[aria-sort="descending"]').filter({hasText: 'Stories'}).waitFor();
+  assert(await page.getByRole('searchbox', {name: 'Filter paths'}).inputValue() === sharedPath,
+    'Changing the ranking metric must preserve the filter.');
+  await page.getByRole('link', {name: sharedPath, exact: true}).click();
+  await waitForHeading(sharedPath);
+  assert((await countRows('Stories linked to this file')).length === fileCounts.find(([path]) => path === sharedPath)[1],
+    'File details must show each linked story once.');
+  await page.goBack();
+  await waitForHeading('File rankings');
+  assert(await page.getByRole('searchbox', {name: 'Filter paths'}).inputValue() === sharedPath &&
+    (await countRows('File rankings')).length === 1, 'Returning to the ranking must restore the filtered results.');
+
+  await views.getByRole('link', {name: 'Treemap'}).click();
+  await waitForHeading('Repository treemap');
+  const mappedTiles = page.locator('.treemap .map-file');
+  const treemap = page.locator('.treemap');
+  assert(await page.locator('.folder-contents summary').evaluate(summary =>
+    Boolean(summary.compareDocumentPosition(document.querySelector('.treemap')) & Node.DOCUMENT_POSITION_FOLLOWING)),
+    'Keyboard users must reach the folder list before the file tiles.');
+  const folderLabel = path => treemap.getByRole('link', {name: `Open folder ${path}`, exact: true});
+  const outline = label => label.evaluate(node => getComputedStyle(node.parentElement, '::after').boxShadow);
+  const testsFolder = folderLabel('tests');
+  const scenariosPath = 'tests/Xcmd.Probe/Scenarios';
+  const scenarios = folderLabel(scenariosPath);
+  const probe = folderLabel('tests/Xcmd.Probe');
+  await testsFolder.waitFor();
+  await scenarios.waitFor();
+  await folderLabel('tests/Xcmd.Probe/Infrastructure').waitFor();
+  const overview = await mappedTiles.evaluateAll(tiles => tiles.map(tile => {
+    const path = new URLSearchParams(tile.hash.slice(1)).get('file');
+    const parents = [];
+    for (let folder = tile.closest('.map-folder'); folder; folder = folder.parentElement.closest('.map-folder')) {
+      parents.push(folder.querySelector(':scope > .folder-label')?.getAttribute('aria-label'));
+    }
+    return {path, parents, heat: Number(tile.className.match(/heat-(\d)/)[1]), title: tile.title};
+  }));
+  assert(overview.length === data.files.filter(path => data.fileSizes[path] > 0).length &&
+    new Set(overview.map(tile => tile.path)).size === overview.length, 'The repository overview must show each file once.');
+  assert(overview.filter(tile => tile.path.startsWith(scenariosPath + '/')).every(tile =>
+    tile.parents.join(',') === [scenariosPath, 'tests/Xcmd.Probe', 'tests'].map(path => `Open folder ${path}`).join(',')),
+    'Scenario files must appear inside Scenarios, Xcmd.Probe and tests.');
+  const countsByPath = new Map(fileCounts.map(([path, stories, epics]) => [path, {stories, epics}]));
+  const expectedHeat = (path, metric) => [0, .25, .5, 1, Infinity].findIndex(limit =>
+    1024 * countsByPath.get(path)[metric] / data.fileSizes[path] <= limit);
+  assert(overview.every(tile => tile.heat === expectedHeat(tile.path, 'stories') && tile.title.startsWith(tile.path + ' · ')),
+    'File colors must reflect story links per KiB, and tooltips must show full paths.');
+  await page.getByRole('group', {name: 'stories per KiB', exact: true}).waitFor();
+  const checkFileNames = async () => mappedTiles.evaluateAll(tiles => {
+    let visible = 0;
+    let hidden = 0;
+    for (const tile of tiles) {
+      const label = tile.querySelector('.tile-name');
+      if (label.hidden && tile.title) hidden++;
+      else {
+        const name = label.getBoundingClientRect();
+        const bounds = tile.getBoundingClientRect();
+        if (name.width && name.width <= bounds.width && name.height <= bounds.height) visible++;
+      }
+    }
+    return {visible, hidden, total: tiles.length};
+  });
+  const labels = await checkFileNames();
+  assert(labels.visible > 0 && labels.hidden > 0 && labels.visible + labels.hidden === labels.total,
+    'Show only file names that fit and give small tiles a tooltip.');
+  assert(await mappedTiles.locator('.tile-name:visible').first().evaluate(name => getComputedStyle(name).fontWeight === '400'),
+    'File names must use regular weight.');
+  const treemapArea = await treemap.evaluate(node => node.clientWidth * node.clientHeight);
+  const totalBytes = Object.values(data.fileSizes).reduce((total, bytes) => total + bytes, 0);
+  const testsBytes = Object.entries(data.fileSizes).reduce((total, [path, bytes]) => total + (path.startsWith('tests/') ? bytes : 0), 0);
+  const testsArea = await testsFolder.evaluate(node => node.parentElement.clientWidth * node.parentElement.clientHeight);
+  assert(Math.abs(testsArea / treemapArea - testsBytes / totalBytes) < .003, 'The tests block must occupy its share of repository bytes.');
+  await page.screenshot({path: 'artifacts/story-explorer/treemap.png'});
+
+  const scenariosOutline = await outline(scenarios);
+  const probeOutline = await outline(probe);
+  await scenarios.hover();
+  assert(await outline(scenarios) !== scenariosOutline && await outline(probe) === probeOutline,
+    'Hovering the Scenarios block must outline only Scenarios.');
+  await page.screenshot({path: 'artifacts/story-explorer/treemap-folder-highlight.png'});
+  await scenarios.click();
+  await page.getByRole('group', {name: `File sizes in ${scenariosPath}`, exact: true}).waitFor();
+  const contents = data.files.filter(path => path.startsWith(scenariosPath + '/') && data.fileSizes[path] > 0);
+  assert(await mappedTiles.count() === contents.length, 'Opening Scenarios must show its individual files once.');
+  const positions = await mappedTiles.evaluateAll(tiles => tiles.map(tile => {
+    const {width, height, left, top, right, bottom} = tile.getBoundingClientRect();
+    return {path: new URLSearchParams(tile.hash.slice(1)).get('file'), width, height, left, top, right, bottom};
+  }));
+  const scenariosBytes = contents.reduce((total, path) => total + data.fileSizes[path], 0);
+  assert(positions.every(tile => Math.abs(tile.width * tile.height / treemapArea - data.fileSizes[tile.path] / scenariosBytes) < .001),
+    'Each file tile must occupy its share of the folder bytes.');
+  assert(positions.filter(tile => tile.width > tile.height).length > positions.length / 2,
+    'Prefer horizontal rectangles for file names.');
+  const orderedPaths = [...contents].sort((a, b) =>
+    expectedHeat(b, 'stories') - expectedHeat(a, 'stories') || data.fileSizes[b] - data.fileSizes[a] ||
+    a.split('/').pop().localeCompare(b.split('/').pop()));
+  assert(JSON.stringify(positions.map(tile => tile.path)) === JSON.stringify(orderedPaths),
+    'Order file tiles by color band, then by size within each band.');
+  const plotBounds = await treemap.boundingBox();
+  const first = positions[0];
+  const last = positions.at(-1);
+  assert(Math.abs(first.left - plotBounds.x) < 1 && Math.abs(first.top - plotBounds.y) < 1 &&
+    Math.abs(last.right - plotBounds.x - plotBounds.width) < 1 && Math.abs(last.bottom - plotBounds.y - plotBounds.height) < 1,
+    'Place the first file at the top left and the last file at the bottom right.');
+  await page.getByRole('link', {name: 'Epics', exact: true}).click();
+  const epicTile = treemap.getByRole('link', {name: /epics\/KiB$/}).first();
+  await epicTile.waitFor();
+  const tilePath = await epicTile.evaluate(node => new URLSearchParams(node.hash.slice(1)).get('file'));
+  assert((await epicTile.getAttribute('class')).includes(`heat-${expectedHeat(tilePath, 'epics')}`),
+    'Changing the color metric must use epic links per KiB.');
+  assert(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('folder') === scenariosPath, 'Changing the color metric must preserve the folder.');
+  await epicTile.click();
+  await page.getByRole('link', {name: 'Open source ↗'}).waitFor();
+  await page.getByRole('link', {name: '← Treemap', exact: true}).click();
+  await page.getByRole('group', {name: `File sizes in ${scenariosPath}`, exact: true}).waitFor();
+  await page.getByRole('group', {name: 'epics per KiB', exact: true}).waitFor();
+  await page.goto(base + '/#report=treemap&view=files');
+  await page.getByRole('link', {name: 'Back to folders'}).waitFor();
+  await mappedTiles.first().waitFor();
+  assert(await mappedTiles.count() === data.files.filter(path => !path.includes('/') && data.fileSizes[path] > 0).length,
+    'A saved files-only link must show only the files directly in its folder.');
+
+  await views.getByRole('link', {name: 'Charts'}).click();
+  await waitForHeading('Mapping charts');
+  const point = page.getByRole('button', {name: /^\d+ implementation files, 0 test files,/}).first();
+  await point.focus();
+  await page.keyboard.press('Enter');
+  assert(await point.getAttribute('aria-pressed') === 'true', 'Keyboard input must select a scatter point.');
+  assert((await page.locator('.point-detail').textContent()).includes('0 test files'), 'Selected point must show matching stories.');
+  assert(await page.locator('.epic-bars li').count() === data.epics.length, 'The bar chart must show each epic.');
+  await page.screenshot({path: 'artifacts/story-explorer/charts.png'});
+  await page.setViewportSize({width: 390, height: 844});
+  for (const [view, title] of [['Charts', 'Mapping charts'], ['Treemap', 'Repository treemap'],
+    ['File rankings', 'File rankings'], ['Story rankings', 'Story rankings']]) {
+    await views.getByRole('link', {name: view, exact: true}).click();
+    await waitForHeading(title);
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${view} must fit a narrow screen.`);
+    if (view === 'Treemap') {
+      await mappedTiles.first().waitFor();
+      const labels = await checkFileNames();
+      assert(labels.visible + labels.hidden === labels.total, 'Keep all small tiles accessible through file links and tooltips.');
+      await page.screenshot({path: 'artifacts/story-explorer/treemap-mobile.png'});
+      await folderLabel(scenariosPath).click();
+      await mappedTiles.first().waitFor();
+      const zoomedLabels = await checkFileNames();
+      assert(zoomedLabels.visible > 0 && zoomedLabels.visible + zoomedLabels.hidden === zoomedLabels.total,
+        'Show the file names that fit after zooming into a folder on a narrow screen.');
+    }
+  }
+  await page.screenshot({path: 'artifacts/story-explorer/rankings-mobile.png'});
   const unexpected = errors.filter(message => !message.includes('422'));
   assert(!unexpected.length, 'Unexpected browser errors: ' + unexpected.join('; '));
-  await page.setViewportSize({width: 1280, height: 900});
-  await page.goto(base + '/#story=' + story.id);
   return {epics: data.counts.epics, stories: data.counts.stories, mappedFiles: data.counts.files,
-    checks: 'navigation, source links, search, reload, errors, deep links, keyboard, narrow layout'};
+    checks: 'catalogue, reload, source, all four rankings, file details, treemap, charts, keyboard, narrow layout'};
 }

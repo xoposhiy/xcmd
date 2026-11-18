@@ -1,4 +1,3 @@
-// @implements HeadlessVerification
 // @tests NavigatePanels, ReadablePanels, BrowseHistory, ReadCommitMessage, BrowseSnapshot
 using Avalonia;
 using Avalonia.Controls;

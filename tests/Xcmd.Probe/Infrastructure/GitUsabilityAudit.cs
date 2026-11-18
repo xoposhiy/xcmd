@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

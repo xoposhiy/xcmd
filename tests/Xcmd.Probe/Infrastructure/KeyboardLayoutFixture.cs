@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests KeyboardLayouts
 using System.Runtime.InteropServices;
 
 namespace Xcmd.Probe.Infrastructure;

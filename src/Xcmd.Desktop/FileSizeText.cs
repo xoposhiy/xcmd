@@ -1,4 +1,4 @@
-// @implements SharedControls
+// @implements ViewSelectionSize
 namespace Xcmd.Desktop;
 
 public static class FileSizeText

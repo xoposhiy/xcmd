@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests TransferEntries, QueueOperations, RecoverOperations
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

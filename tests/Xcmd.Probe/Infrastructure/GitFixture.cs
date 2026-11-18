@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @tests RepositoryStatus
 using System.Diagnostics;
 using Xcmd.Infrastructure;
 

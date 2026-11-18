@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests FeedbackQueue
 using System.Diagnostics;
 using Xcmd.Desktop;
 

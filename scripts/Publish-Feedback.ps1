@@ -1,4 +1,4 @@
-# @implements TryLocalRelease, PackageInputs, HeadlessVerification
+# @implements TryLocalRelease
 param(
     [Parameter(Mandatory)][string]$Filter,
     [switch]$SkipPackageAudit

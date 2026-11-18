@@ -1,4 +1,4 @@
-<!-- @implements PackageInputs, QualityChecks -->
+<!-- @implements PackageInputs -->
 <Project>
   <Target Name="ValidateXcmdBuildProfile" BeforeTargets="PrepareForBuild;CollectPackageReferences">
     <Error Condition="'$(Configuration)' != 'Release' Or '$(RuntimeIdentifier)' != 'win-x64' Or '$(PlatformTarget)' != 'x64'"

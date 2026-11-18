@@ -1,4 +1,3 @@
-// @implements HeadlessVerification
 // @tests DeleteEntries, QueueOperations
 using System.Diagnostics;
 using Avalonia.Headless;

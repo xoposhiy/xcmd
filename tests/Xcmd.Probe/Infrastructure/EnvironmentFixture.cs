@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests RunCommand, ExternalLaunch
 using Microsoft.Win32;
 using System.Text;
 

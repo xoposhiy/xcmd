@@ -1,5 +1,4 @@
-// @implements HeadlessVerification
-// @tests SharedControls
+// @tests QueueOperations, SharedControls
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;

@@ -60,13 +60,16 @@ relation names and comma-separated story IDs:
 
 Use the language's comment syntax, preserving required shebangs or file directives.
 `implements` means that the file contains part of the story's implementation.
-`tests` means that the file contains checks of that story's behavior. List IDs only;
+`tests` means that the file checks the story's behavior or provides test code specific
+to that behavior, such as a fixture or a driver for a particular window. List IDs only;
 resolve descriptions in the catalogue instead of copying them into source.
 
-Map direct responsibilities. A shared utility does not inherit every story of its
-callers. A test driver without assertions does not test every story that uses it;
-use a relevant developer story for its own capability. Generated and third-party
-files, binaries and formats without comments are outside this annotation format.
+Map direct responsibilities. A shared utility maps to the developer story for the
+capability it provides. For example, the common headless runner and input driver
+implement `HeadlessVerification`. A driver for the search window maps to the search
+behaviors it directly exercises. Keep window-specific steps and fixtures separate
+from the shared runner. Generated and third-party files, binaries and formats without
+comments are outside this annotation format.
 
 Source comments own the file-to-story relations. Browsing views derive both
 directions from them; do not maintain parallel file lists in the stories. Counts

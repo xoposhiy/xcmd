@@ -1,4 +1,4 @@
-// @implements DomainBoundaries
+// @implements StreamingReads, RepositoryDocuments
 namespace Xcmd.Core;
 
 public enum FileViewMode { Text, Binary, Hex, Image }

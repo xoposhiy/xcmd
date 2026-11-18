@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests ShellActions, WindowsFileActions
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

@@ -1,4 +1,4 @@
-<!-- @implements PackageInputs, IntegrationVerification -->
+<!-- @implements IntegrationVerification -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>WinExe</OutputType></PropertyGroup>
 </Project>

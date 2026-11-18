@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests ReusePaths, ComparePanelFiles
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 

@@ -1,4 +1,4 @@
-# @implements IntegrationVerification
+# @tests BrowseStories, TraceStoryFiles
 """Isolated catalogue, worktree and HTTP fixtures for explorer scenarios."""
 
 import subprocess

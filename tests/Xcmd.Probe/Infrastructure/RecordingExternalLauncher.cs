@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests ExternalLaunch
 using Xcmd.Core;
 
 namespace Xcmd.Probe.Infrastructure;

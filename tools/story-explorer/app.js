@@ -1,35 +1,22 @@
 // @implements BrowseStories, TraceStoryFiles
-const byId = id => document.getElementById(id);
-const element = (tag, value = '', className = '') => {
-  const node = document.createElement(tag);
-  node.textContent = value;
-  node.className = className;
-  return node;
-};
-const link = (label, href, className = '') => {
-  const node = element('a', label, className);
-  node.href = href;
-  if (href.startsWith('#')) node.addEventListener('click', event => {
-    if (href !== location.hash || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    renderSelection(true);
-  });
-  return node;
-};
-const sourceLink = (label, path, className = '') => {
-  const node = link(label, '/source?path=' + encodeURIComponent(path), className);
-  node.target = '_blank';
-  node.rel = 'noopener';
-  node.title = 'Open source text in a new tab';
-  return node;
-};
+import {byId, element, link, sourceLink} from './ui.js';
+import {buildReportData, renderFile, renderFileRankings, renderStoryRankings} from './reports.js';
+import {renderTreemap} from './treemap.js';
+import {renderCharts} from './charts.js';
+
 let catalogue;
 let stories = [];
+let reportData;
 const expanded = new Set();
+const reports = new Map([
+  ['stories', ['Story rankings', renderStoryRankings]],
+  ['files', ['File rankings', renderFileRankings]],
+  ['treemap', ['Treemap', renderTreemap]],
+  ['charts', ['Charts', renderCharts]],
+]);
 
 function route() {
-  const params = new URLSearchParams(location.hash.slice(1));
-  return {story: params.get('story'), epic: params.get('epic')};
+  return Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
 }
 
 function matches(epic, story, query) {
@@ -93,7 +80,7 @@ function fileSection(title, files, className) {
   table.setAttribute('aria-label', className === 'tests' ? 'Test files' : 'Implementation files');
   const header = element('thead');
   const labels = element('tr');
-  labels.append(element('th', 'FILE'), element('th', 'LINE'));
+  labels.append(element('th', 'File'), element('th', 'Line'));
   header.append(labels);
   const body = element('tbody');
   for (const file of files) {
@@ -110,21 +97,19 @@ function fileSection(title, files, className) {
 
 function breadcrumb(epic) {
   const node = element('div', '', 'breadcrumb');
-  node.append(link(`${String(epic.order).padStart(2, '0')} / ${epic.title}`, '#epic=' + epic.id),
-    element('span', epic.role, 'role'));
+  node.append(link(epic.title, '#epic=' + epic.id));
   return node;
 }
 
 function renderStory(story, epic) {
   const main = byId('content');
-  main.append(breadcrumb(epic), element('div', 'USER STORY', 'eyebrow'),
-    element('h2', story.id), element('p', story.statement, 'statement'),
+  main.append(breadcrumb(epic), element('h2', story.id), element('p', story.statement, 'statement'),
     sourceLink('Read the epic document ↗', epic.path, 'document-link'));
   const uniqueFiles = new Set([...story.implements, ...story.tests].map(file => file.path)).size;
   const metrics = element('div', '', 'metrics');
   metrics.append(metric(story.implements.length, 'Implementation files', 'implementation'),
     metric(story.tests.length, 'Test files', 'tests'), metric(uniqueFiles, 'Distinct files'));
-  main.append(metrics, element('p', 'File counts show mapped responsibilities, not test coverage or code quality.', 'hint'));
+  main.append(metrics);
   const extra = story.body.split(/\n\s*\n/).slice(1).join('\n\n').trim();
   if (extra) {
     const notes = element('details', '', 'notes');
@@ -142,7 +127,7 @@ function renderStory(story, epic) {
 
 function renderEpic(epic) {
   const main = byId('content');
-  main.append(element('div', `EPIC ${String(epic.order).padStart(2, '0')} / ${epic.role}`, 'eyebrow'),
+  main.append(element('div', `Epic ${String(epic.order).padStart(2, '0')} · ${epic.role}`, 'eyebrow'),
     element('h2', epic.title), element('p', epic.statement, 'statement'),
     sourceLink('Read the epic document ↗', epic.path, 'document-link'));
   const metrics = element('div', '', 'metrics');
@@ -161,22 +146,56 @@ function renderEpic(epic) {
 function renderSelection(moveFocus = false) {
   if (!catalogue) return;
   const selected = route();
+  const main = byId('content');
+  main.replaceChildren();
+  const [tab, title] = selected.report || selected.file ? renderReport(main, selected) : renderCatalogue(main, selected);
+  byId('workspace').dataset.view = tab === 'catalogue' ? 'catalogue' : 'report';
+  byId('catalogue-sidebar').hidden = tab !== 'catalogue';
+  for (const view of byId('views').querySelectorAll('a')) {
+    if (view.id === 'catalogue-link' ? tab === 'catalogue' : view.hash === '#report=' + tab) {
+      view.setAttribute('aria-current', 'page');
+    } else {
+      view.removeAttribute('aria-current');
+    }
+  }
+  document.title = `${title} · Xcmd`;
+  if (moveFocus) {
+    main.focus({preventScroll: true});
+    if (tab === 'catalogue' && matchMedia('(max-width: 749px)').matches) main.scrollIntoView({block: 'start'});
+    else window.scrollTo(0, 0);
+  }
+}
+
+function renderCatalogue(main, selected) {
   const item = stories.find(item => item.story.id === selected.story);
   const epic = item?.epic || catalogue.epics.find(epic => epic.id === selected.epic);
-  byId('content').replaceChildren();
-  if (epic) {
-    expanded.add(epic.id);
-    if (item) renderStory(item.story, epic); else renderEpic(epic);
-  } else {
-    byId('content').append(element('h2', 'Story not found'),
+  if (!epic) {
+    main.append(element('h2', 'Story not found'),
       element('p', 'The saved link does not match the current catalogue. Choose an epic or story from the navigation.', 'empty'));
+    renderNavigation();
+    return ['catalogue', 'Story Explorer'];
   }
+  expanded.add(epic.id);
+  if (item) renderStory(item.story, epic); else renderEpic(epic);
+  byId('catalogue-link').href = item ? '#story=' + item.story.id : '#epic=' + epic.id;
   renderNavigation();
-  document.title = `${item?.story.id || epic?.title || 'Story explorer'} · Xcmd`;
-  if (moveFocus) {
-    byId('content').focus({preventScroll: true});
-    byId('content').scrollIntoView({block: 'start'});
+  return ['catalogue', item?.story.id || epic.title];
+}
+
+function renderReport(main, selected) {
+  if (selected.file) {
+    const file = reportData.files.get(selected.file);
+    main.append(renderFile(file, selected));
+    return ['files', file?.path || 'File not found'];
   }
+  const report = reports.get(selected.report);
+  if (!report) {
+    main.append(element('h2', 'Report not found'), element('p', 'Choose a report from the navigation.', 'empty'));
+    return [null, 'Story Explorer'];
+  }
+  const [title, render] = report;
+  main.append(render(reportData, selected));
+  return [selected.report, title];
 }
 
 async function loadCatalogue() {
@@ -187,14 +206,18 @@ async function loadCatalogue() {
     const response = await fetch('/api/catalogue');
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Could not load the catalogue.');
+    const nextStories = data.epics.flatMap(epic => epic.stories.map(story => ({epic, story})));
+    reportData = buildReportData(data, nextStories);
     catalogue = data;
-    stories = data.epics.flatMap(epic => epic.stories.map(story => ({epic, story})));
+    stories = nextStories;
     byId('summary').textContent = `${data.counts.epics} epics · ${data.counts.stories} stories · ${data.counts.files} mapped files`;
     byId('scan-time').textContent = `${data.scannedFiles} source files scanned · ${new Date(data.generatedAt).toLocaleTimeString('en-GB')}`;
     byId('issues').hidden = !data.issues.length;
     byId('issue-summary').textContent = `${data.issues.length} mapping issues`;
     byId('issue-list').replaceChildren(...data.issues.map(issue => element('li', `${issue.path}:${issue.line} — ${issue.message}`)));
-    if (!location.hash) history.replaceState(null, '', '#epic=' + data.epics[0].id);
+    const firstEpic = '#epic=' + data.epics[0].id;
+    if (!location.hash) history.replaceState(null, '', firstEpic);
+    if (byId('catalogue-link').hash === '') byId('catalogue-link').href = firstEpic;
     renderSelection();
   } catch (error) {
     byId('error').textContent = `Could not reload the map. ${error.message}${catalogue ? '\nThe previous map is still shown.' : ''}`;
@@ -211,6 +234,13 @@ byId('reload').addEventListener('click', loadCatalogue);
 document.querySelector('.skip').addEventListener('click', event => {
   event.preventDefault();
   byId('content').focus();
+});
+document.addEventListener('click', event => {
+  const anchor = event.target.closest('a[href^="#"]');
+  if (!anchor?.hash || anchor.hash !== location.hash || event.defaultPrevented || event.button !== 0 ||
+      event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  renderSelection(true);
 });
 window.addEventListener('hashchange', () => renderSelection(true));
 loadCatalogue();

@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests FileIcons
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;

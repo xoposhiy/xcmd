@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests RecoverOperations, WindowsFileActions
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

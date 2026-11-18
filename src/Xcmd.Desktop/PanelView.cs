@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, ClipboardTransfer, QuickViewFile, BrowseArchives, RestoreWorkspace, SharedControls
+// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, ClipboardTransfer, QuickViewFile, BrowseArchives, RestoreWorkspace, RecentLocations
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;

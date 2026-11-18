@@ -1,5 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
-// @tests DeleteEntries, WindowsFileActions
+// @tests TransferEntries, DeleteEntries, ResolveConflicts, RecoverOperations, WindowsFileActions
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Text;

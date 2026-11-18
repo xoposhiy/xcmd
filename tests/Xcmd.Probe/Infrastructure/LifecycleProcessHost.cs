@@ -1,5 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
-// @tests HeadlessVerification
+// @tests RestoreWorkspace, ApplicationLifecycle, HeadlessVerification, ReleaseHandoff
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;

@@ -1,4 +1,4 @@
-// @implements ClipboardTransfer, QueueOperations, RecoverOperations, DomainBoundaries
+// @implements ClipboardTransfer, QueueOperations, RecoverOperations
 namespace Xcmd.Core;
 
 public enum FileOperationKind { Copy, Move, Recycle, Delete, CreateZip }

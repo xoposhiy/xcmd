@@ -1,4 +1,4 @@
-// @implements NavigatePanels, JumpToName, ReadablePanels, MarkEntries, MeasureFolders, RenameEntry, ClipboardTransfer, DragFiles, SeeRepositoryState, SharedControls
+// @implements NavigatePanels, JumpToName, ReadablePanels, MarkEntries, MeasureFolders, RenameEntry, ClipboardTransfer, DragFiles, SeeRepositoryState
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;

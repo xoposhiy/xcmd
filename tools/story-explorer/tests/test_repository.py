@@ -50,6 +50,15 @@ class RepositoryScenarios(unittest.TestCase):
             self.assertEqual(422, error.exception.code)
             self.assertIn("front matter", json.load(error.exception)["error"])
 
+    def test_map_reports_disk_bytes_once_for_a_file_with_multiple_relations(self):
+        with worktree() as root:
+            contents = "\ufeff// @implements ReadStory, TraceFiles\r\n// @tests ReadStory\r\n// café\r\n".encode("utf-8")
+            mapped = write(root, "src/shared.cs", "")
+            mapped.write_bytes(contents)
+            write(root, "src/unmapped.cs", "class Unmapped {}")
+            with running_server(root) as url, urlopen(url + "/api/catalogue") as response:
+                self.assertEqual({"src/shared.cs": len(contents)}, json.load(response)["fileSizes"])
+
 
 if __name__ == "__main__":
     unittest.main()

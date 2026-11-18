@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests JumpToName, FindFiles, InspectSearchScope
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;

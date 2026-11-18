@@ -1,5 +1,4 @@
-// @implements HeadlessVerification
-// @tests RecentLocations, FavoriteLocations
+// @tests RecentLocations, FavoriteLocations, ReadablePanels
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

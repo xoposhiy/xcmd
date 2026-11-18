@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests BrowseArchives, InspectArchives, ExtractEntries, ArchiveAccess
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Text;

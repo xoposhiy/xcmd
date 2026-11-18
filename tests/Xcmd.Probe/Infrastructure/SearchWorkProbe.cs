@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests PrioritizeSearch
 using Xcmd.Core;
 
 namespace Xcmd.Probe.Infrastructure;

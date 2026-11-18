@@ -1,4 +1,3 @@
-// @implements HeadlessVerification
 // @tests CreateArchive, SharedControls
 using System.IO.Compression;
 using Avalonia.Input;

@@ -1,4 +1,4 @@
-<!-- @implements PackageInputs -->
+<!-- @implements PackageInputs, WindowsIdentity -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

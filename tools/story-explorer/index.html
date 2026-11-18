@@ -7,25 +7,32 @@
   <title>Xcmd · Story explorer</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+  <script src="/app.js" type="module"></script>
 </head>
 <body>
-  <a class="skip" href="#content">Skip to story</a>
+  <a class="skip" href="#content">Skip to content</a>
   <header class="masthead">
-    <div><span class="brand">XCMD / ENGINEERING</span><h1>Story explorer</h1></div>
+    <div class="identity"><span class="brand">Xcmd</span><h1>Story Explorer</h1></div>
     <div class="refresh"><span id="summary" role="status">Reading the catalogue…</span><button id="reload" type="button">Reload map</button></div>
   </header>
+  <nav id="views" aria-label="Explorer views">
+    <a id="catalogue-link" href="#">Catalogue</a>
+    <a href="#report=stories">Story rankings</a>
+    <a href="#report=files">File rankings</a>
+    <a href="#report=treemap">Treemap</a>
+    <a href="#report=charts">Charts</a>
+  </nav>
   <div id="error" role="alert" hidden></div>
   <details id="issues" hidden><summary id="issue-summary"></summary><ul id="issue-list"></ul></details>
-  <div class="workspace">
-    <aside aria-label="Catalogue">
+  <div id="workspace" class="workspace" data-view="catalogue">
+    <aside id="catalogue-sidebar" aria-label="Catalogue">
       <label for="search">Find a story</label>
       <input id="search" type="search" placeholder="Name, need or file path" autocomplete="off">
-      <div class="nav-caption"><span>EPICS / READING ORDER</span><span id="match-count"></span></div>
+      <div class="nav-caption"><span>Epics in reading order</span><span id="match-count"></span></div>
       <nav id="epics" aria-label="Epics and user stories"></nav>
     </aside>
     <main id="content" tabindex="-1"><p class="empty">Loading stories and source links…</p></main>
   </div>
-  <footer>Living stories · Current source annotations <span id="scan-time"></span></footer>
+  <footer><span id="scan-time"></span></footer>
 </body>
 </html>

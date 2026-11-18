@@ -1,4 +1,3 @@
-// @implements IntegrationVerification
 // @tests RecoverOperations
 using System.Diagnostics;
 using Avalonia.Controls;

@@ -12,8 +12,11 @@ from urllib.parse import parse_qs, urlsplit
 from repository import read_snapshot
 
 
-STATIC_FILES = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"),
-                "/style.css": ("style.css", "text/css")}
+STATIC_FILES = {
+    "/": ("index.html", "text/html"),
+    "/style.css": ("style.css", "text/css"),
+    **{f"/{name}.js": (f"{name}.js", "text/javascript") for name in ("app", "reports", "charts", "treemap", "ui")},
+}
 
 
 class ExplorerServer(ThreadingHTTPServer):

@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @tests ReadWorkingFileDiff
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;

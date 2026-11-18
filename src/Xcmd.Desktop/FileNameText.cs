@@ -1,4 +1,4 @@
-// @implements SharedControls
+// @implements JumpToName
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;

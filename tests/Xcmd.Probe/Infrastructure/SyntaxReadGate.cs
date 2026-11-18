@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests HighlightSource
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

@@ -1,4 +1,4 @@
-// @implements IntegrationVerification
+// @tests SeeRepositoryState, RepositoryStatus
 namespace Xcmd.Probe.Infrastructure;
 
 public static class GitRowsFixture

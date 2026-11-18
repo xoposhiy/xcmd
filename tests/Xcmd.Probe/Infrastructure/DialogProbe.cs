@@ -1,4 +1,3 @@
-// @implements HeadlessVerification
 // @tests SharedControls
 using Avalonia.Controls;
 using Avalonia.Media;

@@ -1,4 +1,4 @@
-// @implements DomainBoundaries
+// @implements ArchiveAccess
 using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;

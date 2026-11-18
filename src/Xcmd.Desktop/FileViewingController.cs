@@ -1,4 +1,4 @@
-// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles, ReadWorkingFileDiff
+// @implements CreateFile, OpenSearchMatch, OpenViewers, QuickViewFile, FindViewerText, ReaderThemes, OpenViewedFile, InspectArchives, OpenExternalTool, ComparePanelFiles
 using Avalonia.Controls;
 using Xcmd.Core;
 using Xcmd.Infrastructure;

@@ -1,4 +1,4 @@
-// @implements HeadlessVerification, IntegrationVerification
+// @implements HeadlessVerification
 using System.Diagnostics;
 
 namespace Xcmd.Probe.Infrastructure;

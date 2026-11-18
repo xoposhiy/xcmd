@@ -1,4 +1,4 @@
-// @implements DomainBoundaries
+// @implements RepositoryLocations
 namespace Xcmd.Core;
 
 public sealed record GitLocation(string Repository, string Context, string Kind, string Revision, string RelativePath);

@@ -1,4 +1,4 @@
-// @implements DomainBoundaries
+// @implements ExternalLaunch
 namespace Xcmd.Core;
 
 public enum ExternalLaunchKind { File, Command }

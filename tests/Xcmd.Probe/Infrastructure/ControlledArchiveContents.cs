@@ -1,4 +1,4 @@
-// @implements HeadlessVerification
+// @tests ArchiveAccess
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 

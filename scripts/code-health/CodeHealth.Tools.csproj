@@ -1,4 +1,4 @@
-<!-- @implements PackageInputs, CodeHealth -->
+<!-- @implements CodeHealth -->
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageDownload Include="Microsoft.CodeAnalysis.Metrics" Version="[5.6.0]" />

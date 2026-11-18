@@ -77,6 +77,11 @@ visible windows so that I can verify changes without human assistance.
   desktop.
   Source: [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 7](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-7).
 
+- Keep the shared headless runner, input and diagnostics separate from test code
+  for specific windows and features. Map the shared code to this story and map
+  feature drivers and fixtures to the stories whose behavior they exercise.
+  Codex session ID `01a1ee1c-f487-78a2-bba9-c3937474ba40`.
+
 ## IntegrationVerification
 
 As a developer, I want to exercise real integration boundaries with isolated fixtures so
@@ -137,6 +142,10 @@ I can learn the product and find the need behind a change.
   their stories and shows the related implementation files.
   Source: [2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md → Turn 1](../codex-sessions/2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md#turn-1).
 
+- Use larger, higher-contrast text and compact spacing in Story Explorer so the
+  catalogue and reports are easier to read.
+  Codex session ID `01a1ee05-92a1-7883-94d6-647f83318fc3`.
+
 - Keep condensed project session transcripts under docs: user prompts, final agent
   replies and edited-file lists when available. Omit command and tool-call logs from
   this documentation source.
@@ -158,6 +167,30 @@ I can locate related code and review how responsibilities are spread across file
   `implements` and `tests` relations. Infrastructure files should map to their own
   developer stories rather than inheriting every product story that uses them.
   Sources: [2026-11-15T21-30-25-01a1e0e7-6a7f-7412-a459-a2b907ba6881.md → Turn 1](../codex-sessions/2026-11-15T21-30-25-01a1e0e7-6a7f-7412-a459-a2b907ba6881.md#turn-1); [2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md → Turn 1](../codex-sessions/2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md#turn-1); [2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md → Turn 4](../codex-sessions/2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md#turn-4); [2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md → Turn 5](../codex-sessions/2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md#turn-5).
+
+- Rank stories by their implementation file count or test file count. Rank files
+  by the number of distinct stories or epics linked to them. Try a treemap with
+  nested directories and files, area based on file size, and color based on a
+  mapping metric. Use the reports to find cases worth reviewing.
+  Codex session ID `01a1ee05-92a1-7883-94d6-647f83318fc3`.
+
+- Outline the full directory rectangle when the pointer is over its treemap label,
+  including for nested directories.
+  Codex session ID `01a1ee05-92a1-7883-94d6-647f83318fc3`.
+
+- Show named subfolders inside larger folders in the treemap overview. Let the
+  developer open a folder to see the individual files it contains.
+  Codex session ID `01a1ee05-92a1-7883-94d6-647f83318fc3`.
+
+- Show individual files inside their folders in the treemap. Label folders and show
+  small file names where the full name fits. Give each file tile a tooltip with its
+  full path. Use file size for area and story or epic links per KiB for color.
+  Codex session ID `01a1ee1c-f487-78a2-bba9-c3937474ba40`.
+
+- Prefer wider file tiles and use regular-weight file names so more names fit. Lay
+  out siblings from darker to lighter, starting at the top left. Within the same
+  color band, place larger tiles first.
+  Codex session ID `01a1ee1c-f487-78a2-bba9-c3937474ba40`.
 
 - Before each commit, review story references for changed source files and update the
   catalogue when needed. Historical mappings can help initial annotation, but every

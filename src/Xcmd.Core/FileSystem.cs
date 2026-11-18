@@ -1,4 +1,4 @@
-// @implements DomainBoundaries
+// @implements FileSystemAccess
 namespace Xcmd.Core;
 
 public interface IFileSystem

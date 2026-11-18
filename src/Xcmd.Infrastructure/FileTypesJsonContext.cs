@@ -1,4 +1,4 @@
-// @implements PackageInputs
+// @implements ReadablePanels
 using System.Text.Json.Serialization;
 using Xcmd.Core;
 
