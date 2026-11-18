@@ -18,7 +18,7 @@ public static class ViewerProbe
 {
     public static Button Button(FileViewerWindow viewer, string name) => viewer.GetVisualDescendants().OfType<Button>().Single(button => button.Name == name);
 
-    public static MenuItem Command(FileViewerWindow viewer, string name) => viewer.Commands.Items.OfType<MenuItem>()
+    public static MenuItem Command(FileViewerWindow viewer, string name) => viewer.Reader.Commands.Items.OfType<MenuItem>()
         .SelectMany(menu => menu.Items.OfType<MenuItem>()).Single(item => item.Name == name);
 
     public static void CheckTextActions(FileViewerWindow viewer, bool enabled)
@@ -33,10 +33,10 @@ public static class ViewerProbe
         var hint = texts.Single(text => text.Name == "ViewerFeedbackStatus");
         ProbeContext.Equal(visible, hint.IsVisible, "Feedback guidance appears in the active viewer");
         ProbeContext.Equal(!visible, texts.Single(text => text.Name == "ViewerReadingStatus").IsVisible, "Reading status returns after feedback ends");
-        if (visible) ProbeContext.Check(hint.Text!.Contains("Double-click", StringComparison.Ordinal), "Feedback guidance explains how to use controls");
+        if (visible) ProbeContext.Check(hint.Text!.Contains("Ctrl+click", StringComparison.Ordinal), "Feedback guidance explains how to use controls");
     }
 
-    public static double TextHeight(FileViewerWindow viewer) => viewer.TextContent.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.TextPresenter>().Single().TextLayout.Height;
+    public static double TextHeight(FileViewerWindow viewer) => viewer.Reader.TextContent.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.TextPresenter>().Single().TextLayout.Height;
 
     public static async Task StartSearchAsync(ProbeContext c, FileViewerWindow viewer, string text)
     {
@@ -51,24 +51,24 @@ public static class ViewerProbe
 
     public static async Task WheelAsync(ProbeContext c, FileViewerWindow viewer, double delta)
     {
-        var point = viewer.TextContent.TranslatePoint(new Point(100, 100), viewer)!.Value;
+        var point = viewer.Reader.TextContent.TranslatePoint(new Point(100, 100), viewer)!.Value;
         viewer.MouseMove(point); viewer.MouseWheel(point, new Vector(0, delta));
         await c.SettleAsync();
     }
 
     public static async Task ChooseEncodingAsync(ProbeContext c, FileViewerWindow viewer, int index)
     {
-        await c.ClickAsync((MenuItem)viewer.Commands.Items[2]!, target: viewer);
+        await c.ClickAsync((MenuItem)viewer.Reader.Commands.Items[2]!, target: viewer);
         for (var i = 0; i <= index; i++) await c.KeyAsync(Key.Down, target: viewer);
         await c.KeyAsync(Key.Enter, target: viewer);
     }
 
     public static void CheckReadingLayout(FileViewerWindow viewer)
     {
-        ProbeContext.Check(!viewer.IsSearchVisible && !viewer.IsInformationVisible, "Search and file details stay hidden while reading");
+        ProbeContext.Check(!viewer.Reader.IsSearchVisible && !viewer.Reader.IsInformationVisible, "Search and file details stay hidden while reading");
         ProbeContext.Check(!viewer.GetVisualDescendants().OfType<Button>().Any(button => button.Name == "DialogFeedback" || button.Name?.StartsWith("Viewer", StringComparison.Ordinal) == true && button.Name is not ("ViewerMinimize" or "ViewerMaximize" or "ViewerCloseWindow")), "Reading has no action toolbar");
-        ProbeContext.Check(viewer.TextContent.Bounds.Height >= viewer.ClientSize.Height - viewer.TitleBar.Bounds.Height - 28, "File contents fill the space between the title bar and compact status");
-        var border = viewer.TextContent.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "PART_BorderElement");
+        ProbeContext.Check(viewer.Reader.TextContent.Bounds.Height >= viewer.ClientSize.Height - viewer.Reader.TitleBar.Bounds.Height - 28, "File contents fill the space between the title bar and compact status");
+        var border = viewer.Reader.TextContent.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "PART_BorderElement");
         ProbeContext.Equal(new Thickness(0), border.BorderThickness, "Reading content has no accent outline");
     }
 
@@ -76,9 +76,9 @@ public static class ViewerProbe
     {
         ProbeContext.Equal(WindowDecorations.BorderOnly, viewer.WindowDecorations, "The native title bar is replaced by the compact header");
         ProbeContext.Check(viewer.ExtendClientAreaToDecorationsHint, "The compact header uses the window decoration area");
-        ProbeContext.Equal(WindowDecorationsElementRole.TitleBar, Avalonia.Controls.Chrome.WindowDecorationProperties.GetElementRole(viewer.TitleBar), "The header supports native window dragging");
-        AppearanceProbe.CheckHeaderInput(viewer, viewer.TitleBar);
-        var progress = viewer.Progress.TranslatePoint(default, viewer)!.Value;
+        ProbeContext.Equal(WindowDecorationsElementRole.TitleBar, Avalonia.Controls.Chrome.WindowDecorationProperties.GetElementRole(viewer.Reader.TitleBar), "The header supports native window dragging");
+        AppearanceProbe.CheckHeaderInput(viewer, viewer.Reader.TitleBar);
+        var progress = viewer.Reader.Progress.TranslatePoint(default, viewer)!.Value;
         ProbeContext.Check(progress.Y < 32 && progress.X > viewer.ClientSize.Width - 220, "Reading percentage is at the top right near the scroll bar");
     }
 
@@ -110,7 +110,7 @@ public static class ViewerProbe
         var timer = Stopwatch.StartNew();
         await c.KeyAsync(Avalonia.Input.Key.F3);
         c.Measurements["openToRenderedViewMs"] = timer.Elapsed.TotalMilliseconds;
-        c.Measurements["renderedCharacters"] = c.Window.Viewer!.TextContent.Text?.Length ?? 0;
+        c.Measurements["renderedCharacters"] = c.Window.Viewer!.Reader.TextContent.Text?.Length ?? 0;
     }
 
     public static async Task VerifyEditorBoundaryAsync(ProbeContext c)

@@ -54,22 +54,22 @@ public static class SyntaxScenarios
             c.AddFile("highlight.cs", source);
             await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("highlight.cs"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
-            Equal("C#", viewer.SyntaxStatus, "The viewer identifies its syntax language");
+            Equal("C#", viewer.Reader.SyntaxStatus, "The viewer identifies its syntax language");
             ViewerProbe.CheckReadingLayout(viewer);
             foreach (var theme in new[] { "dark", "github", "light", "solarized-light", "forest-light", "solarized-dark", "dracula", "nord", "forest-dark" })
             {
                 await AppearanceProbe.ChooseThemeAsync(c, viewer, theme);
-                viewer.TextContent.SelectionStart = viewer.TextContent.SelectionEnd = 0;
-                viewer.TextContent.UpdateLayout();
+                viewer.Reader.TextContent.SelectionStart = viewer.Reader.TextContent.SelectionEnd = 0;
+                viewer.Reader.TextContent.UpdateLayout();
                 SyntaxProbe.CheckRenderedColors(viewer);
             }
             await c.ScreenshotAsync("syntax-code", viewer);
             await c.KeyAsync(Key.F, RawInputModifiers.Control, viewer); await c.TextAsync("message", viewer);
-            Equal("message", viewer.TextContent.SelectedText, "Search selects the original source in colored text");
+            Equal("message", viewer.Reader.TextContent.SelectedText, "Search selects the original source in colored text");
             await c.KeyAsync(Key.Escape, target: viewer);
-            viewer.TextContent.SelectionStart = source.IndexOf("\"hello", StringComparison.Ordinal);
-            viewer.TextContent.SelectionEnd = viewer.TextContent.SelectionStart + "\"hello 😀\"".Length;
-            var selected = viewer.TextContent.SelectedText;
+            viewer.Reader.TextContent.SelectionStart = source.IndexOf("\"hello", StringComparison.Ordinal);
+            viewer.Reader.TextContent.SelectionEnd = viewer.Reader.TextContent.SelectionStart + "\"hello 😀\"".Length;
+            var selected = viewer.Reader.TextContent.SelectedText;
             await c.KeyAsync(Key.F12, RawInputModifiers.Control | RawInputModifiers.Shift, viewer);
             var comment = c.Window.Feedback.ActiveComment!;
             Check(comment != null && !c.Window.Feedback.IsPicking, "The report shortcut opens the comment form directly");
@@ -81,15 +81,15 @@ public static class SyntaxScenarios
             var issue = (await c.Window.Feedback.Store!.ReadAsync()).Single();
             Check(issue.Text.Contains("Language: C#", StringComparison.Ordinal) && issue.Text.Contains(SyntaxHighlighter.Version, StringComparison.Ordinal), "Saved feedback includes reproducible syntax context");
             Equal("FileViewerWindow.TextContent", issue.Target.Id, "Reports retain the viewer's stable feedback target");
-            Equal(selected, viewer.TextContent.SelectedText, "Submitting a report preserves the selected code");
+            Equal(selected, viewer.Reader.TextContent.SelectedText, "Submitting a report preserves the selected code");
             await SyntaxProbe.ChooseLanguageAsync(c, viewer, "plain");
-            Equal("Plain text", viewer.SyntaxStatus, "Plain text disables coloring");
+            Equal("Plain text", viewer.Reader.SyntaxStatus, "Plain text disables coloring");
             await SyntaxProbe.ChooseLanguageAsync(c, viewer, "auto");
-            Equal("C#", viewer.SyntaxStatus, "Automatic language restores coloring");
+            Equal("C#", viewer.Reader.SyntaxStatus, "Automatic language restores coloring");
             await c.KeyAsync(Key.D3, target: viewer);
-            Check(viewer.TextContent.Syntax == null, "Hex mode clears syntax spans");
+            Check(viewer.Reader.TextContent.Syntax == null, "Hex mode clears syntax spans");
             await c.KeyAsync(Key.D1, target: viewer);
-            Equal(source, viewer.TextContent.Text, "Returning to text preserves the decoded source");
+            Equal(source, viewer.Reader.TextContent.Text, "Returning to text preserves the decoded source");
         })
     ];
 }

@@ -29,6 +29,25 @@ so that I can read files while the panels remain usable.
   text.
   Sources: [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 2](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-2); [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 4](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-4); [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 6](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-6).
 
+## QuickViewFile
+
+As a user, I want to see the contents of the current file in the other panel so that
+I can inspect files while moving through the list.
+
+### Implementation decisions
+
+- Use `Ctrl+Q` to show a quick view of the current file in the other panel.
+  Codex session ID 01a1ebe8-bedb-74f3-9cfc-bc539aa090d0.
+
+- Embed the same reader used by `F3`. Keep its modes, syntax highlighting, reading
+  progress, and position controls. Use the file list to change files and omit the
+  reader's previous and next file commands from the quick view.
+  Codex session ID 01a1ebe8-bedb-74f3-9cfc-bc539aa090d0.
+
+- Keep focus in the file list when the quick view opens. Use `Ctrl+Tab` to move
+  focus between the list and the reader.
+  Codex session ID 01a1ebe8-bedb-74f3-9cfc-bc539aa090d0.
+
 ## ChooseViewMode
 
 As a user, I want to switch between text, binary, hex, and image inspection so that I

@@ -221,7 +221,7 @@ public sealed class ProbeContext : IDisposable
         busy = Window.IsBusy,
         error = Window.LastError,
         dialog = Window.ActiveDialog?.Title ?? Window.ActiveNavigationDialog?.Title ?? Window.OperationDialog?.Title ?? Window.Viewer?.Title,
-        viewer = Window.Viewer is { } viewer ? new { viewer.CurrentPath, viewer.Mode, viewer.ByteOffset, viewer.FileLength, viewer.Information, viewer.Error, viewer.IsLoading, viewer.HasImage, viewer.ReadingStatus, viewer.FirstVisibleByte, viewer.VisibleEnd, viewer.ViewedPercent } : null,
+        viewer = Window.Viewer is { } viewer ? new { viewer.Reader.CurrentPath, viewer.Reader.Mode, viewer.Reader.ByteOffset, viewer.Reader.FileLength, viewer.Reader.Information, viewer.Reader.Error, viewer.Reader.IsLoading, viewer.Reader.HasImage, viewer.Reader.ReadingStatus, viewer.Reader.FirstVisibleByte, viewer.Reader.VisibleEnd, viewer.Reader.ViewedPercent } : null,
         operations = Window.Operations.Jobs.Select(job => new { job.Id, job.State, job.CurrentPath, job.BytesTransferred, job.TotalFiles, job.ProcessedFiles, job.SkippedFiles, job.FailedEntries, job.TotalBytes, job.ProcessedBytes, job.TotalsComplete, job.Outcomes }),
         historyDialog = Window.ActiveNavigationDialog is { } history ? new { selected = history.Directories.SelectedItem, history.IsOpening, history.Error } : null,
         search = Window.FileSearch.Window is { } search ? new { search.StatusMessage, search.IsSearching, failures = search.Session?.Failures, results = SearchProbe.Results(search) } : null,

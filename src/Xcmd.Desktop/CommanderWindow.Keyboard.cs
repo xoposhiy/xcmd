@@ -1,4 +1,4 @@
-// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, CommandHistory, CompleteCommand, ReusePaths, ShellActions, ComparePanelFiles, AsyncCoordination
+// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, CommandHistory, CompleteCommand, ReusePaths, ShellActions, ComparePanelFiles, AsyncCoordination
 using Avalonia.Input;
 using Xcmd.Core;
 
@@ -175,6 +175,38 @@ public sealed partial class CommanderWindow
         if (e.KeyModifiers != KeyModifiers.None || e.Key is not (Key.F3 or Key.F4)) return false;
         if (e.Key == Key.F3) viewing.ViewCurrent();
         else if (launchKeysHeld.Add(e.Key)) Execute(viewing.EditCurrentAsync);
+        return true;
+    }
+
+    private bool HandleQuickViewKey(KeyEventArgs e)
+    {
+        if (HandleQuickViewToggleKey(e)) return true;
+        if (e.Key != Key.Escape || e.KeyModifiers != KeyModifiers.None || nameJump.Active || directorySizes != null || !viewing.IsQuickViewOpen) return false;
+        return CancelOpeningArchives() || viewing.CloseQuickView();
+    }
+
+    private bool HandleQuickViewToggleKey(KeyEventArgs e)
+    {
+        if (e.KeyModifiers != KeyModifiers.Control || e.Key != Key.Q && e.PhysicalKey != PhysicalKey.Q) return false;
+        ResetQuickJump();
+        if (launchKeysHeld.Add(e.Key)) viewing.ToggleQuickView();
+        return true;
+    }
+
+    private bool HandleQuickViewFocusKey(KeyEventArgs e)
+    {
+        if (e.Key != Key.Tab || e.KeyModifiers != KeyModifiers.Control || !viewing.IsQuickViewOpen || ActivePanel.EditingRow != null) return false;
+        ResetQuickJump();
+        CommandLine.Completions.Close();
+        if (launchKeysHeld.Add(e.Key)) viewing.SwitchQuickViewFocus();
+        return true;
+    }
+
+    private bool RouteQuickViewInput(KeyEventArgs e)
+    {
+        if (HandleQuickViewFocusKey(e)) { e.Handled = true; return true; }
+        if (!viewing.IsQuickViewFocused) return false;
+        e.Handled = HandleQuickViewToggleKey(e);
         return true;
     }
 

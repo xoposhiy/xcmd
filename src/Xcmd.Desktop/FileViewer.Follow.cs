@@ -7,7 +7,7 @@ using Xcmd.Core;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     private readonly DispatcherTimer followTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private MenuItem followItem = null!;
@@ -20,7 +20,6 @@ public sealed partial class FileViewerWindow
             if (!IsFollowing || IsLoading || IsSearching || closed || feedback.IsActive || Commands.IsOpen) return;
             await RunAsync(RefreshTailAsync);
         };
-        Closed += (_, _) => { IsFollowing = false; followTimer.Stop(); };
     }
 
     private void ToggleFollowing()

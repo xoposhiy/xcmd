@@ -161,17 +161,17 @@ public static class PriorityBatchScenarios
         {
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3); var viewer = c.Window.Viewer!;
             await c.KeyAsync(Key.F, RawInputModifiers.Control | RawInputModifiers.Shift, viewer);
-            Check(viewer.IsFollowing, "Follow mode is enabled");
+            Check(viewer.Reader.IsFollowing, "Follow mode is enabled");
             var path = Path.Combine(c.LeftPath, "alpha.txt"); File.AppendAllText(path, "\nappended");
-            await WaitAsync(c, () => viewer.TextContent.Text!.Contains("appended", StringComparison.Ordinal));
+            await WaitAsync(c, () => viewer.Reader.TextContent.Text!.Contains("appended", StringComparison.Ordinal));
             await c.KeyAsync(Key.Home, RawInputModifiers.Control, viewer);
-            Check(!viewer.IsFollowing, "Reading earlier data pauses following");
+            Check(!viewer.Reader.IsFollowing, "Reading earlier data pauses following");
             File.AppendAllText(path, "\nmore");
             await c.KeyAsync(Key.F, RawInputModifiers.Control | RawInputModifiers.Shift, viewer);
-            Check(viewer.TextContent.Text!.Contains("more", StringComparison.Ordinal), "Explicit resume catches up");
+            Check(viewer.Reader.TextContent.Text!.Contains("more", StringComparison.Ordinal), "Explicit resume catches up");
             File.WriteAllText(path, "reset");
-            await WaitAsync(c, () => viewer.TextContent.Text == "reset");
-            Equal(5L, viewer.FileLength, "Truncation resets the loaded length");
+            await WaitAsync(c, () => viewer.Reader.TextContent.Text == "reset");
+            Equal(5L, viewer.Reader.FileLength, "Truncation resets the loaded length");
             await c.ScreenshotAsync("viewer-follow", viewer);
         }),
         new("priority-shell-group", "PANEL-04; marked item targets the group; an unmarked item preserves marks", async c =>

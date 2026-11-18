@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, ClipboardTransfer, BrowseArchives, RestoreWorkspace, SharedControls
+// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, ClipboardTransfer, QuickViewFile, BrowseArchives, RestoreWorkspace, SharedControls
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -50,6 +50,7 @@ public sealed partial class PanelView : Border
     public event Action<PanelView>? HistoryRequested;
     public event Action<string>? LocationVisited;
     public event Action<PanelView>? LoadingRequested;
+    internal event Action? CurrentEntryChanged;
     public FileIconCache Icons { get; }
     public GitStatusView Git { get; }
     private NameJump? nameSearch;
@@ -654,6 +655,7 @@ public sealed partial class PanelView : Border
     {
         var selection = Table.SelectedItems?.OfType<FileRow>().ToHashSet() ?? [];
         var current = Current;
+        var previous = currentRow;
         if (currentRow != current) currentRow?.SetCurrent(false, isActive);
         currentRow = current;
         currentRow?.SetCurrent(true, isActive);
@@ -663,6 +665,15 @@ public sealed partial class PanelView : Border
         markedRows = marked;
         UpdateSelectionTotal();
         UpdateCommitMessage();
+        NotifyCurrentEntryChanged(previous);
+    }
+
+    private void NotifyCurrentEntryChanged(FileRow? previous)
+    {
+        var before = previous?.Entry;
+        var after = currentRow?.Entry;
+        if (before?.IsDirectory != after?.IsDirectory || !string.Equals(before?.FullPath, after?.FullPath, StringComparison.Ordinal))
+            CurrentEntryChanged?.Invoke();
     }
 
     private void UpdateSelectionTotal()

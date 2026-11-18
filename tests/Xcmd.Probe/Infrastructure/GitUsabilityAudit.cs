@@ -37,7 +37,7 @@ public static class GitUsabilityAudit
         await context.KeyAsync(Key.F3);
         var viewer = window.Viewer!;
         var launches = context.Launcher.Requests.Count;
-        result["snapshotViewerPath"] = viewer.CurrentPath;
+        result["snapshotViewerPath"] = viewer.Reader.CurrentPath;
         result["snapshotViewerTitle"] = viewer.Title;
         await context.KeyAsync(Key.F4, target: viewer);
         result["snapshotViewerEdit"] = new
@@ -45,7 +45,7 @@ public static class GitUsabilityAudit
             opened = context.Launcher.Requests.Count > launches,
             request = context.Launcher.Requests.LastOrDefault(),
             window.LastError,
-            viewer.Error
+            viewer.Reader.Error
         };
         await context.ScreenshotAsync("snapshot-viewer", viewer);
         viewer.Close(); await context.SettleAsync(); panel.FocusCurrent();
@@ -53,7 +53,7 @@ public static class GitUsabilityAudit
         result["actionableChangedFiles"] = panel.Rows.Where(row => !row.Entry.IsParent).Select(row => new { row.Name, row.Git.WorkingGlyph }).ToArray();
         await context.ScreenshotAsync("changed-files");
         await context.SelectAsync("zeta.md"); await context.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-        result["deletedCommitDiff"] = new { window.Viewer!.Title, text = window.Viewer.TextContent.Text };
+        result["deletedCommitDiff"] = new { window.Viewer!.Title, text = window.Viewer.Reader.TextContent.Text };
         await context.ScreenshotAsync("deleted-file-diff", window.Viewer);
         window.Viewer.Close(); await context.SettleAsync(); panel.FocusCurrent(); await context.KeyAsync(Key.Back);
         await context.SelectAsync("folder1");
@@ -98,7 +98,7 @@ public static class GitUsabilityAudit
         {
             capturedRows,
             currentRows = panel.Rows.Select(row => row.Name).ToArray(),
-            refreshedReportIncludesNewFile = window.Viewer!.TextContent.Text!.Contains("new-after-open.txt", StringComparison.Ordinal)
+            refreshedReportIncludesNewFile = window.Viewer!.Reader.TextContent.Text!.Contains("new-after-open.txt", StringComparison.Ordinal)
         };
         window.Viewer.Close(); await context.SettleAsync();
         await context.ScreenshotAsync("working-tree-refreshed");

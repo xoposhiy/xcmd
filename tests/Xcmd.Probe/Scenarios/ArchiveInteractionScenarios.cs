@@ -80,20 +80,20 @@ public static class ArchiveInteractionScenarios
             ArchiveProbe.EmptyTar(Path.Combine(c.LeftPath, "empty.tar"));
             ArchiveProbe.EmptyTar(Path.Combine(c.LeftPath, "zeros.bin"));
             await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("zeros.bin"); await c.KeyAsync(Key.F3);
-            Equal(FileViewMode.Hex, c.Window.Viewer!.Mode, "Ordinary zero-filled data remains a byte view");
-            Check(!c.Window.Viewer.IsArchiveReport, "Zero-filled data is not automatically presented as an empty archive");
+            Equal(FileViewMode.Hex, c.Window.Viewer!.Reader.Mode, "Ordinary zero-filled data remains a byte view");
+            Check(!c.Window.Viewer.Reader.IsArchiveReport, "Zero-filled data is not automatically presented as an empty archive");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer); await c.SelectAsync("empty.tar"); await c.KeyAsync(Key.F3);
-            Check(c.Window.Viewer!.IsArchiveReport && c.Window.Viewer.TextContent.Text!.Contains("Files: 0", StringComparison.Ordinal), "An explicit empty TAR still has an archive report");
+            Check(c.Window.Viewer!.Reader.IsArchiveReport && c.Window.Viewer.Reader.TextContent.Text!.Contains("Files: 0", StringComparison.Ordinal), "An explicit empty TAR still has an archive report");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer); await c.SelectAsync("zeros.bin");
             await c.KeyAsync(Key.PageDown, RawInputModifiers.Control);
             Check(ArchivePath.IsEntry(c.Window.Left.Session.DirectoryPath), "Ctrl+PageDown can explicitly enter an ambiguous empty archive");
             await c.KeyAsync(Key.PageUp, RawInputModifiers.Control); await c.KeyAsync(Key.F3);
-            Check(c.Window.Viewer!.IsArchiveReport, "An explicitly recognized archive keeps report behavior after leaving it");
+            Check(c.Window.Viewer!.Reader.IsArchiveReport, "An explicitly recognized archive keeps report behavior after leaving it");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer); await c.SelectAsync("zeros.bin");
             await c.KeyAsync(Key.PageDown, RawInputModifiers.Control);
             Check(ArchivePath.IsEntry(c.Window.Left.Session.DirectoryPath), "Ctrl+PageDown can explicitly enter an ambiguous empty archive");
             await c.KeyAsync(Key.PageUp, RawInputModifiers.Control); await c.KeyAsync(Key.F3);
-            Check(c.Window.Viewer!.IsArchiveReport, "An explicitly recognized archive keeps report behavior after leaving it");
+            Check(c.Window.Viewer!.Reader.IsArchiveReport, "An explicitly recognized archive keeps report behavior after leaving it");
         }),
         new("archive-pending-open-keeps-other-panel-focus", "UC21; usable panels during archive reads", async c =>
         {
@@ -129,11 +129,11 @@ public static class ArchiveInteractionScenarios
             ArchiveProbe.Zip(Path.Combine(c.LeftPath, "sample.zip"), ("notes.txt", "Archived text"));
             await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("sample.zip"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
-            Check(viewer.IsArchiveReport && viewer.Title!.Contains("Archive contents", StringComparison.Ordinal), "The report has a clear identity");
-            Check(viewer.ReadingStatus.StartsWith("Archive report", StringComparison.Ordinal), "Status identifies report bytes");
+            Check(viewer.Reader.IsArchiveReport && viewer.Title!.Contains("Archive contents", StringComparison.Ordinal), "The report has a clear identity");
+            Check(viewer.Reader.ReadingStatus.StartsWith("Archive report", StringComparison.Ordinal), "Status identifies report bytes");
             Check(!ViewerProbe.Command(viewer, "viewer.mode.hex").IsEnabled, "Hex cannot present report bytes as archive bytes");
             await c.KeyAsync(Key.D3, target: viewer);
-            Equal(FileViewMode.Text, viewer.Mode, "The Hex shortcut preserves the archive report");
+            Equal(FileViewMode.Text, viewer.Reader.Mode, "The Hex shortcut preserves the archive report");
             await c.ScreenshotAsync("archive-report", viewer);
             await c.KeyAsync(Key.Escape, target: viewer);
             var menu = c.Window.TitleBar.Children.OfType<Menu>().SingleOrDefault() ??
@@ -167,7 +167,7 @@ public static class ArchiveInteractionScenarios
             Check(!Directory.EnumerateFiles(c.RightPath, ".xcmd-*.tmp").Any(), "Cancellation removes the incomplete temporary file");
             File.Delete(archive); ArchiveProbe.Zip(archive, ("notes.txt", "Refreshed contents"));
             await c.KeyAsync(Key.R, RawInputModifiers.Control); await c.SelectAsync("notes.txt"); await c.KeyAsync(Key.F3);
-            Equal("Refreshed contents", c.Window.Viewer!.TextContent.Text, "Reload invalidates the old archive contents");
+            Equal("Refreshed contents", c.Window.Viewer!.Reader.TextContent.Text, "Reload invalidates the old archive contents");
         })
     ];
 }

@@ -90,14 +90,14 @@ public static class NavigationFeedbackScenarios
             await c.SettleAsync();
             Equal(current, panel.Current?.Name, "PageDown during report preparation cannot move the commit cursor");
             var viewer = c.Window.Viewer!;
-            Check(viewer.TextContent.IsKeyboardFocusWithin, "The viewer receives keyboard focus after Git report creation");
+            Check(viewer.Reader.TextContent.IsKeyboardFocusWithin, "The viewer receives keyboard focus after Git report creation");
             using (var updates = new DirectoryUpdates(c.Window)) await updates.PollAsync();
             await c.SettleAsync();
             Equal(current, panel.Current?.Name, "Background refresh preserves the viewed commit");
-            Check(viewer.TextContent.IsKeyboardFocusWithin, "Background refresh keeps keyboard focus in the viewer");
-            var visibleEnd = viewer.VisibleEnd;
+            Check(viewer.Reader.TextContent.IsKeyboardFocusWithin, "Background refresh keeps keyboard focus in the viewer");
+            var visibleEnd = viewer.Reader.VisibleEnd;
             await c.KeyAsync(Key.PageDown, target: viewer);
-            Check(viewer.VisibleEnd > visibleEnd, "PageDown scrolls the commit report");
+            Check(viewer.Reader.VisibleEnd > visibleEnd, "PageDown scrolls the commit report");
             Equal(current, panel.Current?.Name, "Paging the viewer leaves the commit cursor intact");
             await c.KeyAsync(Key.Escape, target: viewer);
             Equal(current, panel.Current?.Name, "Closing the viewer leaves the same commit selected");
@@ -105,7 +105,7 @@ public static class NavigationFeedbackScenarios
             await c.KeyAsync(Key.Enter);
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.Enter);
             viewer = c.Window.Viewer!;
-            Check(viewer.TextContent.IsKeyboardFocusWithin, "Opening a snapshot file keeps focus in its viewer");
+            Check(viewer.Reader.TextContent.IsKeyboardFocusWithin, "Opening a snapshot file keeps focus in its viewer");
             await c.KeyAsync(Key.Escape, target: viewer);
         }),
         new("feedback-delete-readonly-failure", "A failed permanent deletion restores file attributes and still permits deleting an absent file", async c =>

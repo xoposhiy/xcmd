@@ -91,7 +91,7 @@ public static class GitHistoryScenarios
             GitHistoryProbe.CheckLogPresentation(c, panel);
             await c.ScreenshotAsync("git-history-log");
             await c.KeyAsync(Key.F3);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("Full nested commit message.", StringComparison.Ordinal), "F3 shows the full commit message");
+            Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("Full nested commit message.", StringComparison.Ordinal), "F3 shows the full commit message");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.Enter);
             Equal("tree", GitPath.Parse(panel.Session.DirectoryPath).Kind, "Enter opens the complete commit tree");
@@ -112,10 +112,10 @@ public static class GitHistoryScenarios
             Equal(GitChange.Added, panel.Rows.Single(row => row.Name == "new 日本語.txt").Git.Unstaged, "The ordinary Git column marks added snapshot files");
             await c.SelectAsync("inside.txt");
             await c.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("+Nested committed version", StringComparison.Ordinal), "Snapshot diff compares with the parent commit");
+            Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("+Nested committed version", StringComparison.Ordinal), "Snapshot diff compares with the parent commit");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.F3);
-            Equal("Nested committed version\n", c.Window.Viewer!.TextContent.Text, "The viewer reads the committed blob");
+            Equal("Nested committed version\n", c.Window.Viewer!.Reader.TextContent.Text, "The viewer reads the committed blob");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await GitHistoryProbe.CheckFileInteractionAsync(c, panel, "inside.txt", "new 日本語.txt");
             foreach (var scale in new[] { 1d, 1.5d })
@@ -147,14 +147,15 @@ public static class GitHistoryScenarios
             File.AppendAllText(Path.Combine(c.LeftPath, "file10.bin"), "Outside the file scope");
             await c.SelectAsync("alpha.txt");
             await c.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-            var diff = c.Window.Viewer!.TextContent.Text!;
+            var diff = c.Window.Viewer!.Reader.TextContent.Text!;
             Check(diff.Contains("-Committed root version", StringComparison.Ordinal) && diff.Contains("+Staged root version", StringComparison.Ordinal) && diff.Contains("+Working tail", StringComparison.Ordinal), "Working diff includes staged and unstaged changes");
             c.Window.Viewer.Close(); await c.SettleAsync(); c.Window.Left.FocusCurrent();
             await c.KeyAsync(Key.L, RawInputModifiers.Control | RawInputModifiers.Alt);
             var panel = c.Window.Right;
             Equal(2, GitHistoryProbe.Commits(panel).Length, "Only commits that changed the file are listed");
             await c.KeyAsync(Key.F3);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("alpha.txt", StringComparison.Ordinal) && !c.Window.Viewer.TextContent.Text.Contains("file10.bin", StringComparison.Ordinal), "Working-tree F3 also respects a single-file history scope");
+            var report = c.Window.Viewer!.Reader.TextContent.Text!;
+            Check(report.Contains("alpha.txt", StringComparison.Ordinal) && !report.Contains("file10.bin", StringComparison.Ordinal), "Working-tree F3 also respects a single-file history scope");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await GitHistoryProbe.SelectCommitAsync(c, panel, "Update root files");
             await c.KeyAsync(Key.Enter);
@@ -164,14 +165,14 @@ public static class GitHistoryScenarios
             Equal("changes", GitPath.Parse(panel.Session.DirectoryPath).Kind, "F3 on the parent row includes deleted files in an actionable list");
             await c.SelectAsync("zeta.md");
             await c.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("-notes", StringComparison.Ordinal), "Deleted commit files have a usable diff");
+            Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("-notes", StringComparison.Ordinal), "Deleted commit files have a usable diff");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.F3);
-            Equal("notes", c.Window.Viewer!.TextContent.Text, "Deleted commit files open the parent version");
+            Equal("notes", c.Window.Viewer!.Reader.TextContent.Text, "Deleted commit files open the parent version");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.Back);
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.Enter);
-            Equal("Committed root version\n", c.Window.Viewer!.TextContent.Text, "Snapshot content ignores working changes");
+            Equal("Committed root version\n", c.Window.Viewer!.Reader.TextContent.Text, "Snapshot content ignores working changes");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.F8); await c.KeyAsync(Key.F4); await c.KeyAsync(Key.F7);
             Check(!c.Window.HasOpenDialog, "Snapshot write commands do not open file operations");
@@ -206,7 +207,7 @@ public static class GitHistoryScenarios
             Equal("Working tree", panel.Current?.Name, "Working tree appears before commits");
             Check(panel.CommitMessage.Text!.Contains("Uncommitted changes", StringComparison.Ordinal), "Working tree shows an explanation instead of an old commit message");
             await c.KeyAsync(Key.F3);
-            var text = c.Window.Viewer!.TextContent.Text!;
+            var text = c.Window.Viewer!.Reader.TextContent.Text!;
             foreach (var path in new[] { "folder1/inside.txt", "folder1/new 日本語.txt", "folder1/draft.txt" })
                 Check(text.Contains(path, StringComparison.Ordinal), "F3 lists a scoped change: " + path);
             Check(!text.Contains("alpha.txt", StringComparison.Ordinal) && !text.Contains("ignored.txt", StringComparison.Ordinal), "Other folders and ignored files are excluded");
@@ -221,10 +222,10 @@ public static class GitHistoryScenarios
             await c.ScreenshotAsync("git-working-tree-files");
             await c.SelectAsync("folder1/inside.txt");
             await c.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("+Working version", StringComparison.Ordinal), "Working file diff includes unstaged changes");
+            Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("+Working version", StringComparison.Ordinal), "Working file diff includes unstaged changes");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.SelectAsync("folder1/new 日本語.txt"); await c.KeyAsync(Key.F3);
-            Equal("Added content\n", c.Window.Viewer!.TextContent.Text, "A deleted working file opens its HEAD version");
+            Equal("Added content\n", c.Window.Viewer!.Reader.TextContent.Text, "A deleted working file opens its HEAD version");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.Back);
             Equal("Working tree", panel.Current?.Name, "Back restores the working-tree cursor");

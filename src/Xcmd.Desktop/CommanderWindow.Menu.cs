@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback
+// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -39,6 +39,7 @@ public sealed partial class CommanderWindow
                 new MenuItem() { Header = "File", ItemsSource = new MenuItem[]
                 {
                     Item("View file or commit", viewing.ViewCurrent, new(Key.F3), historyAllowed: true),
+                    Item("Quick view in other panel", viewing.ToggleQuickView, new(Key.Q, KeyModifiers.Control)),
                     Item("Find files", FileSearch.Open, new(Key.F7, KeyModifiers.Alt)),
                     Item("Edit in Notepad++", () => Execute(viewing.EditCurrentAsync), new(Key.F4)),
                     Item("Compare files in VS Code", () => Execute(viewing.CompareCurrentFilesAsync), new(Key.C, KeyModifiers.Control | KeyModifiers.Shift), historyAllowed: true),

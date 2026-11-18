@@ -9,7 +9,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     private ScrollViewer? textScroll;
     private TextPresenter? presenter;

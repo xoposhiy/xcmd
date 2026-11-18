@@ -76,7 +76,7 @@ public static class SearchScenarios
             Check(Results(search).All(result => result.Match!.Excerpt.Contains(phrase, StringComparison.Ordinal)), "Excerpts use the matching encoding");
             search.Results.SelectedItem = Results(search).Single(result => result.Entry.Name == "encoding-1251.txt"); search.Results.Focus();
             await c.KeyAsync(Key.F3, target: search);
-            Equal(phrase, c.Window.Viewer!.TextContent.SelectedText, "F3 opens the match with the search encoding");
+            Equal(phrase, c.Window.Viewer!.Reader.TextContent.SelectedText, "F3 opens the match with the search encoding");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer); await c.KeyAsync(Key.Escape, target: c.Window.Viewer);
             Check(c.Window.FileSearch.Window == search, "The result list remains available after preview");
             await File.WriteAllTextAsync(Path.Combine(c.LeftPath, "western.txt"), string.Concat(Enumerable.Repeat("caf\u00e9 cr\u00e8me\n", 40)), Encoding.GetEncoding(1252));

@@ -8,8 +8,10 @@ public sealed class ControlledArchiveContents(string cacheDirectory) : IArchiveC
 {
     private readonly ArchiveContents actual = new(cacheDirectory);
     private ReadGate? nextRead;
+    private ReadGate? nextViewerRead;
     private ReadGate? nextExtraction;
     public ReadGate PauseNextRead(string path) => nextRead = new ReadGate(path);
+    public ReadGate PauseNextViewerRead(string path) => nextViewerRead = new ReadGate(path);
     public ReadGate PauseNextExtraction(string path) => nextExtraction = new ReadGate(path);
 
     public async Task<IReadOnlyList<FileEntry>> ReadDirectoryAsync(string path, CancellationToken token)
@@ -17,9 +19,7 @@ public sealed class ControlledArchiveContents(string cacheDirectory) : IArchiveC
         if (nextRead is { } gate && gate.Path == path)
         {
             nextRead = null;
-            gate.Entered.TrySetResult();
-            try { await gate.Release.Task.WaitAsync(token); }
-            catch (OperationCanceledException) { gate.WasCancelled = true; throw; }
+            await WaitForReleaseAsync(gate, token);
         }
         return await actual.ReadDirectoryAsync(path, token);
     }
@@ -46,6 +46,21 @@ public sealed class ControlledArchiveContents(string cacheDirectory) : IArchiveC
     }
 
     public Task<string> MaterializeAsync(string path, CancellationToken token) => actual.MaterializeAsync(path, token);
-    public Task<ViewerSource> ViewerSourceAsync(string path, CancellationToken token) => actual.ViewerSourceAsync(path, token);
+    public async Task<ViewerSource> ViewerSourceAsync(string path, CancellationToken token)
+    {
+        if (nextViewerRead is { } gate && gate.Path == path)
+        {
+            nextViewerRead = null;
+            await WaitForReleaseAsync(gate, token);
+        }
+        return await actual.ViewerSourceAsync(path, token);
+    }
+
+    private static async Task WaitForReleaseAsync(ReadGate gate, CancellationToken token)
+    {
+        gate.Entered.TrySetResult();
+        try { await gate.Release.Task.WaitAsync(token); }
+        catch (OperationCanceledException) { gate.WasCancelled = true; throw; }
+    }
     public void Dispose() => actual.Dispose();
 }

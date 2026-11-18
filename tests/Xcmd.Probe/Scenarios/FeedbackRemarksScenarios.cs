@@ -72,17 +72,17 @@ public static class FeedbackRemarksScenarios
             var first = c.Window.Viewer!;
             await ViewerProbe.StartSearchAsync(c, first, "needle");
             await c.KeyAsync(Key.Right, RawInputModifiers.Alt, first);
-            Equal("second.txt", Path.GetFileName(first.CurrentPath), "Viewer navigation changes files");
+            Equal("second.txt", Path.GetFileName(first.Reader.CurrentPath), "Viewer navigation changes files");
             await c.KeyAsync(Key.F3, target: first);
-            Equal("needle", first.TextContent.SelectedText, "F3 reuses the previous file's query");
+            Equal("needle", first.Reader.TextContent.SelectedText, "F3 reuses the previous file's query");
             await c.KeyAsync(Key.F, RawInputModifiers.Control, first);
-            Equal("needle", first.Search.SelectedText, "Find selects the previous query for replacement");
+            Equal("needle", first.Reader.Search.SelectedText, "Find selects the previous query for replacement");
             first.Close(); await c.SettleAsync();
             await c.SelectAsync("first.txt"); await c.KeyAsync(Key.F3);
             var second = c.Window.Viewer!; await c.KeyAsync(Key.F3, target: second);
-            Equal("needle", second.TextContent.SelectedText, "New viewers reuse the last query");
+            Equal("needle", second.Reader.TextContent.SelectedText, "New viewers reuse the last query");
             await c.KeyAsync(Key.F, RawInputModifiers.Control, second); await c.TextAsync("First", second);
-            Equal("First", second.Search.Text, "Typing replaces the selected query");
+            Equal("First", second.Reader.Search.Text, "Typing replaces the selected query");
         }),
         new("remarks-native-icons-and-directory-shortcuts", "UC14; native icon pixels, root shortcut and physical home shortcut in both layouts", async c =>
         {

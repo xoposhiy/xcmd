@@ -29,6 +29,7 @@ internal static class Program
     {
         var scenarios = PanelScenarios.All.Concat(HistoryScenarios.All).Concat(WorkspaceScenarios.All).Concat(RefinementScenarios.All).Concat(FavoriteScenarios.All).Concat(NavigationAndColorsScenarios.All).Concat(DirectorySizeScenarios.All).Concat(CommandScenarios.All).Concat(CommandLineScenarios.All).Concat(RuleScenarios.All).Concat(LauncherScenarios.All).Concat(FileOperationScenarios.All).Concat(OperationRefinementScenarios.All).Concat(SelectionAndDialogScenarios.All).Concat(PanelCursorScenarios.All).Concat(RangeAndFeedbackScenarios.All).Concat(OperationUsabilityScenarios.All).ToArray();
         scenarios = scenarios.Concat(ViewerScenarios.All).ToArray();
+        scenarios = scenarios.Concat(QuickViewScenarios.All).ToArray();
         scenarios = scenarios.Concat(SyntaxScenarios.All).ToArray();
         scenarios = scenarios.Concat(SyntaxRegressionScenarios.All).ToArray();
         scenarios = scenarios.Concat(FeedbackInteractionScenarios.All).ToArray();

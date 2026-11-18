@@ -22,22 +22,22 @@ public static class SyntaxProbe
         var viewer = new FileViewerWindow([path], 0, files, context.Window.Feedback, _ => Task.CompletedTask, _ => Task.CompletedTask);
         context.Window.Feedback.Attach(viewer, showButton: false);
         viewer.Show();
-        await viewer.OpenAsync();
+        await viewer.Reader.OpenAsync();
         await context.SettleAsync();
         ProbeContext.Equal(IntPtr.Zero, viewer.TryGetPlatformHandle()!.Handle, "Controlled viewers remain headless");
         return viewer;
     }
 
-    public static Task WaitForSyntaxAsync(FileViewerWindow viewer) => WorkspaceProbe.WaitAsync(() => !viewer.IsLoading);
+    public static Task WaitForSyntaxAsync(FileViewerWindow viewer) => WorkspaceProbe.WaitAsync(() => !viewer.Reader.IsLoading);
 
     public static void Select(FileViewerWindow viewer, string text)
     {
-        viewer.TextContent.Focus();
-        var start = viewer.TextContent.Text!.IndexOf(text, StringComparison.Ordinal);
+        viewer.Reader.TextContent.Focus();
+        var start = viewer.Reader.TextContent.Text!.IndexOf(text, StringComparison.Ordinal);
         ProbeContext.Check(start >= 0, "The selected source exists");
-        viewer.TextContent.CaretIndex = start + text.Length;
-        viewer.TextContent.SelectionStart = start;
-        viewer.TextContent.SelectionEnd = start + text.Length;
+        viewer.Reader.TextContent.CaretIndex = start + text.Length;
+        viewer.Reader.TextContent.SelectionStart = start;
+        viewer.Reader.TextContent.SelectionEnd = start + text.Length;
     }
 
     public static string ReportContext(ProbeContext context) => context.Window.Feedback.ActiveComment!
@@ -45,12 +45,12 @@ public static class SyntaxProbe
 
     public static async Task OpenContextReportAsync(ProbeContext context, FileViewerWindow viewer)
     {
-        var presenter = viewer.TextContent.GetVisualDescendants().OfType<TextPresenter>().Single();
-        var bounds = presenter.TextLayout.HitTestTextPosition(viewer.TextContent.SelectionStart);
+        var presenter = viewer.Reader.TextContent.GetVisualDescendants().OfType<TextPresenter>().Single();
+        var bounds = presenter.TextLayout.HitTestTextPosition(viewer.Reader.TextContent.SelectionStart);
         var point = presenter.TranslatePoint(new Point(bounds.X + 2, bounds.Y + 2), viewer)!.Value;
         viewer.MouseDown(point, MouseButton.Right); viewer.MouseUp(point, MouseButton.Right);
         await context.SettleAsync();
-        var menu = viewer.TextContent.ContextMenu!;
+        var menu = viewer.Reader.TextContent.ContextMenu!;
         ProbeContext.Check(menu.IsOpen, "Right click opens the code context menu");
         await context.ClickAsync(menu.Items.OfType<MenuItem>().Single(item => item.Name == "viewer.syntax-report-context"), target: viewer);
     }
@@ -112,11 +112,11 @@ public static class SyntaxProbe
 
     public static void CheckRenderedColors(FileViewerWindow viewer)
     {
-        var presenter = viewer.TextContent.GetVisualDescendants().OfType<TextPresenter>().Single();
+        var presenter = viewer.Reader.TextContent.GetVisualDescendants().OfType<TextPresenter>().Single();
         var colors = presenter.TextLayout.TextLines.SelectMany(line => line.TextRuns)
             .Select(run => run.Properties?.ForegroundBrush).OfType<ISolidColorBrush>().Select(brush => brush.Color).Distinct().ToArray();
         ProbeContext.Check(colors.Length >= 3, "The actual text layout contains distinct syntax colors");
-        var background = ((ISolidColorBrush)viewer.TextContent.Background!).Color;
+        var background = ((ISolidColorBrush)viewer.Reader.TextContent.Background!).Color;
         foreach (var color in colors)
         {
             var first = Luminance(color); var second = Luminance(background);
@@ -132,7 +132,7 @@ public static class SyntaxProbe
 
     public static async Task ChooseLanguageAsync(ProbeContext c, FileViewerWindow viewer, string id)
     {
-        var view = (MenuItem)viewer.Commands.Items[1]!;
+        var view = (MenuItem)viewer.Reader.Commands.Items[1]!;
         await c.ClickAsync(view, target: viewer);
         var languages = view.Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == "Syntax language");
         await c.ClickAsync(languages, target: viewer);

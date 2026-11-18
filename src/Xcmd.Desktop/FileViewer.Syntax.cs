@@ -6,7 +6,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     private readonly SyntaxHighlighter highlighter = new();
     private readonly Dictionary<string, MenuItem> syntaxItems = new(StringComparer.Ordinal);
@@ -79,8 +79,7 @@ public sealed partial class FileViewerWindow
     private void ReportSyntaxProblem(ReaderSelection? selection)
     {
         if (feedback.IsActive || Mode != FileViewMode.Text || slice == null || IsArchiveReport) return;
-        var start = selection != null && selection.Text == TextContent.Text ? Math.Min(selection.Start, selection.End) : Math.Min(TextContent.SelectionStart, TextContent.SelectionEnd);
-        var end = selection != null && selection.Text == TextContent.Text ? Math.Max(selection.Start, selection.End) : Math.Max(TextContent.SelectionStart, TextContent.SelectionEnd);
+        var (start, end) = ReportSelection(selection);
         var text = TextContent.Text ?? "";
         var sampleLength = Math.Min(end - start, 4096);
         if (sampleLength > 0 && start + sampleLength < end && char.IsHighSurrogate(text[start + sampleLength - 1])) sampleLength--;
@@ -91,7 +90,20 @@ public sealed partial class FileViewerWindow
             $"Page byte offset: {ByteOffset}\nSelection: characters {start}–{end}; file byte offset {ByteAtCharacter(start)}\nStatus: {SyntaxStatus}";
         menuSelection = null;
         var caret = TextContent.CaretIndex;
-        var comment = feedback.Report(this, TextContent, details);
+        if (TopLevel.GetTopLevel(this) is not Window window) return;
+        var comment = feedback.Report(window, TextContent, details);
         if (comment != null) comment.Closed += (_, _) => RestoreReaderSelection(ThemeId, text, caret, start, end);
+    }
+
+    private (int Start, int End) ReportSelection(ReaderSelection? selection)
+    {
+        var start = TextContent.SelectionStart;
+        var end = TextContent.SelectionEnd;
+        if (selection != null && selection.Text == TextContent.Text)
+        {
+            start = selection.Start;
+            end = selection.End;
+        }
+        return (Math.Min(start, end), Math.Max(start, end));
     }
 }

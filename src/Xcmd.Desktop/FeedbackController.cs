@@ -40,7 +40,7 @@ public sealed class FeedbackController
     public bool IsPickingIn(Window window) => surfaces.TryGetValue(window, out var surface) && surface.IsPicking;
     internal void SetHint(Window source, string text)
     {
-        if (source is FileViewerWindow viewer) viewer.SetFeedbackHint(text);
+        if (source is FileViewerWindow viewer) viewer.Reader.SetFeedbackHint(text);
         else owner.SetUpdateMessage(text);
     }
     internal void StopNameSearch() => owner.StopNameSearch();
@@ -130,6 +130,7 @@ public sealed class FeedbackController
     {
         var previousFocus = source.FocusManager?.GetFocusedElement() as Control;
         var panel = control.GetSelfAndVisualAncestors().OfType<PanelView>().FirstOrDefault();
+        var reader = control.GetSelfAndVisualAncestors().OfType<FileViewer>().FirstOrDefault();
         var target = DescribeInteraction(control, "Comment");
         var id = target.ElementId;
         var name = target.ElementName;
@@ -148,7 +149,7 @@ public sealed class FeedbackController
             writes++;
             owner.Execute(async () =>
             {
-                try { await SaveCommentAsync(dialog, source, id, name, text, context); }
+                try { await SaveCommentAsync(dialog, reader, id, name, text, context); }
                 finally { submitting = false; writes--; }
             });
         };
@@ -156,15 +157,19 @@ public sealed class FeedbackController
         {
             comments.Remove(dialog); surface.Cancel(); owner.RecordActivity();
             if (source == owner)
-            { if (owner.CommandLine.Editor == previousFocus) previousFocus.Focus(); else owner.ActivePanel.FocusCurrent(); }
-            else if (source.IsVisible && previousFocus?.Focus() != true && source is FileViewerWindow sourceViewer) sourceViewer.TextContent.Focus();
+            {
+                if (previousFocus == owner.CommandLine.Editor || previousFocus?.FindAncestorOfType<FileViewer>(includeSelf: true) != null)
+                { if (previousFocus!.Focus()) return; }
+                owner.ActivePanel.FocusCurrent();
+            }
+            else if (source.IsVisible && previousFocus?.Focus() != true && source is FileViewerWindow sourceViewer) sourceViewer.Reader.FocusReader();
         };
         _ = dialog.ShowDialog(source);
         dialog.Editor.Focus();
         return dialog;
     }
 
-    private async Task SaveCommentAsync(CommentDialog dialog, Window source, string id, string name, string text, string? context)
+    private async Task SaveCommentAsync(CommentDialog dialog, FileViewer? reader, string id, string name, string text, string? context)
     {
         try
         {
@@ -174,7 +179,7 @@ public sealed class FeedbackController
             dialog.Close();
             await RefreshAsync();
             owner.SetUpdateMessage("Comment saved. Open Notes to view issues.");
-            if (context != null && source is FileViewerWindow viewer && viewer.IsVisible) viewer.ShowFeedbackSaved();
+            if (context != null && reader?.IsEffectivelyVisible == true) reader.ShowFeedbackSaved();
         }
         catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
         { dialog.SaveError.Text = "Could not save comment. " + error.Message; owner.Trace.Add(error.ToString()); }

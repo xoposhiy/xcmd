@@ -38,7 +38,7 @@ public static class GitHistoryProbe
     public static string KeyboardHelp(ProbeContext context) => string.Join(" · ", context.Window.GetVisualDescendants()
         .OfType<WrapPanel>().Single(control => control.Name == "KeyboardHelp").GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text));
 
-    public static MenuItem ViewerCommand(FileViewerWindow viewer, string name) => viewer.Commands.ItemsSource!.OfType<MenuItem>()
+    public static MenuItem ViewerCommand(FileViewerWindow viewer, string name) => viewer.Reader.Commands.ItemsSource!.OfType<MenuItem>()
         .SelectMany(menu => menu.ItemsSource?.OfType<MenuItem>() ?? []).Single(item => item.Name == name);
 
     public static async Task ResizeMessageAsync(ProbeContext context, PanelView panel)

@@ -28,7 +28,7 @@ public static class GitUsabilityFixScenarios
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
             var revision = GitPath.Parse(panel.Session.DirectoryPath).Revision[..10];
-            Check(viewer.IsDocumentReadOnly && viewer.Title!.Contains(revision, StringComparison.Ordinal) && viewer.Title.Contains("alpha.txt", StringComparison.Ordinal), "The viewer identifies the original file and commit");
+            Check(viewer.Reader.IsDocumentReadOnly && viewer.Title!.Contains(revision, StringComparison.Ordinal) && viewer.Title.Contains("alpha.txt", StringComparison.Ordinal), "The viewer identifies the original file and commit");
             Check(!viewer.Title!.Contains(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase), "The title does not expose a cache path as the file origin");
             Check(!GitHistoryProbe.ViewerCommand(viewer, "viewer.edit").IsEnabled && !GitHistoryProbe.ViewerCommand(viewer, "viewer.open").IsEnabled, "Both external commands respect snapshot read-only state");
             var launches = c.Launcher.Requests.Count;
@@ -60,7 +60,7 @@ public static class GitUsabilityFixScenarios
             await c.KeyAsync(Key.Enter);
             File.WriteAllText(Path.Combine(c.LeftPath, "after-open.txt"), "New file");
             await c.SelectAsync(".."); await c.KeyAsync(Key.F3);
-            Check(panel.Rows.Any(row => row.Name == "after-open.txt") && c.Window.Viewer!.TextContent.Text!.Contains("after-open.txt", StringComparison.Ordinal), "F3 refreshes the panel and report from the same captured changes");
+            Check(panel.Rows.Any(row => row.Name == "after-open.txt") && c.Window.Viewer!.Reader.TextContent.Text!.Contains("after-open.txt", StringComparison.Ordinal), "F3 refreshes the panel and report from the same captured changes");
             c.Window.Viewer!.Close(); await c.SettleAsync(); panel.FocusCurrent();
             File.WriteAllText(Path.Combine(c.LeftPath, "automatic.txt"), "Auto refresh");
             using (var updates = new DirectoryUpdates(c.Window)) await updates.PollAsync();
@@ -96,7 +96,7 @@ public static class GitUsabilityFixScenarios
             await GitFixture.RunAsync(c.LeftPath, "rm", "alpha.txt");
             c.Window.GitHistory.Open(selectedItem: false); await c.SettleAsync(); await c.KeyAsync(Key.Enter);
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.D, RawInputModifiers.Control | RawInputModifiers.Alt);
-            Check(c.Window.Viewer!.TextContent.Text!.Contains("-Committed root version", StringComparison.Ordinal), "A staged deletion compares its HEAD content with the missing working file");
+            Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("-Committed root version", StringComparison.Ordinal), "A staged deletion compares its HEAD content with the missing working file");
             Check(c.Window.Viewer.Title!.Contains("HEAD → working tree", StringComparison.Ordinal), "The diff title states what is compared");
         })
     ];

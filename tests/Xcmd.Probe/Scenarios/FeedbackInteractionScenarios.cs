@@ -77,11 +77,11 @@ public static class FeedbackInteractionScenarios
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
             await c.KeyAsync(Key.F12, target: viewer);
-            await UseControlAsync(c, viewer, (MenuItem)viewer.Commands.Items[1]!);
+            await UseControlAsync(c, viewer, (MenuItem)viewer.Reader.Commands.Items[1]!);
             await UseControlAsync(c, viewer, ViewerProbe.Command(viewer, "viewer.wrap"));
-            Equal(TextWrapping.NoWrap, viewer.TextContent.TextWrapping, "The forwarded click runs the control exactly once");
+            Equal(TextWrapping.NoWrap, viewer.Reader.TextContent.TextWrapping, "The forwarded click runs the control exactly once");
             Check(c.Window.Feedback.IsPickingIn(viewer) && c.Window.Feedback.ActiveComment == null, "Feedback remains active after using a control");
-            await c.ClickAsync(viewer.TextContent, target: viewer);
+            await c.ClickAsync(viewer.Reader.TextContent, target: viewer);
             var comment = c.Window.Feedback.ActiveComment!;
             await c.TextAsync("Keep the reading view clear", comment); await c.KeyAsync(Key.Enter, RawInputModifiers.Control, comment);
             var note = c.Window.Feedback.Notes.Last();

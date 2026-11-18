@@ -22,7 +22,7 @@ public static class ArchiveScenarios
             Check(c.Window.Left.Rows.Any(row => row.Name == "empty" && row.Entry.IsDirectory), "Empty folders are listed");
             await c.SelectAsync("folder"); await c.KeyAsync(Key.Enter); await c.SelectAsync("notes.txt");
             await c.KeyAsync(Key.F3);
-            Equal("Archived text", c.Window.Viewer!.TextContent.Text, "F3 reads the actual entry contents");
+            Equal("Archived text", c.Window.Viewer!.Reader.TextContent.Text, "F3 reads the actual entry contents");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer);
             await CopyAsync(c);
             Equal("Archived text", File.ReadAllText(Path.Combine(c.RightPath, "notes.txt")), "F5 extracts the entry to the opposite panel");
@@ -41,8 +41,8 @@ public static class ArchiveScenarios
             ArchiveProbe.Zip(Path.Combine(c.LeftPath, "sample archive.zip"), ("folder/notes.txt", "Archived text"));
             await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("sample archive.zip"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
-            Check(viewer.TextContent.Text!.Contains("Format: Zip", StringComparison.Ordinal), "F3 shows archive information instead of compressed bytes");
-            Check(viewer.TextContent.Text.Contains("folder/notes.txt", StringComparison.Ordinal), "F3 lists entry paths");
+            Check(viewer.Reader.TextContent.Text!.Contains("Format: Zip", StringComparison.Ordinal), "F3 shows archive information instead of compressed bytes");
+            Check(viewer.Reader.TextContent.Text.Contains("folder/notes.txt", StringComparison.Ordinal), "F3 lists entry paths");
             await c.ScreenshotAsync("archive-summary", viewer);
             await c.KeyAsync(Key.Escape, target: viewer);
             await c.KeyAsync(Key.Enter, RawInputModifiers.Control);
@@ -66,7 +66,7 @@ public static class ArchiveScenarios
             ArchiveProbe.Nested(Path.Combine(c.LeftPath, "nested.zip"));
             await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("nested.zip"); await c.KeyAsync(Key.Enter);
             await c.SelectAsync("inner.zip"); await c.KeyAsync(Key.Enter); await c.SelectAsync("nested.txt"); await c.KeyAsync(Key.F3);
-            Equal("Nested archive text", c.Window.Viewer!.TextContent.Text, "Nested archive files can be viewed");
+            Equal("Nested archive text", c.Window.Viewer!.Reader.TextContent.Text, "Nested archive files can be viewed");
             await c.KeyAsync(Key.Escape, target: c.Window.Viewer); await c.KeyAsync(Key.Back); await c.KeyAsync(Key.Back);
             Equal("nested.zip", c.Window.Left.Current?.Name, "Leaving nested archives restores the original file");
         }),
@@ -85,7 +85,7 @@ public static class ArchiveScenarios
                 Check(ArchivePath.IsEntry(c.Window.Left.Session.DirectoryPath), "The real format opens: " + name + "; " + c.Window.LastError);
                 Check(c.Window.Left.Rows.Count > 1, "The archive has real entries: " + name);
                 await ArchiveProbe.ViewFirstFileAsync(c);
-                Check(c.Window.Viewer!.Error == null && c.Window.Viewer.FileLength > 0, "An entry is really decompressed: " + name + "; " + c.Window.Viewer.Error);
+                Check(c.Window.Viewer!.Reader.Error == null && c.Window.Viewer.Reader.FileLength > 0, "An entry is really decompressed: " + name + "; " + c.Window.Viewer.Reader.Error);
                 await c.KeyAsync(Key.Escape, target: c.Window.Viewer);
             }
             Equal(0, c.Launcher.Requests.Count, "The SFX sample is inspected without execution");

@@ -5,7 +5,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     public string RememberedSearch { get; set; } = "";
     public event Action<string>? SearchTextChanged;
@@ -72,13 +72,13 @@ public sealed partial class FileViewerWindow
     private void RememberSearch(string text)
     { if (text.Length > 0) { RememberedSearch = text; SearchTextChanged?.Invoke(text); } }
 
-    private void ClearSearch()
+    private void ClearSearch(bool focus = true)
     {
         altSearchArmed = false; suppressSearchText = false;
         searching?.Cancel(); match = null;
         updating = true; Search.Text = ""; updating = false;
         searchStatus.Text = ""; searchPanel.IsVisible = false;
-        TextContent.Focus();
+        if (focus) FocusReader();
     }
 
     private void FocusSearch()

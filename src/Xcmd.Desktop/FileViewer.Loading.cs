@@ -1,13 +1,25 @@
-// @implements OpenViewers, ChooseViewMode, ReadLargeFiles, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReportHighlighting
+// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReportHighlighting
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     public Task OpenAsync() => RunAsync(LoadFileAsync);
+
+    internal async void Preview(string? path)
+    {
+        previewPath = path;
+        if (HasFile) { await OpenAsync(); return; }
+        loading?.Cancel(); loading = null; IsLoading = false;
+        ResetFile();
+        error.IsVisible = false;
+        information.Text = "";
+        readingStatus.Text = "Select a file to preview.";
+        Progress.Text = "";
+    }
 
     private async void Run(Func<CancellationToken, Task> action) => await RunAsync(action);
 
@@ -23,47 +35,64 @@ public sealed partial class FileViewerWindow
             if (!closed && loading == request)
             {
                 ShowError(failure.Message); information.Text = "Could not load this view. Choose another mode or file.";
-                if (slice == null) { readingStatus.Text = "Could not load file · Alt+Left/Right changes file"; Progress.Text = "—"; }
+                if (slice == null)
+                {
+                    readingStatus.Text = IsEmbedded ? "Could not load file" : "Could not load file · Alt+Left/Right changes file";
+                    Progress.Text = "—";
+                }
             }
         }
         finally
         {
-            if (loading == request) { loading = null; IsLoading = false; UpdateControls(); }
+            if (loading == request) { loading = null; IsLoading = false; if (!closed) UpdateControls(); }
         }
     }
 
     private async Task LoadFileAsync(CancellationToken token)
     {
-        PauseFollowing();
+        ResetFile();
         information.Text = "Loading…";
         readingStatus.Text = "Loading…"; Progress.Text = "…";
-        ClearSearch();
-        slice = null; TextContent.Text = ""; image.Source = null; decodedImage?.Bitmap.Dispose(); decodedImage = null;
-        TextContent.SetSyntax(null); syntaxLanguage = null;
-        FirstVisibleByte = 0; VisibleEnd = 0;
-        imageUnavailable = null; imageSignature = false;
-        IsArchiveReport = false;
-        UpdateControls();
-        UpdateDocumentTitle();
-        selectedEncoding = EncodingChoice.All[0];
-        var page = await files.ReadAsync(CurrentPath, 0, token);
-        IsArchiveReport = files.IsArchiveReport(CurrentPath);
-        if (IsArchiveReport)
-        {
-            Title = CurrentPath + " — Archive contents — Xcmd Viewer";
-            titlePath.Text = Path.GetFileName(CurrentPath) + " · Archive contents";
-        }
+        if (!IsEmbedded) FocusReader();
+        var path = CurrentPath;
+        var page = await files.ReadAsync(path, 0, token);
         var encoding = await Task.Run(() => ViewerText.Detect(page.Bytes), token);
         token.ThrowIfCancellationRequested();
+        IsArchiveReport = files.IsArchiveReport(path);
+        if (IsArchiveReport) UpdateDocumentTitle();
         slice = page; detected = encoding;
         imageSignature = ViewerText.IsImage(page.Bytes);
         if (!imageSignature) imageUnavailable = "This file is not a supported image.";
         else if (page.Length > ViewerFiles.MaximumImageBytes) imageUnavailable = "Image preview is limited to 32 MiB. Use Open externally for this image.";
         var imageReady = CanUseImage && await PrepareImageAsync(token);
+        token.ThrowIfCancellationRequested();
         Mode = imageReady ? FileViewMode.Image : imageSignature || ViewerText.IsBinary(page.Bytes, encoding.Encoding) ? FileViewMode.Hex : FileViewMode.Text;
         automaticMode = true;
         await RenderPageAsync(token);
-        TextContent.Focus();
+        token.ThrowIfCancellationRequested();
+        if (!IsEmbedded || IsKeyboardFocusWithin) FocusReader();
+    }
+
+    private void ResetFile()
+    {
+        PauseFollowing();
+        ClearSearch(focus: false);
+        slice = null; TextContent.Text = "";
+        ReleaseImage();
+        TextContent.SetSyntax(null); syntaxLanguage = null;
+        FirstVisibleByte = 0; VisibleEnd = 0;
+        imageUnavailable = null; imageSignature = false;
+        IsArchiveReport = false;
+        Mode = FileViewMode.Text;
+        selectedEncoding = EncodingChoice.All[0];
+        UpdateControls();
+        UpdateDocumentTitle();
+    }
+
+    private void ReleaseImage()
+    {
+        image.Source = null;
+        decodedImage?.Bitmap.Dispose(); decodedImage = null;
     }
 
     private Task NavigateAsync(int delta)
@@ -83,7 +112,7 @@ public sealed partial class FileViewerWindow
         automaticMode = false;
         if (slice == null) slice = await files.ReadAsync(CurrentPath, 0, token);
         await RenderPageAsync(token);
-        TextContent.Focus();
+        FocusReader();
     }
 
     private async Task LoadPageAsync(long offset, CancellationToken token)
@@ -107,6 +136,7 @@ public sealed partial class FileViewerWindow
         token.ThrowIfCancellationRequested();
         TextContent.Text = text; TextContent.CaretIndex = 0;
         await HighlightPageAsync(token);
+        token.ThrowIfCancellationRequested();
         var format = mode == FileViewMode.Text ? (choice is { CodePage: > 0 } ? choice.Label + " (manual)" : detected.Description) : mode + " · Byte offsets in hex";
         information.Text = $"{page.Length:N0} bytes · {format}\n{(page.Length == 0 ? "Empty file" : $"Bytes {page.Offset:N0}–{page.Offset + page.Count - 1:N0}")} · {PageDescription(page)}";
         BindScrolling();
@@ -153,7 +183,8 @@ public sealed partial class FileViewerWindow
         UpdateTextItems(text);
         previousPage.IsEnabled = text && FirstVisibleByte > 0;
         nextPage.IsEnabled = text && VisibleEnd < FileLength;
-        previousFile.IsEnabled = index > 0; nextFile.IsEnabled = index + 1 < paths.Length;
+        if (previousFile != null) previousFile.IsEnabled = index > 0;
+        if (nextFile != null) nextFile.IsEnabled = index + 1 < paths.Length;
         UpdateWrapping();
     }
 
@@ -185,6 +216,7 @@ public sealed partial class FileViewerWindow
         informationItem.IsChecked = information.IsVisible;
         followItem.IsEnabled = slice != null && text && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
+        UpdateExternalItems();
     }
 
     private void OnViewerKey(object? sender, KeyEventArgs e)
@@ -196,8 +228,8 @@ public sealed partial class FileViewerWindow
         { ToggleFollowing(); e.Handled = true; return; }
         if (HandleSearchStart(e)) { e.Handled = true; return; }
         if (Commands.IsOpen) return;
-        if (e.Key == Key.Escape) { if (IsSearchVisible) ClearSearch(); else Close(); e.Handled = true; return; }
-        if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.Control) { Close(); e.Handled = true; return; }
+        if (e.Key == Key.Escape) { if (IsSearchVisible) ClearSearch(); else close(); e.Handled = true; return; }
+        if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.Control) { close(); e.Handled = true; return; }
         if (HandleFileKey(e)) { e.Handled = true; return; }
         if (slice == null) return;
         if (HandleSearchKey(e)) { e.Handled = true; return; }
@@ -209,11 +241,12 @@ public sealed partial class FileViewerWindow
 
     private bool HandleFileKey(KeyEventArgs e)
     {
+        if (!HasFile) return false;
         if (e.Key == Key.F4 && e.KeyModifiers == KeyModifiers.None)
         { if (AllowExternalAction() && !editKeyHeld) { editKeyHeld = true; RunExternal(() => edit(CurrentPath)); } return true; }
         if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.Control)
         { if (AllowExternalAction()) RunExternal(() => open(CurrentPath)); return true; }
-        if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Left or Key.Right)
+        if (!IsEmbedded && e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Left or Key.Right)
         { _ = NavigateAsync(e.Key == Key.Left ? -1 : 1); return true; }
         return false;
     }

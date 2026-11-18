@@ -60,11 +60,11 @@ public static class AppearanceProbe
         }
     }
 
-    public static MenuItem ThemeMenu(FileViewerWindow viewer) => ((MenuItem)viewer.Commands.Items[1]!).Items.OfType<MenuItem>().Single(item => item.Name == "ViewerThemes");
+    public static MenuItem ThemeMenu(FileViewerWindow viewer) => ((MenuItem)viewer.Reader.Commands.Items[1]!).Items.OfType<MenuItem>().Single(item => item.Name == "ViewerThemes");
 
     public static async Task ChooseThemeAsync(ProbeContext c, FileViewerWindow viewer, string id)
     {
-        await c.ClickAsync((MenuItem)viewer.Commands.Items[1]!, target: viewer);
+        await c.ClickAsync((MenuItem)viewer.Reader.Commands.Items[1]!, target: viewer);
         var themes = ThemeMenu(viewer);
         await c.ClickAsync(themes, target: viewer);
         await c.ClickAsync(themes.Items.OfType<MenuItem>().Single(item => item.Name == "viewer.theme." + id), target: viewer);
@@ -72,10 +72,10 @@ public static class AppearanceProbe
 
     public static void CheckReaderColors(FileViewerWindow viewer, string background, string foreground)
     {
-        ProbeContext.Equal(Color.Parse(background), (viewer.TextContent.Background as ISolidColorBrush)?.Color, "Reader background matches the MD View palette");
-        ProbeContext.Equal(Color.Parse(foreground), (viewer.TextContent.Foreground as ISolidColorBrush)?.Color, "Reader text matches the MD View palette");
-        ProbeContext.Equal(Color.Parse(background), (viewer.TitleBar.Background as ISolidColorBrush)?.Color, "Title and content use the same palette");
-        var border = viewer.TextContent.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "PART_BorderElement");
+        ProbeContext.Equal(Color.Parse(background), (viewer.Reader.TextContent.Background as ISolidColorBrush)?.Color, "Reader background matches the MD View palette");
+        ProbeContext.Equal(Color.Parse(foreground), (viewer.Reader.TextContent.Foreground as ISolidColorBrush)?.Color, "Reader text matches the MD View palette");
+        ProbeContext.Equal(Color.Parse(background), (viewer.Reader.TitleBar.Background as ISolidColorBrush)?.Color, "Title and content use the same palette");
+        var border = viewer.Reader.TextContent.GetVisualDescendants().OfType<Border>().Single(item => item.Name == "PART_BorderElement");
         ProbeContext.Equal(Color.Parse(background), (border.Background as ISolidColorBrush)?.Color, "The actual focused text surface uses the palette");
     }
 
@@ -89,7 +89,7 @@ public static class AppearanceProbe
             var input = new InputDriver(window);
             input.KeyDown(Key.F3, RawInputModifiers.None, PhysicalKey.F3, null); input.KeyUp(Key.F3, RawInputModifiers.None, PhysicalKey.F3, null);
             await WorkspaceProbe.WaitAsync(() => !window.IsBusy);
-            ProbeContext.Equal(state.ViewerThemeId, window.Viewer?.ThemeId, "The restored preference reaches a new viewer");
+            ProbeContext.Equal(state.ViewerThemeId, window.Viewer?.Reader.ThemeId, "The restored preference reaches a new viewer");
             var handle = window.Viewer!.TryGetPlatformHandle();
             ProbeContext.Check(handle?.Handle == 0 && handle.HandleDescriptor == "STUB", "Restored viewers remain headless");
         }

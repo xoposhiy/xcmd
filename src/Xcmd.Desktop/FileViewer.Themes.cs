@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Xcmd.Desktop;
 
-public sealed partial class FileViewerWindow
+public sealed partial class FileViewer
 {
     private readonly Dictionary<string, MenuItem> themeItems = new(StringComparer.Ordinal);
     private ReaderTheme activeTheme = ReaderThemes.Default;
@@ -64,7 +64,7 @@ public sealed partial class FileViewerWindow
         var foreground = Brush.Parse(activeTheme.Foreground);
         var surface = Brush.Parse(activeTheme.Surface);
         var accent = Brush.Parse(activeTheme.Accent);
-        RequestedThemeVariant = activeTheme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
+        themeScope.RequestedThemeVariant = activeTheme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
         Background = background; Foreground = foreground;
         viewerBody.Background = background; TitleBar.Background = background;
         statusBar.BorderBrush = new SolidColorBrush(Color.Parse(activeTheme.Border), 0.5);

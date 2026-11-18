@@ -1,4 +1,4 @@
-// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, CreateFolder, CreateFile, QueueOperations, FindFiles, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease, AsyncCoordination
+// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease, AsyncCoordination
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Automation;
@@ -37,7 +37,7 @@ public sealed partial class CommanderWindow : Window
     internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
     private readonly ShellInteractionController shell;
     private readonly PanelClipboardController panelClipboard;
-    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true || Left.Git.IsMenuOpen || Right.Git.IsMenuOpen;
+    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true || viewing.IsQuickViewMenuOpen || Left.Git.IsMenuOpen || Right.Git.IsMenuOpen;
     public PanelView Left { get; }
     public PanelView Right { get; }
     public PanelView ActivePanel { get; private set; }
@@ -55,7 +55,7 @@ public sealed partial class CommanderWindow : Window
     public DirectoryUsageBook DirectoryUsage { get; } = new();
     private bool restoringVisits;
     public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || CommandLine.HasKeyboardFocus || Left.EditingRow != null || Right.EditingRow != null,
-        HasOpenDialog || FileSearch.IsOpen || IsMenuOpen || viewing.HasViewers || Left.HasHistory || Right.HasHistory, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
+        HasOpenDialog || FileSearch.IsOpen || IsMenuOpen || viewing.HasOpenViews || Left.HasHistory || Right.HasHistory, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput));
 
     public string UpdateMessage => updateMessage.Text ?? "";
     public void SetUpdateMessage(string message) { freshRelease = false; updateMessage.Text = message; }
@@ -116,6 +116,7 @@ public sealed partial class CommanderWindow : Window
         var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") }.WithFeedbackId("CommanderWindow.panels");
         panels.Children.Add(Left);
         Grid.SetColumn(Right, 2); panels.Children.Add(Right);
+        panels.Children.Add(viewing.QuickViewControl);
         layout.Children.Add(panels);
         var help = CommanderFrame.BuildKeyboardHelp(this);
         Grid.SetRow(OperationsView, 1); layout.Children.Add(OperationsView);
@@ -158,11 +159,11 @@ public sealed partial class CommanderWindow : Window
         AddHandler(PointerReleasedEvent, (_, _) => { RecordActivity(); pointerHeld = false; }, RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, (_, _) => RecordActivity(), RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
-        Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); ResetQuickJump(); };
+        Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); viewing.ResetQuickViewKeys(); ResetQuickJump(); };
         Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
         Closed += async (_, _) => { await Operations.Completion; await Task.Run(archives.Dispose); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
-        AddHandler(KeyUpEvent, (_, e) => { launchKeysHeld.Remove(e.Key); if (e.Key is Key.LeftAlt or Key.RightAlt) { altInput = false; suppressQuickText = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnTextInput, RoutingStrategies.Tunnel);
     }
 
@@ -175,7 +176,7 @@ public sealed partial class CommanderWindow : Window
 
     public void Activate(PanelView panel)
     {
-        if (ActivePanel != panel) { ActivePanel.CancelRename(); ResetQuickJump(); }
+        if (ActivePanel != panel) { viewing.CloseQuickView(); ActivePanel.CancelRename(); ResetQuickJump(); }
         ActivePanel = panel;
         Left.SetActive(panel == Left);
         Right.SetActive(panel == Right);
@@ -214,6 +215,7 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (IsMenuOpen) return;
         if (HasOpenDialog) return;
+        if (RouteQuickViewInput(e)) return;
         if (HandlePanelSwitch(e)) return;
         if (HandleFavoritesShortcut(e)) { e.Handled = true; return; }
         if (HasGitActionsFocus) return;
@@ -224,6 +226,7 @@ public sealed partial class CommanderWindow : Window
         if (GitHistory.HandleKey(e)) { ResetQuickJump(); e.Handled = true; return; }
         altInput = e.KeyModifiers.HasFlag(KeyModifiers.Alt) || e.Key is Key.LeftAlt or Key.RightAlt;
         if (ActivePanel.EditingRow != null) { HandleRenameKey(e); return; }
+        if (HandleQuickViewKey(e)) { e.Handled = true; return; }
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         if (HandleCommandLineShortcut(e, ctrl, shift)) return;
@@ -231,6 +234,15 @@ public sealed partial class CommanderWindow : Window
         if (!HandlePanelCommand(e, ctrl, shift) && !HandlePanelNavigation(e, ctrl, shift)) return;
         Trace.Add($"key: {e.KeyModifiers}+{e.Key}; panel: {ActivePanel.Id}");
         e.Handled = true;
+    }
+
+    private void OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        launchKeysHeld.Remove(e.Key);
+        if (e.Key is not (Key.LeftAlt or Key.RightAlt)) return;
+        altInput = false;
+        suppressQuickText = false;
+        if (!viewing.IsQuickViewFocused) e.Handled = true;
     }
 
     private bool HandleFocusedInput(KeyEventArgs e)
@@ -261,7 +273,7 @@ public sealed partial class CommanderWindow : Window
     private void OnTextInput(object? sender, TextInputEventArgs e)
     {
         if (restarting || Feedback.IsActive) return;
-        if (ActivePanel.EditingRow != null || HasOpenDialog || IsMenuOpen || CommandLine.HasKeyboardFocus || string.IsNullOrEmpty(e.Text)) return;
+        if (ActivePanel.EditingRow != null || HasOpenDialog || IsMenuOpen || viewing.IsQuickViewFocused || CommandLine.HasKeyboardFocus || string.IsNullOrEmpty(e.Text)) return;
         if (!nameJump.Active)
         { CommandLine.InsertText(e.Text); e.Handled = true; return; }
         if (suppressQuickText) { suppressQuickText = false; e.Handled = true; return; }

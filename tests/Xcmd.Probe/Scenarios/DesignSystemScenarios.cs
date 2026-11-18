@@ -66,9 +66,9 @@ public static class DesignSystemScenarios
             {
                 await AppearanceProbe.ChooseThemeAsync(c, viewer, id);
                 await c.ScreenshotAsync("reader-" + id, viewer);
-                Equal(id, viewer.ThemeId, "The theme menu applies " + id);
-                DesignSystemProbe.CheckSelection(viewer.TextContent);
-                Equal("a", viewer.TextContent.SelectedText, "Changing the palette preserves the found text in " + id);
+                Equal(id, viewer.Reader.ThemeId, "The theme menu applies " + id);
+                DesignSystemProbe.CheckSelection(viewer.Reader.TextContent);
+                Equal("a", viewer.Reader.TextContent.SelectedText, "Changing the palette preserves the found text in " + id);
             }
         })
     ];
