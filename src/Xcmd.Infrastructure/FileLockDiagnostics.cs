@@ -6,15 +6,18 @@ namespace Xcmd.Infrastructure;
 
 internal static class FileLockDiagnostics
 {
-    public static async Task RunAsync(Func<Task> action, string[] paths, CancellationToken token = default, bool inspectUsersOnFailure = false)
+    public static async Task RunAsync(Func<Task> action, string[] paths, CancellationToken token = default,
+        bool inspectUsersOnFailure = false, bool inspectAccessDenied = false)
     {
-        await RunAsync(async () => { await action().ConfigureAwait(false); return true; }, paths, token, inspectUsersOnFailure).ConfigureAwait(false);
+        await RunAsync(async () => { await action().ConfigureAwait(false); return true; }, paths, token, inspectUsersOnFailure, inspectAccessDenied).ConfigureAwait(false);
     }
 
-    public static async Task<T> RunAsync<T>(Func<Task<T>> action, string[] paths, CancellationToken token = default, bool inspectUsersOnFailure = false)
+    public static async Task<T> RunAsync<T>(Func<Task<T>> action, string[] paths, CancellationToken token = default,
+        bool inspectUsersOnFailure = false, bool inspectAccessDenied = false)
     {
         try { return await action().ConfigureAwait(false); }
-        catch (Exception error) when (IsSharingError(error) || inspectUsersOnFailure && error is IOException or UnauthorizedAccessException)
+        catch (Exception error) when (IsSharingError(error) || inspectAccessDenied && FileOperationError.IsAccessDenied(error) ||
+            inspectUsersOnFailure && error is IOException or UnauthorizedAccessException)
         {
             var users = await WindowsFileUsers.FindAsync(paths, token).ConfigureAwait(false);
             if (users.Length == 0 && !IsSharingError(error)) throw;

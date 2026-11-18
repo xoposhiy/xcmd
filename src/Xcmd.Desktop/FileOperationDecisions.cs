@@ -1,4 +1,4 @@
-// @implements ResolveConflicts, RecoverOperations
+// @implements RenameEntry, ResolveConflicts, RecoverOperations
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Xcmd.Core;
@@ -7,19 +7,19 @@ namespace Xcmd.Desktop;
 
 internal sealed class FileOperationDecisions(CommanderWindow owner)
 {
-    public void ShowRenameError(FileOperationError failure, PanelView panel, Action retry)
+    public void ShowRenameError(FileOperationError failure, PanelView panel, Action completed)
     {
-        var dialog = new FileErrorDialog(failure, owner.Feedback, rename: true) { Background = owner.Background }.WithFeedbackId("CommanderWindow.renameError");
+        var dialog = new FileErrorDialog(failure, owner.Feedback, panel.EditingRow?.DraftName, panel.CommitRenameAsync)
+        { Background = owner.Background }.WithFeedbackId("CommanderWindow.renameError");
         owner.OperationDialog = dialog;
         owner.AttachOperationDialog(dialog);
-        var shouldRetry = false;
-        dialog.Decided += action => { shouldRetry = action == FileErrorAction.Retry; dialog.Close(); };
+        dialog.Decided += action => { if (action == FileErrorAction.Cancel) dialog.Close(); };
         dialog.Closed += (_, _) =>
         {
             owner.OperationDialog = null;
             owner.RecordActivity();
-            panel.RenameEditor?.Focus();
-            if (shouldRetry) retry();
+            if (panel.EditingRow == null) completed();
+            else panel.RenameEditor?.Focus();
         };
         _ = dialog.ShowDialog(owner);
     }

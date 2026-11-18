@@ -61,6 +61,43 @@ public static class FileLockScenarios
             await FileLockProbe.MeasureReleaseAsync(c, holder, () => c.Window.Left.Rows.Any(row => row.Name == "renamed.txt"));
             Check(File.Exists(Path.Combine(c.LeftPath, "renamed.txt")), "Rename succeeds after the process releases the file");
         }),
+        new("file-lock-rename-running-executable", "Access denied on folder rename identifies an executable running inside it", async c =>
+        {
+            var folder = Path.Combine(c.LeftPath, "folder1");
+            await using var executable = await LockingProcessFixture.StartExecutableInsideAsync(c, folder);
+            await c.BeginRenameAsync("folder1");
+            await c.TextAsync("renamed-folder");
+            await c.KeyAsync(Key.Enter);
+            var text = LockingProcessFixture.ErrorText(c);
+            Check(text.Contains("Xcmd.LaunchProbe.exe", StringComparison.Ordinal) && text.Contains($"PID {executable.Id}", StringComparison.Ordinal),
+                "The dialog identifies the program whose executable is inside the folder: " + text);
+            Check(text.Contains("may be blocking the rename", StringComparison.Ordinal), "The dialog presents the detected program as a possible cause");
+            await executable.ReleaseAsync();
+            await FileOperationProbe.WaitUntilAsync(() => c.Window.OperationDialog == null);
+            Check(File.Exists(Path.Combine(c.LeftPath, "renamed-folder", "tools", "Xcmd.LaunchProbe.exe")),
+                "Retry moves the executable with the folder");
+        }),
+        new("file-lock-rename-failed-retry", "A failed automatic retry keeps the error dialog and explains the latest failure", async c =>
+        {
+            var source = Path.Combine(c.LeftPath, "alpha.txt");
+            await using var holder = await LockingProcessFixture.StartAsync(c, source);
+            await c.BeginRenameAsync("alpha.txt");
+            await c.TextAsync("occupied.txt");
+            await c.KeyAsync(Key.Enter);
+            var dialog = (FileErrorDialog)c.Window.OperationDialog!;
+            Check(dialog.Users != null, "The first error identifies the process");
+            c.AddFile("occupied.txt", "Keep the existing file");
+            await holder.ReleaseAsync();
+            await FileOperationProbe.WaitUntilAsync(() => dialog.Users == null);
+            Equal(dialog, c.Window.OperationDialog, "Retry keeps the same window when the name is now taken");
+            var text = LockingProcessFixture.ErrorText(c);
+            Check(text.Contains("Rename still failed", StringComparison.Ordinal) && text.Contains("occupied.txt", StringComparison.Ordinal),
+                "The dialog shows the failed retry and the requested name");
+            await c.KeyAsync(Key.Escape, target: dialog);
+            Equal("occupied.txt", c.Window.Left.EditingRow?.DraftName, "Cancel returns to the unchanged rename draft");
+            Check(File.Exists(source) && File.ReadAllText(Path.Combine(c.LeftPath, "occupied.txt")) == "Keep the existing file",
+                "Both files remain intact");
+        }),
         new("file-lock-directory-and-child", "Folder diagnostics identify a process using the directory or a descendant", async c =>
         {
             var folder = Path.Combine(c.LeftPath, "folder1");

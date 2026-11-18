@@ -515,8 +515,9 @@ public static class PanelScenarios
             File.Delete(Path.Combine(c.LeftPath, "alpha.txt"));
             await c.TextAsync("missing.txt");
             await c.KeyAsync(Key.Enter);
-            Check(c.Window.LastError != null && c.Window.Left.EditingRow != null, "A removed source reports an error and keeps the editor.");
+            Check(c.Window.OperationDialog is FileErrorDialog && c.Window.Left.EditingRow != null, "A removed source reports an error and keeps the editor.");
             Check(!File.Exists(Path.Combine(c.LeftPath, "missing.txt")), "Failed rename creates no file.");
+            await c.KeyAsync(Key.Escape, target: c.Window.OperationDialog);
             await c.KeyAsync(Key.Escape);
             await c.KeyAsync(Key.R, RawInputModifiers.Control);
             Check(c.Window.Left.Rows.All(row => row.Name != "alpha.txt"), "Refresh removes the stale source row.");

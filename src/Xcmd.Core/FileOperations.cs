@@ -14,9 +14,12 @@ public enum FileErrorAction { Retry, Skip, SkipAll, Cancel }
 public sealed record FileOperationError(FileEntry Source, string? Destination, string Message)
 {
     public FileUser[] Users { get; init; } = [];
+    public bool AccessDenied { get; init; }
 
     public static FileOperationError FromException(FileEntry source, string? destination, Exception error) =>
-        new(source, destination, error.Message) { Users = (error as FileInUseException)?.Users ?? [] };
+        new(source, destination, error.Message) { Users = (error as FileInUseException)?.Users ?? [], AccessDenied = IsAccessDenied(error) };
+
+    public static bool IsAccessDenied(Exception error) => error is UnauthorizedAccessException || error.HResult == unchecked((int)0x80070005);
 }
 
 public static class FileOperationNames

@@ -1,4 +1,4 @@
-// @tests NavigatePanels
+// @tests NavigatePanels, RenameEntry
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Desktop;
@@ -62,6 +62,7 @@ public sealed partial class ProbeContext
 
     private bool IsBusy =>
         (Window.IsBusy && !Window.Operations.IsWaitingForDecision) ||
+        Window.Left.IsCommitting || Window.Right.IsCommitting ||
         Window.OperationDialog is FileErrorDialog { Users.IsBusy: true } ||
         Window.FileSearch.Window?.IsSearching == true ||
         Window.Feedback.IsSaving;

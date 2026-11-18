@@ -75,11 +75,12 @@ public sealed partial class CommanderWindow
         var failure = await panel.CommitRenameAsync();
         SetError(null);
         if (failure != null)
+            decisions.ShowRenameError(failure, panel, CompleteRename);
+        else CompleteRename();
+
+        void CompleteRename()
         {
-            decisions.ShowRenameError(failure, panel, () => Execute(() => CommitRenameAsync(panel, switchPanel)));
-        }
-        else if (ActivePanel == panel)
-        {
+            if (ActivePanel != panel) return;
             if (switchPanel) Activate(OppositePanel);
             ActivePanel.FocusCurrent();
         }

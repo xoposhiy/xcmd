@@ -610,7 +610,7 @@ public sealed partial class PanelView : Border
             else await LoadAsync(Session.DirectoryPath, selectName: name);
             return null;
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)
         {
             return FileOperationError.FromException(row.Entry, null, error);
         }

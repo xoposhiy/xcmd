@@ -25,7 +25,7 @@ public sealed class LocalFileSystem : IFileSystem
         if (entry.FullPath.Equals(target, StringComparison.Ordinal)) return;
         if (entry.IsDirectory) Directory.Move(entry.FullPath, target);
         else File.Move(entry.FullPath, target, overwrite: false);
-    }), [entry.FullPath, Path.Combine(Path.GetDirectoryName(entry.FullPath)!, newName)]);
+    }), [entry.FullPath, Path.Combine(Path.GetDirectoryName(entry.FullPath)!, newName)], inspectAccessDenied: true);
 
     public Task CreateDirectoryAsync(string parent, string name) => Task.Run(() =>
     {

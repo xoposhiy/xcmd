@@ -198,6 +198,11 @@ completed work and make the next decision explicitly.
   as other file operations.
   Sources: [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 8](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-8); [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 11](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-11); [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 12](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-12).
 
+- Include the requested name, the error, and a next step when a rename fails.
+  Check for processes using the source or destination when Windows denies access.
+  Keep the same dialog open if retrying fails and show the latest error.
+  Feedback 677755a. Codex session ID 01a1ef9b-ff1b-7082-83cc-e211650ce3de.
+
 - Show a window-activation link only for applications that have a window. Put the
   process action beside the application instead of requiring radio-button selection. Use
   `Kill` for forced termination; this replaces the earlier Close-only design.

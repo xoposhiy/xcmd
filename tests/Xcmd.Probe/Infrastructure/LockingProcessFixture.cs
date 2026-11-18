@@ -12,10 +12,20 @@ public sealed class LockingProcessFixture : IAsyncDisposable
 
     private LockingProcessFixture(Process process) => this.process = process;
 
-    public static async Task<LockingProcessFixture> StartAsync(ProbeContext context, string path, bool directory = false)
+    public static Task<LockingProcessFixture> StartExecutableInsideAsync(ProbeContext context, string directory)
+    {
+        var executableDirectory = Directory.CreateDirectory(Path.Combine(directory, "tools")).FullName;
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(AppContext.BaseDirectory, "launch-probe")))
+            File.Copy(file, Path.Combine(executableDirectory, Path.GetFileName(file)));
+        var trigger = Path.Combine(context.FixturePath, "process-trigger.txt");
+        File.WriteAllText(trigger, "");
+        return StartAsync(context, trigger, executable: Path.Combine(executableDirectory, "Xcmd.LaunchProbe.exe"));
+    }
+
+    public static async Task<LockingProcessFixture> StartAsync(ProbeContext context, string path, bool directory = false, string? executable = null)
     {
         var ready = Path.Combine(context.OutputPath, "lock-ready-" + Guid.NewGuid().ToString("N"));
-        var start = new ProcessStartInfo(Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"))
+        var start = new ProcessStartInfo(executable ?? Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"))
         {
             UseShellExecute = false,
             CreateNoWindow = true,
