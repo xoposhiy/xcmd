@@ -40,6 +40,9 @@ Ask about material product choices or blockers. Choose routine methods independe
   changes need relevant document checks. Local full regression runs require an
   explicit request; GitHub Actions runs the full gate automatically. This keeps
   local feedback fast while retaining broad verification in CI.
+- After a requested commit succeeds, clean up artifacts created for the task.
+  Clear the whole directory only when you can confirm exclusive use. See
+  [local artifact cleanup](docs/processes/delivery.md#clean-up-local-artifacts).
 - Follow the [commit message format](docs/processes/delivery.md#commit-messages).
 
 ## Processes to read when needed

@@ -112,6 +112,11 @@ can catch violations before delivering a change.
 - Run the complete test suite and automated checks in GitHub Actions.
   Source: [2026-11-14T15-17-19-01a1da6b-7ba6-70f2-9ed5-363f862fab59.md → Turn 2](../codex-sessions/2026-11-14T15-17-19-01a1da6b-7ba6-70f2-9ed5-363f862fab59.md#turn-2).
 
+- After a requested commit succeeds, remove temporary artifacts created for the
+  task. Clear shared artifacts when the agent can confirm exclusive use and the
+  remaining files are disposable.
+  Source: Codex session ID 01a1ef26-c2a5-7c51-bcb2-a708c6a978a3.
+
 ## BrowseStories
 
 As a developer, I want to browse epics and their user stories in reading order so that

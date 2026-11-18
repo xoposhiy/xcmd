@@ -40,6 +40,26 @@ Commit after the selected checks pass. The user accepts that targeted checks can
 miss unrelated regressions. A commit or final release does not require a local
 full regression run. New behavior feedback starts another short feedback iteration.
 
+### Clean up local artifacts
+
+Use a separate directory under `artifacts/` for each task when the tool lets you
+choose the output path. Track files you create in shared directories.
+
+After a requested commit succeeds, remove temporary files and directories you
+created for the task. This includes build output, test installations, and reports
+from successful checks. Record the check results in the commit message first.
+Keep outputs the user asked to save and diagnostics needed for an open failure.
+
+Clear the rest of `artifacts/` when you can confirm that no other session or
+process owns or uses it and that its remaining contents can be regenerated or
+are already saved elsewhere. If ownership is unclear, clean up your own files
+and leave the shared files in place.
+
+Check for linked Git worktrees before deleting directories. Preserve uncommitted
+work and commits that exist only in a worktree. Use `git worktree remove` for
+disposable worktrees. Resolve each cleanup path under `artifacts/` and remove
+directory links without following their targets.
+
 ## Commit messages
 
 Use `type(scope): summary` for the subject. Put the story entries first, then
