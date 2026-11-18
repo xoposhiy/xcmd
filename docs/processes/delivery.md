@@ -142,6 +142,12 @@ launcher setup before changing `releases/latest.txt`; preserve the previous
 working release on failure. Keep publishing and marker updates in the shared
 `scripts/Publish-Application.ps1` helper so the release paths stay consistent.
 
+After a successful publication, keep the current release and the two previous
+verified releases. Also keep releases that are running and the latest targeted
+and fully verified releases. To keep another release, add its ID on a separate
+line in `releases/keep.txt`. Preview the cleanup with
+`./scripts/Remove-OldReleases.ps1 -WhatIf`.
+
 Preserve an in-use launcher and defer its replacement if necessary. Keep the
 permanent shortcut stable and do not change the user's taskbar pins. Application
 handoff must preserve work and wait for the replacement to be ready before closing

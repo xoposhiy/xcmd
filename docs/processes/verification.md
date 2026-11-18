@@ -14,6 +14,10 @@ Release / Windows x64 profile. Build defaults live in
 [Directory.Build.props](../../Directory.Build.props) and
 [Directory.Build.targets](../../Directory.Build.targets).
 
+The PowerShell build scripts can use the pinned SDK from
+`%LOCALAPPDATA%\Microsoft\dotnet`. They add that directory to the build session's
+path when it contains the pinned version.
+
 Run these commands from the repository root. Start background build/test helpers
 hidden with redirected logs, as required by [AGENTS.md](../../AGENTS.md).
 

@@ -231,6 +231,11 @@ deliver improvements without interrupting the user's session.
   Show a pending update beside the uptime.
   Source: Codex session ID 01a1edc9-75d1-75a0-b89d-0ffcc9a25fe1.
 
+- Limit local release retention after a successful publication. Keep the current
+  release, recent rollback releases, running releases, and releases chosen for
+  longer retention.
+  Source: Codex session ID 01a1ef26-c2a5-7c51-bcb2-a708c6a978a3.
+
 ## WindowsIdentity
 
 As a developer, I want to keep the Windows application identity stable so that I can
