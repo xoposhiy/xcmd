@@ -1,4 +1,4 @@
-// @tests DiscoverShortcuts, OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, OpenViewedFile, OpenExternalTool, ReportControl, TryLocalRelease, ExternalLaunch, SharedControls, ImageDecoding
+// @tests DiscoverShortcuts, ReusableFileViewer, OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, OpenViewedFile, OpenExternalTool, ReportControl, TryLocalRelease, ExternalLaunch, SharedControls, ImageDecoding
 using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Platform;

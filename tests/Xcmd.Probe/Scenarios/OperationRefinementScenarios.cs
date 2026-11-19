@@ -1,4 +1,4 @@
-// @tests DiscoverShortcuts, MarkEntries, TransferEntries, DeleteEntries, ResolveConflicts, QueueOperations
+// @tests DiscoverShortcuts, MarkEntries, TransferEntries, DuplicateEntry, DeleteEntries, ResolveConflicts, QueueOperations
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -27,6 +27,45 @@ public static class OperationRefinementScenarios
             await c.KeyAsync(Key.F6); dialog = (FileTransferDialog)c.Window.OperationDialog!;
             Check(dialog.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "Move alpha.txt to:"), "The move action appears in the dialog body.");
             await c.KeyAsync(Key.Escape, target: dialog);
+        }),
+        new("operations-transfer-command-routing", "Transfer shortcuts and File menu actions agree and keep editor focus", async c =>
+        {
+            var commands = new[]
+            {
+                (Key.F5, RawInputModifiers.None, KeyModifiers.None, "Copy to other panel", "F5  Copy", "Copy", c.RightPath),
+                (Key.F5, RawInputModifiers.Shift, KeyModifiers.Shift, "Copy in this panel", "Shift+F5  Copy here", "Copy", Path.Combine(c.LeftPath, "alpha (copy).txt")),
+                (Key.F6, RawInputModifiers.None, KeyModifiers.None, "Move to other panel", "F6  Move", "Move", c.RightPath),
+            };
+            var help = c.Window.GetVisualDescendants().OfType<WrapPanel>().Single(panel => panel.Name == "KeyboardHelp");
+            var hints = help.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToArray();
+            await c.SelectAsync("alpha.txt");
+            foreach (var (key, modifiers, menuModifiers, label, hint, action, path) in commands)
+            {
+                Check(hints.Contains(hint), $"Keyboard help shows {hint}");
+                Equal(new KeyGesture(key, menuModifiers), MainMenuProbe.FileCommand(c, label).InputGesture, $"{label} shows its shortcut");
+                await c.KeyAsync(key, modifiers);
+                await CheckTransferAsync(action, path);
+                await MainMenuProbe.InvokeFileCommandAsync(c, label);
+                await CheckTransferAsync(action, path);
+            }
+
+            await c.KeyAsync(Key.F6, RawInputModifiers.Shift);
+            foreach (var (key, modifiers, _, _, _, _, _) in commands) await c.KeyAsync(key, modifiers);
+            Check(c.Window.Left.EditingRow != null && c.Window.OperationDialog == null, "Transfer shortcuts stay out of inline rename");
+            await c.KeyAsync(Key.Escape);
+
+            await c.KeyAsync(Key.L, RawInputModifiers.Control);
+            foreach (var (key, modifiers, _, _, _, _, _) in commands) await c.KeyAsync(key, modifiers);
+            Check(c.Window.CommandLine.HasKeyboardFocus && c.Window.OperationDialog == null, "Transfer shortcuts stay out of the command editor");
+
+            async Task CheckTransferAsync(string action, string path)
+            {
+                Check(c.Window.OperationDialog is FileTransferDialog, $"{action} opens a transfer confirmation");
+                var dialog = (FileTransferDialog)c.Window.OperationDialog!;
+                Equal(action, dialog.Title, "The confirmation shows the transfer action");
+                Equal(Path.TrimEndingDirectorySeparator(path), Path.TrimEndingDirectorySeparator(dialog.Destination.Text!), "The confirmation proposes the expected destination");
+                await c.KeyAsync(Key.Escape, target: dialog);
+            }
         }),
         new("operations-review-identical-files", "UC34; Skip only matching contents and metadata", async c =>
         {

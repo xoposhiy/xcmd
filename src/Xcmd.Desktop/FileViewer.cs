@@ -1,4 +1,4 @@
-// @implements OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, ReadWorkingFileDiff, ReportControl
+// @implements ReusableFileViewer, OpenViewers, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, ReadWorkingFileDiff, ReportControl
 using System.Text;
 using Avalonia;
 using Avalonia.Automation;
@@ -50,7 +50,6 @@ public sealed partial class FileViewer : UserControl
     private ViewerEncoding detected = new(Encoding.UTF8, "UTF-8");
     private ViewerImage? decodedImage;
     private CancellationTokenSource? loading;
-    private bool editKeyHeld;
     private int index;
     private bool updating;
     private bool closed;
@@ -124,7 +123,7 @@ public sealed partial class FileViewer : UserControl
             AddHandler(KeyUpEvent, ReleaseDiffKey, RoutingStrategies.Tunnel, handledEventsToo: true);
         }
         AddHandler(KeyDownEvent, OnViewerKey, RoutingStrategies.Tunnel);
-        AddHandler(KeyUpEvent, (_, e) => { if (e.Key == Key.F4) editKeyHeld = false; if (e.Key is Key.LeftAlt or Key.RightAlt) { altSearchArmed = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, OnViewerKeyUp, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnSearchText, RoutingStrategies.Tunnel);
         AddHandler(PointerWheelChangedEvent, OnViewerWheel, RoutingStrategies.Tunnel);
         image.PointerPressed += (_, _) => FocusReader();
@@ -170,21 +169,12 @@ public sealed partial class FileViewer : UserControl
         { ShowError(failure.Message); }
     }
 
-    private void UpdateWrapping()
-    {
-        var wrap = Mode == FileViewMode.Text && wrapLines;
-        TextContent.TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap;
-        ScrollViewer.SetHorizontalScrollBarVisibility(TextContent, wrap ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto);
-    }
-
     private void ShowError(string message) { error.Text = message; error.IsVisible = true; }
 
     internal void FocusReader()
     {
         if (!TextContent.IsVisible || !TextContent.Focus()) Focus();
     }
-
-    internal void ResetKeys() { editKeyHeld = false; diffKeyHeld = false; altSearchArmed = false; suppressSearchText = false; }
 
     internal void Stop()
     {

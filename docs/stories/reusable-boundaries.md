@@ -69,6 +69,12 @@ only filesystem so that I can reuse panel navigation for repository history.
   building a separate custom file-tree implementation.
   Source: [2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md → Turn 4](../codex-sessions/2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md#turn-4).
 
+## PanelReturnState
+
+As a developer, I want to save and restore a panel’s place when a temporary view uses it
+so that search results and Git history can return the user to the same folder, selection
+and scroll position.
+
 ## RepositoryDocuments
 
 As a developer, I want to present repository contents and changes in the existing viewer
@@ -81,6 +87,11 @@ state.
   files in the viewer. Keep external-editor/copy messages and command availability
   consistent with that state. The user accepted these corrections from the Git review.
   Sources: [2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md → Turn 7](../codex-sessions/2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md#turn-7); [2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md → Turn 8](../codex-sessions/2026-11-13T18-38-26-01a1d5fd-3f8e-7402-b55a-278d32e7a21a.md#turn-8).
+
+## ReusableFileViewer
+
+As a developer, I want to host the same file reader in a window or a panel so that both
+views can use the same reading commands.
 
 ## StreamingReads
 

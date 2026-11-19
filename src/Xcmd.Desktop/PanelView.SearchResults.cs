@@ -15,11 +15,11 @@ public sealed partial class PanelView
     public void ShowSearchResults(string root, IReadOnlyList<FileSearchResult> results, string? selectedPath = null)
     {
         loader.InvalidateNavigation();
-        returnLocations.LeaveHistory();
+        returnLocations.ClearHistory();
         LoadingRequested?.Invoke(this);
         Session.CancelLoad();
         CancelRename();
-        returnLocations.EnterSearch(CaptureReturnPoint);
+        if (returnLocations.Search == null) returnLocations.SaveSearch(CaptureReturnPoint());
         searchResults = new PanelSearchResults(root, results);
         selection.SetKeyboardMarks(false);
         ApplyEntries([], searchResults.LabelFor(selectedPath));

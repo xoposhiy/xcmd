@@ -1,4 +1,4 @@
-// @tests QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, FollowLog, ReportControl, InspectArchives
+// @tests ReusableFileViewer, QuickViewFile, ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, FollowLog, ReportControl, InspectArchives
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

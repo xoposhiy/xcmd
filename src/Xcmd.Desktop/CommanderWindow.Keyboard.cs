@@ -1,4 +1,4 @@
-// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory
+// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory
 using Avalonia.Input;
 using Xcmd.Core;
 
@@ -262,26 +262,14 @@ public sealed partial class CommanderWindow
         else if (e.Key == Key.Enter) { if (launchKeysHeld.Add(e.Key)) Execute(() => OpenCurrentAsync(ActivePanel)); }
         else if (e.Key == Key.Back || (ctrl && e.Key == Key.PageUp)) OpenParent();
         else if (e.Key == Key.F7) OpenCreateDirectoryDialog();
-        else return HandleFileOperationKey(e);
+        else return HandleTransferKey(e) || HandleDeleteKey(e);
         return true;
     }
 
-    private bool HandleFileOperationKey(KeyEventArgs e)
+    private bool HandleDeleteKey(KeyEventArgs e)
     {
-        if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.F5 or Key.F6 or Key.F8 or Key.Delete)
-        {
-            if (launchKeysHeld.Add(e.Key))
-            {
-                if (e.Key == Key.F5) CopySelected();
-                else if (e.Key == Key.F6) TransferSelected(FileOperationKind.Move);
-                else DeleteSelected(false);
-            }
-        }
-        else if (e.Key is Key.Delete or Key.F8 && e.KeyModifiers == KeyModifiers.Shift)
-        { if (launchKeysHeld.Add(e.Key)) DeleteSelected(true); }
-        else if (e.Key == Key.F5 && e.KeyModifiers == KeyModifiers.Shift)
-        { if (launchKeysHeld.Add(e.Key)) TransferSelected(FileOperationKind.Copy, samePanel: true); }
-        else return false;
+        if (e.Key is not (Key.F8 or Key.Delete) || e.KeyModifiers is not (KeyModifiers.None or KeyModifiers.Shift)) return false;
+        if (launchKeysHeld.Add(e.Key)) DeleteSelected(e.KeyModifiers == KeyModifiers.Shift);
         return true;
     }
 }

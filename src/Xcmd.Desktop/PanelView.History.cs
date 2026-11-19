@@ -11,7 +11,7 @@ public sealed partial class PanelView
     {
         var saved = returnLocations.History ?? CaptureReturnPoint();
         if (!await LoadAsync(location, cancellationToken: cancellationToken)) return false;
-        returnLocations.EnterHistory(saved);
+        returnLocations.SaveHistory(saved);
         if (Rows.FirstOrDefault(row => !row.Entry.IsParent) is { } first) SelectRow(first);
         return true;
     }
@@ -23,7 +23,7 @@ public sealed partial class PanelView
             if (HasHistory && !await LoadAccessibleAsync(GitPath.Parse(Session.DirectoryPath).Repository)) return;
             FocusCurrent(); return;
         }
-        returnLocations.LeaveHistory();
+        returnLocations.ClearHistory();
         await RestoreTemporaryViewAsync(saved);
     }
 

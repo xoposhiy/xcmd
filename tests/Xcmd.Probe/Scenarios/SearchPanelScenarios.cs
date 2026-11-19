@@ -1,4 +1,4 @@
-// @tests OpenOtherPanel, SortEntries, ReadablePanels, RefreshEntries, MarkEntries, RenameEntry, TransferEntries, SearchResultPanel, OpenViewers, BrowseArchives, RunCommand, RestoreWorkspace
+// @tests OpenOtherPanel, SortEntries, ReadablePanels, RefreshEntries, MarkEntries, RenameEntry, TransferEntries, SearchResultPanel, OpenViewers, BrowseArchives, RunCommand, RestoreWorkspace, PanelReturnState
 using Avalonia.Input;
 using Avalonia.Automation;
 using Avalonia.Controls;

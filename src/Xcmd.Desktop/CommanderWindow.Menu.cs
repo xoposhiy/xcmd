@@ -36,8 +36,8 @@ public sealed partial class CommanderWindow
             Name = "MainMenu",
             ItemsSource = new MenuItem[]
             {
-                new MenuItem() { Header = "File", ItemsSource = new MenuItem[]
-                {
+                new MenuItem() { Header = "File", ItemsSource = (MenuItem[])
+                [
                     Item("View file or commit", viewing.ViewCurrent, new(Key.F3), historyAllowed: true),
                     Item("Quick view in other panel", viewing.ToggleQuickView, new(Key.Q, KeyModifiers.Control)),
                     Item("Find files", FileSearch.Open, new(Key.F7, KeyModifiers.Alt)),
@@ -50,14 +50,12 @@ public sealed partial class CommanderWindow
                     Item("Cut", () => panelClipboard.Copy(true), new(Key.X, KeyModifiers.Control)),
                     Item("Paste into current folder", panelClipboard.Paste, new(Key.V, KeyModifiers.Control)),
                     Item("Copy full path", panelClipboard.CopyPath),
-                    Item("Copy to other panel", CopySelected, new(Key.F5)),
-                    Item("Copy in this panel", () => TransferSelected(FileOperationKind.Copy, samePanel: true), new(Key.F5, KeyModifiers.Shift)),
-                    Item("Move to other panel", () => TransferSelected(FileOperationKind.Move), new(Key.F6)),
+                    .. TransferCommands.Select(command => Item(command.MenuLabel, () => command.Execute(this), command.Gesture)),
                     Item("Move to Recycle Bin", () => DeleteSelected(false), new(Key.F8)),
                     Item("Delete permanently", () => DeleteSelected(true), new(Key.Delete, KeyModifiers.Shift)),
                     Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter), historyAllowed: true),
                     Item("Open with Windows", OpenWithWindows), Item("Exit", Close, historyAllowed: true)
-                } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu"),
+                ] }.WithFeedbackId("CommanderWindow.Menu.BuildMenu"),
                 new MenuItem() { Header = "Navigate", ItemsSource = new MenuItem[]
                 {
                     Item("Parent directory", OpenParent, new(Key.PageUp, KeyModifiers.Control), historyAllowed: true),
@@ -107,10 +105,5 @@ public sealed partial class CommanderWindow
         if (parent == null) return;
         await panel.LoadAsync(parent.FullPath, selectName: PanelRules.ParentCursorName(directory));
         panel.FocusCurrent();
-    }
-
-    private void CopySelected()
-    {
-        TransferSelected(FileOperationKind.Copy);
     }
 }

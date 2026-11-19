@@ -1,4 +1,4 @@
-// @implements BrowseHistory, SearchResultPanel, RestoreWorkspace
+// @implements PanelReturnState
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;
@@ -15,21 +15,13 @@ internal sealed class PanelReturnLocations
 
     private PanelReturnPoint? For(View view) => current is { } saved && saved.View == view ? saved.Point : null;
 
-    public void EnterHistory(PanelReturnPoint point) => current = (View.History, point);
+    public void SaveHistory(PanelReturnPoint point) => current = (View.History, point);
+    public void SaveSearch(PanelReturnPoint point) => current = (View.Search, point);
 
-    public void LeaveHistory()
+    public void ClearHistory()
     {
-        if (History != null) current = null;
+        if (History != null) Clear();
     }
 
-    public void EnterSearch(Func<PanelReturnPoint> capture)
-    {
-        if (Search == null) current = (View.Search, capture());
-    }
-
-    public void ApplyDirectory(bool history, PanelReturnPoint? startingPoint)
-    {
-        if (history && (startingPoint ?? History) is { } saved) EnterHistory(saved);
-        else current = null;
-    }
+    public void Clear() => current = null;
 }

@@ -1,4 +1,4 @@
-// @tests ReusePaths, ComparePanelFiles
+// @tests ReusePaths, ComparePanelFiles, TransferEntries, DuplicateEntry
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
@@ -8,9 +8,14 @@ public static class MainMenuProbe
 {
     public static async Task InvokeFileCommandAsync(ProbeContext context, string title)
     {
-        var menu = context.Window.GetVisualDescendants().OfType<Menu>().Single(control => control.Name == "MainMenu");
-        var file = menu.Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == "File");
-        await context.ClickAsync(file);
-        await context.ClickAsync(file.Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == title));
+        await context.ClickAsync(FileMenu(context));
+        await context.ClickAsync(FileCommand(context, title));
     }
+
+    public static MenuItem FileCommand(ProbeContext context, string title) =>
+        FileMenu(context).Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == title);
+
+    private static MenuItem FileMenu(ProbeContext context) =>
+        context.Window.GetVisualDescendants().OfType<Menu>().Single(control => control.Name == "MainMenu")
+            .Items.OfType<MenuItem>().Single(item => item.Header?.ToString() == "File");
 }

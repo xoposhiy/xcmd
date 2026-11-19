@@ -1,4 +1,4 @@
-// @tests SortEntries, ReadablePanels, DiscoverShortcuts, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff, RepositoryLocations, RepositoryDocuments
+// @tests SortEntries, ReadablePanels, DiscoverShortcuts, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, ReadCommitMessage, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ReadDiff, RepositoryLocations, RepositoryDocuments, PanelReturnState
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;

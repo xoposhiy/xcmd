@@ -91,7 +91,12 @@ internal sealed class CommanderFrame
                 ? GitPath.IsLog(window.ActivePanel.Session.DirectoryPath)
                     ? ["Enter  Full repository snapshot", "F3  Commit details", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
                     : ["F3  View / changed files on ..", "Ctrl+Alt+D  Diff", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
-                : ["Alt+F7  Find files", "F3  View", "F4  Edit", "Ctrl+Shift+C  Compare", "F5  Copy", "Shift+F5  Copy here", "F6  Move", "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"];
+                :
+                [
+                    "Alt+F7  Find files", "F3  View", "F4  Edit", "Ctrl+Shift+C  Compare",
+                    .. CommanderWindow.TransferCommands.Select(command => command.Hint),
+                    "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"
+                ];
             help.Children.Clear();
             foreach (var hint in hints) help.Children.Add(new Border
             {

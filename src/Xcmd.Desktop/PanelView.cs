@@ -26,7 +26,6 @@ public sealed partial class PanelView : Border
     private readonly PanelRows panelRows;
     private readonly PanelFooter footer;
     private readonly PanelRename rename;
-    private readonly PanelReturnLocations returnLocations = new();
     private readonly FilePanelColumns columns;
     public void SetCutPaths(IEnumerable<string> paths) => panelRows.SetCutPaths(paths);
     public PanelSession Session { get; }
@@ -79,16 +78,6 @@ public sealed partial class PanelView : Border
     {
         Table.UpdateLayout();
         if (Scroll is { } scroll) scroll.Offset = state.SearchResults is { } results ? new Vector(results.ScrollX, results.ScrollY) : new Vector(state.ScrollX, state.ScrollY);
-    }
-
-    internal PanelReturnPoint CaptureReturnPoint() => new(CaptureState(), Table.Bounds.Width);
-
-    private async Task RestoreTemporaryViewAsync(PanelReturnPoint saved)
-    {
-        if (!await RestoreStateAsync(saved.State)) return;
-        columns.FitNameAfterResize(saved.Width);
-        RestoreScroll(saved.State);
-        FocusCurrent(scrollIntoView: false);
     }
 
     private ScrollViewer? Scroll => Table.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
@@ -345,7 +334,8 @@ public sealed partial class PanelView : Border
 
     internal void ApplyDirectoryLoad(string previousPath, PanelReturnPoint? gitReturn, string[] selected, string? selectName)
     {
-        returnLocations.ApplyDirectory(HasHistory, gitReturn);
+        if (HasHistory && (gitReturn ?? returnLocations.History) is { } saved) returnLocations.SaveHistory(saved);
+        else returnLocations.Clear();
         searchResults = null;
         panelRows.ClearMeasurements();
         ApplyEntries(selected, selectName);

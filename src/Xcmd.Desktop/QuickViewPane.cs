@@ -1,4 +1,4 @@
-// @implements QuickViewFile, ReportControl
+// @implements ReusableFileViewer, QuickViewFile, ReportControl
 using Avalonia.Controls;
 using Xcmd.Core;
 

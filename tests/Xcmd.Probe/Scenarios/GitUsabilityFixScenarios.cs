@@ -1,4 +1,4 @@
-// @tests OpenOtherPanel, RefreshEntries, DiscoverShortcuts, BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff
+// @tests OpenOtherPanel, RefreshEntries, DiscoverShortcuts, TransferEntries, DuplicateEntry, BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff, PanelReturnState
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -21,7 +21,19 @@ public static class GitUsabilityFixScenarios
             await c.KeyAsync(Key.F6, RawInputModifiers.Control);
             Equal(sort, panel.Session.SortOrder, "Log sort shortcuts cannot change the next file sort");
             Check(!GitHistoryProbe.Summary(panel).Contains("bytes", StringComparison.Ordinal), "Commit counts do not show filesystem sizes");
-            Check(!GitHistoryProbe.KeyboardHelp(c).Contains("F5  Copy", StringComparison.Ordinal), "Git help does not advertise unavailable file commands");
+            var hints = GitHistoryProbe.KeyboardHelp(c);
+            Check(!hints.Contains("F5  Copy", StringComparison.Ordinal) && !hints.Contains("F6  Move", StringComparison.Ordinal), "Git help omits the transfer shortcuts");
+            foreach (var (key, modifiers, label) in new[]
+            {
+                (Key.F5, RawInputModifiers.None, "Copy to other panel"),
+                (Key.F5, RawInputModifiers.Shift, "Copy in this panel"),
+                (Key.F6, RawInputModifiers.None, "Move to other panel"),
+            })
+            {
+                Check(!MainMenuProbe.FileCommand(c, label).IsEnabled, $"{label} is disabled in Git history");
+                await c.KeyAsync(key, modifiers);
+                Check(c.Window.OperationDialog == null && c.Window.LastError == ArchivePath.GitReadOnly, "Git history blocks the transfer shortcut");
+            }
             await c.KeyAsync(Key.Enter);
             Check(panel.Rows.All(row => row.DisplayDate.Length == 0), "Snapshot files have unknown modification dates");
             Check(ToolTip.GetTip((Control)panel.Table.Columns[3].Header!)!.ToString()!.Contains("first parent", StringComparison.Ordinal), "The Git legend describes commit comparisons");

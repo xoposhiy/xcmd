@@ -1,4 +1,4 @@
-// @implements OpenViewers, ReadWorkingFileDiff
+// @implements ReusableFileViewer, OpenViewers, ReadWorkingFileDiff
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
