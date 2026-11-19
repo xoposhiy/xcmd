@@ -1,4 +1,4 @@
-// @tests NavigatePanels, SortEntries, JumpToName, RecentLocations, ReadablePanels, RefreshEntries, DiscoverShortcuts, CreateFolder, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, SharedControls, FileIcons, KeyboardLayouts, FeedbackQueue
+// @tests NavigatePanels, SortEntries, JumpToName, RecentLocations, ReadablePanels, RefreshEntries, DiscoverShortcuts, CreateFolder, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, SharedControls, FileIcons, KeyboardLayouts, FeedbackQueue, HeadlessVerification
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -87,6 +87,12 @@ public static class RefinementScenarios
             Check(c.Window.Feedback.Notes.Single().Target.Name.StartsWith("Go to directory:"), "The comment records its window context.");
             await c.KeyAsync(Key.Enter, target: history);
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "The original modal action still works after a comment");
+        }),
+        new("refinement-release-after-dialog-close", "A pending dialog close sends the key release to the main window", async c =>
+        {
+            await c.KeyAsync(Key.F7);
+            Check(FeedbackProbe.ReleaseKeyWhileDialogCloses(c, c.Window.ActiveDialog!),
+                "The main window receives the release after the dialog closes during input dispatch");
         }),
         new("refinement-feedback-folder-draft", "UC39", async c =>
         {

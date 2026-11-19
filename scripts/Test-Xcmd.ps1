@@ -20,6 +20,7 @@ try {
     if ($Filter) { $probeArguments += @('--filter', $Filter) }
     if ($OutputPath) { $probeArguments += @('--output', $OutputPath) }
     if ($KeepFixtures) { $probeArguments += '--keep-fixtures' }
+    Write-Output 'CHECK Behavioral scenarios'
     dotnet @probeArguments
     exit $LASTEXITCODE
 }

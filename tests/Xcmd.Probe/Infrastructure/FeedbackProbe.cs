@@ -1,10 +1,11 @@
-// @tests ReportControl, KeepFeedback, FeedbackIdentity
+// @tests ReportControl, KeepFeedback, FeedbackIdentity, HeadlessVerification
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using SkiaSharp;
 using Xcmd.Core;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
@@ -13,6 +14,21 @@ namespace Xcmd.Probe.Infrastructure;
 
 public static class FeedbackProbe
 {
+    public static bool ReleaseKeyWhileDialogCloses(ProbeContext context, Window dialog)
+    {
+        var released = false;
+        void Observe(object? sender, KeyEventArgs args) => released |= args.Key == Key.LeftShift;
+        context.Window.AddHandler(InputElement.KeyUpEvent, Observe, RoutingStrategies.Tunnel, handledEventsToo: true);
+        try
+        {
+            dialog.KeyPress(Key.LeftShift, RawInputModifiers.Shift, PhysicalKey.ShiftLeft, null);
+            Dispatcher.UIThread.Post(dialog.Close);
+            context.ReleaseInput(dialog, window => window.KeyRelease(Key.LeftShift, RawInputModifiers.None, PhysicalKey.ShiftLeft, null));
+            return released;
+        }
+        finally { context.Window.RemoveHandler(InputElement.KeyUpEvent, Observe); }
+    }
+
     public static T Control<T>(Window window, string id) where T : Control =>
         window.GetVisualDescendants().OfType<T>().Single(control => control.GetValue(Xcmd.Desktop.FeedbackTarget.IdProperty) == id);
 

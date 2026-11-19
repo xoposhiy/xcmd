@@ -109,6 +109,9 @@ can catch violations before delivering a change.
   repair branch.
   Sources: [2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md → Turn 4](../codex-sessions/2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md#turn-4); [2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md → Turn 5](../codex-sessions/2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md#turn-5).
 
+- Show failed test names, failed lint checks and their error messages on the GitHub Actions run page.
+  Codex session ID 01a1f101-c467-7ae3-9de5-9761d16b1998.
+
 - Run the complete test suite and automated checks in GitHub Actions.
   Source: [2026-11-14T15-17-19-01a1da6b-7ba6-70f2-9ed5-363f862fab59.md → Turn 2](../codex-sessions/2026-11-14T15-17-19-01a1da6b-7ba6-70f2-9ed5-363f862fab59.md#turn-2).
 

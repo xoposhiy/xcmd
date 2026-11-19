@@ -53,8 +53,18 @@ public sealed partial class ProbeContext : IDisposable
         InputTrace.Add($"key {modifiers}+{key}");
         var physical = Enum.TryParse<PhysicalKey>(key.ToString(), out var mapped) ? mapped : PhysicalKey.None;
         target.KeyPress(key, modifiers, physical, null);
-        if (target.IsVisible) target.KeyRelease(key, modifiers, physical, null);
-        else Window.KeyRelease(key, modifiers, physical, null);
+        ReleaseInput(target, window => window.KeyRelease(key, modifiers, physical, null));
+    }
+
+    internal void ReleaseInput(Window target, Action<Window> release)
+    {
+        if (target.IsVisible)
+        {
+            try { release(target); return; }
+            // Headless input runs dispatcher jobs before it looks up the window backend.
+            catch (ObjectDisposedException error) when (error.ObjectName == target.GetType().Name && target.TryGetPlatformHandle() == null) { }
+        }
+        if (target != Window && Window.IsVisible) release(Window);
     }
 
     public async Task TextAsync(string text, Window? target = null)
@@ -74,7 +84,7 @@ public sealed partial class ProbeContext : IDisposable
         InputTrace.Add("click " + control.Name);
         target.MouseMove(position, modifiers);
         target.MouseDown(position, MouseButton.Left, modifiers);
-        (target.IsVisible ? target : Window).MouseUp(position, MouseButton.Left, modifiers);
+        ReleaseInput(target, window => window.MouseUp(position, MouseButton.Left, modifiers));
         await SettleAsync();
     }
 
@@ -84,7 +94,7 @@ public sealed partial class ProbeContext : IDisposable
         var point = control.TranslatePoint(new Point(control.Bounds.Width * x, control.Bounds.Height * y), target)!.Value;
         InputTrace.Add($"click part {control.Name} {x},{y}");
         target.MouseMove(point); target.MouseDown(point, MouseButton.Left);
-        (target.IsVisible ? target : Window).MouseUp(point, MouseButton.Left);
+        ReleaseInput(target, window => window.MouseUp(point, MouseButton.Left));
         await SettleAsync();
     }
 

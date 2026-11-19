@@ -19,7 +19,7 @@ try {
         & $python -m pip install --disable-pip-version-check -r scripts/requirements-lint.txt
         if ($LASTEXITCODE -ne 0) { throw 'The pinned reporting dependencies could not be installed.' }
     }
-    & $python -m unittest discover -s scripts/code-health -p test_collect.py *> (Join-Path $reportPath 'report-tests.log')
+    & $python -m unittest discover -s scripts/code-health -p 'test_*.py' *> (Join-Path $reportPath 'report-tests.log')
     if ($LASTEXITCODE -ne 0) {
         Get-Content -LiteralPath (Join-Path $reportPath 'report-tests.log') | Write-Output
         throw 'The report aggregation checks failed.'
@@ -34,7 +34,7 @@ try {
     $verificationExit = 0
     if (-not $SkipVerification) {
         $logPath = Join-Path $reportPath 'verification.log'
-        & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Test-Xcmd.ps1') -OutputPath (Join-Path $reportPath 'behavior') *> $logPath
+        & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'Test-Xcmd.ps1') -OutputPath (Join-Path $reportPath 'behavior') 2>&1 | Tee-Object -FilePath $logPath
         $verificationExit = $LASTEXITCODE
         $verification.status = if ($verificationExit -eq 0) { 'passed' } else { 'failed' }
         $verification.exitCode = $verificationExit
@@ -42,8 +42,8 @@ try {
         if ($log -match 'Architecture: (\d+) rules') { $verification.architectureRules = [int]$Matches[1] }
         if ($log -match 'PASS analyzer checks \((\d+) deliberate') { $verification.analyzerSelfChecks = [int]$Matches[1] }
         if (Test-Path -LiteralPath (Join-Path $reportPath 'behavior/results.json')) { $verification.behaviorResults = 'behavior/results.json' }
-        Get-Content -LiteralPath $logPath -Tail 5 | Write-Output
     }
+    Write-Output 'CHECK Generate the code health report'
     $verification.finishedAt = [DateTime]::UtcNow.ToString('o')
     $verification.sourceFingerprintAfter = & $python $collector fingerprint --root $projectRoot
     if ($LASTEXITCODE -ne 0) { throw 'The final verification fingerprint could not be computed.' }
