@@ -1,6 +1,7 @@
 // @tests SyncRepository
 using Avalonia.Controls;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Panels.Git;
+using Xcmd.Desktop.Shared.Ui;
 
 namespace Xcmd.Probe.Infrastructure;
 

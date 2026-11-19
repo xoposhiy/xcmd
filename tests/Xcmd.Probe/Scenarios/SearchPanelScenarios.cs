@@ -73,7 +73,7 @@ public static class SearchPanelScenarios
             Equal(Path.GetDirectoryName(wanted), c.Window.Right.Session.DirectoryPath, "Ctrl+Right opens containing directory");
             Equal(wanted, c.Window.Right.Current?.Entry.FullPath, "Ctrl+Right selects exact file");
             Check(c.Window.ActivePanel == panel && panel.IsSearchResults, "Source panel and keyboard focus stay in results");
-            using (var updates = new Xcmd.Desktop.DirectoryUpdates(c.Window)) await updates.PollAsync();
+            using (var updates = new Xcmd.Desktop.Workspace.DirectoryUpdates(c.Window)) await updates.PollAsync();
             Check(panel.IsSearchResults, "Monitoring cannot replace search results");
             await c.KeyAsync(Key.F6, RawInputModifiers.Control);
             Equal(wanted, panel.Current?.Entry.FullPath, "Sorting keeps cursor identity");

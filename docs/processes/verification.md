@@ -91,6 +91,10 @@ formatting and code metrics. Read the actual policies in
 and [UI analyzers](../../tools/UiChecks). Do not duplicate their numeric limits in
 prose or relax them to make a change pass.
 
+The Desktop compiler analyzer checks module ownership and allowed dependencies.
+Find the allowed directions in [DesktopModules.cs](../../tools/UiChecks/DesktopModules.cs).
+The architecture test checks project boundaries and cycles between assemblies.
+
 The code-health command prints the generated report path under
 `artifacts/code-health`. Inspect measurements in context: partial classes span
 files, coupling is not additive, and static metrics do not establish usability or

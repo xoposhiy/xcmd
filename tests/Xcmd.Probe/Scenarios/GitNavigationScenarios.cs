@@ -1,6 +1,7 @@
 // @tests NavigatePanels, RefreshEntries, SeeRepositoryState, RepositoryStatus
 using Avalonia.Media;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Panels;
+using Xcmd.Desktop.Features.Panels.Git;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

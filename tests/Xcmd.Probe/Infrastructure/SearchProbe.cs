@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Avalonia.Input;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Search;
 
 namespace Xcmd.Probe.Infrastructure;
 

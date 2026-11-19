@@ -2,7 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Navigation;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Infrastructure;

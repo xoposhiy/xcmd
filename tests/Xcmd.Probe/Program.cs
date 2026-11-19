@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Headless;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Workspace;
 using Xcmd.Probe.Infrastructure;
 using Xcmd.Probe.Scenarios;
 

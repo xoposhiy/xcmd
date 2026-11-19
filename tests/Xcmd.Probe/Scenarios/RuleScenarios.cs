@@ -1,7 +1,7 @@
 // @tests NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RenameEntry, BrowseArchives, RunCommand, RestoreWorkspace
 using Avalonia.Input;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Navigation;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 using static Xcmd.Probe.Infrastructure.RuleProbe;

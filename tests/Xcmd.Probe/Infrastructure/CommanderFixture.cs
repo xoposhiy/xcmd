@@ -1,7 +1,9 @@
 // @tests NavigatePanels, RenameEntry
 using Avalonia.Controls;
 using Avalonia.Input;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
+using Xcmd.Desktop.Features.Panels;
+using Xcmd.Desktop.Workspace;
 
 namespace Xcmd.Probe.Infrastructure;
 

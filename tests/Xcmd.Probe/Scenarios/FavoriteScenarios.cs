@@ -3,7 +3,7 @@ using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Workspace;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.FavoritesProbe;

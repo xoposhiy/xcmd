@@ -6,7 +6,8 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
+using Xcmd.Desktop.Workspace;
 
 namespace Xcmd.Probe.Infrastructure;
 

@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.FileOperationProbe;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

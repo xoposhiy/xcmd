@@ -1,8 +1,9 @@
 // @implements QualityChecks
 using System.Reflection;
 using ArchUnitNET.Fluent;
+using ArchUnitNET.Fluent.Slices;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
-using static ArchUnitNET.Fluent.Slices.SliceRuleDefinition;
+using SliceIdentifier = ArchUnitNET.Domain.SliceIdentifier;
 
 namespace Xcmd.Architecture;
 
@@ -18,13 +19,21 @@ internal static class ArchitectureRules
             .Should().NotDependOnAny(Types(true).That().ResideInNamespaceMatching("^Xcmd\\.(Probe|LaunchProbe|Architecture)($|\\.)"))),
         ("Test infrastructure has no scenario dependencies", NoNamespaceDependencies("^Xcmd\\.Probe\\.Infrastructure($|\\.)", "^Xcmd\\.Probe\\.Scenarios($|\\.)")),
         ("Scenarios keep native and headless setup in infrastructure", NoNamespaceDependencies("^Xcmd\\.Probe\\.Scenarios($|\\.)", "^(System\\.(Diagnostics|Runtime\\.InteropServices)|Avalonia\\.Headless)($|\\.)")),
-        ("Layers have no dependency cycles", Slices().Matching("Xcmd.(*)").Should().BeFreeOfCycles()),
+        ("Projects have no dependency cycles", NoProjectCycles()),
         ("Core is included", Types().That().ResideInAssembly(typeof(Core.PanelSession).Assembly.FullName!).Should().Exist()),
         ("Infrastructure is included", Types().That().ResideInAssembly(typeof(Xcmd.Infrastructure.LocalFileSystem).Assembly.FullName!).Should().Exist()),
-        ("Desktop is included", Types().That().ResideInAssembly(typeof(Desktop.CommanderWindow).Assembly.FullName!).Should().Exist()),
+        ("Desktop is included", Types().That().ResideInAssembly(typeof(Desktop.Workspace.CommanderWindow).Assembly.FullName!).Should().Exist()),
         ("Scenario group is included", Types().That().ResideInNamespaceMatching("Xcmd.Probe.Scenarios").Should().Exist()),
         ("Test infrastructure group is included", Types().That().ResideInNamespaceMatching("Xcmd.Probe.Infrastructure").Should().Exist())
     ];
+
+    private static IArchRule NoProjectCycles()
+    {
+        var rule = new SliceRuleCreator();
+        rule.SetSliceAssignment(new(type => type.Assembly.Name.StartsWith("Xcmd.", StringComparison.Ordinal)
+            ? SliceIdentifier.Of(type.Assembly.Name, null, "") : SliceIdentifier.Ignore(), "by Xcmd assembly"));
+        return new GivenSlices(rule).Should().BeFreeOfCycles();
+    }
 
     public static IArchRule NoDependencies(string assembly, string forbiddenNamespaces) =>
         Types().That().ResideInAssembly(Assembly.Load(assembly).FullName!).Should()

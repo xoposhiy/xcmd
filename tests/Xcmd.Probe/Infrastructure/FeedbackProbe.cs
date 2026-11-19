@@ -30,7 +30,7 @@ public static class FeedbackProbe
     }
 
     public static T Control<T>(Window window, string id) where T : Control =>
-        window.GetVisualDescendants().OfType<T>().Single(control => control.GetValue(Xcmd.Desktop.FeedbackTarget.IdProperty) == id);
+        window.GetVisualDescendants().OfType<T>().Single(control => control.GetValue(Xcmd.Desktop.Shared.Ui.FeedbackTarget.IdProperty) == id);
 
     public static async Task CheckHighlightAsync(ProbeContext context, Window window, Control target, string screenshot)
     {
@@ -52,7 +52,7 @@ public static class FeedbackProbe
 
     public static bool HasHighlight(Window window) =>
         window.GetVisualDescendants().OfType<Border>().Any(border =>
-            border.GetValue(Xcmd.Desktop.FeedbackTarget.IdProperty) == "FeedbackSurface.highlight" && border.IsEffectivelyVisible);
+            border.GetValue(Xcmd.Desktop.Shared.Ui.FeedbackTarget.IdProperty) == "FeedbackSurface.highlight" && border.IsEffectivelyVisible);
 
     public static IDisposable WithAgentTools(string directory)
     {

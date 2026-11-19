@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Panels;
 
 namespace Xcmd.Probe.Infrastructure;
 

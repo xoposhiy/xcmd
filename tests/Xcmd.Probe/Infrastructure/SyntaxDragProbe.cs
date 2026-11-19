@@ -7,7 +7,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using SkiaSharp;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

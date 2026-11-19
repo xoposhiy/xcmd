@@ -9,7 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

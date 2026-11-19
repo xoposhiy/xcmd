@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Workspace;
 
 namespace Xcmd.Probe.Infrastructure;
 

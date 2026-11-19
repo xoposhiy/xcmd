@@ -5,7 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Navigation;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.NavigationProbe;

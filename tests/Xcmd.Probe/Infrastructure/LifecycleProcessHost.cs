@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Workspace;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

@@ -1,6 +1,6 @@
 // @tests FeedbackQueue
 using System.Diagnostics;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Workspace;
 
 namespace Xcmd.Probe.Infrastructure;
 

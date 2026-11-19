@@ -2,7 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Panels;
+using Xcmd.Desktop.Workspace;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.DirectorySizeProbe;

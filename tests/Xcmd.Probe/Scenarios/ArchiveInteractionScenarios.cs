@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
-using Xcmd.Desktop;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 using static Xcmd.Probe.Infrastructure.FileOperationProbe;

@@ -7,9 +7,9 @@ requirements.
 
 ## Shared conventions
 
-Reuse the current Desktop [palette](../../src/Xcmd.Desktop/UiPalette.cs),
-[styles](../../src/Xcmd.Desktop/UiStyles.cs) and
-[layout helpers](../../src/Xcmd.Desktop/UiLayout.cs) so related controls stay
+Reuse the current Desktop [palette](../../src/Xcmd.Desktop/Shared/Ui/UiPalette.cs),
+[styles](../../src/Xcmd.Desktop/Shared/Ui/UiStyles.cs) and
+[layout helpers](../../src/Xcmd.Desktop/Shared/Ui/UiLayout.cs) so related controls stay
 consistent. Keep these confirmed conventions when extending the interface:
 
 - Use square corners, compact groups and readable text. Align table headings with

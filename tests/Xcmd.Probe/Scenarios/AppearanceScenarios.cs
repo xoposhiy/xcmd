@@ -2,7 +2,8 @@
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
+using Xcmd.Desktop.Workspace;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

@@ -57,7 +57,7 @@ public sealed class FeedbackIdAnalyzer : DiagnosticAnalyzer
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
         if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol { Name: "WithFeedbackId" } method ||
-            method.ContainingType.ToDisplayString() != "Xcmd.Desktop.FeedbackTarget") return;
+            method.ContainingType.ToDisplayString() != "Xcmd.Desktop.Shared.Ui.FeedbackTarget") return;
         if (invocation.ArgumentList.Arguments is not [var argument] || argument.Expression is not LiteralExpressionSyntax literal ||
             !literal.IsKind(SyntaxKind.StringLiteralExpression) || string.IsNullOrWhiteSpace(literal.Token.ValueText))
         {

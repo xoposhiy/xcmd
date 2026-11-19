@@ -14,7 +14,7 @@ try {
     Write-Output 'CHECK Architecture rules and analyzer fixtures'
     dotnet tests/Xcmd.Architecture/bin/Release/net10.0/win-x64/Xcmd.Architecture.dll $projectRoot
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    Write-Output 'CHECK UI feedback identity analyzer'
+    Write-Output 'CHECK Desktop module and feedback identity analyzers'
     dotnet tools/UiChecks/bin/Release/net10.0/win-x64/UiChecks.dll --self-test
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Write-Output 'CHECK C# whitespace formatting'

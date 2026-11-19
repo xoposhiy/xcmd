@@ -6,7 +6,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Search;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Infrastructure;

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 
 namespace Xcmd.Probe.Infrastructure;
 

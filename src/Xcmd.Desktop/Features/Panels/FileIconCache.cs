@@ -1,0 +1,105 @@
+// @implements FileIcons
+using System.Runtime.InteropServices;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Media;
+using Avalonia.Platform;
+using Xcmd.Core;
+using Xcmd.Infrastructure;
+
+namespace Xcmd.Desktop.Features.Panels;
+
+public sealed class FileIconCache(Visual owner) : IDisposable
+{
+    private readonly Dictionary<string, Task<WriteableBitmap?>> icons = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<WriteableBitmap?>> defaults = new(StringComparer.Ordinal);
+    private readonly HashSet<Task> bindings = [];
+    private readonly List<WriteableBitmap> loaded = [];
+    private bool disposed;
+    public Task Completion => Task.WhenAll(bindings.ToArray());
+    public string? Error { get; private set; }
+    private double RenderScaling => TopLevel.GetTopLevel(owner)?.RenderScaling ?? 1;
+
+    public void Bind(Image image, FileRow row)
+    {
+        RenderOptions.SetBitmapInterpolationMode(image, BitmapInterpolationMode.None);
+        var scale = RenderScaling;
+        image.LayoutUpdated += (_, _) =>
+        {
+            var current = RenderScaling;
+            if (scale != current) { scale = current; TrackBinding(image, row); }
+            SizeImage(image);
+        };
+        TrackBinding(image, row);
+    }
+
+    private void TrackBinding(Image image, FileRow row)
+    {
+        var task = BindAsync(image, row);
+        bindings.Add(task);
+        _ = RemoveCompletedAsync(task);
+    }
+
+    private async Task RemoveCompletedAsync(Task task) { await task; bindings.Remove(task); }
+
+    private async Task BindAsync(Image image, FileRow row)
+    {
+        if (disposed || !OperatingSystem.IsWindows()) return;
+        var entry = row.Entry;
+        var extension = Path.GetExtension(entry.FullPath);
+        var minimumSize = (int)Math.Ceiling(16 * RenderScaling);
+        var identity = entry.IsDirectory || extension.ToLowerInvariant() is ".exe" or ".lnk" or ".ico" ? entry.FullPath : extension;
+        var key = identity + "|" + minimumSize;
+        if (!icons.TryGetValue(key, out var task))
+        {
+            // Keep path-specific shell icons bounded, but never leave later rows blank.
+            if (icons.Count >= 512) task = DefaultAsync(entry, minimumSize);
+            else { task = LoadAsync(entry, minimumSize); icons[key] = task; }
+        }
+        var bitmap = await task;
+        bitmap ??= await DefaultAsync(entry, minimumSize);
+        if (!disposed && bitmap != null && image.DataContext == row && minimumSize == (int)Math.Ceiling(16 * RenderScaling))
+        { image.Source = bitmap; SizeImage(image); }
+    }
+
+    private static void SizeImage(Image image)
+    {
+        image.Width = 16;
+        image.Height = 16;
+    }
+
+    private Task<WriteableBitmap?> DefaultAsync(FileEntry entry, int minimumSize)
+    {
+        var key = (entry.IsDirectory ? "folder|" : "file|") + minimumSize;
+        if (!defaults.TryGetValue(key, out var task))
+        {
+            task = LoadAsync(entry, minimumSize, true);
+            defaults[key] = task;
+        }
+        return task;
+    }
+
+    private async Task<WriteableBitmap?> LoadAsync(FileEntry entry, int minimumSize, bool generic = false)
+    {
+        try
+        {
+            var pixels = await Task.Run(() => SystemIcons.Read(generic ? "file" : entry.FullPath, entry.IsDirectory, minimumSize, generic));
+            if (disposed) return null;
+            var bitmap = new WriteableBitmap(new PixelSize(pixels.Size, pixels.Size), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
+            using var buffer = bitmap.Lock();
+            for (var row = 0; row < pixels.Size; row++) Marshal.Copy(pixels.Bytes, row * pixels.Size * 4, buffer.Address + row * buffer.RowBytes, pixels.Size * 4);
+            loaded.Add(bitmap);
+            return bitmap;
+        }
+        catch (Exception error) { Error = error.Message; return null; }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        foreach (var bitmap in loaded) bitmap.Dispose();
+        loaded.Clear();
+        icons.Clear(); defaults.Clear();
+    }
+}

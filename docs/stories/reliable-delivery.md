@@ -105,6 +105,13 @@ can catch violations before delivering a change.
   projects.
   Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 1](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-1); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 4](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-4).
 
+- Organize Desktop into Workspace, feature modules, and Shared. Keep the main window
+  responsible for connecting workflows. Allow direct feature dependencies only where
+  the module rules allow them, such as using a panel in Quick View. Check module
+  ownership and dependencies during compilation. Keep the module dependency graph
+  acyclic.
+  Codex session ID `01a1f5e2-3079-76e0-a7c6-63d59f6ad70e`.
+
 - Before a commit, run the scenarios affected by the feature and the static checks. Run
   the full local regression suite only on explicit user request. This later decision
   replaces the earlier all-tests-before-every-commit workflow.

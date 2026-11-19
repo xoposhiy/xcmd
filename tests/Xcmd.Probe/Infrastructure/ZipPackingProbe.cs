@@ -1,7 +1,7 @@
 // @tests CreateArchive, SharedControls
 using System.IO.Compression;
 using Avalonia.Input;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

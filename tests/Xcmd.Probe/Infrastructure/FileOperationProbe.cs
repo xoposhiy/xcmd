@@ -7,7 +7,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Infrastructure;

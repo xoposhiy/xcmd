@@ -8,7 +8,7 @@ using Avalonia;
 using Avalonia.Headless;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;

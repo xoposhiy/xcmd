@@ -31,7 +31,7 @@ public static class GitFixture
         await error;
     }
 
-    public static async Task RefreshAsync(Xcmd.Desktop.GitStatusView view)
+    public static async Task RefreshAsync(Xcmd.Desktop.Features.Panels.Git.GitStatusView view)
     {
         await view.PendingWork;
         view.Refresh();

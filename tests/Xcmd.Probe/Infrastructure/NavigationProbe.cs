@@ -4,7 +4,9 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Navigation;
+using Xcmd.Desktop.Features.Panels;
+using Xcmd.Desktop.Shared.Ui;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Infrastructure;

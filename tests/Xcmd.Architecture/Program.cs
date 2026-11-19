@@ -15,7 +15,7 @@ internal static class Program
             var architecture = new ArchLoader().LoadAssemblies(
                 typeof(Core.PanelSession).Assembly,
                 typeof(Xcmd.Infrastructure.LocalFileSystem).Assembly,
-                typeof(Desktop.CommanderWindow).Assembly,
+                typeof(Desktop.Workspace.CommanderWindow).Assembly,
                 typeof(Probe.Infrastructure.ProbeContext).Assembly).Build();
             var rules = ArchitectureRules.Production();
             foreach (var (name, rule) in rules)

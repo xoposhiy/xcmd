@@ -7,7 +7,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.DialogProbe;
 using static Xcmd.Probe.Infrastructure.FileOperationProbe;

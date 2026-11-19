@@ -5,7 +5,8 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
+using Xcmd.Desktop.Workspace;
 
 namespace Xcmd.Probe.Infrastructure;
 

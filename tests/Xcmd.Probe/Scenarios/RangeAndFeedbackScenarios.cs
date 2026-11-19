@@ -2,7 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.FeedbackProbe;
 using static Xcmd.Probe.Infrastructure.FileOperationProbe;

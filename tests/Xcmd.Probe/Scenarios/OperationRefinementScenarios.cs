@@ -4,7 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.FileOperations;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.FileOperationProbe;
 using static Xcmd.Probe.Infrastructure.ProbeContext;

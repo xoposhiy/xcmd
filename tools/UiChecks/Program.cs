@@ -9,13 +9,13 @@ namespace UiChecks;
 internal static class Program
 {
     private const string Prelude = """
-        using Xcmd.Desktop;
+        using Xcmd.Desktop.Shared.Ui;
         namespace Avalonia.Controls {
             public class Control { }
             public class Button : Control { }
             public class TextBlock : Control { }
         }
-        namespace Xcmd.Desktop {
+        namespace Xcmd.Desktop.Shared.Ui {
             public static class FeedbackTarget {
                 public static T WithFeedbackId<T>(this T value, string id) where T : Avalonia.Controls.Control => value;
             }
@@ -50,6 +50,7 @@ internal static class Program
                 throw new InvalidOperationException("Feedback analyzer missed a deliberate violation: " + item.Source);
         }
         Console.WriteLine($"PASS feedback identity analyzer ({cases.Length} compiler fixtures)");
+        await DesktopArchitectureChecks.CheckAsync(references);
         return 0;
     }
 }

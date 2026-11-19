@@ -4,7 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.VisualTree;
 using Xcmd.Core;
-using Xcmd.Desktop;
+using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 using static Xcmd.Probe.Infrastructure.ViewerDiffProbe;

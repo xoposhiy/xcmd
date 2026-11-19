@@ -5,6 +5,8 @@
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <CompilerVisibleProperty Include="MSBuildProjectDirectory" />
+    <Using Include="Xcmd.Desktop.Shared.Ui" />
     <AvaloniaResource Include="Assets/app.ico" />
     <Content Include="Assets/app.ico" Link="app.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="config/file-types.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
