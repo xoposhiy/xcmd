@@ -5,6 +5,7 @@ param(
 )
 
 . (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
+. (Join-Path $PSScriptRoot 'code-health/MetricsRunner.ps1')
 if (-not $OutputPath) { $OutputPath = 'artifacts/code-health/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') }
 $reportPath = [System.IO.Path]::GetFullPath($OutputPath, $projectRoot)
 $python = Join-Path $projectRoot 'artifacts/lint-venv/Scripts/python.exe'
@@ -49,19 +50,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'The final verification fingerprint could not be computed.' }
     $verification | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $reportPath 'verification.json') -Encoding utf8
 
-    dotnet restore scripts/code-health/CodeHealth.Tools.csproj -r win-x64 -p:Configuration=Release --configfile NuGet.Config --locked-mode --disable-parallel -m:1
-    if ($LASTEXITCODE -ne 0) { throw 'The pinned reporting tools could not be restored.' }
-    $runnerRoot = Join-Path $projectRoot 'artifacts/code-health-tools/5.6.0'
-    $runner = Join-Path $runnerRoot 'Metrics/Metrics.exe'
-    if (-not (Test-Path -LiteralPath $runner)) {
-        New-Item -ItemType Directory -Path $runnerRoot -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $projectRoot '.packages/microsoft.codeanalysis.metrics/5.6.0/Metrics') -Destination $runnerRoot -Recurse
-    }
-    $hostPath = Join-Path $runnerRoot 'Metrics/BuildHost-netcore'
-    if (-not (Test-Path -LiteralPath $hostPath)) {
-        # The Metrics package omits the host required to load SDK projects.
-        Copy-Item -LiteralPath (Join-Path $projectRoot '.packages/microsoft.codeanalysis.workspaces.msbuild/4.12.0/contentFiles/any/any/BuildHost-netcore') -Destination (Split-Path $runner -Parent) -Recurse
-    }
+    $runner = Get-CodeMetricsRunner $projectRoot
     $env:DOTNET_ROLL_FORWARD = 'LatestMajor'
     $projects = & $python $collector projects --root $projectRoot
     if ($LASTEXITCODE -ne 0) { throw 'The reporting project order could not be computed.' }

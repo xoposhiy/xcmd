@@ -1,12 +1,16 @@
-# @implements HeadlessVerification, IntegrationVerification, TryLocalRelease
+# @implements HeadlessVerification, IntegrationVerification, TryLocalRelease, CodeHealth
 param(
     [string]$Filter,
     [string]$OutputPath,
     [switch]$KeepFixtures,
-    [switch]$CheckOnly
+    [switch]$CheckOnly,
+    [string]$RefactoringBaseline
 )
 
 . (Join-Path $PSScriptRoot 'BuildEnvironment.ps1')
+if ($RefactoringBaseline -and (-not $Filter -or -not $CheckOnly)) {
+    throw 'Use -RefactoringBaseline with a filtered -CheckOnly run.'
+}
 if ($Filter -and -not $CheckOnly -and -not $env:CI) {
     & (Join-Path $PSScriptRoot 'Publish-Feedback.ps1') -Filter $Filter -OutputPath $OutputPath -KeepFixtures:$KeepFixtures
     exit 0
@@ -30,6 +34,13 @@ try {
     if ($KeepFixtures) { $probeArguments += '--keep-fixtures' }
     Write-Output 'CHECK Behavioral scenarios'
     dotnet @probeArguments
-    exit $LASTEXITCODE
+    $result = $LASTEXITCODE
+    if ($result -eq 0 -and $RefactoringBaseline) {
+        $comparisonArguments = @('-NoProfile', '-File', (Join-Path $PSScriptRoot 'Compare-Refactoring.ps1'), '-Baseline', $RefactoringBaseline)
+        if ($OutputPath) { $comparisonArguments += @('-OutputPath', (Join-Path $OutputPath 'comparison')) }
+        & pwsh @comparisonArguments
+        $result = $LASTEXITCODE
+    }
+    exit $result
 }
 finally { Pop-Location }

@@ -1,0 +1,439 @@
+<!doctype html>
+<!-- @implements CodeHealth, TraceStoryFiles -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xcmd Architecture Comparison</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #f0f4f8;
+      --paper: #fff;
+      --text: #152538;
+      --muted: #4c5f73;
+      --border: #d9e2eb;
+      --grid: #e5ebf2;
+      --axis: #708397;
+      --header: #11243a;
+      --header-muted: #c0cddd;
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--text); }
+    .wrap { width: min(100% - 3rem, 74rem); margin-inline: auto; }
+    .masthead { background: var(--header); color: #fff; }
+    .masthead .wrap { padding-block: 1.7rem 2.25rem; }
+    .project { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .project-name { font-size: 1rem; font-weight: 650; }
+    .download { color: #fff; font-size: .875rem; text-underline-offset: .2em; }
+    h1 { margin: 1.35rem 0 .4rem; font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 680; letter-spacing: -.045em; line-height: 1.05; }
+    .subtitle { color: var(--header-muted); margin: 0; font-size: .95rem; }
+    .revision { color: #edf5ff; }
+    .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 1.45rem 0 0; padding: 0; gap: .8rem; }
+    .facts div { display: flex; flex-direction: column-reverse; gap: .18rem; padding: .7rem .85rem; border: 1px solid #35506a; border-radius: .5rem; }
+    dt { color: var(--muted); font-size: .8rem; }
+    dd { margin: 0; font-weight: 620; }
+    .facts dt { color: var(--header-muted); }
+    .facts dd { font-size: 1.35rem; }
+    .nav { display: flex; flex-wrap: wrap; gap: .55rem; padding-block: 1rem 1.2rem; }
+    .nav a { color: #253d57; background: var(--paper); border: 1px solid var(--border); border-radius: .4rem; padding: .4rem .68rem; font-size: .86rem; text-decoration: none; }
+    .nav a:hover, .nav a:focus-visible { border-color: #476b93; }
+    .reports { display: grid; gap: 1rem; }
+    .report { min-width: 0; padding: 1.25rem 1.35rem 1rem; background: var(--paper); border: 1px solid var(--border); border-radius: .75rem; }
+    .report-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: .8rem 1.25rem; }
+    h2 { margin: 0; font-size: 1.35rem; font-weight: 650; letter-spacing: -.025em; }
+    .explanation { margin: .25rem 0 0; color: var(--muted); font-size: .9rem; line-height: 1.45; max-width: 45rem; }
+    .metric-stats { display: flex; flex-wrap: wrap; gap: .6rem 1.15rem; margin: 0; }
+    .metric-stats div { display: flex; flex-direction: column-reverse; gap: .1rem; }
+    .metric-stats dd { color: var(--series); font-size: 1.13rem; }
+    .chart { position: relative; height: 19rem; margin-top: .6rem; outline-offset: 2px; touch-action: pan-y; }
+    .chart:focus-visible { outline: 2px solid var(--series); border-radius: .35rem; }
+    .chart svg { display: block; width: 100%; height: 100%; overflow: hidden; }
+    .chart .grid { stroke: var(--grid); }
+    .chart .axis { stroke: var(--axis); }
+    .chart .tick { fill: var(--muted); font-size: 12px; }
+    .chart .area { fill: var(--series); opacity: .11; }
+    .chart .curve { fill: none; stroke: var(--series); stroke-width: 1.7; stroke-linejoin: round; }
+    .chart .data-point { fill: var(--series); }
+    .chart .before { fill: none; stroke: #627181; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .legend { margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; color: var(--muted); font-size: .88rem; }
+    .legend span::before { content: ''; display: inline-block; width: 1.5rem; margin-right: .35rem; border-top: 2px dashed #627181; vertical-align: middle; }
+    .legend .after::before { border-top-style: solid; }
+    .chart .band { fill: var(--series); opacity: .12; }
+    .chart .cursor { stroke: var(--series); stroke-dasharray: 3 3; opacity: .65; }
+    .chart .selected { fill: var(--paper); stroke: var(--series); stroke-width: 2.5; }
+    .x-label { text-align: center; margin: -.05rem 0 0; color: var(--muted); font-size: .82rem; }
+    .tooltip { position: absolute; z-index: 1; width: max-content; max-width: min(23rem, calc(100% - 8px)); padding: .62rem .78rem; color: #f7faff; background: #15283c; box-shadow: 0 5px 14px #1023392c; border-radius: .45rem; pointer-events: none; }
+    .tooltip-name { display: block; margin: 0 0 .32rem; font-weight: 620; font-size: .9rem; overflow-wrap: anywhere; }
+    .tooltip dl { display: grid; grid-template-columns: auto auto; gap: .14rem .9rem; margin: 0; }
+    .tooltip dt, .tooltip dd { color: #e3eefc; font-size: .81rem; }
+    .tooltip dd { text-align: right; }
+    .notes { padding: 1.2rem 0 2rem; color: var(--muted); font-size: .86rem; line-height: 1.55; }
+    .notes h2 { font-size: 1rem; color: var(--text); }
+    .notes p { margin: .4rem 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    @media (max-width: 39rem) {
+      .wrap { width: calc(100% - 1.5rem); }
+      .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .report { padding: .9rem .65rem .85rem; }
+      .report-header { padding-inline: .16rem; }
+      .chart { height: 15rem; }
+    }
+
+    .comparison-table { margin-block: 0 1rem; }
+    .reports + .comparison-table { margin-top: 1rem; }
+    .table-scroll { overflow-x: auto; }
+    .comparison-table table { width: 100%; margin-top: .75rem; border-collapse: collapse; }
+    .comparison-table th, .comparison-table td { padding: .55rem .65rem; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .comparison-table th:first-child, .comparison-table td:first-child { text-align: left; white-space: normal; }
+    .comparison-table th { color: var(--muted); font-size: .85rem; }
+    .comparison-table tr:last-child td { border-bottom: 0; }
+    @media (max-width: 42rem) {
+      #summary th, #summary td { padding: .5rem .3rem; font-size: .78rem; }
+      #summary td:first-child { overflow-wrap: anywhere; }
+      #summary td:last-child { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <div class="project"><span class="project-name">Xcmd</span><div><a class="download" href="before.json" download>Baseline JSON</a> · <a class="download" href="after.json" download>Comparison JSON</a></div></div>
+      <h1>Architecture comparison</h1>
+      <p class="subtitle"><span id="report-title"></span> · <code class="revision" id="revision"></code></p>
+      <dl class="facts" id="facts"></dl>
+    </div>
+  </header>
+  <main class="wrap">
+    <nav class="nav" id="navigation" aria-label="Report sections"><a href="#summary">Project totals</a><a href="#changed-files">Changed files</a><a href="#changed-stories">Changed stories</a></nav>
+    <p class="sr-only" id="chart-controls">Hover over a point or focus the chart and use Left, Right, Home and End to inspect the data.</p>
+    <section class="report comparison-table" id="summary">
+      <h2>Project totals</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Project totals">
+        <table><thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Change</th></tr></thead><tbody id="summary-rows"></tbody></table>
+      </div>
+    </section>
+    <p class="legend"><span>Before</span><span class="after">After · hover to inspect</span></p>
+    <div class="reports" id="reports"></div>
+    <section class="report comparison-table" id="changed-files">
+      <h2>Changed file metrics</h2>
+      <p class="explanation">Each cell shows the value before and after the refactor. A missing file has zero values.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Changed file metrics">
+        <table><thead><tr><th>C# file</th><th>Source characters</th><th>Branching</th><th>Story links</th><th>Weighted complexity</th></tr></thead><tbody id="file-rows"></tbody></table>
+      </div>
+    </section>
+    <section class="report comparison-table" id="changed-stories">
+      <h2>Changed story metrics</h2>
+      <p class="explanation">Source characters count the full size of every linked production C# file.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Changed story metrics">
+        <table><thead><tr><th>Story</th><th>Linked files</th><th>Source characters</th></tr></thead><tbody id="story-rows"></tbody></table>
+      </div>
+    </section>
+    <section class="notes" id="measurement">
+      <h2>Measurement</h2>
+      <p>Both snapshots use Roslyn Metrics 5.6.0 and direct <code>@implements</code> links from authored C# in Xcmd's three production projects.</p>
+      <p>Branching sums the cyclomatic complexity above one for each Roslyn member. Weighted complexity multiplies branching by the number of linked stories beyond the first.</p>
+      <p>File width counts Unicode characters, including comments and whitespace, with line endings counted as one character. Each story has one unit of width on the scattering chart.</p>
+      <p>Area adds each point’s value times its width. Tangling and scattering have the same area because each story–file link counts the file’s characters once on each chart.</p>
+      <p>Each C# file has its own metrics, including files that define parts of a partial class.</p>
+    </section>
+  </main>
+  <script id="report-data" type="application/json">__REPORT_DATA__</script>
+  <script>
+    const report = JSON.parse(document.getElementById('report-data').textContent);
+    const {before, after} = report;
+    const {metrics, files, stories, distributions} = after;
+    const integers = new Intl.NumberFormat('en-US');
+    const decimal = new Intl.NumberFormat('en-US', {maximumFractionDigits: 2});
+    const compact = new Intl.NumberFormat('en-US', {notation: 'compact', maximumFractionDigits: 1});
+    const format = value => integers.format(value);
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function appendStat(list, label, value) {
+      const stat = element('div');
+      stat.dataset.review = 'stat';
+      stat.append(element('dt', '', label), element('dd', '', value));
+      list.append(stat);
+    }
+
+    function svgElement(parent, tag, attributes, text) {
+      const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+      if (text !== undefined) node.textContent = text;
+      parent.append(node);
+      return node;
+    }
+
+    const specifications = [
+      {id: 'weighted-complexity', key: 'weightedComplexity', title: 'Weighted complexity', color: '#2851a0',
+        description: 'Branching weighted by how many stories share a file.', label: 'Weighted complexity', totalLabel: 'Project total'},
+      {id: 'branching', key: 'complexity', title: 'Unweighted complexity', color: '#00736b',
+        description: 'Branching in each file across the three production projects.', label: 'Branching', totalLabel: 'Project total'},
+      {id: 'tangling', key: 'tangling', title: 'Story tangling', color: '#91451d',
+        description: 'Number of stories linked to each file.', label: 'Stories', totalLabel: 'Story–file links'},
+      {id: 'scattering', key: 'scattering', title: 'Story scattering', color: '#744890',
+        description: 'Total source characters across the files linked to each story.', label: 'Source characters', totalLabel: 'Largest story', byStory: true},
+    ];
+
+    document.title = 'Xcmd · ' + report.title;
+    document.getElementById('report-title').textContent = report.title;
+    const snapshotName = snapshot => snapshot.commit?.slice(0, 7) ?? 'working tree';
+    document.getElementById('revision').textContent = 'Before ' + snapshotName(before) + ' · After ' + snapshotName(after);
+    const facts = document.getElementById('facts');
+    appendStat(facts, 'Source characters', format(metrics.sourceCharacters));
+    appendStat(facts, 'C# files', format(metrics.fileCount));
+    appendStat(facts, 'Stories with C# links', format(metrics.storiesWithProductionLinks));
+    appendStat(facts, 'Story–file links', format(metrics.implementationLinks));
+
+    const sumLabels = [
+      ['complexity', 'Branching'], ['weightedComplexity', 'Weighted complexity'],
+      ['implementationLinks', 'Story–file links'], ['sharedLinkedSourceCharacters', 'Linked source characters'],
+      ['sourceCharacters', 'Source characters'], ['fileCount', 'Production C# files'],
+      ['storyCount', 'Catalogue stories'], ['storiesWithProductionLinks', 'Stories with C# links'],
+    ];
+    const meanLabels = [
+      ['weightedComplexity', 'Weighted complexity (size-weighted mean)'],
+      ['complexity', 'Branching (size-weighted mean)'], ['tangling', 'Stories per file (size-weighted mean)'],
+      ['scattering', 'Mean source characters per story'],
+    ];
+    fillRows('summary-rows', [
+      ...sumLabels.map(([key, label]) => summaryRow(label, before.metrics[key], after.metrics[key], integers)),
+      ...meanLabels.map(([key, label]) => summaryRow(label, before.distributions[key].normalizedArea, after.distributions[key].normalizedArea, decimal)),
+    ]);
+    fillRows('file-rows', report.changedFiles.map(path =>
+      comparisons(path.slice(4), before.files[path], after.files[path], ['sourceCharacters', 'complexity', 'tangling', 'weightedComplexity'])));
+    const storyDelta = id => Math.abs((after.stories[id]?.scattering ?? 0) - (before.stories[id]?.scattering ?? 0));
+    fillRows('story-rows', [...report.changedStories].sort((a, b) => storyDelta(b) - storyDelta(a)).map(id =>
+      comparisons(id, before.stories[id], after.stories[id], ['fileCount', 'scattering'])));
+
+    function fillRows(id, rows) {
+      const body = document.getElementById(id);
+      if (!rows.length) {
+        const row = element('tr');
+        const cell = element('td', '', 'No changes');
+        cell.colSpan = body.closest('table').tHead.rows[0].cells.length;
+        row.append(cell);
+        body.append(row);
+      }
+      for (const values of rows) {
+        const row = element('tr');
+        row.dataset.review = 'metric';
+        for (const value of values) row.append(element('td', '', value));
+        body.append(row);
+      }
+    }
+
+    function summaryRow(label, previous, current, formatter) {
+      const delta = current - previous;
+      const signed = value => (value > 0 ? '+' : '') + formatter.format(value);
+      const percent = previous ? ' (' + (delta > 0 ? '+' : '') + decimal.format(delta / previous * 100) + '%)' : '';
+      return [label, formatter.format(previous), formatter.format(current), signed(delta) + percent];
+    }
+
+    function comparisons(label, previous, current, keys) {
+      return [label, ...keys.map(key => format(previous?.[key] ?? 0) + ' → ' + format(current?.[key] ?? 0))];
+    }
+
+    for (const spec of specifications) {
+      const link = element('a', '', spec.title);
+      link.href = '#' + spec.id;
+      document.getElementById('navigation').append(link);
+      document.getElementById('reports').append(createReport(spec, distributions[spec.key]));
+    }
+
+    function createReport(spec, data) {
+      const report = element('section', 'report');
+      report.id = spec.id;
+      report.style.setProperty('--series', spec.color);
+      const header = element('div', 'report-header');
+      const heading = element('div');
+      const title = element('h2', '', spec.title);
+      title.id = spec.id + '-title';
+      heading.append(title, element('p', 'explanation', spec.description));
+      const stats = element('dl', 'metric-stats');
+      appendStat(stats, spec.totalLabel, format(spec.byStory ? data.max : data.sum));
+      appendStat(stats, 'Area', format(data.area));
+      appendStat(stats, spec.byStory ? 'Mean per story' : 'Mean weighted by file size', decimal.format(data.normalizedArea));
+      header.append(heading, stats);
+      const chart = element('div', 'chart');
+      chart.tabIndex = 0;
+      chart.setAttribute('role', 'group');
+      chart.setAttribute('aria-labelledby', title.id);
+      chart.setAttribute('aria-describedby', 'chart-controls');
+      const svg = svgElement(chart, 'svg', {'aria-hidden': 'true'});
+      const tooltip = element('div', 'tooltip');
+      tooltip.hidden = true;
+      tooltip.setAttribute('aria-hidden', 'true');
+      const tooltipName = element('strong', 'tooltip-name');
+      const tooltipValues = element('dl');
+      tooltip.append(tooltipName, tooltipValues);
+      const announcement = element('div', 'sr-only');
+      announcement.setAttribute('aria-live', 'polite');
+      chart.append(tooltip, announcement);
+      report.append(header, chart, element('p', 'x-label', spec.byStory ? 'Story rank by source characters' : 'Cumulative source characters'));
+      mountPlot(spec, data, {chart, svg, tooltip, tooltipName, tooltipValues, announcement});
+      return report;
+    }
+
+    function niceStep(value) {
+      if (value <= 1) return 1;
+      const power = 10 ** Math.floor(Math.log10(value));
+      return [1, 2, 2.5, 5, 10].find(factor => factor * power >= value) * power;
+    }
+
+    function mountPlot(spec, data, {chart, svg, tooltip, tooltipName, tooltipValues, announcement}) {
+      const points = data.points;
+      const earlier = before.distributions[spec.key];
+      const totalWidth = Math.max(data.width, earlier.width);
+      if (!totalWidth || !points.length) return;
+
+      function stepPath(series, x, y) {
+        if (!series.length) return [];
+        const path = [`M ${x(series[0].start)} ${y(series[0].value)}`];
+        for (const [index, point] of series.entries()) {
+          if (index) path.push(`V ${y(point.value)}`);
+          path.push(`H ${x(point.end)}`);
+        }
+        return path;
+      }
+      let geometry;
+      let selection = null;
+      let activeIndex = 0;
+
+      function render() {
+        const width = chart.clientWidth;
+        const height = chart.clientHeight;
+        if (!width || !height) return;
+        const left = spec.byStory ? 55 : 47;
+        const right = width - 12;
+        const top = 12;
+        const bottom = height - 32;
+        const maxValue = Math.max(data.max, earlier.max);
+        const yStep = niceStep(maxValue / 4);
+        const yMax = Math.max(yStep, Math.ceil(maxValue / yStep) * yStep);
+        const x = value => left + (right - left) * value / totalWidth;
+        const y = value => bottom - (bottom - top) * value / yMax;
+        geometry = {left, right, top, bottom, x, y};
+        svg.replaceChildren();
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        for (let value = 0; value <= yMax; value += yStep) {
+          const ordinate = y(value);
+          svgElement(svg, 'line', {x1: left, x2: right, y1: ordinate, y2: ordinate, class: 'grid'});
+          svgElement(svg, 'text', {x: left - 8, y: ordinate + 4, 'text-anchor': 'end', class: 'tick'}, compact.format(value));
+        }
+        const curve = stepPath(points, x, y);
+        svgElement(svg, 'path', {d: [...curve, `V ${bottom}`, `H ${left}`, 'Z'].join(' '), class: 'area'});
+        svgElement(svg, 'line', {x1: left, x2: right, y1: bottom, y2: bottom, class: 'axis'});
+        svgElement(svg, 'path', {d: stepPath(earlier.points, x, y).join(' '), class: 'before'});
+        svgElement(svg, 'path', {d: curve.join(' '), class: 'curve'});
+        for (const point of points) {
+          const marker = svgElement(svg, 'g', {'data-review': 'metric point', 'aria-label': point.id});
+          svgElement(marker, 'circle', {cx: x(point.midpoint), cy: y(point.value), r: 2, class: 'data-point'});
+        }
+        drawTicks(spec, totalWidth, geometry, svg);
+        selection = svgElement(svg, 'g', {visibility: 'hidden', 'pointer-events': 'none'});
+        svgElement(selection, 'rect', {y: top, height: bottom - top, class: 'band'});
+        svgElement(selection, 'line', {y1: top, y2: bottom, class: 'cursor'});
+        svgElement(selection, 'circle', {r: 5, class: 'selected'});
+        if (!tooltip.hidden) select(activeIndex);
+      }
+
+      function select(index, speak = false) {
+        if (!geometry) return;
+        activeIndex = index;
+        const point = points[index];
+        const px = geometry.x(point.midpoint);
+        const py = geometry.y(point.value);
+        const [band, cursor, marker] = selection.children;
+        band.setAttribute('x', geometry.x(point.start));
+        band.setAttribute('width', geometry.x(point.end) - geometry.x(point.start));
+        cursor.setAttribute('x1', px);
+        cursor.setAttribute('x2', px);
+        marker.setAttribute('cx', px);
+        marker.setAttribute('cy', py);
+        selection.setAttribute('visibility', 'visible');
+        tooltipName.textContent = point.id;
+        tooltipValues.replaceChildren();
+        const rows = [[spec.label, format(point.value)], ['Rank', format(index + 1)]];
+        if (spec.byStory) rows.push(['Linked files', format(stories[point.id].fileCount)]);
+        else rows.push(['File characters', format(files[point.id].sourceCharacters)]);
+        for (const [label, value] of rows) tooltipValues.append(element('dt', '', label), element('dd', '', value));
+        tooltip.hidden = false;
+        const minLeft = 4;
+        const maxLeft = chart.clientWidth - tooltip.offsetWidth - minLeft;
+        const above = py - tooltip.offsetHeight - 12;
+        tooltip.style.left = `${Math.max(minLeft, Math.min(maxLeft, px - tooltip.offsetWidth / 2))}px`;
+        tooltip.style.top = `${Math.max(4, Math.min(chart.clientHeight - tooltip.offsetHeight - 4, above >= 4 ? above : py + 12))}px`;
+        if (speak) announcement.textContent = `${point.id}. ${rows.map(([label, value]) => `${label} ${value}`).join('. ')}.`;
+      }
+
+      function hide() {
+        tooltip.hidden = true;
+        selection?.setAttribute('visibility', 'hidden');
+      }
+
+      function selectFromPointer(event) {
+        if (!geometry) return;
+        const bounds = chart.getBoundingClientRect();
+        const px = event.clientX - bounds.left;
+        const py = event.clientY - bounds.top;
+        if (px < geometry.left || px > geometry.x(data.width) || py < geometry.top - 4 || py > geometry.bottom + 4) {
+          if (document.activeElement !== chart) hide();
+          return;
+        }
+        const position = (px - geometry.left) * totalWidth / (geometry.right - geometry.left);
+        let low = 0;
+        let high = points.length - 1;
+        while (low < high) {
+          const middle = Math.floor((low + high) / 2);
+          if (position < points[middle].end) high = middle;
+          else low = middle + 1;
+        }
+        if (low !== activeIndex || tooltip.hidden) select(low);
+      }
+
+      chart.addEventListener('pointermove', selectFromPointer);
+      chart.addEventListener('pointerdown', selectFromPointer);
+      chart.addEventListener('pointerleave', () => { if (document.activeElement !== chart) hide(); });
+      chart.addEventListener('pointercancel', hide);
+      chart.addEventListener('focus', () => select(activeIndex, true));
+      chart.addEventListener('blur', hide);
+      chart.addEventListener('keydown', event => {
+        const targets = {ArrowLeft: activeIndex - 1, ArrowRight: activeIndex + 1, Home: 0, End: points.length - 1};
+        if (event.key === 'Escape') { hide(); return; }
+        if (!Object.hasOwn(targets, event.key)) return;
+        event.preventDefault();
+        select(Math.max(0, Math.min(points.length - 1, targets[event.key])), true);
+      });
+      new ResizeObserver(render).observe(chart);
+    }
+
+    function drawTicks(spec, total, geometry, svg) {
+      const {left, right, bottom, x} = geometry;
+      const intervals = Math.max(2, Math.floor((right - left) / 97));
+      const step = niceStep(total / intervals);
+      const start = spec.byStory ? 1 : 0;
+      const ticks = [start];
+      for (let tick = Math.ceil((start + 1) / step) * step; tick < total; tick += step) {
+        if ((total - tick) / total * (right - left) >= 62) ticks.push(tick);
+      }
+      if (total > start) ticks.push(total);
+      for (const value of ticks) {
+        const position = x(value - (spec.byStory ? .5 : 0));
+        const anchor = value === start ? 'start' : value === total ? 'end' : 'middle';
+        svgElement(svg, 'line', {x1: position, x2: position, y1: bottom, y2: bottom + 4, class: 'axis'});
+        svgElement(svg, 'text', {x: position, y: bottom + 20, 'text-anchor': anchor, class: 'tick'}, compact.format(value));
+      }
+    }
+  </script>
+</body>
+</html>

@@ -97,6 +97,34 @@ files, coupling is not additive, and static metrics do not establish usability o
 runtime correctness. A report made with `-SkipVerification` is not fresh behavioral
 evidence. CI retains reports and failure diagnostics in its artifacts.
 
+### Refactoring comparisons
+
+Record the baseline commit before editing. For a refactor that starts from a
+clean worktree, use the starting `HEAD`. Use an isolated copy when unrelated
+changes would affect the comparison.
+
+Run the filtered check with the baseline to generate an HTML comparison after
+the checks pass.
+
+```powershell
+./scripts/Test-Xcmd.ps1 -Filter '<affected-scenario-filters>' -CheckOnly -RefactoringBaseline '<baseline-commit>'
+```
+
+If the checks already passed, generate the comparison directly. The target is
+the current worktree, including new source files. Pass `-Target <commit>` to
+compare two commits.
+
+```powershell
+./scripts/Compare-Refactoring.ps1 -Baseline '<baseline-commit>' -Title '<refactor name>'
+```
+
+Share the printed `index.html` link when handing off the refactor. Keep the
+baseline and target JSON files beside the report. Comparisons use isolated
+source snapshots and report branching, weighted complexity, story links and
+scattering. Every C# file contributes separately, including partial class
+files. Review the changed files and stories alongside the project totals.
+The comparison command measures source and does not run behavioral checks.
+
 Documentation-only changes need checks of their links, structure and consistency.
 They do not require application scenarios or a new release. Changes to a check or
 report tool need its relevant checks, not an unrelated application regression run.

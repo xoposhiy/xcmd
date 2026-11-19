@@ -48,6 +48,9 @@ Ask about material product choices or blockers. Choose routine methods independe
 - After a requested commit succeeds, clean up artifacts created for the task.
   Clear the whole directory only when you can confirm exclusive use. See
   [local artifact cleanup](docs/processes/delivery.md#clean-up-local-artifacts).
+- Record the comparison baseline before each refactor. Generate and share the
+  [refactoring comparison](docs/processes/verification.md#refactoring-comparisons)
+  with the user after verification.
 - Follow the [commit message format](docs/processes/delivery.md#commit-messages).
 
 ## Processes to read when needed

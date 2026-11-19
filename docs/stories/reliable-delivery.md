@@ -242,6 +242,11 @@ that I can choose where to investigate or refactor.
   can inspect where complexity and other concerns are concentrated.
   Source: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 3](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-3).
 
+- Generate and share an HTML comparison after verifying each refactor. Compare
+  the baseline with the refactor and measure each C# file separately, including
+  files that declare parts of the same class.
+  Codex session ID `01a1f596-d58a-78b1-a40b-2080a9e7eff2`.
+
 ## ReleaseHandoff
 
 As a developer, I want to hand off work safely to a new local release so that I can

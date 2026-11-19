@@ -15,7 +15,11 @@ internal sealed class PanelReturnLocations
 
     private PanelReturnPoint? For(View view) => current is { } saved && saved.View == view ? saved.Point : null;
 
-    public void SaveHistory(PanelReturnPoint point) => current = (View.History, point);
+    public void ApplyDirectory(string path, PanelReturnPoint? historyReturn)
+    {
+        if (GitPath.IsEntry(path) && (historyReturn ?? History) is { } point) current = (View.History, point);
+        else Clear();
+    }
     public void SaveSearch(PanelReturnPoint point) => current = (View.Search, point);
 
     public void ClearHistory()
