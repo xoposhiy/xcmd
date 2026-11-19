@@ -1,4 +1,4 @@
-// @tests FindFiles, FindFileText, PrioritizeSearch, InspectSearchScope, ControlSearch, OpenSearchMatch, SearchSources, AsyncCoordination
+// @tests FindFiles, FindFileText, PrioritizeSearch, InspectSearchScope, ControlSearch, OpenSearchMatch, SearchSources
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;

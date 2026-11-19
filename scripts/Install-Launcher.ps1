@@ -1,4 +1,4 @@
-# @implements StableShortcut, WindowsIdentity
+# @implements StableShortcut
 param(
     [string]$Destination,
     [string]$SourcePath = 'artifacts/launcher/publish/Xcmd.exe',

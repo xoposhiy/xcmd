@@ -1,4 +1,4 @@
-// @implements WindowsIdentity
+// @implements StableShortcut
 using Avalonia.Controls;
 using Xcmd.Infrastructure;
 

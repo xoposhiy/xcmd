@@ -19,7 +19,7 @@ for the format, semantic IDs and source mapping conventions.
 | 6 | [Use other tools from the current location](external-tools.md) | user |
 | 7 | [Work with repository changes](repository-work.md) | user |
 | 9 | [Improve Xcmd while using it](product-feedback.md) | user-developer |
-| 10 | [Implement workflows over reusable boundaries](reusable-boundaries.md) | developer |
+| 10 | [Reuse shared components across features](reusable-boundaries.md) | developer |
 | 11 | [Deliver and maintain a reliable application](reliable-delivery.md) | developer |
 
 The previous documents and source map are [archived ChangeDocs](../archive/README.md).

@@ -1,4 +1,4 @@
-# @implements WindowsIdentity
+# @implements StableShortcut
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 $assetPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'src/Xcmd.Desktop/Assets'

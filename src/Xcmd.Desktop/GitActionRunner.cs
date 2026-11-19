@@ -1,4 +1,4 @@
-// @implements AsyncCoordination
+// @implements BrowseHistory, InspectCommitChanges, ReadDiff
 namespace Xcmd.Desktop;
 
 internal sealed class GitActionRunner(CommanderWindow owner, CancellationToken lifetime)

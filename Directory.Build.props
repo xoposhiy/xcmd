@@ -1,4 +1,4 @@
-<!-- @implements DomainBoundaries, AsyncCoordination, PackageInputs, QualityChecks -->
+<!-- @implements PackageInputs, QualityChecks -->
 <Project>
   <PropertyGroup>
     <Configuration>Release</Configuration>

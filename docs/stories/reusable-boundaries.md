@@ -1,29 +1,16 @@
 ---
 id: ReusableBoundaries
-title: "Implement workflows over reusable boundaries"
+title: "Reuse shared components across features"
 order: 10
 role: developer
 ---
 
-# Implement workflows over reusable boundaries
+# Reuse shared components across features
 
-As a developer, I want to implement workflows over explicit domain and platform
-boundaries so that new stories can reuse file, search, repository, and presentation
-services.
+As a developer, I want to reuse a component when several features need the same
+capability so that I can implement and maintain that capability in one place.
 
 [All epics](README.md)
-
-## DomainBoundaries
-
-As a developer, I want to implement domain behavior independently of the UI and
-operating system so that I can reason about rules apart from external operations.
-
-### Implementation decisions
-
-- Keep Core, Infrastructure and Desktop as the three production projects. Clarify their
-  responsibilities and simplify complex areas within those boundaries instead of
-  migrating to a fourth Application project.
-  Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 2](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-2); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 4](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-4).
 
 ## FileSystemAccess
 
@@ -35,11 +22,6 @@ common adapter so that I can implement file workflows without duplicating OS acc
 As a developer, I want to call native copy, recycle, menus, properties, and drag and
 drop behind managed interfaces so that I can extend file actions without spreading COM
 and native ownership rules.
-
-## DirectoryMonitoring
-
-As a developer, I want to receive bounded directory-change notifications and inspect
-availability so that I can refresh views without coupling them to watcher details.
 
 ## ExternalLaunch
 
@@ -159,21 +141,10 @@ ownership so that I can show recognizable files without blocking list rendering.
   recreate an unchanged icon.
   Source: [2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md → Turn 8](../codex-sessions/2026-11-16T09-54-18-01a1e390-7589-7560-87d3-1720ccec7f13.md#turn-8).
 
-## ClipboardInterop
-
-As a developer, I want to read and write file lists and preferred drop effects through
-one adapter so that I can reuse clipboard interoperability apart from transfer rules.
-
 ## ImageDecoding
 
 As a developer, I want to turn supported image bytes into a displayable bitmap with
 resource limits so that I can reuse image preview without spreading codec details.
-
-## AsyncCoordination
-
-As a developer, I want to compose services and route actions while keeping cancellation
-and pending work explicit so that I can add workflows with visible process and UI
-ownership.
 
 ## KeyboardLayouts
 

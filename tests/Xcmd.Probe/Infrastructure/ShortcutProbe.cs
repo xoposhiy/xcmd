@@ -1,4 +1,4 @@
-// @tests OpenExternalTool, ExternalLaunch, StableShortcut, WindowsIdentity
+// @tests OpenExternalTool, ExternalLaunch, StableShortcut
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;

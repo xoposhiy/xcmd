@@ -53,6 +53,13 @@ without `-SkipVerification` run the full gate. Use them locally only for an
 explicit full-regression request and follow [regression work](regression.md).
 CI runs the full gate on pushes and pull requests to `main` and on manual runs.
 
+## Startup timing
+
+- Aim for the main window to appear in about a second, but stop startup tuning when
+  reaching that target would require aggressive optimizations. The later qualification
+  means this is not a hard subsecond release gate.
+  Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 7](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-7); [2026-11-10T14-53-22-01a1c5bc-1a31-7782-8047-528bcf85184b.md → Turn 1](../codex-sessions/2026-11-10T14-53-22-01a1c5bc-1a31-7782-8047-528bcf85184b.md#turn-1).
+
 ## Behavioral evidence
 
 Every application feature must be testable without visible windows or human setup.

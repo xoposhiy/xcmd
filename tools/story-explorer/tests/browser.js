@@ -55,10 +55,15 @@ async page => {
   await page.getByRole('button', {name: 'Reload map'}).click();
   await page.waitForFunction(() => !document.getElementById('reload').disabled);
   assert(await page.getByRole('alert').count() === 0, 'A successful reload must clear the error.');
-  await page.goto(base + '/#story=DirectoryMonitoring');
-  await page.waitForFunction(() => !document.getElementById('reload').disabled);
+  const emptyTestMap = structuredClone(data);
+  const storyWithoutTests = emptyTestMap.epics[0].stories[0];
+  storyWithoutTests.tests = [];
+  await page.route('**/api/catalogue', route => route.fulfill({json: emptyTestMap}));
+  await page.reload();
+  await waitForHeading(storyWithoutTests.id);
   assert((await page.locator('main').textContent()).includes('No test files'), 'Stories without mapped tests need an empty state.');
-  await page.goto(base + '/#story=' + story.id);
+  await page.unroute('**/api/catalogue');
+  await page.reload();
   await page.waitForFunction(() => !document.getElementById('reload').disabled);
   await page.getByRole('link', {name: 'Skip to content'}).focus();
   await page.keyboard.press('Enter');

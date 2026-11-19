@@ -11,8 +11,12 @@ Ask about material product choices or blockers. Choose routine methods independe
 - Discuss every proposed epic change with the project developer and get explicit
   approval for that specific change before editing the epic.
 - Before every commit, keep the changed work, story descriptions and source
-  mappings consistent. See [story maintenance](docs/processes/stories.md) for the
-  format and mapping rollout. A code edit does not by itself require a new story.
+  mappings consistent. When the user asks to commit a finished feature, show
+  the existing or proposed story in its epic and get the user's approval before
+  committing. Follow the [feature story review](docs/processes/stories.md#review-the-story-for-a-feature-commit).
+- Keep worked-out specs in [docs/specs-in-progress/](docs/specs-in-progress/) while
+  implementation is pending or in progress. Once the spec is implemented, move it
+  to [docs/archive/](docs/archive/) and update links to the file.
 - [Archived documents](docs/archive/AGENTS.md) are historical ChangeDocs. They are
   not maintained and do not define current behavior or instructions.
 

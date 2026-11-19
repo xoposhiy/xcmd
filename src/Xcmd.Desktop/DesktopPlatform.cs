@@ -1,4 +1,4 @@
-// @implements ApplicationLifecycle
+// @implements ReportControl
 using Avalonia;
 
 namespace Xcmd.Desktop;

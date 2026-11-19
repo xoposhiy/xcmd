@@ -1,4 +1,4 @@
-// @tests NavigatePanels, RefreshEntries, SeeRepositoryState, RepositoryStatus, AsyncCoordination
+// @tests NavigatePanels, RefreshEntries, SeeRepositoryState, RepositoryStatus
 using Avalonia.Media;
 using Xcmd.Desktop;
 using Xcmd.Infrastructure;

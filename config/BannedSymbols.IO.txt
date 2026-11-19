@@ -1,4 +1,4 @@
-// @implements DomainBoundaries, QualityChecks
+// @implements QualityChecks
 T:System.IO.File;Use an infrastructure adapter for filesystem access.
 T:System.IO.Directory;Use an infrastructure adapter or pure Path operations.
 T:System.IO.FileInfo;Use an infrastructure adapter for filesystem access.

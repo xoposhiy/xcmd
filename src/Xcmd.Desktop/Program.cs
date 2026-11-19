@@ -1,4 +1,4 @@
-// @implements ApplicationLifecycle, ReleaseHandoff
+// @implements ReleaseHandoff, DiagnoseFailures
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;

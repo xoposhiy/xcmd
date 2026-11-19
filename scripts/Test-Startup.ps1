@@ -1,4 +1,4 @@
-# @tests RestoreWorkspace, StableShortcut, ApplicationLifecycle, HeadlessVerification, IntegrationVerification
+# @tests RestoreWorkspace, StableShortcut, HeadlessVerification, IntegrationVerification
 param(
     [Parameter(Mandatory)][string]$ApplicationPath,
     [string]$OutputPath,

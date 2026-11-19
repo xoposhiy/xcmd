@@ -1,4 +1,4 @@
-// @implements AsyncCoordination, QualityChecks
+// @implements QualityChecks
 M:System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
 M:System.Runtime.CompilerServices.ConfiguredTaskAwaitable`1.ConfiguredTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.
 M:System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable.ConfiguredValueTaskAwaiter.GetResult;Await asynchronous work instead of blocking a thread.

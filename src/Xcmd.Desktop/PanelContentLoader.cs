@@ -1,4 +1,4 @@
-// @implements NavigatePanels, RefreshEntries, BrowseHistory, AsyncCoordination
+// @implements NavigatePanels, RefreshEntries, BrowseHistory
 using Xcmd.Core;
 
 namespace Xcmd.Desktop;

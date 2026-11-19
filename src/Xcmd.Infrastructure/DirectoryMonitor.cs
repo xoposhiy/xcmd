@@ -1,4 +1,4 @@
-// @implements DirectoryMonitoring
+// @implements RefreshEntries
 using System.Diagnostics;
 
 namespace Xcmd.Infrastructure;

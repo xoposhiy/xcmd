@@ -30,6 +30,8 @@ visible window. Documentation and check-only changes need no application release
 
 ## Finalization
 
+For a requested feature commit, complete the
+[feature story review](stories.md#review-the-story-for-a-feature-commit).
 Finish code review, relevant regression coverage and story maintenance. For a
 changed user workflow, obtain the independent review described in [UI work](ui.md).
 Run affected scenarios, recent CI failures and static checks through the

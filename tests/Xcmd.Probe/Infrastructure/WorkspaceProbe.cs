@@ -1,4 +1,4 @@
-// @tests RestoreWorkspace, ApplicationLifecycle, ReleaseHandoff
+// @tests RestoreWorkspace, ReleaseHandoff
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia.Controls;

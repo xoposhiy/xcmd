@@ -1,4 +1,4 @@
-// @tests ReadablePanels, MarkEntries, ViewSelectionSize, SeeRepositoryState, RepositoryStatus, AsyncCoordination
+// @tests ReadablePanels, MarkEntries, ViewSelectionSize, SeeRepositoryState, RepositoryStatus
 using Avalonia.Input;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

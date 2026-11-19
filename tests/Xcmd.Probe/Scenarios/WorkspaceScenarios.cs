@@ -1,4 +1,4 @@
-// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff, OpenViewers
+// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff, OpenViewers
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;

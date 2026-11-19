@@ -1,4 +1,4 @@
-// @implements DirectoryMonitoring
+// @implements NavigatePanels, RunCommand
 namespace Xcmd.Infrastructure;
 
 public static class UserDirectories

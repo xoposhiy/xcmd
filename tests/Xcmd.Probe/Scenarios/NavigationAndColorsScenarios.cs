@@ -1,4 +1,4 @@
-// @tests RecentLocations, FavoriteLocations, FindSavedLocation, ReadablePanels, RenameEntry, RestoreWorkspace, KeyboardLayouts, WindowsIdentity
+// @tests RecentLocations, FavoriteLocations, FindSavedLocation, ReadablePanels, RenameEntry, RestoreWorkspace, KeyboardLayouts, StableShortcut
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;

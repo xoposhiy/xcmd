@@ -10,12 +10,49 @@ An epic describes a broad need that changes rarely. A user story describes a mor
 specific need and changes when that need is understood differently. Its main text
 is a short statement: `As a <role>, I want <capability> so that <benefit>.`
 
+### Review the story for a feature commit
+
+When the feature is ready and the user asks to commit it, identify the need the
+feature serves. Read the existing stories in context. Reuse a story when its
+statement already covers the need. Propose revised wording if the need has
+changed, or a new story under an existing epic if the need is distinct.
+
+Show the user the epic, story ID and full story statement. Say whether you are
+using the existing wording, proposing an edit or adding a story. Explain in one
+sentence how the finished feature meets that need. Get the user's explicit
+approval of the wording and its place in the catalogue before committing.
+If the user already approved that exact wording and placement for this feature,
+use that approval. Apply agreed catalogue changes and check the source mappings.
+
+### Technical stories
+
+Create a technical story only when an identifiable infrastructure module provides
+one shared capability to at least two distinct, existing user stories. A story
+where a developer uses a tool has a user goal of its own. For example, a developer
+who opens Story Explorer to find the files for a feature is a user of the explorer.
+
+For a proposed technical story, complete this sentence and point to the code for
+both uses: “Module M provides X. Story A uses X to do one thing. Story B uses X
+to do another.” For example, archive browsing uses the archive reader to list a
+directory, and file search uses it to find matching names inside archives.
+Count distinct needs. Two calls for the same feature count once. A possible
+future consumer does not count.
+
+Map the shared module to its technical story. Map each caller's feature-specific
+behavior to the user story it implements. If a file also makes a decision for
+a particular feature, keep that direct feature link.
+
 ### Epic changes
 
 Discuss every proposed epic change with the project developer before editing the
 epic. Describe the exact change and get explicit approval for it. This applies to
 creating, removing, merging, splitting, renaming, and rewording epics, including
 changes to an epic's scope, goal, or catalogue fields.
+
+If a new story fits no existing epic, explain why. Show the proposed epic title,
+role and full need statement alongside the story it would contain. Ask the user
+explicitly whether to create the epic with that wording. Wait for approval of
+the epic itself before adding it to the catalogue.
 
 ### Story decisions
 

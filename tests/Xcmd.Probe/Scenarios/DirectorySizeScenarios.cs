@@ -1,4 +1,4 @@
-// @tests SortEntries, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RestoreWorkspace, TryLocalRelease, AsyncCoordination
+// @tests SortEntries, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RestoreWorkspace, TryLocalRelease
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;

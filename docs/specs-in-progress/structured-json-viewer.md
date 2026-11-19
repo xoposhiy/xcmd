@@ -203,8 +203,10 @@ explicit explanation; never present a guessed structure as a complete parse.
 
 ## Implementation constraints
 
-Follow the existing [architecture](architecture.md), [design system](design-system.md),
-and [development requirements](development-requirements.md).
+Follow the [project rules](../../AGENTS.md) and [UI process](../processes/ui.md).
+The original design drew on the [architecture](../archive/architecture.md),
+[design system](../archive/design-system.md) and
+[development requirements](../archive/development-requirements.md).
 
 - Core owns structural positions, peer resolution, navigation rules, and expansion
   state transitions without UI or filesystem dependencies.
@@ -215,7 +217,7 @@ and [development requirements](development-requirements.md).
 - Keep indexing cancellable and outside the UI thread. Reject stale results after
   file, encoding, or document-version changes. Show partial indexing honestly.
 - Do not format each loaded text page independently. The current reader uses 16 KiB
-  pages, and [syntax highlighting](syntax-highlighting.md) supplies lexical spans,
+  pages, and [syntax highlighting](../stories/reusable-boundaries.md#syntaxspans) supplies lexical spans,
   not a document tree. Containers and peer groups can cross page boundaries.
 - Keep large arrays and group commands responsive without constructing a fully
   expanded string for the entire file. Exact resource budgets belong to implementation

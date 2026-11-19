@@ -1,4 +1,4 @@
-// @tests RestoreWorkspace, ApplicationLifecycle, HeadlessVerification, ReleaseHandoff, OpenViewers
+// @tests RestoreWorkspace, HeadlessVerification, ReleaseHandoff, OpenViewers
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;

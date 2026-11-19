@@ -1,4 +1,4 @@
-// @tests OpenViewers, ReadLargeFiles, HighlightSource, FollowLog, ReportHighlighting, ArchiveAccess, RepositoryDocuments, SyntaxSpans, AsyncCoordination
+// @tests OpenViewers, ReadLargeFiles, HighlightSource, FollowLog, ReportHighlighting, ArchiveAccess, RepositoryDocuments, SyntaxSpans
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;

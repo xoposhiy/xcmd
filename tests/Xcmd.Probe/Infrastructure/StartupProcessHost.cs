@@ -1,4 +1,4 @@
-// @tests RestoreWorkspace, ApplicationLifecycle, HeadlessVerification, IntegrationVerification
+// @tests RestoreWorkspace, HeadlessVerification, IntegrationVerification
 using System.Diagnostics;
 using System.Text.Json;
 using Avalonia;

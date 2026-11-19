@@ -1,4 +1,4 @@
-// @implements WindowsIdentity
+// @implements StableShortcut
 using System.Runtime.InteropServices;
 
 namespace Xcmd.Infrastructure;

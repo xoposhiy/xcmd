@@ -125,4 +125,11 @@ so that I do not need to replace shortcuts when a build changes.
 - Keep a permanent `Xcmd.exe` and taskbar shortcut while application versions live in
   separate release folders. The launcher reads `releases/latest.txt`, validates the
   target, forwards arguments and the working directory, starts that release and exits.
+  Use one Windows application identity across releases. Pinning any running window
+  must target the permanent launcher.
   Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 5](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-5); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 6](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-6).
+
+- Use a recognizable two-panel icon with square corners, matching dark panel colors and
+  a mark in only one panel. The user selected the refined H design and asked for simpler
+  small icons that preserve its identity, then approved replacing it everywhere.
+  Sources: [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 2](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-2); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 4](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-4); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 5](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-5); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 6](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-6).

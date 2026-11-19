@@ -1,4 +1,4 @@
-// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory, AsyncCoordination
+// @implements NavigatePanels, OpenOtherPanel, SortEntries, RecentLocations, FavoriteLocations, RefreshEntries, MarkEntries, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, ExtractEntries, OpenExternalTool, RunCommand, ShellActions, ComparePanelFiles, BrowseHistory
 using Avalonia.Input;
 using Xcmd.Core;
 

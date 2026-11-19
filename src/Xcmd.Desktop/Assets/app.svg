@@ -1,4 +1,4 @@
-<!-- @implements WindowsIdentity -->
+<!-- @implements StableShortcut -->
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
   <rect x="8" y="40" width="240" height="176" fill="#8792A4" />
   <rect x="16" y="48" width="224" height="160" fill="#171E2B" />

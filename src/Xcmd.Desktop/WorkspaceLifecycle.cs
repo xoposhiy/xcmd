@@ -1,4 +1,4 @@
-// @implements RecentLocations, FavoriteLocations, ReaderThemes, RestoreWorkspace, KeepFeedback, TryLocalRelease, ApplicationLifecycle, WorkspaceStorage, ReleaseHandoff
+// @implements RecentLocations, FavoriteLocations, ReaderThemes, RestoreWorkspace, KeepFeedback, TryLocalRelease, WorkspaceStorage, ReleaseHandoff
 using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Threading;

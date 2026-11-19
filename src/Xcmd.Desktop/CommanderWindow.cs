@@ -1,4 +1,4 @@
-// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease, AsyncCoordination
+// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Automation;

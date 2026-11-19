@@ -27,17 +27,18 @@ I can reproduce builds and manage dependencies explicitly.
   build time on multiple configurations or platforms.
   Source: [2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md → Turn 3](../codex-sessions/2026-11-10T16-00-01-01a1c5f9-01c7-7fd2-87f3-056a703409ae.md#turn-3).
 
-## ApplicationLifecycle
+## DiagnoseFailures
 
-As a developer, I want to compose the desktop host and dispose its background work
-predictably so that I can diagnose failures and add services with clear lifetimes.
+As a developer, I want to inspect the error and where it occurred after Xcmd fails
+to start, an operation fails, or the app crashes so that I can investigate the
+cause without having to reproduce the failure first.
 
-### Implementation decisions
+### Current coverage
 
-- Aim for the main window to appear in about a second, but stop startup tuning when
-  reaching that target would require aggressive optimizations. The later qualification
-  means this is not a hard subsecond release gate.
-  Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 7](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-7); [2026-11-10T14-53-22-01a1c5bc-1a31-7782-8047-528bcf85184b.md → Turn 1](../codex-sessions/2026-11-10T14-53-22-01a1c5bc-1a31-7782-8047-528bcf85184b.md#turn-1).
+If an exception occurs while the main window is starting, Xcmd tries to save the
+exception to `startup-error.txt` beside the session file. The next recorded
+startup failure replaces that file. Persistent diagnostics for failures and
+crashes during normal use remain open.
 
 ## WorkspaceStorage
 
@@ -93,6 +94,11 @@ As a developer, I want automated checks of code boundaries and quality limits so
 can catch violations before delivering a change.
 
 ### Implementation decisions
+
+- Keep Core, Infrastructure and Desktop as the three production projects. Clarify their
+  responsibilities and simplify complex areas within those boundaries instead of
+  migrating to a fourth Application project.
+  Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 2](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-2); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 4](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-4).
 
 - Implement useful architecture checks and repair the violations they find. Keep
   refactoring near complexity limits behavior-preserving and within the existing three
@@ -258,20 +264,3 @@ deliver improvements without interrupting the user's session.
   release, recent rollback releases, running releases, and releases chosen for
   longer retention.
   Source: Codex session ID 01a1ef26-c2a5-7c51-bcb2-a708c6a978a3.
-
-## WindowsIdentity
-
-As a developer, I want to keep the Windows application identity stable so that I can
-replace builds without breaking shortcuts and taskbar integration.
-
-### Implementation decisions
-
-- Keep one Windows application identity and taskbar shortcut across release directories.
-  Pinning a running window should still point to the permanent launcher; the user
-  accepted the launcher and taskbar scheme.
-  Sources: [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 5](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-5); [2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md → Turn 6](../codex-sessions/2026-11-10T09-47-42-01a1c4a4-4449-7cf1-bd8e-99768dcc55f0.md#turn-6).
-
-- Use a recognizable two-panel icon with square corners, matching dark panel colors and
-  a mark in only one panel. The user selected the refined H design and asked for simpler
-  small icons that preserve its identity, then approved replacing it everywhere.
-  Sources: [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 2](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-2); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 4](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-4); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 5](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-5); [2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md → Turn 6](../codex-sessions/2026-11-10T16-02-07-01a1c5fa-f0c5-7dc2-b574-8dc62148bd60.md#turn-6).
