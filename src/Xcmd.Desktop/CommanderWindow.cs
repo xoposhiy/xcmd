@@ -1,4 +1,4 @@
-// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease
+// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, RecognizeFileTypes, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Automation;
@@ -174,7 +174,7 @@ public sealed partial class CommanderWindow : Window
         AddHandler(KeyDownEvent, (_, _) => RecordActivity(), RoutingStrategies.Tunnel, handledEventsToo: true);
         Activated += (_, _) => { lastInput = Stopwatch.GetTimestamp(); viewing.RefreshQuickViewAfterActivation(); };
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
-        Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); viewing.ResetQuickViewKeys(); ResetQuickJump(); };
+        Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); favoritesKeyHeld = false; viewing.ResetQuickViewKeys(); ResetQuickJump(); };
         Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
         Closed += async (_, _) => { await Operations.Completion; await Task.Run(archives.Dispose); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
@@ -225,6 +225,7 @@ public sealed partial class CommanderWindow : Window
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
+        if (IsFavoritesKey(e)) favoritesKeyHeld = true;
         if (restarting) { e.Handled = true; return; }
         if (Feedback.IsPicking) { if (e.Key == Key.Escape) Feedback.Cancel(); e.Handled = true; return; }
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
@@ -254,6 +255,7 @@ public sealed partial class CommanderWindow : Window
     private void OnKeyUp(object? sender, KeyEventArgs e)
     {
         launchKeysHeld.Remove(e.Key);
+        if (ReleaseFavoritesKey(e)) { e.Handled = true; return; }
         if (e.Key is not (Key.LeftAlt or Key.RightAlt)) return;
         altInput = false;
         suppressQuickText = false;

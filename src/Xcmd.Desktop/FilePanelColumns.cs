@@ -12,7 +12,12 @@ namespace Xcmd.Desktop;
 
 internal sealed class FilePanelColumns
 {
+    public const int NameMinimumWidth = 120;
+    private const int TypeIndex = 1;
+    private const int SizeIndex = 2;
     public const int GitIndex = 3;
+    private const int ModifiedIndex = 4;
+    private static readonly int[] MetadataPriority = [SizeIndex, GitIndex, TypeIndex, ModifiedIndex];
     private readonly TableView table;
     private readonly GitLogPresentation logPresentation;
     private IReadOnlyList<FileRow> rows = [];
@@ -67,10 +72,11 @@ internal sealed class FilePanelColumns
     {
         if (logPresentation.ResetWidths()) return;
         useDefaultColumns = true;
-        SetColumnWidth(2, 112);
+        SetColumnWidth(SizeIndex, 112);
         SetColumnWidth(GitIndex, 56);
-        SetColumnWidth(4, 128);
+        SetColumnWidth(ModifiedIndex, 128);
         UpdateDefaultTypeWidth();
+        UpdateVisibility();
         FitNameColumn();
     }
 
@@ -87,6 +93,7 @@ internal sealed class FilePanelColumns
         useDefaultColumns = false;
         for (var i = 0; i < Math.Min(table.Columns.Count, columns.Length); i++)
             if (!columns[i].Star) SetColumnWidth(i, columns[i].Width);
+        UpdateVisibility();
         if (columns[0].Star) FitNameColumn();
     }
 
@@ -110,20 +117,32 @@ internal sealed class FilePanelColumns
     private void AdaptColumns(bool fitName = false)
     {
         if (logPresentation.IsLog) { logPresentation.Adapt(); return; }
-        for (var i = 0; i < table.Columns.Count; i++)
-            table.Columns[i].IsVisible = i != GitIndex || showGitColumn;
         var width = table.Bounds.Width;
         var resized = lastFilePanelWidth > 0 && width != lastFilePanelWidth;
         lastFilePanelWidth = width;
+        UpdateVisibility();
         if (fitName || resized || useDefaultColumns) FitNameColumn();
     }
 
+    private void UpdateVisibility()
+    {
+        var requiredWidth = (double)NameMinimumWidth;
+        foreach (var index in MetadataPriority)
+        {
+            var column = table.Columns[index];
+            var available = index != GitIndex || showGitColumn;
+            if (available) requiredWidth += column.Width.Value;
+            column.IsVisible = available && requiredWidth <= AvailableWidth;
+        }
+    }
+
+    // Reserve the scrollbar gutter so changing row counts does not move the dividers.
+    private double AvailableWidth => table.Bounds.Width > 0 ? table.Bounds.Width - 18 : 600;
+
     private void FitNameColumn()
     {
-        // Reserve the scrollbar gutter so changing row counts does not move the dividers.
-        var available = table.Bounds.Width > 0 ? table.Bounds.Width - 18 : 600;
         var otherWidths = table.Columns.Skip(1).Where(column => column.IsVisible).Sum(column => column.Width.Value);
-        SetColumnWidth(0, Math.Floor(available - otherWidths));
+        SetColumnWidth(0, Math.Floor(AvailableWidth - otherWidths));
     }
 
     private void UpdateDefaultTypeWidth()
@@ -138,7 +157,7 @@ internal sealed class FilePanelColumns
             width = Math.Max(width, Math.Ceiling(text.Width) + 16);
             if (width >= maxWidth) break;
         }
-        SetColumnWidth(1, Math.Min(width, maxWidth));
+        SetColumnWidth(TypeIndex, Math.Min(width, maxWidth));
     }
 
     private void SetColumnWidth(int index, double width)

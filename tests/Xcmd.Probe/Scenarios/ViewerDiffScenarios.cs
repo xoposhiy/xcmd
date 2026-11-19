@@ -1,4 +1,4 @@
-// @tests ReadWorkingFileDiff, QuickViewFile
+// @tests ReadWorkingFileDiff, QuickViewFile, FavoriteLocations
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -267,6 +267,17 @@ public static class ViewerDiffScenarios
             await c.KeyAsync(Key.D, RawInputModifiers.Control);
             Check(c.Window.ActiveNavigationDialog != null, "The source list retains the Favorites shortcut");
             Equal("Show Diff", diff.Header, "The preview remains in text while the source list has focus");
+            await c.KeyAsync(Key.Escape, target: c.Window.ActiveNavigationDialog);
+
+            await ReleaseDiffKeyAsync(c, c.Window);
+            Check(c.Window.ActiveNavigationDialog != null, "A release without a press also opens Favorites from the source list");
+            await c.KeyAsync(Key.Escape, target: c.Window.ActiveNavigationDialog);
+
+            var input = new InputDriver(c.Window);
+            input.KeyDown(Key.None, RawInputModifiers.Control, PhysicalKey.D, "в");
+            input.KeyUp(Key.None, RawInputModifiers.Control, PhysicalKey.D, "в");
+            await c.SettleAsync();
+            Check(c.Window.ActiveNavigationDialog != null, "The physical Ctrl+D opens Favorites on another keyboard layout");
             await c.KeyAsync(Key.Escape, target: c.Window.ActiveNavigationDialog);
 
             await c.KeyAsync(Key.Tab, RawInputModifiers.Control);

@@ -1,4 +1,4 @@
-// @implements ReadablePanels, MeasureFolders, RefreshEntries, JumpToName, ClipboardTransfer, RestoreWorkspace
+// @implements RecognizeFileTypes, MeasureFolders, RefreshEntries, JumpToName, ClipboardTransfer, RestoreWorkspace
 using Avalonia.Media;
 using Xcmd.Core;
 

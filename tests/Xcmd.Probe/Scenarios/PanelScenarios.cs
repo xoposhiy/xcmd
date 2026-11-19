@@ -471,22 +471,16 @@ public static class PanelScenarios
             Check(state.Columns.SequenceEqual(c.Window.Left.CaptureState().Columns), "The manual widths survive workspace restore");
 
             var otherColumns = table.Columns.Skip(1).ToArray();
-            var otherWidths = otherColumns.Select(column => column.ActualWidth).ToArray();
-            var panelWidth = table.Bounds.Width;
-            var nameWidth = table.Columns[0].ActualWidth;
+            var otherWidths = otherColumns.Select(column => column.Width).ToArray();
             var scroll = table.GetVisualDescendants().OfType<ScrollViewer>().First();
             foreach (var width in new[] { 1120d, 1480d, 1240d })
             {
                 c.Window.Width = width;
                 await c.SettleAsync();
-                Check(Math.Sign(table.Columns[0].ActualWidth - nameWidth) == Math.Sign(table.Bounds.Width - panelWidth),
-                    "Name shrinks and grows with the window after a manual resize");
-                Check(otherWidths.SequenceEqual(otherColumns.Select(column => column.ActualWidth)), "Window resize keeps the other column widths");
+                Check(otherWidths.SequenceEqual(otherColumns.Select(column => column.Width)), "Window resize keeps the other column widths");
                 var visibleWidth = table.Columns.Where(column => column.IsVisible).Sum(column => column.ActualWidth);
                 Check(scroll.Viewport.Width - visibleWidth is >= -1 and <= 19 && scroll.Extent.Width <= scroll.Viewport.Width + 1,
-                    "Name uses the remaining width and all columns fit without horizontal scrolling");
-                panelWidth = table.Bounds.Width;
-                nameWidth = table.Columns[0].ActualWidth;
+                    "Name uses the remaining width and the visible columns fit without horizontal scrolling");
             }
         }),
         new("double-click-directory", "UC20", async c =>

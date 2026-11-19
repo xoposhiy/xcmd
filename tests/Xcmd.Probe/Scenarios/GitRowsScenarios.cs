@@ -178,9 +178,9 @@ public static class GitRowsScenarios
                     {
                         c.Window.Width = width; await c.SettleAsync();
                         Check(panel.Table.Columns[3].IsVisible, "The Git icons remain visible at the minimum window width");
+                        Equal(width == 1280, panel.Table.Columns[^1].IsVisible, "Modified needs a wider window");
                         var scroll = panel.Table.GetVisualDescendants().OfType<ScrollViewer>().First();
-                        Check(width == 840 ? scroll.Extent.Width > scroll.Viewport.Width : scroll.Extent.Width <= scroll.Viewport.Width + 1,
-                            "Horizontal scrolling is available when the default columns exceed the viewport");
+                        Check(scroll.Extent.Width <= scroll.Viewport.Width + 1, "The visible columns fit without horizontal scrolling");
                         Equal("alpha.txt", panel.Current?.Name, "Column adaptation preserves the file cursor");
                         await c.ScreenshotAsync("git-columns-" + width + "-" + scale * 100);
                     }

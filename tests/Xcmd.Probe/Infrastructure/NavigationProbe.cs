@@ -1,4 +1,4 @@
-// @tests RecentLocations, FavoriteLocations, ReadablePanels
+// @tests RecentLocations, FavoriteLocations, RecognizeFileTypes
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;

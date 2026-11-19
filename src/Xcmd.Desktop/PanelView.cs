@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, SearchResultPanel, QuickViewFile, BrowseHistory, RestoreWorkspace, RecentLocations
+// @implements NavigatePanels, SortEntries, JumpToName, ReadablePanels, RecognizeFileTypes, RefreshEntries, MarkEntries, MeasureFolders, ViewSelectionSize, RenameEntry, SearchResultPanel, QuickViewFile, BrowseHistory, RestoreWorkspace, RecentLocations
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -290,7 +290,7 @@ public sealed partial class PanelView : Border
         AutomationProperties.SetAutomationId(button, Id + ".sort." + field.ToString().ToLowerInvariant());
         button.Click += (_, _) => { Activated?.Invoke(this); SortBy(field); FocusCurrent(); };
         headers[field] = button;
-        var column = new TableViewColumn { Header = button, Width = width, MinWidth = name ? 90 : 45 };
+        var column = new TableViewColumn { Header = button, Width = width, MinWidth = name ? FilePanelColumns.NameMinimumWidth : 45 };
         if (name)
             column.CellTemplate = new FuncDataTemplate<FileRow>((row, _) => row == null ? new Border().WithFeedbackId("PanelView.empty") : FileNameCell.Create(row, Icons));
         else column.CellTemplate = new FuncDataTemplate<FileRow>((row, _) => MakeValueCell(row, field));

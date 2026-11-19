@@ -8,6 +8,7 @@ public sealed partial class CommanderWindow
 {
     // Enter can move focus to the file panel before the key is released.
     private readonly HashSet<Key> launchKeysHeld = [];
+    private bool favoritesKeyHeld;
     private bool HasGitActionsFocus => Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin;
 
     private bool HandlePanelSwitch(KeyEventArgs e)
@@ -23,10 +24,24 @@ public sealed partial class CommanderWindow
 
     private bool HandleFavoritesShortcut(KeyEventArgs e)
     {
-        if (e.Key != Key.D || e.KeyModifiers != KeyModifiers.Control) return false;
+        if (!IsFavoritesKey(e) || e.KeyModifiers != KeyModifiers.Control) return false;
+        // The dialog can receive the release after it takes focus.
+        favoritesKeyHeld = false;
         OpenNavigation(ActivePanel, DirectoryList.Favorites);
         return true;
     }
+
+    private bool ReleaseFavoritesKey(KeyEventArgs e)
+    {
+        if (!IsFavoritesKey(e)) return false;
+        var sawPress = favoritesKeyHeld;
+        favoritesKeyHeld = false;
+        // Windows can deliver just the release if another shortcut consumes the press.
+        return !sawPress && !restarting && !Feedback.IsActive && !IsMenuOpen && !HasOpenDialog
+            && !viewing.IsQuickViewFocused && HandleFavoritesShortcut(e);
+    }
+
+    private static bool IsFavoritesKey(KeyEventArgs e) => e.Key == Key.D || e.PhysicalKey == PhysicalKey.D;
 
     private void EscapeCommandLine()
     {

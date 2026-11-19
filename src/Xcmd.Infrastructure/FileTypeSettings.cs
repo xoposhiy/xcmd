@@ -1,4 +1,4 @@
-// @implements ReadablePanels
+// @implements RecognizeFileTypes
 using System.Text.Json;
 using Xcmd.Core;
 

@@ -1,4 +1,4 @@
-// @implements ReadablePanels
+// @implements RecognizeFileTypes
 namespace Xcmd.Core;
 
 public sealed record FileTypeRule(string Name, string Color, string[] Extensions, string[] FileNames);

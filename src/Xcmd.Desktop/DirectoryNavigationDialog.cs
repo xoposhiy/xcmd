@@ -147,7 +147,7 @@ public sealed partial class DirectoryNavigationDialog : Window
     private bool HandleNavigationShortcut(KeyEventArgs e)
     {
         if (IsOpening) return false;
-        if (e.Key == Key.D && e.KeyModifiers.HasFlag(KeyModifiers.Control)) SelectList(DirectoryList.Favorites);
+        if ((e.Key == Key.D || e.PhysicalKey == PhysicalKey.D) && e.KeyModifiers.HasFlag(KeyModifiers.Control)) SelectList(DirectoryList.Favorites);
         else if (e.Key == Key.Down && e.KeyModifiers.HasFlag(KeyModifiers.Alt)) SelectList(DirectoryList.History);
         else return false;
         return true;
