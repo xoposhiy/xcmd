@@ -16,7 +16,8 @@ public static class PanelInputProbe
         await context.KeyAsync(Key.Home, RawInputModifiers.Control);
         var index = panel.Rows.FindIndex(row => row.Name == name);
         Check(index >= 0, "Fixture item exists: " + name);
-        for (var i = 0; i < index; i++) await context.KeyAsync(Key.Down);
+        for (var i = 0; i < index; i++) context.PressKey(Key.Down);
+        if (index > 0) await context.SettleAsync();
         Equal(name, panel.Current?.Name, "Keyboard cursor");
     }
 

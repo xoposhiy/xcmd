@@ -109,6 +109,11 @@ can catch violations before delivering a change.
   repair branch.
   Sources: [2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md → Turn 4](../codex-sessions/2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md#turn-4); [2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md → Turn 5](../codex-sessions/2026-11-13T16-48-41-01a1d598-c5c9-74b3-81b1-2d8998f63598.md#turn-5).
 
+- Include scenarios that failed in recent CI runs alongside the affected scenarios
+  before committing. Speed up individual scenarios by reducing repeated setup
+  and choosing representative combinations around known failure boundaries.
+  Codex session ID `01a1f28d-c98f-77c1-aeea-7a954ef09674`.
+
 - Show failed test names, failed lint checks and their error messages on the GitHub Actions run page.
   Codex session ID 01a1f101-c467-7ae3-9de5-9761d16b1998.
 

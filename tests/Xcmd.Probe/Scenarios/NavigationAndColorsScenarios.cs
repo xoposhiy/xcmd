@@ -45,7 +45,7 @@ public static class NavigationAndColorsScenarios
             var add = FavoritesProbe.Button(dialog, "FavoriteAdd"); Check(add.IsKeyboardFocusWithin, "Tab continues to enabled action buttons.");
             await c.KeyAsync(Key.Escape, target: dialog);
         }),
-        new("navigation-root-exclusion-and-attention", "UC15; meaningful frequent locations", c =>
+        new("navigation-root-exclusion-and-attention", "UC15; meaningful frequent locations", () =>
         {
             var now = DateTimeOffset.UtcNow; var book = new DirectoryUsageBook();
             book.Restore([new(@"C:\", 10000, 10000, now), new(@"C:\project", 2, 2, now)]);
@@ -63,7 +63,6 @@ public static class NavigationAndColorsScenarios
             Equal(1, ObserveFor(attention, @"C:\background", now.AddMinutes(2), 12, true).Count(), "Active work can qualify a background location later");
             var suspended = new DirectoryAttention(); suspended.Observe(@"C:\sleep", now, true);
             Check(suspended.Observe(@"C:\sleep", now.AddHours(1), true) == null, "A suspended timer cannot count a long sleep as work.");
-            return Task.CompletedTask;
         }),
         new("navigation-legacy-ranking-migration", "UC15; UC38; ranking migration", async c =>
         {

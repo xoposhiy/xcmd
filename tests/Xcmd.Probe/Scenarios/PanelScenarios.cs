@@ -12,8 +12,6 @@ using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Scenarios;
 
-public sealed record Scenario(string Id, string Requirement, Func<ProbeContext, Task> Run);
-
 public static class PanelScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =

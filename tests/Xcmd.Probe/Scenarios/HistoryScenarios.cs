@@ -34,7 +34,7 @@ public static class HistoryScenarios
                 Check(c.Window.Left.Table.IsKeyboardFocusWithin, "The round trip keeps keyboard focus in the panel");
             }
         }),
-        new("history-recent-unique-and-bounded", "UC15", c =>
+        new("history-recent-unique-and-bounded", "UC15", () =>
         {
             var history = new DirectoryHistory();
             history.Visit(@"C:\work");
@@ -45,7 +45,6 @@ public static class HistoryScenarios
             for (var i = 0; i < 120; i++) history.Visit(@"C:\work\project-" + i);
             Equal(99, history.PreviousDirectories.Count, "History keeps 100 locations including the current one");
             Equal(@"C:\work\project-118", history.PreviousDirectories[0], "Previous locations start with the most recent");
-            return Task.CompletedTask;
         }),
         new("history-keyboard-restores-cursor", "UC15; UC20", async c =>
         {

@@ -268,13 +268,12 @@ public static class FileOperationScenarios
             Check(!Directory.Exists(Path.Combine(c.LeftPath, "folder1")), "Permanent deletion removes the junction itself.");
             Equal("abc", File.ReadAllText(Path.Combine(c.LeftPath, "alpha.txt")), "Deleting the junction preserves its target contents");
         }),
-        new("operations-recycle-refuses-permanent-fallback", "UC35; Recycle Bin failure keeps the source", c =>
+        new("operations-recycle-refuses-permanent-fallback", "UC35; Recycle Bin failure keeps the source", () =>
         {
             var sink = new RecycleProgressSink(CancellationToken.None);
             Check(sink.PreDeleteItem(0, 0) < 0 && sink.RefusedPermanentDeletion, "The native callback refuses a permanent fallback.");
             var permitted = new RecycleProgressSink(CancellationToken.None);
             Equal(0, permitted.PreDeleteItem(0x80, 0), "The native callback allows recyclable items");
-            return Task.CompletedTask;
         }),
         new("operations-feedback-transfer-confirmation", "UC04; UC05; Confirm source and destination", async c =>
         {

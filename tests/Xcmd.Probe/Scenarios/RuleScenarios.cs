@@ -12,16 +12,15 @@ public static class RuleScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
-        new("rules-parent-cursor-name", "UC15; Parent cursor names identify folders and nested archive sources", c =>
+        new("rules-parent-cursor-name", "UC15; Parent cursor names identify folders and nested archive sources", () =>
         {
             Equal("folder", PanelRules.ParentCursorName(@"C:\work\folder"), "An ordinary folder keeps its name");
             Equal("sample.zip", PanelRules.ParentCursorName(@"C:\work\sample.zip|"), "Leaving an archive selects its physical source");
             Equal("nested", PanelRules.ParentCursorName(@"C:\work\sample.zip|nested"), "Leaving an archive folder selects that folder");
             Equal("inner.zip", PanelRules.ParentCursorName(@"C:\work\outer.zip|inner.zip|"), "Leaving a nested archive selects its inner source");
             Equal("inner.zip", PanelRules.ParentCursorName(@"C:\work\outer.zip|folder/inner.zip|"), "A nested archive source can be in an archive folder");
-            return Task.CompletedTask;
         }),
-        new("rules-natural-order-number-runs", "UC13; numeric ordering and stable ties", _ =>
+        new("rules-natural-order-number-runs", "UC13; numeric ordering and stable ties", () =>
         {
             (string Left, string Right, int Order)[] pairs =
             [
@@ -35,9 +34,8 @@ public static class RuleScenarios
                 Equal(order, Math.Sign(PanelRules.NaturalCompare(left, right)), "Natural order: " + left + " / " + right);
                 Equal(-order, Math.Sign(PanelRules.NaturalCompare(right, left)), "Reverse natural order");
             }
-            return Task.CompletedTask;
         }),
-        new("rules-name-validation-priority-and-devices", "UC17; Windows names and validation feedback", _ =>
+        new("rules-name-validation-priority-and-devices", "UC17; Windows names and validation feedback", () =>
         {
             foreach (var name in new[] { "CON", "con.txt", "PRN", "AUX.log", "NUL", "CONIN$", "CONOUT$.txt", "COM1", "com9.txt", "LPT¹", "COM².txt", "lpt³.data" })
                 Equal("This name is reserved by Windows.", PanelRules.ValidateName(name), "Reserved name: " + name);
@@ -48,9 +46,8 @@ public static class RuleScenarios
             Equal("Use a single valid file name.", PanelRules.ValidateName(new string('x', 256) + ':'), "Invalid characters take priority over length");
             Equal("A name cannot end with a space or a dot.", PanelRules.ValidateName("CON."), "Trailing dots take priority over reserved names");
             Equal("A name cannot exceed 255 characters.", PanelRules.ValidateName(new string('x', 256)), "The length limit is preserved");
-            return Task.CompletedTask;
         }),
-        new("rules-command-parser-request-and-quotes", "UC02; command targets and raw arguments", _ =>
+        new("rules-command-parser-request-and-quotes", "UC02; command targets and raw arguments", () =>
         {
             (string Text, CommandLineAction Action)[] cases =
             [
@@ -67,7 +64,6 @@ public static class RuleScenarios
                 Rejects<ArgumentException>(() => CommandLine.Parse(text), "Close the program path quotes and separate arguments with a space.");
             Rejects<ArgumentException>(() => CommandLine.Parse("tool\targument"), "The command is too long or contains control characters.");
             Rejects<ArgumentException>(() => CommandLine.Parse("cd \"unfinished"), "Use one pair of quotes around the directory path.");
-            return Task.CompletedTask;
         }),
         new("rules-workspace-panel-validation", "UC38; saved navigation and layout constraints", c =>
         {

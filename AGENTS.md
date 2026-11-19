@@ -36,7 +36,8 @@ Ask about material product choices or blockers. Choose routine methods independe
 - Keep work off the user's desktop. Do not open visible windows without a request.
   Start background build/test helpers with `WindowStyle Hidden` and log redirection;
   suppress console creation in application hosts. Leave the user's terminal alone.
-- Before committing code, run affected scenarios and static checks. Documentation
+- Before committing code, run affected scenarios, recent CI failures and static checks
+  through the filtered `Test-Xcmd.ps1 -CheckOnly` command. Documentation
   changes need relevant document checks. Local full regression runs require an
   explicit request; GitHub Actions runs the full gate automatically. This keeps
   local feedback fast while retaining broad verification in CI.

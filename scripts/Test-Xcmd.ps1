@@ -18,6 +18,14 @@ try {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     $probeArguments = @('tests/Xcmd.Probe/bin/Release/net10.0/win-x64/Xcmd.Probe.dll')
     if ($Filter) { $probeArguments += @('--filter', $Filter) }
+    if ($Filter -and $CheckOnly -and -not $env:CI) {
+        $recent = @(python (Join-Path $PSScriptRoot 'code-health/recent_failures.py') --ids)
+        if ($LASTEXITCODE -ne 0) { Write-Warning 'Checking affected scenarios with no CI history available.' }
+        if ($recent.Count -gt 0) {
+            Write-Output ("Recent CI scenarios: " + ($recent -join ', '))
+            $probeArguments += @('--include-ids', ($recent -join ','))
+        }
+    }
     if ($OutputPath) { $probeArguments += @('--output', $OutputPath) }
     if ($KeepFixtures) { $probeArguments += '--keep-fixtures' }
     Write-Output 'CHECK Behavioral scenarios'

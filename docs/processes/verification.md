@@ -35,6 +35,19 @@ Filters are comma-separated, case-insensitive parts of scenario IDs. Use the
 current scenario inventory and source to select coverage. The archived verification
 tables are historical evidence, not a maintained coverage index.
 
+A local filtered `-CheckOnly` run adds scenarios that failed in the last eight
+completed `Verify` runs on `main`. Choose the affected filters for the change.
+Failures from earlier attempts count even when a retry passes. The probe
+runs each selected scenario once and reports historical IDs missing
+from the current checkout. Feedback builds still use only their requested filters.
+
+Run `python scripts/code-health/recent_failures.py` to list each scenario and
+the number of runs in which it failed. The first lookup uses the GitHub CLI
+with read access to Actions. Completed run results are cached in the shared Git
+directory. Offline checks use the last saved run list. Read the history message
+for the number of runs with available results. A missing report leaves a gap
+in the history and the affected scenarios still run.
+
 The unfiltered `Test-Xcmd.ps1`, `Release-Xcmd.ps1` and `Report-CodeHealth.ps1`
 without `-SkipVerification` run the full gate. Use them locally only for an
 explicit full-regression request and follow [regression work](regression.md).

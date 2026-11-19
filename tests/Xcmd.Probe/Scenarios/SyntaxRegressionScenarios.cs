@@ -121,7 +121,7 @@ public static class SyntaxRegressionScenarios
             Equal(source, highlighted.Text, "The Git adapter highlights the committed source instead of working text");
             SyntaxProbe.CheckMarker(highlighted, "public", SyntaxKind.Keyword);
         }),
-        new("syntax-failure-cancellation-and-detection", "UC09; missing grammars fall back, cancellation remains observable and compound extensions win", c =>
+        new("syntax-failure-cancellation-and-detection", "UC09; missing grammars fall back, cancellation remains observable and compound extensions win", () =>
         {
             var highlighter = new SyntaxHighlighter();
             var missing = highlighter.Highlight("keep source", new("missing", "Missing", "source.xcmd-missing"), CancellationToken.None);
@@ -133,7 +133,6 @@ public static class SyntaxRegressionScenarios
             Check(cancelled, "Cancellation is not converted into a grammar error");
             Equal("jsonc", SyntaxHighlighter.Detect(".eslintrc.json", "")?.Id, "The compound extension selects JSON with comments");
             Equal("xml", SyntaxHighlighter.Detect("PROJECT.CSPROJ.USER", "")?.Id, "Compound project extensions are case-insensitive");
-            return Task.CompletedTask;
         })
     ];
 }

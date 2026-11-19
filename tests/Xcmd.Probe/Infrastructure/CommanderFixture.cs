@@ -55,8 +55,10 @@ public sealed partial class ProbeContext
         await Window.InitializeAsync(LeftPath, RightPath);
         await SettleAsync();
         Window.Left.FocusCurrent();
-        await KeyAsync(Key.Down);
-        await KeyAsync(Key.Tab); await KeyAsync(Key.Down); await KeyAsync(Key.Tab);
+        PressKey(Key.Down);
+        PressKey(Key.Tab);
+        PressKey(Key.Down);
+        PressKey(Key.Tab);
         await SettleAsync();
     }
 

@@ -125,7 +125,7 @@ public static class RefinementScenarios
             await c.KeyAsync(Key.Escape, target: draft);
             Equal(1, c.Window.Feedback.Notes.Count, "Only the submitted nested comment is saved");
         }),
-        new("refinement-directory-ranking", "UC15", c =>
+        new("refinement-directory-ranking", "UC15", () =>
         {
             var now = new DateTimeOffset(2026, 11, 9, 12, 0, 0, TimeSpan.Zero);
             var book = new DirectoryUsageBook();
@@ -140,7 +140,6 @@ public static class RefinementScenarios
             Check(book.Suggest(@"C:\recent-project", now).All(item => !item.Path.Equals(@"C:\recent-project", StringComparison.OrdinalIgnoreCase)), "The current location is excluded.");
             for (var i = 0; i < 520; i++) book.Visit(@"C:\project-" + i, now);
             Equal(512, book.Capture().Length, "Statistics stay bounded");
-            return Task.CompletedTask;
         }),
         new("refinement-history-two-columns-and-persistence", "UC15", async c =>
         {

@@ -22,24 +22,23 @@ public static class OpenFeedbackScenarios
             {
                 if (++layouts > 80) throw new InvalidOperationException("Column layout does not settle at window width " + c.Window.Width);
             };
+            // Fractional columns can keep triggering layout near 1231 DIP.
+            var widths = Enumerable.Range(0, 12).Select(step => 840 + 40 * step)
+                .Concat(Enumerable.Range(1224, 15)).Order().ToArray();
             foreach (var scale in new[] { 1d, 1.5d })
             {
                 c.Window.SetScaleForTest(scale);
-                for (var width = 1280; width >= 840; width--)
+                foreach (var width in widths.Reverse().Concat(widths.Skip(1)))
                 {
                     layouts = 0;
                     c.Window.Width = width;
-                    await c.SettleAsync();
-                }
-                for (var width = 840; width <= 1280; width += 3)
-                {
-                    layouts = 0;
-                    c.Window.Width = width;
-                    await c.SettleAsync();
+                    await c.UpdateLayoutAsync();
+                    Check(Math.Abs(c.Window.Bounds.Width - width) < 1, "The window reached the requested width");
                 }
             }
+            var cursor = c.Window.Left.Current;
             await c.KeyAsync(Key.Down);
-            Check(c.Window.Left.Current != null, "Keyboard navigation still works after resizing");
+            Check(c.Window.Left.Current != null && c.Window.Left.Current != cursor, "Down moves the cursor after resizing");
         }),
         new("open-feedback-search-actions", "UC23; underlined panel access key and context-sensitive primary action", async c =>
         {

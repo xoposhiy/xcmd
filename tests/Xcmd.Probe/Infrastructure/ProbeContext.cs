@@ -25,12 +25,17 @@ public sealed partial class ProbeContext : IDisposable
         do
         {
             await Task.Delay(5);
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
-            foreach (var window in OpenWindows()) window.UpdateLayout();
-            foreach (var window in OpenWindows()) VerifyHeadlessWindow(window);
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            await UpdateLayoutAsync();
             if (watch.Elapsed > TimeSpan.FromSeconds(20)) throw new TimeoutException("The application did not become idle.");
         } while (IsBusy);
+    }
+
+    public async Task UpdateLayoutAsync()
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+        foreach (var window in OpenWindows()) window.UpdateLayout();
+        foreach (var window in OpenWindows()) VerifyHeadlessWindow(window);
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
     }
 
     private void VerifyHeadlessWindow(Window window)

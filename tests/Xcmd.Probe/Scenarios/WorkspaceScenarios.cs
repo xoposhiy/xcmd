@@ -90,7 +90,7 @@ public static class WorkspaceScenarios
             Equal(c.LeftPath, c.Window.Left.Session.DirectoryPath, "An invalid saved session does not prevent startup");
             Check((await new SessionStore(path).ReadAsync()) != null, "A valid session is saved after recovery.");
         }),
-        new("workspace-idle-policy", "UC38; Automatic release update", c =>
+        new("workspace-idle-policy", "UC38; Automatic release update", () =>
         {
             var ready = new RestartReadiness(false, false, false, false, TimeSpan.FromSeconds(10));
             Check(ready.CanRestart, "An idle application can update.");
@@ -103,7 +103,6 @@ public static class WorkspaceScenarios
             Check(background.CanRestart, "An inactive application can update immediately.");
             Check(!(background with { ViewerActive = true }).CanRestart, "The active viewer delays the update.");
             Check(!(background with { Busy = true }).CanRestart, "Background file work delays the update.");
-            return Task.CompletedTask;
         }),
         new("workspace-release-validation", "UC38; Automatic release update", async c =>
         {

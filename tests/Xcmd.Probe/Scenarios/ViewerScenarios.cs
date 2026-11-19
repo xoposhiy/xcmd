@@ -215,7 +215,7 @@ public static class ViewerScenarios
             var firstEnd = viewer.Reader.VisibleEnd;
             await WheelAsync(c, viewer, -5);
             Check(viewer.Reader.VisibleEnd > firstEnd, "The mouse wheel updates actual visible progress");
-            for (var i = 0; i < 20; i++) await c.KeyAsync(Key.PageDown, target: viewer);
+            for (var i = 0; i < 20 && viewer.Reader.ByteOffset == 0; i++) await c.KeyAsync(Key.PageDown, target: viewer);
             Check(viewer.Reader.ByteOffset > 0 && viewer.Reader.ViewedPercent < 100, "PageDown crosses the initial read boundary without a false end");
             await c.KeyAsync(Key.End, RawInputModifiers.Control, viewer);
             Check(viewer.Reader.TextContent.Text!.EndsWith("ACTUAL FILE END", StringComparison.Ordinal), "Ctrl+End loads the actual file tail");

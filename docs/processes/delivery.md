@@ -32,7 +32,8 @@ visible window. Documentation and check-only changes need no application release
 
 Finish code review, relevant regression coverage and story maintenance. For a
 changed user workflow, obtain the independent review described in [UI work](ui.md).
-Run affected scenarios and static checks through the [verification process](verification.md).
+Run affected scenarios, recent CI failures and static checks through the
+[verification process](verification.md).
 Keep evidence tied to a fixed source snapshot with isolated build outputs, so
 concurrent edits cannot silently invalidate a result.
 

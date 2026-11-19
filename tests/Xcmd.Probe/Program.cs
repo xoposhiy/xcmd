@@ -72,6 +72,14 @@ internal static class Program
         var filters = filter?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var selected = scenarios.Where(scenario => filters == null || filters.Any(value => scenario.Id.Contains(value, StringComparison.OrdinalIgnoreCase))).ToArray();
         if (selected.Length == 0) { Console.Error.WriteLine("No matching scenarios."); return 2; }
+        var recent = Option(args, "--include-ids");
+        if (!string.IsNullOrEmpty(recent))
+        {
+            var ids = recent.Split(',').ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var missing in ids.Except(scenarios.Select(scenario => scenario.Id), StringComparer.OrdinalIgnoreCase))
+                Console.Error.WriteLine($"Recent CI scenario is missing from this checkout: {missing}");
+            selected = selected.Concat(scenarios.Where(scenario => ids.Contains(scenario.Id))).Distinct().ToArray();
+        }
         var output = Path.GetFullPath(Option(args, "--output") ?? Path.Combine("artifacts", "probe", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")));
         Directory.CreateDirectory(output);
         var results = new List<object>();
@@ -87,24 +95,8 @@ internal static class Program
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
             try
             {
-                session.Dispatch(async () =>
-                {
-                    using var context = new ProbeContext(folder);
-                    try
-                    {
-                        await context.StartAsync();
-                        await scenario.Run(context);
-                        context.SaveSnapshot();
-                        measurements = context.Measurements;
-                    }
-                    catch
-                    {
-                        context.SaveSnapshot();
-                        context.CaptureFailure();
-                        throw;
-                    }
-                    return true;
-                }, timeout.Token).WaitAsync(TimeSpan.FromSeconds(95)).GetAwaiter().GetResult();
+                measurements = session.Dispatch(() => scenario.Execute(folder), timeout.Token)
+                    .WaitAsync(TimeSpan.FromSeconds(95)).GetAwaiter().GetResult();
                 if (!args.Contains("--keep-fixtures"))
                 {
                     var retries = FixtureCleanup.Remove(folder);
