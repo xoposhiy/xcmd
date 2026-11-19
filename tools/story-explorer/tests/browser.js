@@ -240,7 +240,155 @@ async page => {
   assert((await page.locator('.point-detail').textContent()).includes('0 test files'), 'Selected point must show matching stories.');
   assert(await page.locator('.epic-bars li').count() === data.epics.length, 'The bar chart must show each epic.');
   await page.screenshot({path: 'artifacts/story-explorer/charts.png'});
+
+  await views.getByRole('link', {name: 'Matrix', exact: true}).click();
+  await waitForHeading('Implementation matrix');
+  const matrix = page.getByRole('img', {name: `Implementation matrix, ${data.matrixFiles.length} files by ${data.counts.stories} stories`});
+  const fileOrder = page.getByRole('combobox', {name: 'Files'});
+  const storyOrder = page.getByRole('combobox', {name: 'Stories'});
+  const withinDirectory = page.getByRole('combobox', {name: 'Within directories'});
+  const tip = page.locator('.matrix-tip');
+  const epicHeaders = page.getByRole('group', {name: 'Story epics'}).getByRole('button');
+  const directoryHeaders = page.getByRole('group', {name: 'Source directories'}).getByRole('button');
+  const storyColumns = data.epics.flatMap(epic => epic.stories.map(story => ({epic: epic.id, ...story})));
+  await matrix.waitFor();
+  assert(await epicHeaders.count() === data.epics.length && await directoryHeaders.count() === 0,
+    'Epic order must show one header per epic. Directory headers require directory order.');
+  await page.screenshot({path: 'artifacts/story-explorer/matrix.png', fullPage: true});
+  await epicHeaders.first().hover();
+  assert(await tip.isVisible() && await tip.textContent() === data.epics[0].title, 'Hovering on an epic must show its full title.');
+  await matrix.focus();
+  await page.keyboard.press('ArrowRight');
+  assert(await tip.locator('strong').textContent() === storyColumns[1].id, 'Arrow keys must inspect the next story.');
+  await page.keyboard.press('Escape');
+  await tip.waitFor({state: 'hidden'});
+  await fileOrder.selectOption('folders');
+
+  const directoryOf = path => path.slice(0, path.lastIndexOf('/'));
+  const directoryNames = new Set();
+  for (const path of data.matrixFiles) {
+    const parts = directoryOf(path).split('/');
+    for (let depth = Math.min(2, parts.length); depth <= parts.length; depth++) {
+      directoryNames.add(parts.slice(0, depth).join('/'));
+    }
+  }
+  const pathKey = path => path.replaceAll('/', '\0');
+  const directories = [...directoryNames].sort((a, b) => pathKey(a) < pathKey(b) ? -1 : 1);
+  const filesByDirectory = directories.map(directory => data.matrixFiles.filter(path => directoryOf(path) === directory));
+  const matrixPaths = filesByDirectory.flat();
+  const maxBytes = Math.max(1, ...Object.values(data.matrixFileSizes));
+  const fileHeight = path => Math.max(3, Math.round(16 * Math.sqrt(data.matrixFileSizes[path] / maxBytes)));
+  assert(JSON.stringify(await directoryHeaders.evaluateAll(headers => headers.map(header => header.getAttribute('aria-label')))) ===
+    JSON.stringify(directories), 'Directory order must show the full directory tree in order.');
+  const firstDirectory = directoryHeaders.first();
+  await firstDirectory.hover();
+  assert(await tip.isVisible() && await tip.textContent() === directories[0], 'Hovering on a source directory must show its path.');
+  assert((await firstDirectory.boundingBox()).height === Math.max(28, filesByDirectory[0].reduce((sum, path) => sum + fileHeight(path), 0)),
+    'A directory header must cover all its file rows.');
+  await page.mouse.move(2, 2);
+  await firstDirectory.focus();
+  assert(await tip.isVisible() && await tip.textContent() === directories[0], 'Keyboard focus must show the directory path.');
+  await page.keyboard.press('Escape');
+  await tip.waitFor({state: 'hidden'});
+  const nestedPath = directories.find(path => path.split('/').length > 2);
+  const nestedHeader = page.getByRole('button', {name: nestedPath, exact: true});
+  const parentHeader = page.getByRole('button', {name: directoryOf(nestedPath), exact: true});
+  assert((await nestedHeader.boundingBox()).x > (await parentHeader.boundingBox()).x, 'Subdirectory headers must be indented.');
+  await nestedHeader.hover();
+  assert(await tip.isVisible() && await tip.textContent() === nestedPath, 'Subdirectory details must show the full path.');
+  await page.mouse.move(2, 2);
+  const transitionCount = async () => parseInt(await page.locator('.matrix-transitions').textContent(), 10);
+  assert(await withinDirectory.inputValue() === 'transitions', 'Directory order must default to fewer transitions.');
+  const reduced = await transitionCount();
+  await withinDirectory.selectOption('shared');
+  const sharedStoryTransitions = await transitionCount();
+  await withinDirectory.selectOption('paths');
+  assert(reduced <= Math.min(sharedStoryTransitions, await transitionCount()),
+    'The reduced order must have at most as many transitions as the other orders.');
+  await withinDirectory.selectOption('transitions');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({path: 'artifacts/story-explorer/matrix-directories.png', fullPage: true});
+  await withinDirectory.selectOption('paths');
+
+  const offsets = (groups, size) => {
+    let gap = 0;
+    return groups.map((group, index) => {
+      if (index && group !== groups[index - 1]) gap += 3;
+      return index * size + gap;
+    });
+  };
+  const x = offsets(storyColumns.map(story => story.epic), 10);
+  const y = [];
+  let end = 0;
+  for (const [i, paths] of filesByDirectory.entries()) {
+    if (i) end += 3;
+    const top = end;
+    for (const path of paths) {
+      y.push(end);
+      end += fileHeight(path);
+    }
+    end = Math.max(end, top + 28);
+  }
+  assert(await matrix.evaluate(canvas => canvas.clientHeight) === end, 'The grid height must match its file rows and directory groups.');
+  const linkedPaths = storyColumns.map(story => new Set(story.implements.map(file => file.path)));
+  const expected = matrixPaths.map(path => linkedPaths.map(paths => paths.has(path)));
+  const wrongCells = await matrix.evaluate((canvas, {x, y, expected}) => {
+    const ratio = canvas.width / canvas.clientWidth;
+    const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let wrong = 0;
+    for (const [row, top] of y.entries()) {
+      for (const [column, left] of x.entries()) {
+        const pixel = (Math.floor(top * ratio) * canvas.width + Math.floor(left * ratio)) * 4;
+        const color = pixels.slice(pixel, pixel + 3).join(',');
+        if (color !== (expected[row][column] ? '35,131,79' : '255,255,255')) wrong++;
+      }
+    }
+    return wrong;
+  }, {x, y, expected});
+  assert(!wrongCells, 'Every matrix cell must match its source implementation link in folder and epic order.');
+  const firstLinkedRow = expected.findIndex(row => row[0]);
+  const firstUnlinkedRow = expected.findIndex(row => !row[0]);
+  const largestRow = matrixPaths.findIndex(path => data.matrixFileSizes[path] === maxBytes);
+  for (const row of new Set([firstLinkedRow, firstUnlinkedRow, largestRow])) {
+    const height = fileHeight(matrixPaths[row]);
+    await matrix.hover({position: {x: 1, y: y[row] + height - 2}});
+    const text = await tip.textContent();
+    assert(await tip.isVisible() && text.includes(matrixPaths[row]) &&
+      text.includes(expected[row][0] ? 'Implements' : 'Unlinked') && /\d (B|KiB|MiB)$/.test(text),
+    'Pointer details must show the file, its link state and its size.');
+    assert(await page.locator('.matrix-mark').evaluate(mark => mark.offsetHeight) === height, 'The highlight must match the row height.');
+  }
+  await page.screenshot({path: 'artifacts/story-explorer/matrix-tooltip.png'});
+  const sharedHeight = expected.reduce((height, row, index) =>
+    height + (row.filter(Boolean).length > 1 ? fileHeight(matrixPaths[index]) : 0), 0);
+  await fileOrder.selectOption('links');
+  await matrix.hover({position: {x: 1, y: sharedHeight + 4}});
+  assert((await tip.textContent()).includes('1 story in this file'), 'Single-story files must follow the shared files.');
+  await fileOrder.selectOption('folders');
+  await storyOrder.selectOption('links');
+  await fileOrder.selectOption('dependencies');
+  assert(await epicHeaders.count() === 0 && await directoryHeaders.count() === 0,
+    'Headers must follow the order selected for their own axis.');
+  await page.getByText('Dependencies come first', {exact: false}).waitFor();
+  await page.reload();
+  assert(await fileOrder.inputValue() === 'dependencies' && await storyOrder.inputValue() === 'links',
+    'A reload must preserve both order settings.');
+  await matrix.focus();
+  assert((await tip.textContent()).includes(data.dependencyGroups[0][0]), 'Dependency order must start with the first file in the graph order.');
+
   await page.setViewportSize({width: 390, height: 844});
+  await fileOrder.selectOption('folders');
+  await storyOrder.selectOption('epics');
+  assert(await withinDirectory.inputValue() === 'paths', 'The within-directory order must survive reloads and view changes.');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth &&
+    document.querySelector('.matrix-viewport').scrollWidth > document.querySelector('.matrix-viewport').clientWidth),
+  'Only the matrix itself may scroll horizontally on a narrow screen.');
+  assert(await page.locator('.matrix-viewport').evaluate(view => {
+    const header = view.querySelector('.matrix-directories');
+    const initial = header.getBoundingClientRect().left;
+    view.scrollLeft = 280;
+    return view.scrollLeft > 0 && Math.abs(header.getBoundingClientRect().left - initial) <= 4;
+  }), 'Directory headers must remain visible when scrolling across stories.');
   for (const [view, title] of [['Charts', 'Mapping charts'], ['Treemap', 'Repository treemap'],
     ['File rankings', 'File rankings'], ['Story rankings', 'Story rankings']]) {
     await views.getByRole('link', {name: view, exact: true}).click();
@@ -262,5 +410,5 @@ async page => {
   const unexpected = errors.filter(message => !message.includes('422'));
   assert(!unexpected.length, 'Unexpected browser errors: ' + unexpected.join('; '));
   return {epics: data.counts.epics, stories: data.counts.stories, mappedFiles: data.counts.files,
-    checks: 'catalogue, reload, source, all four rankings, file details, treemap, charts, keyboard, narrow layout'};
+    checks: 'catalogue, reload, source, all four rankings, file details, treemap, charts, matrix, keyboard, narrow layout'};
 }

@@ -3,6 +3,7 @@ import {byId, element, link, sourceLink} from './ui.js';
 import {buildReportData, renderFile, renderFileRankings, renderStoryRankings} from './reports.js';
 import {renderTreemap} from './treemap.js';
 import {renderCharts} from './charts.js';
+import {renderMatrix} from './matrix.js';
 
 let catalogue;
 let stories = [];
@@ -13,6 +14,7 @@ const reports = new Map([
   ['files', ['File rankings', renderFileRankings]],
   ['treemap', ['Treemap', renderTreemap]],
   ['charts', ['Charts', renderCharts]],
+  ['matrix', ['Implementation matrix', renderMatrix]],
 ]);
 
 function route() {

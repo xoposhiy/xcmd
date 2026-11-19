@@ -205,6 +205,21 @@ I can locate related code and review how responsibilities are spread across file
   color band, place larger tiles first.
   Codex session ID `01a1ee1c-f487-78a2-bba9-c3937474ba40`.
 
+- Show a compact implementation matrix with source files under `src/` in rows
+  and all stories in columns. Use green for an implementation link and white
+  for an empty cell. Show the file and story on hover. Keep epic reading order
+  and source directories as order options. Let the developer group either
+  axis by shared links and place files linked to one story after shared files in
+  that order. Offer a dependency order that keeps cycles together. Scale file
+  row height by file size and show the size in cell details. Show headers with
+  hover details for epics and the source directory tree in their respective
+  orders. Within each directory, offer orders by fewer color
+  transitions, shared stories and file paths. Show the number of color transitions
+  between adjacent files within directories so the orders can be compared.
+  Leave JSON resources, lock files and licenses outside the matrix. Keep source
+  files with no story links visible so missing annotations can be found.
+  Codex session ID `01a1f431-c0b8-7ff0-9500-bc489b2a7bce`.
+
 - Before each commit, review story references for changed source files and update the
   catalogue when needed. Historical mappings can help initial annotation, but every
   source file must be reviewed against its actual responsibility.

@@ -14,8 +14,17 @@ class RepositoryScenarios(unittest.TestCase):
             for path in ("src/new.cs", "tests/check.py", "ignored/old.cs", "src/bin/generated.cs",
                          "docs/archive/old.cs", "docs/codex-sessions/session.py"):
                 write(root, path, "// @implements ReadStory\n")
+            write(root, "src/unmapped.cs", "class Unmapped {}")
+            for path in ("src/settings.json", "src/packages.lock.json", "src/grammars/toml.json"):
+                write(root, path, "{}")
+            for path in ("src/LICENSE.txt", "src/grammars/license-mit.txt", "src/grammars/toml-license.txt"):
+                write(root, path, "License text")
             result = read_snapshot(root)
             self.assertEqual(["src/new.cs", "tests/check.py"], result["files"])
+            self.assertEqual(["src/new.cs", "src/unmapped.cs"], result["matrixFiles"])
+            self.assertEqual(set(result["matrixFiles"]), set(result["matrixFileSizes"]))
+            self.assertEqual(set(result["matrixFiles"]), {path for group in result["dependencyGroups"] for path in group})
+            self.assertEqual(len("class Unmapped {}"), result["matrixFileSizes"]["src/unmapped.cs"])
             write(root, "src/new.cs", "// @implements TraceFiles\n")
             refreshed = read_snapshot(root)
             self.assertEqual(["tests/check.py"], [item["path"] for item in refreshed["epics"][0]["stories"][0]["implements"]])
@@ -58,6 +67,30 @@ class RepositoryScenarios(unittest.TestCase):
             write(root, "src/unmapped.cs", "class Unmapped {}")
             with running_server(root) as url, urlopen(url + "/api/catalogue") as response:
                 self.assertEqual({"src/shared.cs": len(contents)}, json.load(response)["fileSizes"])
+
+    def test_dependency_order_keeps_cycles_together_and_respects_project_references(self):
+        with worktree() as root:
+            for path, source in {
+                "Core/Core.csproj": "<Project />",
+                "Core/Anchor.cs": "class Anchor {}",
+                "Core/First.cs": 'class First { Second next; object Remote; string label = "Extra"; } // Extra',
+                "Core/Second.cs": "class Second { First prior; Anchor anchor; }",
+                "Core/Extra.cs": "class Extra { First prior; }",
+                "Desktop/Desktop.csproj": '<Project><ProjectReference Include="../Core/Core.csproj" /></Project>',
+                "Desktop/Remote.cs": "class Remote { First prior; }",
+            }.items():
+                write(root, f"src/{path}", source)
+            groups = read_snapshot(root)["dependencyGroups"]
+            order = {path.removeprefix("src/"): index for index, group in enumerate(groups) for path in group}
+            self.assertEqual(order["Core/First.cs"], order["Core/Second.cs"])
+            for dependency, dependent in (
+                ("Core/Anchor.cs", "Core/First.cs"),
+                ("Core/First.cs", "Core/Extra.cs"),
+                ("Core/First.cs", "Desktop/Remote.cs"),
+                ("Core/Core.csproj", "Desktop/Desktop.csproj"),
+            ):
+                with self.subTest(dependent=dependent):
+                    self.assertLess(order[dependency], order[dependent])
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from catalogue import map_sources, parse_catalogue
+from dependencies import dependency_groups
 
 
 SOURCE_SUFFIXES = {
@@ -34,22 +35,40 @@ def source_paths(root):
             yield name
 
 
+def is_matrix_source(path):
+    if not path.startswith("src/"):
+        return False
+    source = Path(path)
+    if source.suffix.lower() != ".txt":
+        return True
+    name = source.stem.lower()
+    return name != "license" and not name.startswith("license-") and not name.endswith("-license")
+
+
 def read_snapshot(root):
     root = root.resolve()
     documents = [(path.relative_to(root).as_posix(), path.read_text(encoding="utf-8-sig"))
                  for path in sorted((root / "docs/stories").glob("*.md")) if path.name != "README.md"]
     epics = parse_catalogue(documents)
     paths = list(source_paths(root))
+    production = [path for path in paths if is_matrix_source(path)]
     sizes = {}
+    dependency_sources = {}
 
     def sources():
         for path in paths:
             raw = (root / path).read_bytes()
             sizes[path] = len(raw)
-            yield path, raw.decode("utf-8-sig")
+            source = raw.decode("utf-8-sig")
+            if path.startswith("src/") and path.lower().endswith((".cs", ".csproj")):
+                dependency_sources[path] = source
+            yield path, source
 
     snapshot = map_sources(epics, sources())
     snapshot["fileSizes"] = {path: sizes[path] for path in snapshot["files"]}
+    snapshot["matrixFiles"] = production
+    snapshot["matrixFileSizes"] = {path: sizes[path] for path in production}
+    snapshot["dependencyGroups"] = dependency_groups(production, dependency_sources)
     snapshot["scannedFiles"] = len(paths)
     snapshot["generatedAt"] = datetime.now(timezone.utc).isoformat()
     return snapshot

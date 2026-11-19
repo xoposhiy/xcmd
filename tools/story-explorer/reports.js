@@ -21,7 +21,9 @@ export function buildReportData(catalogue, stories) {
       }
     }
   }
-  return {stories, files, epics: [...epics.values()]};
+  return {stories, files, epics: [...epics.values()],
+    matrixFiles: catalogue.matrixFiles, matrixFileSizes: catalogue.matrixFileSizes,
+    dependencyGroups: catalogue.dependencyGroups};
 }
 
 function reportTable(name, columns, sort) {
