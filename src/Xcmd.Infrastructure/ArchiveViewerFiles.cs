@@ -21,4 +21,10 @@ public sealed class ArchiveViewerFiles(IArchiveContents archives) : IViewerFiles
 
     public async Task<FileTextMatch?> FindAsync(FileTextQuery query, CancellationToken cancellationToken) =>
         await files.FindAsync(query with { Path = (await archives.ViewerSourceAsync(query.Path, cancellationToken)).Path }, cancellationToken);
+
+    public async Task<Stream> OpenTextAsync(string path, CancellationToken cancellationToken) =>
+        await files.OpenTextAsync((await archives.ViewerSourceAsync(path, cancellationToken)).Path, cancellationToken);
+
+    public async Task<ViewerFileVersion?> VersionAsync(string path, CancellationToken cancellationToken) =>
+        await files.VersionAsync((await archives.ViewerSourceAsync(path, cancellationToken)).Path, cancellationToken);
 }

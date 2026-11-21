@@ -1,4 +1,4 @@
-// @implements StreamingReads
+// @implements StreamingReads, ChooseViewMode
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Text;
@@ -108,4 +108,17 @@ public static class ViewerText
         || bytes.AsSpan().StartsWith("GIF8"u8) || bytes.AsSpan().StartsWith("BM"u8)
         || bytes.AsSpan().StartsWith(new byte[] { 0, 0, 1, 0 })
         || (bytes.Length >= 12 && bytes.AsSpan(0, 4).SequenceEqual("RIFF"u8) && bytes.AsSpan(8, 4).SequenceEqual("WEBP"u8));
+
+    public static bool IsStructuredJsonCandidate(string path, FileSlice firstPage, Encoding encoding)
+    {
+        var extension = Path.GetExtension(path);
+        if (IsUnsupportedJsonExtension(extension)) return false;
+        if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || extension.Equals(".jsonc", StringComparison.OrdinalIgnoreCase)) return true;
+        var prefix = encoding.GetString(firstPage.Bytes);
+        if (prefix.StartsWith('\uFEFF')) prefix = prefix[1..];
+        return new StructuredJsonLexer(prefix, comments: true, CancellationToken.None).CanStartDocument(firstPage.HasNext);
+    }
+
+    internal static bool IsUnsupportedJsonExtension(string extension) => extension.ToLowerInvariant() is
+        ".json5" or ".ndjson" or ".jsonl" or ".yaml" or ".yml" or ".xml";
 }

@@ -1,6 +1,7 @@
 // @implements OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, HighlightSource, FollowLog, OpenViewedFile, InspectArchives, ReadWorkingFileDiff
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Media;
 using Xcmd.Core;
 
@@ -15,14 +16,22 @@ public sealed partial class FileViewer
         UpdateSyntaxControls();
         var text = Mode != FileViewMode.Image;
         UpdateTextItems(text);
-        if (diff == null)
+        if (diff == null && !structuredReader.IsActive)
         {
             previousPage.IsEnabled = text && FirstVisibleByte > 0;
             nextPage.IsEnabled = text && VisibleEnd < FileLength;
         }
         UpdateDiffCommands();
-        if (previousFile != null) previousFile.IsEnabled = index > 0;
-        if (nextFile != null) nextFile.IsEnabled = index + 1 < paths.Length;
+        if (previousFile != null)
+        {
+            previousFile.IsEnabled = index > 0;
+            previousFile.InputGesture = !structuredReader.IsActive ? new(Key.Left, KeyModifiers.Alt) : null;
+        }
+        if (nextFile != null)
+        {
+            nextFile.IsEnabled = index + 1 < paths.Length;
+            nextFile.InputGesture = !structuredReader.IsActive ? new(Key.Right, KeyModifiers.Alt) : null;
+        }
         UpdateWrapping();
     }
 
@@ -34,8 +43,15 @@ public sealed partial class FileViewer
             pair.Value.IsEnabled = slice != null && (!IsArchiveReport || pair.Key == FileViewMode.Text);
             ToolTip.SetTip(pair.Value, IsArchiveReport ? "This view shows an archive report." : null);
         }
-        modeItems[FileViewMode.Image].IsEnabled = CanUseImage;
-        ToolTip.SetTip(modeItems[FileViewMode.Image], imageUnavailable);
+        var specialized = SpecializedMode;
+        specializedModeItem.IsChecked = Mode is FileViewMode.Image or FileViewMode.Structured;
+        specializedModeItem.IsEnabled = specialized.HasValue;
+        ToolTip.SetTip(specializedModeItem, specialized switch
+        {
+            FileViewMode.Image => "Show the image.",
+            FileViewMode.Structured => "Show structured JSON.\n\n" + StructuredJsonReader.ShortcutHelp,
+            _ => imageUnavailable ?? "No specialized view is available for this file."
+        });
     }
 
     private void UpdateEncodingItems()
@@ -52,7 +68,7 @@ public sealed partial class FileViewer
         wrapItem.IsEnabled = Mode == FileViewMode.Text && slice != null;
         wrapItem.IsChecked = wrapLines;
         informationItem.IsChecked = information.IsVisible;
-        followItem.IsEnabled = slice != null && text && diff == null && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
+        followItem.IsEnabled = slice != null && text && !structuredReader.IsActive && diff == null && !IsArchiveReport && !IsDocumentReadOnly && !ArchivePath.IsEntry(CurrentPath);
         Search.IsEnabled = text && slice != null;
         UpdateExternalItems();
     }

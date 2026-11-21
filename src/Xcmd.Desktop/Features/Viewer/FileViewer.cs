@@ -70,7 +70,7 @@ public sealed partial class FileViewer : UserControl
     public string CurrentPath => IsEmbedded ? previewPath ?? "" : paths[index];
     public string? Error => error.IsVisible ? error.Text : null;
     public long ByteOffset => slice?.Offset ?? 0;
-    public long FileLength => slice?.Length ?? 0;
+    public long FileLength => structuredReader.Length ?? slice?.Length ?? 0;
     public string Information => information.Text ?? "";
     public bool HasImage => decodedImage != null;
     public string ReadingStatus => readingStatus.Text ?? "";
@@ -102,6 +102,10 @@ public sealed partial class FileViewer : UserControl
         this.paths = paths; this.index = index; this.files = files; this.feedback = feedback; this.edit = edit; this.open = open;
         this.close = close;
         this.document = document;
+        structuredReader = new(files, TextContent, readingStatus, searchStatus, () => feedback.IsActive || Commands.IsOpen, RunExternal);
+        structuredReader.ReadingPositionChanged += UpdateReadingPosition;
+        structuredReader.IndexReady += SetStructuredMode;
+        structuredReader.IndexFailed += ShowError;
         Focusable = true;
         Background = UiPalette.Canvas;
         BuildMenu();
@@ -143,7 +147,7 @@ public sealed partial class FileViewer : UserControl
         ScrollViewer.SetHorizontalScrollBarVisibility(TextContent, ScrollBarVisibility.Auto);
         ScrollViewer.SetVerticalScrollBarVisibility(TextContent, ScrollBarVisibility.Hidden);
         diffOverlay.IsVisible = false;
-        viewerBody.Children.Add(diffOverlay); viewerBody.Children.Add(TextContent); viewerBody.Children.Add(image);
+        viewerBody.Children.Add(diffOverlay); viewerBody.Children.Add(TextContent); viewerBody.Children.Add(structuredReader.Highlight); viewerBody.Children.Add(image);
         Grid.SetColumn(FileScroll, 1); viewerBody.Children.Add(FileScroll);
         Grid.SetRow(viewerBody, 1); layout.Children.Add(viewerBody);
         if (IsEmbedded)
@@ -187,6 +191,7 @@ public sealed partial class FileViewer : UserControl
         ClearDiffHint();
         loading?.Cancel();
         searching?.Cancel();
+        structuredReader.Reset();
         ReleaseImage();
     }
 

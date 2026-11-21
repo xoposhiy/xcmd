@@ -19,8 +19,10 @@ public sealed partial class FileViewer
         BeginFileLoad();
         await ReadFileAsync(token);
         await RefreshGitAsync(wantDiff: false, reloadText: false, token);
+        var restoreStructured = state.Mode == FileViewMode.Structured;
         Mode = state.Mode switch
         {
+            FileViewMode.Structured => Mode,
             FileViewMode.Image when !HasImage => Mode,
             { } mode when !IsArchiveReport => mode,
             _ => Mode
@@ -30,6 +32,11 @@ public sealed partial class FileViewer
         selectedEncoding = EncodingChoice.All.FirstOrDefault(choice => choice.CodePage == state.CodePage) ?? EncodingChoice.All[0];
         information.IsVisible = state.InformationVisible;
         var anchor = Math.Clamp(state.FirstByte, 0, FileLength);
+        if (restoreStructured)
+        {
+            await EnterStructuredAsync(anchor, anchor, anchor, token);
+            if (structuredReader.IsActive) return;
+        }
         if (state.Diff && CanShowDiff(gitFile) && await TryShowDiffAsync(gitFile!, anchor, token)) return;
         if (Mode == FileViewMode.Image) { await RenderPageAsync(token); return; }
         var offset = Math.Max(0, anchor - FileSlice.PageSize / 4) / 4 * 4;

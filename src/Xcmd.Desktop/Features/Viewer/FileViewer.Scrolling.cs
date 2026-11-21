@@ -38,6 +38,7 @@ public sealed partial class FileViewer
     private long ByteAtCharacter(int position)
     {
         if (slice == null) return 0;
+        if (structuredReader.IsActive) return structuredReader.ByteAtCharacter(position);
         if (diff != null) return diff.WorkingOffset(diffPageStart + position);
         if (Mode == FileViewMode.Text)
             return ViewerText.ByteOffset(slice, CurrentEncoding(), position);
@@ -51,6 +52,7 @@ public sealed partial class FileViewer
     private void UpdateReadingPosition()
     {
         if (slice == null || Mode == FileViewMode.Image || textScroll == null || presenter == null) return;
+        if (structuredReader.IsActive) { UpdateStructuredProgress(); return; }
         if (diff != null) { UpdateDiffReadingPosition(); return; }
         var visible = VisibleCharacters();
         FirstVisibleByte = ByteAtCharacter(visible.First);
@@ -63,21 +65,38 @@ public sealed partial class FileViewer
         readingStatus.Text = $"{(IsArchiveReport ? "Archive report" : Mode.ToString())}{(automaticMode ? " (Auto)" : "")} · {encoding} · Wrap {(Mode == FileViewMode.Text && wrapLines ? "on" : "off")} · {VisibleEnd:N0}/{FileLength:N0} bytes";
         if (IsFollowing) readingStatus.Text += " · Following";
         if (Mode == FileViewMode.Text && !IsArchiveReport) readingStatus.Text += " · " + SyntaxStatus;
+        if (indexingStructured) readingStatus.Text += " · Indexing JSON…";
         ToolTip.SetTip(readingStatus, readingStatus.Text);
         Progress.Text = $"{ViewedPercent:0.0}%";
-        var visibleBytes = Math.Max(1, VisibleEnd - FirstVisibleByte);
+        UpdateFileScrollbar(FirstVisibleByte, Math.Max(1, VisibleEnd - FirstVisibleByte), FileLength);
+    }
+
+    private void UpdateFileScrollbar(long firstByte, long visibleBytes, long length)
+    {
         updatingScroll = true;
-        FileScroll.Maximum = Math.Max(0, FileLength - visibleBytes);
+        FileScroll.Maximum = Math.Max(0, length - visibleBytes);
         FileScroll.ViewportSize = visibleBytes;
         FileScroll.LargeChange = visibleBytes;
         FileScroll.SmallChange = Math.Max(1, visibleBytes / 30);
-        FileScroll.Value = Math.Min(FileScroll.Maximum, FirstVisibleByte);
+        FileScroll.Value = Math.Min(FileScroll.Maximum, firstByte);
         updatingScroll = false;
+    }
+
+    private void UpdateStructuredProgress()
+    {
+        if (!structuredReader.TryReadPosition(out var first, out var end, out var previous, out var next)) return;
+        FirstVisibleByte = first;
+        VisibleEnd = end;
+        previousPage.IsEnabled = previous;
+        nextPage.IsEnabled = next;
+        Progress.Text = $"{ViewedPercent:0.0}%";
+        UpdateFileScrollbar(FirstVisibleByte, Math.Max(1, VisibleEnd - FirstVisibleByte), FileLength);
     }
 
     private async Task SeekBoundaryAsync(bool end, CancellationToken token)
     {
         PauseFollowing();
+        if (structuredReader.IsActive) { structuredReader.Seek(end ? FileLength : 0); return; }
         if (diff != null)
         {
             diffNavigationPosition = null;
@@ -96,6 +115,7 @@ public sealed partial class FileViewer
     // PauseFollowing resets the scroll bar to the current position, so the requested offset is read first.
     private void SeekFromScrollBar(long offset)
     {
+        if (structuredReader.IsActive) { structuredReader.Seek(offset >= FileScroll.Maximum ? FileLength : offset); return; }
         if (diff != null)
         {
             diffNavigationPosition = null;
@@ -117,6 +137,7 @@ public sealed partial class FileViewer
     private void RestoreTopByte(long offset)
     {
         if (slice == null) return;
+        if (structuredReader.IsActive) { structuredReader.Seek(offset); return; }
         BindScrolling();
         var relative = (int)Math.Clamp(offset - slice.Offset, 0, slice.Count);
         var position = Mode == FileViewMode.Text ? ViewerText.Decode(new(slice.Offset, slice.Offset + relative, slice.Bytes[..relative]), CurrentEncoding()).Length
@@ -134,6 +155,7 @@ public sealed partial class FileViewer
         if (Mode == FileViewMode.Image || slice == null) return;
         if (textScroll == null || presenter == null) BindScrolling();
         if (textScroll == null) return;
+        if (structuredReader.IsActive) { structuredReader.MoveViewport(delta); return; }
         var target = textScroll.Offset.Y + delta;
         if (diff != null) { MoveDiffViewport(target); return; }
         var maximum = Math.Max(0, textScroll.Extent.Height - textScroll.Viewport.Height);
@@ -162,7 +184,7 @@ public sealed partial class FileViewer
     private bool HandleReadingKey(KeyEventArgs e)
     {
         if (e.Key == Key.W && e.KeyModifiers == KeyModifiers.None) { ToggleWrapping(); return true; }
-        var textHasFocus = Mode == FileViewMode.Text && TextContent.IsKeyboardFocusWithin;
+        var textHasFocus = Mode is FileViewMode.Text or FileViewMode.Structured && TextContent.IsKeyboardFocusWithin;
         if (e.Key is Key.Home or Key.End &&
             (e.KeyModifiers == KeyModifiers.Control || !textHasFocus && e.KeyModifiers == KeyModifiers.None))
         { Run(token => SeekBoundaryAsync(e.Key == Key.End, token)); return true; }

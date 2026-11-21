@@ -25,7 +25,7 @@ public sealed partial class FileViewer
     private void ToggleFollowing()
     {
         if (IsFollowing) { PauseFollowing(); return; }
-        if (slice == null || diff != null || Mode == FileViewMode.Image || ArchivePath.IsEntry(CurrentPath) || IsArchiveReport || IsDocumentReadOnly) return;
+        if (slice == null || diff != null || Mode is FileViewMode.Image or FileViewMode.Structured || ArchivePath.IsEntry(CurrentPath) || IsArchiveReport || IsDocumentReadOnly) return;
         ClearSearch();
         IsFollowing = true; followItem.IsChecked = true; followTimer.Start();
         Run(RefreshTailAsync);

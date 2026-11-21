@@ -1,6 +1,14 @@
 # Structured JSON viewer
 
-Status: interaction design accepted on 2026-11-17. Planned; not implemented.
+Status: interaction design accepted on 2026-11-17. Implemented on 2026-11-20.
+
+See [ChooseViewMode](../stories/file-inspection.md#chooseviewmode) for later decisions
+about the Specialized view and navigation across object keys.
+
+The implementation keeps a decoded source snapshot and a structural index. The
+parser keeps comments and token ranges and allows trailing commas in `.jsonc`
+files. The reader formats only the rows near the viewport. It checks the source
+version during indexing and again when the viewer regains focus.
 
 Provide an optional, read-only text view for JSON and JSONC. Let the user inspect
 one record, move between records, and apply the same expansion layout to peer
@@ -204,9 +212,9 @@ explicit explanation; never present a guessed structure as a complete parse.
 ## Implementation constraints
 
 Follow the [project rules](../../AGENTS.md) and [UI process](../processes/ui.md).
-The original design drew on the [architecture](../archive/architecture.md),
-[design system](../archive/design-system.md) and
-[development requirements](../archive/development-requirements.md).
+The original design drew on the [architecture](architecture.md),
+[design system](design-system.md) and
+[development requirements](development-requirements.md).
 
 - Core owns structural positions, peer resolution, navigation rules, and expansion
   state transitions without UI or filesystem dependencies.

@@ -63,6 +63,7 @@ public sealed partial class FileViewer
         if (string.IsNullOrEmpty(Search.Text))
         {
             searching?.Cancel();
+            structuredReader.ClearSearch();
             searchStatus.Text = "";
             return;
         }
@@ -77,6 +78,7 @@ public sealed partial class FileViewer
     {
         altSearchArmed = false; suppressSearchText = false;
         searching?.Cancel(); match = null; diffMatchPosition = null;
+        structuredReader.ClearSearch();
         updating = true; Search.Text = ""; updating = false;
         searchStatus.Text = ""; searchPanel.IsVisible = false;
         if (focus) FocusReader();
@@ -109,11 +111,17 @@ public sealed partial class FileViewer
         searching = request; IsSearching = true;
         searchStatus.Text = "Searching…";
         var choice = selectedEncoding;
+        var searchStructured = structuredReader.IsActive;
         var codePage = Mode != FileViewMode.Text ? 28591 : choice is { CodePage: > 0 } ? choice.CodePage : detected.Encoding.CodePage;
         var start = direction == 0 ? 0 : match == null ? ByteOffset : direction < 0 ? match.Offset : match.Offset + match.Length;
         try
         {
             if (direction == 0) await Task.Delay(100, request.Token);
+            if (searchStructured)
+            {
+                await structuredReader.FindAsync(Search.Text!, direction, request.Token);
+                return;
+            }
             var found = await files.FindAsync(new(CurrentPath, Search.Text, codePage, start, direction < 0), request.Token);
             request.Token.ThrowIfCancellationRequested();
             match = found;

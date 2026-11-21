@@ -87,6 +87,7 @@ public sealed partial class FileViewer
         foreach (var button in TitleBar.GetVisualDescendants().OfType<Button>()) button.Foreground = foreground;
         foreach (var pair in themeItems) pair.Value.IsChecked = pair.Key == activeTheme.Id;
         RestoreReaderSelection(activeTheme.Id, originalText, caret, start, end);
+        structuredReader.ApplyAccent(activeTheme.Accent);
     }
 
     private void RestoreReaderSelection(string themeId, string? text, int caret, int start, int end) => Dispatcher.UIThread.Post(() =>

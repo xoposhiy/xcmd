@@ -60,8 +60,8 @@ I can inspect files while moving through the list.
 
 ## ChooseViewMode
 
-As a user, I want to switch between text, binary, hex, and image inspection so that I
-can interpret files that do not fit the first detected mode.
+As a user, I want to choose between general views and a view tailored to the file
+format so that I can inspect the file in the form I need.
 
 ### Implementation decisions
 
@@ -74,9 +74,12 @@ can interpret files that do not fit the first detected mode.
   menu area.
   Sources: [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 3](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-3); [2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md → Turn 4](../codex-sessions/2026-11-10T23-38-04-01a1c79c-7a8f-7272-944d-0fcc34aa854b.md#turn-4).
 
-- **Accepted design for a future structured JSON mode:** keep the original file text as
-  the default. Enter Structured explicitly with `5` and return to source text with `1`,
-  preserving the reading position. The user approved this as a design specification.
+- Use `4` for the Specialized view. Choose the viewer for the file format: show
+  images as pictures and JSON or JSONC as structured data. Keep source text as the
+  default for JSON. Use `1` to return to source text and keep the reading position.
+  Codex session ID 01a1f62d-0874-7502-b876-7ae1605fa773.
+
+- Keep the interaction rules for [Structured JSON](../archive/structured-json-viewer.md).
   Sources: [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 2](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-2); [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 3](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-3); [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 5](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-5).
 
 - For that structured mode, use Alt+Up/Down for siblings, Alt+Left for the parent,
@@ -93,10 +96,9 @@ can interpret files that do not fit the first detected mode.
   path; UI ellipses must not replace source data on ordinary copy.
   Sources: [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 3](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-3); [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 5](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-5).
 
-- For structured group actions, define peers by the nearest containing array and the
-  same relative path inside its elements, not by depth alone. Nested arrays form their
-  own groups. Show the group path; limit initial group actions to arrays rather than
-  guessing that an arbitrary object is a record collection.
+- For structured layout actions, define peers by the nearest containing array and
+  the same relative path inside its elements. Nested arrays form their own groups.
+  Show the layout group path.
   Sources: [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 4](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-4); [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 5](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-5).
 
 - In the structured design, Ctrl+Alt+Up/Down visits the same field in the previous/next
@@ -105,6 +107,11 @@ can interpret files that do not fit the first detected mode.
   contents. Ctrl+Space copies the current container's nested fold layout to its peers.
   Group layout actions keep the cursor in place and change neither data nor field order.
   Sources: [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 4](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-4); [2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md → Turn 5](../codex-sessions/2026-11-17T11-39-42-01a1e917-525a-7c12-b895-6a749ace604b.md#turn-5).
+
+- In Structured mode, Ctrl+Alt+Up/Down also visits the same field in records
+  stored under object keys. Use source order and show the navigation group path
+  when it differs from the layout group path.
+  Codex session ID 01a1f62d-0874-7502-b876-7ae1605fa773.
 
 ## ReadLargeFiles
 

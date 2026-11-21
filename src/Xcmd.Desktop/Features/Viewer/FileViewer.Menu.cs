@@ -9,6 +9,7 @@ namespace Xcmd.Desktop.Features.Viewer;
 public sealed partial class FileViewer
 {
     private readonly List<MenuItem> textCommands = [];
+    private MenuItem specializedModeItem = null!;
     private MenuItem editItem = null!;
     private MenuItem openItem = null!;
 
@@ -35,13 +36,17 @@ public sealed partial class FileViewer
     private void BuildMenu()
     {
         var view = new List<MenuItem>();
-        foreach (var mode in Enum.GetValues<FileViewMode>())
+        foreach (var mode in new[] { FileViewMode.Text, FileViewMode.Binary, FileViewMode.Hex })
         {
             var item = MenuCommand(mode.ToString(), "viewer.mode." + mode.ToString().ToLowerInvariant(),
                 () => Run(token => ChangeModeAsync(mode, token)), new((Key)((int)Key.D1 + (int)mode)));
             item.ToggleType = MenuItemToggleType.Radio; item.GroupName = "mode";
             modeItems[mode] = item; view.Add(item);
         }
+        specializedModeItem = MenuCommand("Specialized", "viewer.mode.specialized", () => Run(OpenSpecializedViewAsync), new(Key.D4));
+        specializedModeItem.ToggleType = MenuItemToggleType.Radio;
+        specializedModeItem.GroupName = "mode";
+        view.Add(specializedModeItem);
         AddDiffCommands(view);
         wrapItem = MenuCommand("Word wrap", "viewer.wrap", ToggleWrapping, new(Key.W));
         wrapItem.ToggleType = MenuItemToggleType.CheckBox; view.Add(wrapItem);
@@ -68,8 +73,8 @@ public sealed partial class FileViewer
             new MenuItem() { Header = "File", ItemsSource = new MenuItem[]
             {
                 editItem, openItem,
-                TextCommand("Copy selection", "viewer.copy", TextContent.Copy, new(Key.C, KeyModifiers.Control)),
-                TextCommand("Select all", "viewer.select-all", () => { TextContent.Focus(); TextContent.SelectAll(); }, new(Key.A, KeyModifiers.Control)),
+                TextCommand("Copy selection", "viewer.copy", structuredReader.Copy, new(Key.C, KeyModifiers.Control)),
+                TextCommand("Select all", "viewer.select-all", () => { TextContent.Focus(); structuredReader.SelectAll(); }, new(Key.A, KeyModifiers.Control)),
                 MenuCommand("Close", "viewer.close", close, new(Key.Escape))
             } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu"),
             new MenuItem() { Header = "View", ItemsSource = view }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.2"),
@@ -119,6 +124,7 @@ public sealed partial class FileViewer
 
     private void ToggleWrapping()
     {
+        if (structuredReader.IsActive) return;
         var anchor = FirstVisibleByte;
         var diffTop = DiffTop;
         wrapLines = !wrapLines; UpdateControls(); TextContent.UpdateLayout();

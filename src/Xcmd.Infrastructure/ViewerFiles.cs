@@ -7,6 +7,20 @@ public sealed class ViewerFiles : IViewerFiles
 {
     public const int MaximumImageBytes = 32 * 1024 * 1024;
     public Task<FileTextMatch?> FindAsync(FileTextQuery query, CancellationToken cancellationToken) => FileTextSearch.FindAsync(query, cancellationToken);
+
+    public Task<Stream> OpenTextAsync(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<Stream>(new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete, FileSlice.PageSize, FileOptions.Asynchronous | FileOptions.SequentialScan));
+    }
+
+    public Task<ViewerFileVersion?> VersionAsync(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var file = new FileInfo(path);
+        return Task.FromResult<ViewerFileVersion?>(new(file.Length, file.LastWriteTimeUtc, file.CreationTimeUtc));
+    }
     public async Task<FileSlice> ReadAsync(string path, long offset, CancellationToken cancellationToken)
     {
         await using var stream = Open(path);

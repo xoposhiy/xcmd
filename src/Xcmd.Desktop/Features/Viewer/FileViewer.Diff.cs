@@ -85,6 +85,16 @@ public sealed partial class FileViewer
 
     internal void RefreshAfterActivation()
     {
+        if (structuredReader.IsActive)
+        {
+            if (!IsLoading && !IsSearching && !closed && !feedback.IsActive)
+                Run(async token =>
+                {
+                    await RefreshStructuredAsync(token);
+                    await RefreshGitAsync(wantDiff: false, reloadText: false, token);
+                });
+            return;
+        }
         if (CanReadGitStatus && slice != null && !IsLoading && !IsSearching && !closed && !feedback.IsActive)
             Run(token => RefreshGitAsync(diff != null, reloadText: !IsFollowing, token));
     }

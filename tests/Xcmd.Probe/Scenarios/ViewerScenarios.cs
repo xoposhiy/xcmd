@@ -1,5 +1,6 @@
 // @tests DiscoverShortcuts, ReusableFileViewer, OpenViewers, ChooseViewMode, ReadLargeFiles, FindViewerText, OpenViewedFile, OpenExternalTool, ReportControl, TryLocalRelease, ExternalLaunch, SharedControls, ImageDecoding
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Xcmd.Core;
@@ -108,8 +109,8 @@ public static class ViewerScenarios
         }),
         new("viewer-images-and-fallback", "UC09; image preview, byte inspection and decode failures", async c =>
         {
-            await File.WriteAllBytesAsync(Path.Combine(c.LeftPath, "picture.bin"), ImageSample());
-            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("picture.bin"); await c.KeyAsync(Key.F3);
+            await File.WriteAllBytesAsync(Path.Combine(c.LeftPath, "picture.json"), ImageSample());
+            await c.Window.Left.LoadAsync(c.LeftPath); await c.SelectAsync("picture.json"); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
             Equal(FileViewMode.Image, viewer.Reader.Mode, "Image signatures take priority over the file extension");
             Check(viewer.Reader.HasImage && viewer.Reader.Error == null, "The real PNG sample decodes");
@@ -119,14 +120,19 @@ public static class ViewerScenarios
             CheckTextActions(viewer, true);
             await c.KeyAsync(Key.A, RawInputModifiers.Control, viewer);
             Check(viewer.Reader.TextContent.SelectedText.Length > 0, "A byte view can select the visible file data");
-            await c.KeyAsync(Key.D4, target: viewer); Check(viewer.Reader.HasImage, "4 restores the image");
+            await c.KeyAsync(Key.D4, target: viewer);
+            Equal(FileViewMode.Image, viewer.Reader.Mode, "4 uses the image signature even under a JSON file name");
+            Check(Command(viewer, "viewer.mode.specialized").IsChecked, "The same Specialized item is selected for images");
+            var modes = viewer.Reader.Commands.Items.OfType<MenuItem>().SelectMany(menu => menu.Items.OfType<MenuItem>())
+                .Count(item => item.Name?.StartsWith("viewer.mode.", StringComparison.Ordinal) == true);
+            Equal(4, modes, "The View menu offers three general modes and one specialized mode");
             CheckTextActions(viewer, false);
             await c.KeyAsync(Key.Escape, target: viewer);
             await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3); viewer = c.Window.Viewer!;
             await c.KeyAsync(Key.D4, target: viewer);
             Equal(FileViewMode.Text, viewer.Reader.Mode, "An unsupported mode does not replace the current view");
-            Check(viewer.Reader.Error == null && !Command(viewer, "viewer.mode.image").IsEnabled, "Unavailable image mode is disabled without an error pane");
-            Equal("abc", viewer.Reader.TextContent.Text, "An unavailable image mode preserves the text");
+            Check(viewer.Reader.Error == null && !Command(viewer, "viewer.mode.specialized").IsEnabled, "Unsupported text leaves the Specialized item disabled");
+            Equal("abc", viewer.Reader.TextContent.Text, "An unavailable specialized view preserves the text");
         }),
         new("viewer-whole-file-incremental-search", "UC10; type-to-search, next and previous matches across pages", async c =>
         {
@@ -263,7 +269,7 @@ public static class ViewerScenarios
             {
                 await c.SelectAsync(name); await c.KeyAsync(Key.F3); viewer = c.Window.Viewer!;
                 Equal(FileViewMode.Hex, viewer.Reader.Mode, "An unavailable automatic image view falls back to readable bytes");
-                Check(viewer.Reader.Error == null && !Command(viewer, "viewer.mode.image").IsEnabled, "The unavailable mode is disabled");
+                Check(viewer.Reader.Error == null && !Command(viewer, "viewer.mode.specialized").IsEnabled, "The unavailable mode is disabled");
                 var text = viewer.Reader.TextContent.Text;
                 await c.KeyAsync(Key.D4, target: viewer);
                 Equal(FileViewMode.Hex, viewer.Reader.Mode, "The image shortcut cannot leave the working mode");

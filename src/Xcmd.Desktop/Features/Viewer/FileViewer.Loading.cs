@@ -35,7 +35,11 @@ public sealed partial class FileViewer
         }
         finally
         {
-            if (loading == request) { loading = null; IsLoading = false; if (!closed) UpdateControls(); }
+            if (loading == request)
+            {
+                loading = null; IsLoading = false; indexingStructured = false;
+                if (!closed) { UpdateControls(); UpdateReadingPosition(); }
+            }
         }
     }
 
@@ -74,11 +78,12 @@ public sealed partial class FileViewer
         if (IsArchiveReport) UpdateDocumentTitle();
         slice = page; detected = encoding;
         imageSignature = ViewerText.IsImage(page.Bytes);
-        if (!imageSignature) imageUnavailable = "This file is not a supported image.";
-        else if (page.Length > ViewerFiles.MaximumImageBytes) imageUnavailable = "Image preview is limited to 32 MiB. Use Open externally for this image.";
+        if (imageSignature && page.Length > ViewerFiles.MaximumImageBytes)
+            imageUnavailable = "Image preview is limited to 32 MiB. Use Open externally for this image.";
         var imageReady = CanUseImage && await PrepareImageAsync(token);
         token.ThrowIfCancellationRequested();
         binaryFile = imageSignature || ViewerText.IsBinary(page.Bytes, encoding.Encoding);
+        jsonCandidate = !binaryFile && !IsArchiveReport && ViewerText.IsStructuredJsonCandidate(path, page, encoding.Encoding);
         Mode = imageReady ? FileViewMode.Image : binaryFile ? FileViewMode.Hex : FileViewMode.Text;
         automaticMode = true;
         await RenderPageAsync(token);
@@ -88,13 +93,14 @@ public sealed partial class FileViewer
     private void ResetFile()
     {
         PauseFollowing();
+        structuredReader.Reset();
         ClearSearch(focus: false);
         ResetGitView();
         slice = null; TextContent.Text = "";
         ReleaseImage();
         TextContent.SetSyntax(null); syntaxLanguage = null;
         FirstVisibleByte = 0; VisibleEnd = 0;
-        imageUnavailable = null; imageSignature = false; binaryFile = false;
+        imageUnavailable = null; imageSignature = false; binaryFile = false; jsonCandidate = false;
         IsArchiveReport = false;
         Mode = FileViewMode.Text;
         selectedEncoding = EncodingChoice.All[0];
@@ -115,11 +121,34 @@ public sealed partial class FileViewer
         return OpenAsync();
     }
 
+    private Task OpenSpecializedViewAsync(CancellationToken token) =>
+        SpecializedMode is { } mode ? ChangeModeAsync(mode, token) : Task.CompletedTask;
+
+    private FileViewMode? SpecializedMode => CanUseImage ? FileViewMode.Image :
+        CanUseStructured && (jsonCandidate || structuredReader.IsActive) ? FileViewMode.Structured : null;
+
     private async Task ChangeModeAsync(FileViewMode mode, CancellationToken token)
     {
         PauseFollowing();
         if (IsArchiveReport && mode != FileViewMode.Text) return;
+        if (mode == FileViewMode.Structured)
+        {
+            if (structuredReader.IsActive) return;
+            ClearSearch(focus: false);
+            CaptureByteCursor(out var caret, out var start, out var end);
+            await EnterStructuredAsync(caret, start, end, token);
+            FocusReader();
+            return;
+        }
         if (mode == FileViewMode.Image && (!CanUseImage || !await PrepareImageAsync(token))) return;
+        if (structuredReader.IsActive)
+        {
+            CaptureByteCursor(out var caret, out var start, out var end);
+            ClearSearch();
+            await LeaveStructuredAsync(mode, caret, start, end, token);
+            FocusReader();
+            return;
+        }
         ClearSearch();
         var anchor = FirstVisibleByte;
         if (diff != null) await ReloadTextAsync(anchor, token);
@@ -132,6 +161,7 @@ public sealed partial class FileViewer
 
     private async Task LoadPageAsync(long offset, CancellationToken token)
     {
+        if (structuredReader.IsActive) { structuredReader.Seek(offset); return; }
         if (Mode == FileViewMode.Image) return;
         var page = await files.ReadAsync(CurrentPath, Math.Max(0, offset), token);
         token.ThrowIfCancellationRequested(); slice = page;

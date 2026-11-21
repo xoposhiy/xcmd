@@ -42,8 +42,8 @@ public sealed partial class FileViewer
         {
             ItemsSource = new[]
             {
-                MenuCommand("Copy selection", "viewer.context-copy", TextContent.Copy, new(Key.C, KeyModifiers.Control)),
-                MenuCommand("Select all", "viewer.context-select-all", TextContent.SelectAll, new(Key.A, KeyModifiers.Control)),
+                MenuCommand("Copy selection", "viewer.context-copy", structuredReader.Copy, new(Key.C, KeyModifiers.Control)),
+                MenuCommand("Select all", "viewer.context-select-all", structuredReader.SelectAll, new(Key.A, KeyModifiers.Control)),
                 reportSyntaxContext
             }
         }.WithFeedbackId("FileViewerWindow.Syntax.context");
