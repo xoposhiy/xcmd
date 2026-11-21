@@ -1,5 +1,10 @@
 # Handle feedback batches
 
+For reports created in Point Taken, use the installed `point-taken` skill.
+Run `point-taken list --json` in this checkout. Close a checked fix with a
+result note. Archive it only after user verification and an approved commit.
+The commands below apply to records in the embedded Xcmd tracker.
+
 The goal is to resolve the user's in-app feedback without conflicting agent work
 or losing new reports. Use `scripts/Issues.ps1`; do not edit `issues/issues.db`
 directly or replace the live database to resolve a Git conflict.

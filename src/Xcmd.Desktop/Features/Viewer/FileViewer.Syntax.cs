@@ -38,6 +38,7 @@ public sealed partial class FileViewer
     private void ConfigureSyntaxReporting()
     {
         reportSyntaxContext = MenuCommand("Report highlighting problem…", "viewer.syntax-report-context", ReportSyntaxProblem);
+        reportSyntaxContext.IsVisible = !feedback.Connected;
         TextContent.ContextMenu = new ContextMenu
         {
             ItemsSource = new[]

@@ -101,6 +101,13 @@ public sealed partial class FileViewer : UserControl
     {
         this.paths = paths; this.index = index; this.files = files; this.feedback = feedback; this.edit = edit; this.open = open;
         this.close = close;
+        FeedbackTarget.SetContext(TextContent, () =>
+        {
+            var selected = TextContent.SelectedText ?? "";
+            var length = Math.Min(4096, selected.Length);
+            if (length < selected.Length && length > 0 && char.IsHighSurrogate(selected[length - 1])) length--;
+            return new { selectedText = selected[..length], selectedLength = selected.Length, syntax = TextContent.Syntax?.Language?.Name ?? "Plain text" };
+        });
         this.document = document;
         structuredReader = new(files, TextContent, readingStatus, searchStatus, () => feedback.IsActive || Commands.IsOpen, RunExternal);
         structuredReader.ReadingPositionChanged += UpdateReadingPosition;

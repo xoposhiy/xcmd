@@ -84,6 +84,7 @@ internal static class Program
         }
         var output = Path.GetFullPath(Option(args, "--output") ?? Path.Combine("artifacts", "probe", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")));
         Directory.CreateDirectory(output);
+        Environment.SetEnvironmentVariable("POINT_TAKEN_DATA_DIR", Path.Combine(output, "point-taken"));
         var results = new List<object>();
         var failures = 0;
         using var session = HeadlessUnitTestSession.StartNew(typeof(ProbeAppBuilder));

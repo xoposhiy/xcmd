@@ -21,7 +21,7 @@ public sealed partial class FileViewer
     private void OnViewerKey(object? sender, KeyEventArgs e)
     {
         if (feedback.IsActive) return;
-        if (e.Key == Key.F12 && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
+        if (!feedback.Connected && e.Key == Key.F12 && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
         { ReportSyntaxProblem(); e.Handled = true; return; }
         if (e.Key == Key.F && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
         { ToggleFollowing(); e.Handled = true; return; }

@@ -17,7 +17,12 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        if (args is ["issues", ..]) return IssueCli.Run(args[1..], Console.Out, Console.Error);
+        if (args is ["issues", ..])
+        {
+            if (!PointTakenAdapter.Installed) return IssueCli.Run(args[1..], Console.Out, Console.Error);
+            Console.Error.WriteLine("Use point-taken in the project checkout.");
+            return 1;
+        }
         if (args is ["--console-window", var processId, var report]) return ConsoleWindowLookup.RunHelper(processId, report);
         TaskbarIdentity.ConfigureProcess();
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -44,7 +49,7 @@ public sealed class App : Application
             var args = desktop.Args ?? [];
             var settings = LaunchSettings.Parse(args);
             var window = new CommanderWindow().WithFeedbackId("Program.window");
-            var lifecycle = LifecycleFactory?.Invoke(window, settings) ?? new WorkspaceLifecycle(window, new SessionStore(settings.SessionPath), ReleaseCatalog.ForApplication(), issues: IssueStore.ForApplication());
+            var lifecycle = LifecycleFactory?.Invoke(window, settings) ?? new WorkspaceLifecycle(window, new SessionStore(settings.SessionPath), ReleaseCatalog.ForApplication(), issues: window.Feedback.Connected ? null : IssueStore.ForApplication());
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Dispatcher.UIThread.Post(async () =>
             {

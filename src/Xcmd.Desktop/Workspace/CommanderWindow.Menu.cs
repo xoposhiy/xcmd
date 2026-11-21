@@ -83,7 +83,7 @@ public sealed partial class CommanderWindow
                     Changes(),
                     Item("Diff selected file", GitHistory.DiffCurrent, new(Key.D, KeyModifiers.Control | KeyModifiers.Alt), historyAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.git"),
-                new MenuItem() { Header = "Help", ItemsSource = new MenuItem[]
+                new MenuItem() { Header = "Help", IsVisible = !Feedback.Connected, ItemsSource = new MenuItem[]
                 {
                     Item("Comment on an element", () => Feedback.Begin(), new(Key.F12), historyAllowed: true),
                     Item("Refinement list", () => Feedback.ShowNotes(), historyAllowed: true)

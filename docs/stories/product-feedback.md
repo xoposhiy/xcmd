@@ -19,6 +19,11 @@ can give the development agent feedback with a stable target.
 
 ### Implementation decisions
 
+- When Point Taken is installed, use its tray or configured shortcut to start a
+  report. Xcmd supplies the selected control and its context. The viewer includes
+  the selected text and syntax. Start a new pick in an open modal dialog to
+  report one of its controls.
+
 - Let the user select an interface element and attach a comment for the agent. Make
   feedback available while a modal dialog is open and keep meaningful labels and other
   visible surfaces selectable.

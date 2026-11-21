@@ -60,6 +60,11 @@ internal sealed class CommanderFrame
 
     public void AttachFeedback(FeedbackController controller)
     {
+        if (controller.Connected)
+        {
+            feedback.IsVisible = notes.IsVisible = false;
+            return;
+        }
         feedback.Click += (_, _) => controller.Begin();
         notes.Click += (_, _) => controller.ShowNotes();
         controller.Notes.CollectionChanged += (_, _) => notes.Content = $"Notes ({controller.Notes.Count(note => note.Status != Xcmd.Core.FeedbackIssue.Closed)})";

@@ -13,6 +13,13 @@ public static class FeedbackTarget
     private static readonly AttachedProperty<string?> ScopeProperty =
         AvaloniaProperty.RegisterAttached<Control, string?>("FeedbackScope", typeof(FeedbackTarget));
 
+    private static readonly AttachedProperty<Func<object?>?> ContextProperty =
+        AvaloniaProperty.RegisterAttached<Control, Func<object?>?>("FeedbackContext", typeof(FeedbackTarget));
+
+    internal static void SetContext(Control control, Func<object?> read) => control.SetValue(ContextProperty, read);
+    internal static object? Context(Control control) => Ancestors(control)
+        .Select(item => item.GetValue(ContextProperty)).FirstOrDefault(provider => provider != null)?.Invoke();
+
     internal static void SetScope(Control control, string name) => control.SetValue(ScopeProperty, name);
 
     internal static string? Scope(Control control) => Ancestors(control)

@@ -87,7 +87,7 @@ public sealed partial class FileViewer
                 TextCommand("Clear search", "viewer.clear-search", () => ClearSearch(), new(Key.Escape))
             } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.4"),
             new MenuItem() { Header = "Navigate", ItemsSource = BuildNavigationItems() }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.5"),
-            new MenuItem() { Header = "Help", ItemsSource = new[] { reportSyntax, MenuCommand("Comment on an element", "viewer.feedback", BeginFeedback, new(Key.F12)) } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.6")
+            new MenuItem() { Header = "Help", IsVisible = !feedback.Connected, ItemsSource = new[] { reportSyntax, MenuCommand("Comment on an element", "viewer.feedback", BeginFeedback, new(Key.F12)) } }.WithFeedbackId("FileViewerWindow.Menu.BuildMenu.6")
         };
     }
 

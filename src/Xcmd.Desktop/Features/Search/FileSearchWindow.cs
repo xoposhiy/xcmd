@@ -107,6 +107,7 @@ public sealed partial class FileSearchWindow : Window
         AutomationProperties.SetAutomationId(feedbackButton, "feedback.start"); ToolTip.SetTip(feedbackButton, "Comment on an element · F12");
         feedbackButton.Click += (_, _) => feedback.Begin(this);
         feedbackButton.Classes.Add("quiet");
+        feedbackButton.IsVisible = !feedback.Connected;
         var right = UiLayout.Actions(toPanel, view, go, feedbackButton, close);
         DockPanel.SetDock(right, Dock.Right); actions.Children.Add(right);
         var layout = new Grid { Margin = UiPalette.FormMargin, RowDefinitions = new("Auto,Auto,Auto,Auto,*,Auto,Auto,Auto"), RowSpacing = 6 }.WithFeedbackId("FileSearchWindow.layout");

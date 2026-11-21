@@ -19,13 +19,14 @@ internal sealed class FeedbackSurface
     private readonly Border highlight = new Border() { BorderBrush = Brushes.Gold, BorderThickness = new Thickness(2), IsVisible = false }.WithFeedbackId("FeedbackSurface.highlight");
     private readonly FeedbackController controller;
     private readonly Window window;
-    private readonly Grid root;
+    private readonly Control root;
     private readonly Action<string> setHint;
     public Action<Control?> RestoreFocus { get; }
     private Control? hovered;
     private Control? pointed;
     private PointerEventArgs? lastPointerEvent;
     private bool forwarding;
+    private bool swallowRelease;
     private bool passingClick;
     private readonly List<FeedbackInteraction> interactions = [];
     public bool IsPicking { get; private set; }
@@ -46,7 +47,7 @@ internal sealed class FeedbackSurface
         routedEvent.AddClassHandler<InputElement>((source, e) => ForSource(source, e)?.OnPointerEvent(e), RoutingStrategies.Tunnel);
     }
 
-    public FeedbackSurface(FeedbackController controller, Window window, Grid root, Action<string> setHint, Action<Control?> restoreFocus)
+    public FeedbackSurface(FeedbackController controller, Window window, Control root, Action<string> setHint, Action<Control?> restoreFocus)
     {
         this.controller = controller; this.window = window; this.root = root;
         this.setHint = setHint; RestoreFocus = restoreFocus;
@@ -62,7 +63,13 @@ internal sealed class FeedbackSurface
     private void OnKeyDown(KeyEventArgs e)
     {
         if (e.Handled || !window.IsEnabled) return;
-        if (e.Key == Key.F12 && e.KeyModifiers == KeyModifiers.None)
+        if (controller.Connected && controller.ShortcutMatches(e))
+        {
+            e.Handled = true;
+            if (IsPicking) Cancel();
+            else controller.RequestPick(window);
+        }
+        else if (!controller.Connected && e.Key == Key.F12 && e.KeyModifiers == KeyModifiers.None)
         {
             e.Handled = true;
             if (IsPicking) Cancel();
@@ -77,6 +84,12 @@ internal sealed class FeedbackSurface
 
     private void OnPointerEvent(PointerEventArgs e)
     {
+        if (!IsPicking && swallowRelease && e is PointerReleasedEventArgs)
+        {
+            e.Handled = true;
+            swallowRelease = false;
+            return;
+        }
         if (!IsPicking || forwarding || lastPointerEvent == e) return;
         lastPointerEvent = e;
         switch (e)
@@ -100,7 +113,7 @@ internal sealed class FeedbackSurface
             passingClick = true;
             Forward(source, new PointerPressedEventArgs(source, e.Pointer, window, position, e.Timestamp, properties, e.KeyModifiers & ~PassModifiers, 1));
         }
-        else pointed = target;
+        else { pointed = target; swallowRelease = true; }
         e.Handled = true;
     }
 
@@ -118,12 +131,14 @@ internal sealed class FeedbackSurface
             return;
         }
         e.Handled = true;
+        swallowRelease = false;
         var selected = pointed;
         pointed = null;
         if (selected == null) return;
         if (!window.IsVisible || Pick(e.GetPosition(window)) != selected) return;
         StopPicking();
-        controller.OpenComment(window, selected, this, interactions.ToArray());
+        if (controller.Connected) controller.SelectTarget(window, selected, interactions);
+        else controller.OpenComment(window, selected, this, interactions.ToArray());
     }
 
     private void Forward(InputElement source, PointerEventArgs e)
@@ -141,6 +156,13 @@ internal sealed class FeedbackSurface
         return FeedbackController.Target(hit);
     }
 
+    public void SelectAtScreenPoint(PixelPoint point)
+    {
+        if (Pick(window.PointToClient(point)) is not { } target) return;
+        StopPicking();
+        controller.SelectTarget(window, target, interactions);
+    }
+
     public void Begin()
     {
         controller.StopNameSearch();
@@ -155,6 +177,7 @@ internal sealed class FeedbackSurface
         StopPicking();
         passingClick = false; pointed = null; interactions.Clear(); setHint("");
         if (wasPicking) ClosePopups();
+        controller.EndSelection(window);
     }
 
     public void ClosePopups()
@@ -188,7 +211,8 @@ internal sealed class FeedbackSurface
 
         // Popup hosts share a layer above the window's regular overlays.
         var layer = control.FindAncestorOfType<OverlayPopupHost>()?.GetVisualParent() as Panel
-            ?? (Panel?)OverlayLayer.GetOverlayLayer(root) ?? root;
+            ?? (Panel?)OverlayLayer.GetOverlayLayer(root) ?? root as Panel;
+        if (layer == null) return;
         if (overlay.Parent != layer)
         {
             if (overlay.Parent is Panel previousLayer) previousLayer.Children.Remove(overlay);

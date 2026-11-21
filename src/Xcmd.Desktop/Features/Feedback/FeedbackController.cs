@@ -32,12 +32,13 @@ public sealed partial class FeedbackController
     public Window? ActiveNotes { get; private set; }
     public string ReleaseId { get; set; } = "development";
     public string? ListPath { get; set; }
-    public bool IsActive => IsPicking || ActiveComment != null || ActiveNotes != null || IsSaving;
+    public bool IsActive => IsPicking || selection != null || ActiveComment != null || ActiveNotes != null || IsSaving;
 
     internal FeedbackController(Window owner, Grid content, FeedbackActions actions)
     {
         this.owner = owner;
         this.actions = actions;
+        if (PointTakenAdapter.Installed) ConnectTracker();
         surfaces[owner] = new FeedbackSurface(this, owner, content, actions.SetHint, actions.RestoreFocus);
     }
 
@@ -48,6 +49,11 @@ public sealed partial class FeedbackController
     {
         if (surfaces.ContainsKey(window)) return;
         window.Icon ??= owner.Icon;
+        if (Connected)
+        {
+            AttachTrackerWindow(window, setHint, focusFallback);
+            return;
+        }
         var original = window.Content as Control;
         var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto") }.WithFeedbackId("FeedbackController.layout");
         var button = new Button

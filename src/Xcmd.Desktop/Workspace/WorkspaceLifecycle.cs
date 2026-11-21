@@ -35,8 +35,11 @@ public sealed class WorkspaceLifecycle : IDisposable
         directoryUpdates = new DirectoryUpdates(window);
         window.Feedback.ReleaseId = releases?.CurrentId ?? "development";
         window.RefreshUptime();
-        window.Feedback.Store = issues ?? new IssueStore(Path.Combine(Path.GetDirectoryName(store.Path)!, "issues"));
-        window.Feedback.ListPath = window.Feedback.Store.DatabasePath;
+        if (!window.Feedback.Connected)
+        {
+            window.Feedback.Store = issues ?? new IssueStore(Path.Combine(Path.GetDirectoryName(store.Path)!, "issues"));
+            window.Feedback.ListPath = window.Feedback.Store.DatabasePath;
+        }
         window.FavoritesChanged += OnFavoritesChanged;
         window.ViewerThemeChanged += OnViewerThemeChanged;
         window.Feedback.AgentChanged += OnFeedbackAgentChanged;
@@ -71,7 +74,7 @@ public sealed class WorkspaceLifecycle : IDisposable
             }
         }
         window.Closing += OnClosing;
-        if (state?.Notes is { } legacy) await window.Feedback.Store!.ImportAsync(legacy, once: true);
+        if (state?.Notes is { } legacy && window.Feedback.Store is { } issueStore) await issueStore.ImportAsync(legacy, once: true);
         await window.Feedback.RefreshAsync();
         window.Closed += OnClosed;
         await SaveAsync();
