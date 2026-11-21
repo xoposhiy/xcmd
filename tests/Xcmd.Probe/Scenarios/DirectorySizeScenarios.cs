@@ -24,11 +24,20 @@ public static class DirectorySizeScenarios
             await c.KeyAsync(Key.R, RawInputModifiers.Control);
             await c.SelectAsync("readable-size.bin");
             var summary = c.Window.Left.GetVisualDescendants().OfType<TextBlock>().Single(text => Avalonia.Automation.AutomationProperties.GetAutomationId(text) == "left.summary");
-            Check(summary.Text!.Contains($"{637.7m:0.#} KiB", StringComparison.Ordinal), "A real file is shown in readable units");
+            var itemCount = $"{c.Window.Left.Rows.Count(row => !row.Entry.IsParent):N0} items";
+            Equal("1 item", GitHistoryProbe.Summary(c.Window.Right), "The opposite panel shows its own item count");
+            Equal(itemCount, summary.Text, "Moving the cursor to a file shows only the item count");
+            Check(ToolTip.GetTip(summary) == null, "An unmarked file has no selection size tooltip");
+            await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
+            Equal($"{itemCount}    1 selected · {637.7m:0.#} KiB", summary.Text, "One marked file shows its readable size after the cursor moves away");
             Equal($"Selected: {652956:N0} bytes", ToolTip.GetTip(summary) as string, "Exact bytes remain available in the tooltip");
             await c.ClickAsync(c.Row("alpha.txt"), RawInputModifiers.Control);
+            Equal($"{itemCount}    2 selected · {637.7m:0.#} KiB", summary.Text, "Ctrl+click adds the second marked file");
             Equal($"Selected: {652959:N0} bytes", ToolTip.GetTip(summary) as string, "Multiple selected files are summed before formatting");
             await c.ScreenshotAsync("readable-selection-size");
+            await c.KeyAsync(Key.Escape);
+            Equal(itemCount, summary.Text, "Clearing all marks restores the item count");
+            Check(ToolTip.GetTip(summary) == null, "Clearing all marks removes the exact byte tooltip");
         }),
         new("folder-size-recursive-and-empty", "UC12; recursive folder sizes", async c =>
         {

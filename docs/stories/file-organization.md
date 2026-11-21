@@ -53,6 +53,12 @@ The panel footer shows the selection count and adds the sizes of selected files 
 the measured sizes of selected folders. If any selected folder has no measurement or
 its measurement is incomplete, the footer shows the total as a lower bound with `≥`.
 
+### Implementation decisions
+
+- Show the selection count and total size only while at least one entry has a check mark.
+  Moving the cursor alone leaves the item count visible.
+  Source: Point Taken #30, Codex session ID 01a20024-3466-7680-b829-784bc0a74a0a.
+
 ## RenameEntry
 
 As a user, I want to rename an entry in the file list so that I can change its name

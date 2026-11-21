@@ -1,4 +1,4 @@
-// @tests OpenOtherPanel, RefreshEntries, DiscoverShortcuts, TransferEntries, DuplicateEntry, BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff, PanelReturnState
+// @tests OpenOtherPanel, RefreshEntries, DiscoverShortcuts, TransferEntries, DuplicateEntry, BrowseHistory, BrowseSnapshot, InspectWorkingChanges, ReadDiff, PanelReturnState, ViewSelectionSize
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -21,6 +21,7 @@ public static class GitUsabilityFixScenarios
             await c.KeyAsync(Key.F6, RawInputModifiers.Control);
             Equal(sort, panel.Session.SortOrder, "Log sort shortcuts cannot change the next file sort");
             Check(!GitHistoryProbe.Summary(panel).Contains("bytes", StringComparison.Ordinal), "Commit counts do not show filesystem sizes");
+            Check(!GitHistoryProbe.Summary(panel).Contains("selected", StringComparison.Ordinal), "The current commit alone has no selection count");
             var hints = GitHistoryProbe.KeyboardHelp(c);
             Check(!hints.Contains("F5  Copy", StringComparison.Ordinal) && !hints.Contains("F6  Move", StringComparison.Ordinal), "Git help omits the transfer shortcuts");
             foreach (var (key, modifiers, label) in new[]
@@ -37,7 +38,11 @@ public static class GitUsabilityFixScenarios
             await c.KeyAsync(Key.Enter);
             Check(panel.Rows.All(row => row.DisplayDate.Length == 0), "Snapshot files have unknown modification dates");
             Check(ToolTip.GetTip((Control)panel.Table.Columns[3].Header!)!.ToString()!.Contains("first parent", StringComparison.Ordinal), "The Git legend describes commit comparisons");
-            await c.SelectAsync("alpha.txt"); await c.KeyAsync(Key.F3);
+            await c.SelectAsync("alpha.txt");
+            Check(!GitHistoryProbe.Summary(panel).Contains("selected", StringComparison.Ordinal), "The current snapshot file alone has no selection count");
+            await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
+            Check(GitHistoryProbe.Summary(panel).Contains("1 selected", StringComparison.Ordinal), "The snapshot counts the marked file");
+            await c.ClickAsync(c.Row("alpha.txt", panel)); await c.KeyAsync(Key.F3);
             var viewer = c.Window.Viewer!;
             var revision = GitPath.Parse(panel.Session.DirectoryPath).Revision[..10];
             Check(viewer.Reader.IsDocumentReadOnly && viewer.Title!.Contains(revision, StringComparison.Ordinal) && viewer.Title.Contains("alpha.txt", StringComparison.Ordinal), "The viewer identifies the original file and commit");

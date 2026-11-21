@@ -12,6 +12,7 @@ internal sealed class PanelSelection(TableView table, Func<List<FileRow>> rows, 
     private HashSet<FileRow> highlightedMarks = [];
     private bool active;
     private List<FileRow> Rows => rows();
+    public IReadOnlyCollection<FileRow> MarkedRows => highlightedMarks;
     public bool HasKeyboardMarks { get; private set; }
     public FileRow? Current => Rows.FirstOrDefault(row => row.Name == cursorName) ?? table.SelectedItem as FileRow;
 

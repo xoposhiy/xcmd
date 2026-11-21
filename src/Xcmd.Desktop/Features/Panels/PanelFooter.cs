@@ -7,26 +7,33 @@ namespace Xcmd.Desktop.Features.Panels;
 
 internal sealed class PanelFooter(TextBlock summary, GitLogPresentation logPresentation)
 {
-    public void Update(PanelSession session, IReadOnlyList<FileRow> rows, string[] selectedNames, bool searchResults)
+    public void Update(PanelSession session, IReadOnlyList<FileRow> rows, IReadOnlyCollection<FileRow> markedRows, bool searchResults)
     {
-        var selected = selectedNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (GitPath.IsEntry(session.DirectoryPath))
         {
-            summary.Text = session.Error ?? logPresentation.Footer(session.DirectoryPath, rows, selected.Count);
+            summary.Text = session.Error ?? logPresentation.Footer(session.DirectoryPath, rows, markedRows.Count);
             ToolTip.SetTip(summary, summary.Text);
             return;
         }
-        var selectedRows = rows.Where(row => selected.Contains(row.Name) && !row.Entry.IsParent).ToArray();
-        var selectedBytes = selectedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
-        var incomplete = selectedRows.Any(IsIncompleteDirectory);
-        var total = (incomplete ? "≥ " : "") + FileSizeText.Format(selectedBytes) + IncompleteNote(incomplete);
         var prefix = LocationPrefix(session.DirectoryPath, searchResults);
-        summary.Text = session.Error ?? $"{prefix}{rows.Count(row => !row.Entry.IsParent):N0} items    {selected.Count:N0} selected · {total}";
-        ToolTip.SetTip(summary, session.Error == null ? $"Selected: {selectedBytes:N0} bytes{IncompleteNote(incomplete)}" : null);
+        var count = rows.Count(row => !row.Entry.IsParent);
+        var itemCount = count == 1 ? "1 item" : $"{count:N0} items";
+        var text = session.Error ?? prefix + itemCount;
+        string? tip = null;
+        if (session.Error == null && markedRows.Count > 0)
+        {
+            var bytes = markedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
+            var incomplete = markedRows.Any(IsIncompleteDirectory);
+            var bound = incomplete ? "≥ " : "";
+            var note = incomplete ? " (incomplete)" : "";
+            text += $"    {markedRows.Count:N0} selected · {bound}{FileSizeText.Format(bytes)}{note}";
+            tip = $"Selected: {bytes:N0} bytes{note}";
+        }
+        summary.Text = text;
+        ToolTip.SetTip(summary, tip);
     }
 
     private static bool IsIncompleteDirectory(FileRow row) => row.Entry.IsDirectory && (row.Measurement == null || row.Measurement.Size.Incomplete);
-    private static string IncompleteNote(bool incomplete) => incomplete ? " (incomplete)" : "";
 
     private static string LocationPrefix(string path, bool searchResults)
     {

@@ -2,7 +2,6 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -91,7 +90,6 @@ public sealed class PanelView : Border
         summary.VerticalAlignment = VerticalAlignment.Center;
         summary.TextTrimming = TextTrimming.CharacterEllipsis;
         summary.HorizontalAlignment = HorizontalAlignment.Right;
-        summary.Bind(ToolTip.TipProperty, new Binding(nameof(TextBlock.Text)) { Source = summary });
         var summaryContainer = new Border
         {
             Name = id + "Footer",
@@ -225,7 +223,7 @@ public sealed class PanelView : Border
     private void UpdateSummary()
     {
         var previous = Selection.UpdateHighlights();
-        footer.Update(Session, Rows, SelectedNames(), IsSearchResults);
+        footer.Update(Session, Rows, Selection.MarkedRows, IsSearchResults);
         commitMessage.Update(Session, Current?.Entry);
         if (Selection.CurrentEntryChanged(previous)) CurrentEntryChanged?.Invoke();
     }

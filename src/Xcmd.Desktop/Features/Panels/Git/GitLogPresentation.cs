@@ -1,4 +1,4 @@
-// @implements BrowseHistory, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges
+// @implements BrowseHistory, BrowseSnapshot, InspectCommitChanges, InspectWorkingChanges, ViewSelectionSize
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -114,12 +114,13 @@ internal sealed class GitLogPresentation(TableView table)
     {
         var location = GitPath.Parse(directory);
         var count = rows.Count(row => !row.Entry.IsParent);
+        var selection = selected > 0 ? $" · {selected:N0} selected" : "";
         if (location.Kind == "log")
         {
             var commits = rows.Count(row => !row.Entry.IsParent && GitPath.HasRevision(row.Entry.FullPath));
-            return (commits == 0 ? files!.EmptyLogMessage(directory) : $"{commits:N0} commits loaded · {selected:N0} selected · newest first")!;
+            return (commits == 0 ? files!.EmptyLogMessage(directory) : $"{commits:N0} commits loaded{selection} · newest first")!;
         }
         if (location.Kind == "working") return $"{count:N0} changed files · Refreshed {files!.RefreshedAt(directory):HH:mm:ss} · Ctrl+R refresh";
-        return (location.Kind == "changes" ? "Changes · /" + location.RelativePath : "Snapshot") + $" · {count:N0} items · {selected:N0} selected · vs first parent";
+        return (location.Kind == "changes" ? "Changes · /" + location.RelativePath : "Snapshot") + $" · {count:N0} items{selection} · vs first parent";
     }
 }
