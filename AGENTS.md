@@ -11,8 +11,8 @@ Ask about material product choices or blockers. Choose routine methods independe
 - Discuss every proposed epic change with the project developer and get explicit
   approval for that specific change before editing the epic.
 - Before every commit, keep the changed work, story descriptions and source
-  mappings consistent. When the user asks to commit a finished feature, show
-  the existing or proposed story in its epic and get the user's approval before
+  mappings consistent. Reuse an existing story with unchanged wording without
+  asking for confirmation. Get approval for a new or reworded story before
   committing. Follow the [feature story review](docs/processes/stories.md#review-the-story-for-a-feature-commit).
 - Keep worked-out specs in [docs/specs-in-progress/](docs/specs-in-progress/) while
   implementation is pending or in progress. Once the spec is implemented, move it

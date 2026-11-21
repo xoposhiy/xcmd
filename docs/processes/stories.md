@@ -17,10 +17,11 @@ feature serves. Read the existing stories in context. Reuse a story when its
 statement already covers the need. Propose revised wording if the need has
 changed, or a new story under an existing epic if the need is distinct.
 
-Show the user the epic, story ID and full story statement. Say whether you are
-using the existing wording, proposing an edit or adding a story. Explain in one
-sentence how the finished feature meets that need. Get the user's explicit
-approval of the wording and its place in the catalogue before committing.
+When reusing an existing story with unchanged wording, proceed without asking
+the user to confirm it. For a new or reworded story, show the user the epic,
+story ID and full proposed statement. Explain in one sentence how the finished
+feature meets the need. Get the user's explicit approval of the wording and its
+place in the catalogue before committing.
 If the user already approved that exact wording and placement for this feature,
 use that approval. Apply agreed catalogue changes and check the source mappings.
 

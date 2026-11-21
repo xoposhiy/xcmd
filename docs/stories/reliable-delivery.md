@@ -159,6 +159,9 @@ I can learn the product and find the need behind a change.
   implementation choices, which can remain experimental.
   Source: [2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md → Turn 2](../codex-sessions/2026-11-17T20-42-24-01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49.md#turn-2).
 
+- Reuse an existing story with unchanged wording without asking the user to confirm it.
+  Codex session ID `01a20024-3466-7680-b829-784bc0a74a0a`.
+
 - Put guidance needed for all work in AGENTS.md and link to separate files under docs
   for occasional processes. Prefer goals, agent judgment and briefly justified agreed
   rules over micromanagement.
