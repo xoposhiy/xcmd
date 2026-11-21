@@ -34,10 +34,12 @@ can give the development agent feedback with a stable target.
   nested target. Show the interaction path in the comment dialog.
   Feedback 01bd18d. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
-- Show the yellow outline around the control under the pointer, including
-  items in open menus. Clear the outline when the item disappears or the
-  comment dialog opens.
-  Feedback a782ed1. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
+- With Point Taken connected, return the bounds of the control under the
+  pointer, including items in open menus. Point Taken draws the corners. In
+  standalone feedback mode, Xcmd draws the yellow outline and clears it
+  when the item disappears or the comment dialog opens.
+  Feedback a782ed1 and Point Taken #27. Codex session IDs
+  01a1ef14-4083-7e53-915f-46aed5aab6cd and 01a1fe06-ec37-78d1-a71c-ef8aa1137e46.
 
 - Let the user select individual items in menus, submenus, and popup lists.
   Keep each item's name in the report and use the control's source ID for

@@ -78,6 +78,22 @@ public static class FeedbackInteractionScenarios
             Check((await store.ReadAsync())!.Notes == null, "New sessions do not contain feedback");
             Equal(note, (await c.Window.Feedback.Store!.ReadAsync()).Single(), "The independent store preserves the clicked target");
         }),
+        new("feedback-connected-hover-outline", "Point Taken owns the hover outline while Xcmd handles input", async c =>
+        {
+            var window = OpenConnectedWindow(c);
+            try
+            {
+                Check(window.Feedback.Connected, "Xcmd uses the Point Taken adapter");
+                window.Feedback.Begin();
+                var file = (MenuItem)window.GetVisualDescendants().OfType<Menu>().Single().Items[0]!;
+                await UseControlAsync(c, window, file);
+                Check(window.IsMenuOpen && window.Feedback.IsPicking, "Ctrl+click opens File and keeps the picker active");
+                var command = file.Items.OfType<MenuItem>().First();
+                await NavigationFeedbackFixture.HoverAsync(c, command, window);
+                Check(!HasHighlight(window), "Xcmd leaves the menu command outline to Point Taken");
+            }
+            finally { window.Close(); }
+        }),
         new("feedback-menu-hover-outline", "Feedback outlines menu items while they are visible and clears the outline when they disappear", async c =>
         {
             var menu = c.Window.GetVisualDescendants().OfType<Menu>().Single();

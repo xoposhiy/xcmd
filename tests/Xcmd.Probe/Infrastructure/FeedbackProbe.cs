@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using SkiaSharp;
 using Xcmd.Core;
+using Xcmd.Desktop.Workspace;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
 namespace Xcmd.Probe.Infrastructure;
@@ -48,6 +49,22 @@ public static class FeedbackProbe
         var edge = image.GetPixel((int)((topLeft.X + 1) * scale), (int)(middle.Y * scale));
         var hits = string.Join(", ", window.GetVisualsAt(middle).Take(10).Select(visual => visual.GetType().Name));
         Check(edge == SKColors.Gold, $"The yellow outline is rendered over the hovered control. Edge pixel: {edge}. Pointer source: {pointerSource}. Outline visible: {HasHighlight(window)}. Hits: {hits}.");
+    }
+
+    public static CommanderWindow OpenConnectedWindow(ProbeContext context)
+    {
+        var previousDirectory = Environment.GetEnvironmentVariable("POINT_TAKEN_DATA_DIR");
+        var directory = Path.Combine(context.FixturePath, "point-taken");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, "config.json"), "{}");
+        Environment.SetEnvironmentVariable("POINT_TAKEN_DATA_DIR", directory);
+        try
+        {
+            var window = new CommanderWindow(context.FileSystem, context.Launcher);
+            window.Show();
+            return window;
+        }
+        finally { Environment.SetEnvironmentVariable("POINT_TAKEN_DATA_DIR", previousDirectory); }
     }
 
     public static bool HasHighlight(Window window) =>

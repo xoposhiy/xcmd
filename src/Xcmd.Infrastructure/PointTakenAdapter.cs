@@ -14,18 +14,22 @@ namespace Xcmd.Infrastructure;
 public sealed class PointTakenAdapter : IDisposable
 {
     private readonly CancellationTokenSource lifetime = new();
-    private readonly Func<long, bool, (int X, int Y)?, Task<ChannelReader<object?>?>> begin;
+    private readonly Func<long, bool, (int X, int Y)?, bool, Task<ChannelReader<object?>?>> begin;
+    private readonly Func<long, int, int, Task<(int X, int Y, int Width, int Height)?>> preview;
     private readonly Func<Task> finish;
     private readonly Func<string> build;
     private readonly Action<string> trace;
     private uint tracker;
-    public PointTakenAdapter(Func<long, bool, (int X, int Y)?, Task<ChannelReader<object?>?>> begin, Func<Task> finish, Func<string> build, Action<string> trace)
+    public PointTakenAdapter(Func<long, bool, (int X, int Y)?, bool, Task<ChannelReader<object?>?>> begin,
+        Func<long, int, int, Task<(int X, int Y, int Width, int Height)?>> preview, Func<Task> finish, Func<string> build, Action<string> trace)
     {
         this.begin = begin;
+        this.preview = preview;
         this.finish = finish;
         this.build = build;
         this.trace = trace;
-        _ = ListenAsync();
+        _ = ListenAsync(false);
+        _ = ListenAsync(true);
     }
 
     private static string ConfigFile => Path.Combine(Environment.GetEnvironmentVariable("POINT_TAKEN_DATA_DIR")
@@ -54,16 +58,18 @@ public sealed class PointTakenAdapter : IDisposable
     {
         if (tracker != 0) AllowSetForegroundWindow(tracker);
     }
-    private async Task ListenAsync()
+    private async Task ListenAsync(bool previewOnly)
     {
         while (!lifetime.IsCancellationRequested)
         {
             try
             {
-                using var pipe = new NamedPipeServerStream("feedback." + Environment.ProcessId, PipeDirection.InOut, 1,
+                var name = previewOnly ? "feedback.preview." : "feedback.";
+                using var pipe = new NamedPipeServerStream(name + Environment.ProcessId, PipeDirection.InOut, 1,
                     PipeTransmissionMode.Byte, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
                 await pipe.WaitForConnectionAsync(lifetime.Token);
-                await ServeAsync(pipe);
+                if (previewOnly) await PreviewAsync(pipe);
+                else await ServeAsync(pipe);
             }
             catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { return; }
             catch (Exception error)
@@ -75,16 +81,30 @@ public sealed class PointTakenAdapter : IDisposable
         }
     }
 
+    private async Task PreviewAsync(NamedPipeServerStream pipe)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
+        timeout.CancelAfter(TimeSpan.FromSeconds(1));
+        var (request, session) = await ReadFirstMessage(pipe, "PreviewTarget", timeout.Token);
+        if (request.GetProperty("version").GetInt32() != 1) return;
+        var point = request.GetProperty("screenPoint");
+        var rect = await preview(request.GetProperty("hwnd").GetInt64(), point.GetProperty("x").GetInt32(), point.GetProperty("y").GetInt32());
+        await Send(pipe, new
+        {
+            type = "TargetBounds",
+            sessionId = session,
+            bounds = rect is { } r ? new { x = r.X, y = r.Y, width = r.Width, height = r.Height } : null
+        }, timeout.Token);
+    }
+
     private async Task ServeAsync(NamedPipeServerStream pipe)
     {
         using var handshake = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         handshake.CancelAfter(TimeSpan.FromSeconds(3));
-        var hello = await Read(pipe, handshake.Token);
-        var session = hello.GetProperty("sessionId").GetString() ?? throw new InvalidDataException("Missing session ID.");
-        Expect(hello, "Hello", session);
+        var (hello, session) = await ReadFirstMessage(pipe, "Hello", handshake.Token);
         if (hello.GetProperty("version").GetInt32() != 1) throw new InvalidDataException("Unsupported Point Taken version.");
         var repeat = hello.TryGetProperty("repeatTargets", out var flag) && flag.ValueKind == JsonValueKind.True;
-        await Send(pipe, new { type = "HelloAck", sessionId = session, version = 1, appId = "xcmd", projectId = "xcmd", build = build(), repeatTargets = repeat, pickAtPoint = true }, handshake.Token);
+        await Send(pipe, new { type = "HelloAck", sessionId = session, version = 1, appId = "xcmd", projectId = "xcmd", build = build(), repeatTargets = repeat, pickAtPoint = true, useAtPoint = true }, handshake.Token);
         var request = await Read(pipe, handshake.Token);
         Expect(request, "BeginPick", session);
         if (!GetNamedPipeClientProcessId(pipe.SafePipeHandle, out tracker)) throw new IOException("Could not identify Point Taken.");
@@ -92,7 +112,8 @@ public sealed class PointTakenAdapter : IDisposable
         {
             (int X, int Y)? point = request.TryGetProperty("screenPoint", out var p)
                 ? (p.GetProperty("x").GetInt32(), p.GetProperty("y").GetInt32()) : null;
-            var selection = await begin(request.GetProperty("hwnd").GetInt64(), repeat, point);
+            var selection = await begin(request.GetProperty("hwnd").GetInt64(), repeat, point,
+                request.TryGetProperty("useControl", out var use) && use.ValueKind == JsonValueKind.True);
             if (selection == null) throw new InvalidOperationException("The selected Xcmd window is no longer active.");
             await Send(pipe, new { type = "Ready", sessionId = session }, handshake.Token);
             using var watch = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
@@ -127,6 +148,14 @@ public sealed class PointTakenAdapter : IDisposable
             }
         }
         finally { tracker = 0; await finish(); }
+    }
+
+    private static async Task<(JsonElement Message, string Session)> ReadFirstMessage(Stream pipe, string type, CancellationToken token)
+    {
+        var message = await Read(pipe, token);
+        var session = message.GetProperty("sessionId").GetString() ?? throw new InvalidDataException("Missing session ID.");
+        Expect(message, type, session);
+        return (message, session);
     }
 
     private static void Expect(JsonElement message, string type, string session)

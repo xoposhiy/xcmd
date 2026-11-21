@@ -96,7 +96,7 @@ internal sealed class FeedbackSurface
         {
             case PointerPressedEventArgs pressed: OnPointerPressed(pressed); break;
             case PointerReleasedEventArgs released: OnPointerReleased(released); break;
-            default: Highlight(Pick(e.GetPosition(window))); break;
+            case PointerEventArgs when !controller.Connected: Highlight(Pick(e.GetPosition(window))); break;
         }
     }
 
@@ -154,6 +154,29 @@ internal sealed class FeedbackSurface
             .OfType<Control>().FirstOrDefault(control => control == root || root.IsVisualAncestorOf(control) ||
                 control.FindAncestorOfType<OverlayPopupHost>() != null);
         return FeedbackController.Target(hit);
+    }
+
+    public PixelRect? BoundsAt(PixelPoint point)
+    {
+        if (Pick(window.PointToClient(point)) is not { } target) return null;
+        var start = target.PointToScreen(default);
+        var end = target.PointToScreen(new Point(target.Bounds.Width, target.Bounds.Height));
+        return new PixelRect(start.X, start.Y, end.X - start.X, end.Y - start.Y);
+    }
+
+    public void UseAtScreenPoint(PixelPoint point)
+    {
+        var local = window.PointToClient(point);
+        if (!IsPicking || Pick(local) is not { IsEffectivelyEnabled: true } target ||
+            window.InputHitTest(local) is not InputElement input) return;
+        interactions.Add(FeedbackController.DescribeInteraction(target, "Click"));
+        using var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        var time = (ulong)Environment.TickCount64;
+        Forward(input, new PointerPressedEventArgs(input, pointer, window, local, time,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed), KeyModifiers.None, 1));
+        var release = pointer.Captured as InputElement ?? input;
+        Forward(release, new PointerReleasedEventArgs(release, pointer, window, local, time,
+            new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), KeyModifiers.None, MouseButton.Left));
     }
 
     public void SelectAtScreenPoint(PixelPoint point)

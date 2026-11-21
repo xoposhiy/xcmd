@@ -25,7 +25,8 @@ public sealed partial class FeedbackController
         try { shortcut = KeyGesture.Parse(PointTakenAdapter.Shortcut()); }
         catch (Exception error) { actions.Trace("Could not read the Point Taken shortcut: " + error.Message); }
         adapter = new PointTakenAdapter(
-            async (hwnd, repeat, point) => await Dispatcher.UIThread.InvokeAsync(() => StartSelection(hwnd, repeat, point), DispatcherPriority.Background),
+            async (hwnd, repeat, point, useControl) => await Dispatcher.UIThread.InvokeAsync(() => StartSelection(hwnd, repeat, point, useControl), DispatcherPriority.Background),
+            async (hwnd, x, y) => await Dispatcher.UIThread.InvokeAsync(() => PreviewTarget(hwnd, x, y)),
             async () => await Dispatcher.UIThread.InvokeAsync(FinishSelection),
             () => ReleaseId, actions.Trace);
         var opened = Window.WindowOpenedEvent.AddClassHandler<Window>((window, _) =>
@@ -53,7 +54,14 @@ public sealed partial class FeedbackController
             catch (Exception error) { actions.SetHint("Start Point Taken to report an issue."); actions.Trace(error.Message); }
         });
     }
-    private ChannelReader<object?>? StartSelection(long hwnd, bool repeat, (int X, int Y)? point)
+    private (int X, int Y, int Width, int Height)? PreviewTarget(long hwnd, int x, int y)
+    {
+        var source = surfaces.Keys.FirstOrDefault(w => w.IsVisible && w.TryGetPlatformHandle()?.Handle == (nint)hwnd);
+        if (source == null || surfaces[source].BoundsAt(new(x, y)) is not { } rect) return null;
+        return (rect.X, rect.Y, rect.Width, rect.Height);
+    }
+
+    private ChannelReader<object?>? StartSelection(long hwnd, bool repeat, (int X, int Y)? point, bool useControl)
     {
         if (IsActive) return null;
         var source = surfaces.Keys.FirstOrDefault(window => window.IsVisible && window.IsActive && window.IsEnabled &&
@@ -65,7 +73,11 @@ public sealed partial class FeedbackController
         repeatTargets = repeat;
         hasTarget = false;
         surfaces[source].Begin();
-        if (point is { } location) surfaces[source].SelectAtScreenPoint(new(location.X, location.Y));
+        if (point is { } location)
+        {
+            if (useControl) surfaces[source].UseAtScreenPoint(new(location.X, location.Y));
+            else surfaces[source].SelectAtScreenPoint(new(location.X, location.Y));
+        }
         return selection.Reader;
     }
     internal void SelectTarget(Window window, Control control, IReadOnlyList<FeedbackInteraction> actionsTaken)
