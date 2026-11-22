@@ -9,7 +9,10 @@ feedback build from finalization.
 
 Use Windows, PowerShell 7, Python 3.11 or later and the SDK pinned in
 [global.json](../../global.json). The NativeAOT launcher also needs Visual Studio
-C++ build tools and a Windows SDK. Keep locked dependencies and the single
+C++ build tools and a Windows SDK. The build scripts share
+[BuildEnvironment.ps1](../../scripts/BuildEnvironment.ps1), which pins the SDK on
+PATH and adds the Visual Studio Installer folder so `vswhere.exe` resolves even when
+`NoDefaultCurrentDirectoryInExePath` is set. Keep locked dependencies and the single
 Release / Windows x64 profile. Build defaults live in
 [Directory.Build.props](../../Directory.Build.props) and
 [Directory.Build.targets](../../Directory.Build.targets).
