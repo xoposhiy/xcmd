@@ -33,6 +33,9 @@ public sealed partial class CommanderWindow
             var item = Item("Changed files in current commit", GitHistory.ShowChanges, historyAllowed: true);
             GitHistory.MarkChanges(item); return item;
         }
+        var operationHistory = Item("File operation history", OperationsView.ToggleDetails, historyAllowed: true);
+        operationHistory.IsVisible = Operations.Jobs.Count > 0;
+        Operations.Changed += () => operationHistory.IsVisible = Operations.Jobs.Count > 0;
         return new Menu
         {
             Name = "MainMenu",
@@ -74,7 +77,7 @@ public sealed partial class CommanderWindow
                 {
                     Item("Reset column widths", () => ActivePanel.ResetColumns(), historyAllowed: true), Item("Reload file colors", () => Execute(ReloadFileTypesAsync)),
                     Item("Calculate folder sizes", () => Execute(CalculateDirectorySizesAsync), new(Key.Enter, KeyModifiers.Alt | KeyModifiers.Shift)),
-                    Item("File operations", () => OperationsView.ToggleDetails())
+                    operationHistory
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.4"),
                 new MenuItem() { Header = "Git", ItemsSource = new MenuItem[]
                 {

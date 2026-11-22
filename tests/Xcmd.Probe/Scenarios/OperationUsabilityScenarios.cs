@@ -41,11 +41,13 @@ public static class OperationUsabilityScenarios
         }),
         new("review-queue-keyboard-selection-and-cancel", "UC33; Cancel selected queued work while Tab keeps switching panels", async c =>
         {
+            Check(!OperationHistoryCommand(c).IsVisible, "View omits operation history until the first job");
             await c.SelectAsync("alpha.txt"); var gate = c.FileSystem.PauseNextCopy(Path.Combine(c.LeftPath, "alpha.txt"));
             c.PressKey(Key.F5); ConfirmTransfer(c); await WaitUntilAsync(() => gate.Entered.Task.IsCompleted);
             try
             {
                 var queued = c.Window.Operations.Enqueue(new(FileOperationKind.Copy, [c.Window.Left.Rows.Single(row => row.Name == "file2.log").Entry], c.RightPath));
+                Check(OperationHistoryCommand(c).IsVisible, "View offers operation history once a job exists");
                 await OpenOperationsMenuAsync(c);
                 Check(c.Window.OperationsView.DetailsVisible && c.Window.OperationsView.IsKeyboardFocusWithin, "Opening operation history focuses the queue.");
                 c.PressKey(Key.Tab); await DrainRenderingAsync(c);

@@ -31,6 +31,13 @@ public static class OperationInputProbe
         Check(control.IsFocused, "Tab reaches the requested action.");
     }
 
+    public static MenuItem OperationHistoryCommand(ProbeContext context)
+    {
+        var mainMenu = context.Window.GetVisualDescendants().OfType<Menu>().Single();
+        var view = mainMenu.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "View"));
+        return view.Items.OfType<MenuItem>().Single(item => Equals(item.Header, "File operation history"));
+    }
+
     public static async Task OpenOperationsMenuAsync(ProbeContext context)
     {
         var menu = context.Window.GetVisualDescendants().OfType<Menu>().Single();
