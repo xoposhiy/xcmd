@@ -23,11 +23,9 @@ internal sealed class PanelFooter(TextBlock summary, GitLogPresentation logPrese
         if (session.Error == null && markedRows.Count > 0)
         {
             var bytes = markedRows.Sum(row => row.Entry.IsDirectory ? row.Measurement?.Size.Bytes ?? 0 : row.Entry.Size);
-            var incomplete = markedRows.Any(IsIncompleteDirectory);
-            var bound = incomplete ? "≥ " : "";
-            var note = incomplete ? " (incomplete)" : "";
-            text += $"    {markedRows.Count:N0} selected · {bound}{FileSizeText.Format(bytes)}{note}";
-            tip = $"Selected: {bytes:N0} bytes{note}";
+            var bound = markedRows.Any(IsIncompleteDirectory) ? "≥ " : "";
+            text += $"    {markedRows.Count:N0} selected · {bound}{FileSizeText.Format(bytes)}";
+            tip = $"Selected: {bound}{bytes:N0} bytes";
         }
         summary.Text = text;
         ToolTip.SetTip(summary, tip);

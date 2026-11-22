@@ -105,7 +105,7 @@ public static class PriorityBatchScenarios
         new("priority-selected-sizes", "PANEL-01; selected files and measured folders total without traversal", async c =>
         {
             await c.SelectAsync("folder1"); await c.KeyAsync(Key.Down, RawInputModifiers.Shift);
-            Check(Summary(c).Contains("incomplete", StringComparison.Ordinal), "Unknown folder sizes are explicit");
+            Check(Summary(c).Contains("≥", StringComparison.Ordinal), "Unknown folder sizes show a lower bound");
             c.Window.Left.SetDirectorySize(new("folder1", new(42, 1, 0, 0), DateTimeOffset.UtcNow));
             Check(Summary(c).Contains("42 bytes", StringComparison.Ordinal), "Calculated folder bytes contribute immediately");
             c.Window.Left.SetDirectorySize(new("folder2", new(0, 0, 0, 0), DateTimeOffset.UtcNow));
