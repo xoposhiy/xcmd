@@ -3,6 +3,7 @@
 **/obj/
 .packages/
 .dotnet/
+/.env
 artifacts/
 releases/
 /Xcmd.exe
