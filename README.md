@@ -33,7 +33,7 @@ right panel. The menu opens on that panel's current drive or session list.
 Each opening reads fresh sessions. Recent sessions appear first. You can open
 a session while older conversations are still loading.
 Press Enter on a session to resume it in its CLI. To return to files, choose
-a drive in the same menu.
+a drive in the same menu. Each panel remembers its last folder on each drive.
 
 Project shows the nearest Git work tree or the launch folder if it is outside Git.
 Hover over the project to see the full launch path. Press Ctrl+Left or Ctrl+Right

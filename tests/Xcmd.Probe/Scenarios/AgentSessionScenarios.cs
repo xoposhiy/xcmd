@@ -130,6 +130,25 @@ public static class AgentSessionScenarios
             Equal(1, table.ItemCount, "Only the new source has rows");
             Equal(c.AgentSessions.Claude, table.SelectedItem, "The previous load cannot change the cursor");
         }),
+        new("drive-source-remembers-folders", "Each drive keeps its latest folder across navigation and workspace restores", async c =>
+        {
+            var history = new DirectoryHistory();
+            history.Restore([@"D:\old", @"C:\first"], @"D:\latest");
+            for (var index = 0; index < 105; index++) history.Visit($@"C:\folder{index}");
+            history.Visit(GitPath.Log(@"D:\other", ""));
+            var restored = new DirectoryHistory();
+            restored.Restore(history.PreviousDirectories, @"C:\folder104", history.CaptureDriveDirectories());
+            Equal(@"D:\latest", restored.DirectoryForDrive(@"d:\"), "A drive remembers its folder after it leaves recent history");
+            Equal(@"E:\", restored.DirectoryForDrive(@"E:\"), "A drive with no visits opens its root");
+
+            var child = Path.Combine(c.RightPath, "temporary");
+            Directory.CreateDirectory(child);
+            await c.Window.Right.LoadAsync(child);
+            await ChooseAsync(c, Key.F2, "Codex");
+            Directory.Delete(child);
+            await ChooseAsync(c, Key.F2, Path.GetPathRoot(c.RightPath)!);
+            Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "A removed folder opens its nearest existing parent");
+        }),
         new("agent-session-project", "Show the Git work tree and open it across panels while keeping the session selected", async c =>
         {
             var nested = Path.Combine(c.RightPath, "nested");
@@ -273,9 +292,9 @@ public static class AgentSessionScenarios
             var root = Path.GetPathRoot(c.RightPath)!;
             await ChooseAsync(c, Key.F2, root);
             Check(!right.ShowsAgentSessions, "Choosing a drive switches back to files.");
-            Equal(root, right.Session.DirectoryPath, "The drive opens its root");
+            Equal(c.RightPath, right.Session.DirectoryPath, "The drive opens the right panel's last folder");
             await ChooseAsync(c, Key.F1, root);
-            Equal(Path.GetPathRoot(c.LeftPath), left.Session.DirectoryPath, "The left panel opens its drive");
+            Equal(c.LeftPath, left.Session.DirectoryPath, "The left panel remembers its own folder on the same drive");
         })
     ];
 }

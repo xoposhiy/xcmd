@@ -18,7 +18,8 @@ internal sealed class PanelStateRestore(PanelSession session, PanelFileTable tab
         var offset = table.ScrollOffset;
         return new(session.DirectoryPath, session.SortOrder, selection.Current?.Name, selection.CaptureRowSelection(),
             session.PreviousDirectories.ToArray(), session.CaptureCursors(),
-            table.Columns.Capture(), offset.X, offset.Y, rows.CaptureMeasurements(), selection.HasMarks);
+            table.Columns.Capture(), offset.X, offset.Y, rows.CaptureMeasurements(), selection.HasMarks,
+            DriveDirectories: session.CaptureDriveDirectories());
     }
 
     public PanelReturnPoint CaptureReturnPoint() => new(CaptureState(), table.Table.Bounds.Width);

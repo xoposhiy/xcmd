@@ -50,7 +50,7 @@ internal sealed class PanelSourceController
         foreach (var drive in drives)
             AddItem(drive, !panel.ShowsAgentSessions && drive == root, () => window.Execute(async () =>
             {
-                if (!await panel.LoadAsync(drive))
+                if (!await panel.LoadAsync(panel.Session.DirectoryForDrive(drive), nearestExistingParent: true))
                 { window.SetError(panel.Session.Error); return; }
                 panel.LeaveAgentSessions();
                 window.Activate(panel);

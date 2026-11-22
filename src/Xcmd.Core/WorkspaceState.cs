@@ -2,7 +2,7 @@
 namespace Xcmd.Core;
 
 public sealed record PanelState(string DirectoryPath, SortOrder Sort, string? Cursor, string[] Selected,
-    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false, SearchPanelState? SearchResults = null);
+    string[] History, Dictionary<string, string> Cursors, ColumnState[] Columns, double ScrollX, double ScrollY, DirectoryMeasurement[]? Sizes = null, bool HasMarks = false, SearchPanelState? SearchResults = null, string[]? DriveDirectories = null);
 public sealed record SearchPanelState(string Root, FileSearchResult[] Results, string? Cursor, string[] Selected, bool HasMarks, SortOrder Sort, double ScrollX, double ScrollY);
 public sealed record ColumnState(double Width, bool Star);
 public sealed record WindowPlacement(int X, int Y, double Width, double Height, bool Maximized, bool Minimized = false, bool Active = true);
@@ -51,7 +51,7 @@ public sealed record WorkspaceState(int Version, PanelState Left, PanelState Rig
     private static void ValidatePanel(PanelState panel)
     {
         if (!ValidDirectoryPath(panel.DirectoryPath) || !ValidPanelNavigation(panel) ||
-            !ValidPanelHistory(panel.History) || !ValidPanelLayout(panel))
+            !ValidPanelHistory(panel.History) || panel.DriveDirectories?.All(ValidDirectoryPath) == false || !ValidPanelLayout(panel))
             throw new InvalidDataException("The saved panel state is invalid.");
         ValidateDirectorySizes(panel.Sizes);
         ValidateSearchPanel(panel.SearchResults);

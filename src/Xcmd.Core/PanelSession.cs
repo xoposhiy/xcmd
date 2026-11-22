@@ -14,6 +14,8 @@ public sealed class PanelSession(IFileSystem fileSystem)
     public long Revision { get; private set; }
     public IFileSystem FileSystem => fileSystem;
     public IReadOnlyList<string> PreviousDirectories => history.PreviousDirectories;
+    public string DirectoryForDrive(string root) => history.DirectoryForDrive(root);
+    public string[] CaptureDriveDirectories() => history.CaptureDriveDirectories();
     public Dictionary<string, string> CaptureCursors() => new(cursors, StringComparer.OrdinalIgnoreCase);
 
     public void RestoreNavigation(PanelState state)
@@ -22,7 +24,7 @@ public sealed class PanelSession(IFileSystem fileSystem)
         if (!GitPath.IsLog(DirectoryPath)) Entries = PanelRules.Sort(Entries, SortOrder);
         cursors.Clear();
         foreach (var cursor in state.Cursors) cursors[cursor.Key] = cursor.Value;
-        history.Restore(state.History, DirectoryPath);
+        history.Restore(state.History, DirectoryPath, state.DriveDirectories);
         Revision++;
     }
 
