@@ -23,7 +23,7 @@ internal sealed class PanelFileTable
     private readonly Dictionary<SortField, Button> headers = [];
     private bool headersConfigured;
 
-    public TableView Table { get; }
+    public PanelTable Table { get; }
     public FilePanelColumns Columns { get; }
     public GitLogPresentation LogPresentation { get; }
     public PanelSelection Selection { get; }
@@ -42,27 +42,15 @@ internal sealed class PanelFileTable
         this.id = id;
         this.icons = icons;
         this.panelRows = panelRows;
-        Table = new TableView
+        Table = new PanelTable(fileRows: true)
         {
             Name = id + "Files",
-            SelectionMode = SelectionMode.Multiple,
-            ClipToBounds = true,
-            AutoScrollToSelectedItem = false,
-            Focusable = true,
-            FontSize = UiPalette.BodySize,
-            Background = Brushes.Transparent
+            SelectionMode = SelectionMode.Multiple
         }.WithFeedbackId("PanelView.Table");
-
         Selection = new PanelSelection(Table, () => Rows, NotifyStateChanged);
+        Table.CurrentIndex = () => Selection.Current is { } row ? Rows.IndexOf(row) : -1;
+        Table.MoveTo = Selection.MoveTo;
         AutomationProperties.SetAutomationId(Table, id + ".files");
-        Table.IsTextSearchEnabled = false;
-        ScrollViewer.SetBringIntoViewOnFocusChange(Table, false);
-        ScrollViewer.SetAllowAutoHide(Table, false);
-        ScrollViewer.SetHorizontalScrollBarVisibility(Table, ScrollBarVisibility.Auto);
-        Table.Resources["TableViewColumnResizerMargin"] = new Thickness(0);
-        Table.Resources["TableViewRowPadding"] = new Thickness(0);
-        Table.ItemContainerTheme = FileRowTheme.Create();
-        UiLayout.Table(Table, fileRows: true);
         Table.Columns.Add(Column(SortField.Name, "Name", new GridLength(1, GridUnitType.Star), name: true));
         Table.Columns.Add(Column(SortField.Extension, "Type", new GridLength(64)));
         Table.Columns.Add(Column(SortField.Size, "Size", new GridLength(88)));
@@ -95,10 +83,7 @@ internal sealed class PanelFileTable
             }
             Activated?.Invoke();
         };
-        Table.DoubleTapped += (_, e) =>
-        {
-            if (RowContainerAt(e.Source) != null) OpenRequested?.Invoke();
-        };
+        Table.RowOpened += () => OpenRequested?.Invoke();
     }
 
     public void ReplaceRows(PanelSession session, List<FileRow> rows, bool showMeasurements, string[] selected, string? current)
@@ -145,7 +130,7 @@ internal sealed class PanelFileTable
         foreach (var (field, button) in headers)
         {
             var title = field switch { SortField.Extension => "Type", SortField.Modified => "Modified", _ => field.ToString() };
-            button.Content = title + (order.Field == field ? order.Descending ? "  ↓" : "  ↑" : "");
+            button.Content = PanelTable.SortCaption(title, order.Field == field, order.Descending);
         }
     }
 
@@ -177,23 +162,9 @@ internal sealed class PanelFileTable
 
     private TableViewColumn Column(SortField field, string title, GridLength width, bool name = false)
     {
-        var button = new Button
-        {
-            Content = title,
-            Name = id + "Sort" + field,
-            Focusable = false,
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Padding = new Thickness(8, 0),
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            VerticalContentAlignment = VerticalAlignment.Center,
-            HorizontalContentAlignment = field == SortField.Size ? HorizontalAlignment.Right : field == SortField.Extension ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-            FontSize = UiPalette.BodySize,
-            FontWeight = FontWeight.SemiBold,
-            Foreground = UiPalette.Text,
-            MinHeight = UiPalette.RowHeight
-        }.WithFeedbackId("PanelView.button");
+        var alignment = field == SortField.Size ? HorizontalAlignment.Right : field == SortField.Extension ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+        var button = PanelTable.SortHeader(title, alignment);
+        button.Name = id + "Sort" + field;
         AutomationProperties.SetAutomationId(button, id + ".sort." + field.ToString().ToLowerInvariant());
         button.Click += (_, _) => { Activated?.Invoke(); SortRequested?.Invoke(field); Selection.FocusCurrent(); };
         headers[field] = button;

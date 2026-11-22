@@ -65,6 +65,8 @@ public static class SearchPanelScenarios
             Equal(2, SearchProbe.Results(search).Length, "Both same-named files found");
             await c.KeyAsync(Key.P, RawInputModifiers.Alt, search);
             Check(panel.IsSearchResults && c.Window.FileSearch.Window == null, "Alt+P transfers results and closes search");
+            var resultsBackground = panel.Background;
+            Check(resultsBackground != c.Window.Right.Background, "Search results have a distinct panel background");
             Equal(2, panel.Rows.Count, "No parent or unrelated rows in result panel");
             Equal(2, panel.Rows.Select(row => row.Name).Distinct().Count(), "Relative paths distinguish duplicate names");
             var wanted = Path.Combine(c.LeftPath, "second", "same.txt");
@@ -85,6 +87,7 @@ public static class SearchPanelScenarios
             await c.SettleAsync();
             await c.KeyAsync(Key.Escape);
             Check(!panel.IsSearchResults, "Escape leaves results");
+            Equal(c.Window.Right.Background, panel.Background, "Leaving results restores the folder background");
             Equal(before.DirectoryPath, panel.Session.DirectoryPath, "Escape restores original folder");
             Equal(before.Cursor, panel.Current?.Name, "Escape restores original cursor");
             Check(before.Selected.SequenceEqual(panel.SelectedNames()), "Escape restores original selection");
@@ -92,6 +95,7 @@ public static class SearchPanelScenarios
             Equal(125d, panel.Table.Columns[1].Width.Value, "Leaving search results preserves the custom Type width");
             await c.Window.RestoreWorkspaceAsync((await store.ReadAsync())!);
             Check(panel.IsSearchResults && panel.Rows.Count == 2, "Saved workspace restores results");
+            Equal(resultsBackground, panel.Background, "Restored results use the search background");
             Equal(wanted, panel.Current?.Entry.FullPath, "Saved workspace restores result cursor");
             await c.ScreenshotAsync("search-result-panel");
             await c.KeyAsync(Key.Escape);

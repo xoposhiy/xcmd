@@ -1,10 +1,10 @@
 // @implements NavigatePanels, MarkEntries, SortEntries, RefreshEntries, RestoreWorkspace, DragFiles
-using Avalonia.Controls;
+using Avalonia.Input;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Panels;
 
-internal sealed class PanelSelection(TableView table, Func<List<FileRow>> rows, Action updateView)
+internal sealed class PanelSelection(PanelTable table, Func<List<FileRow>> rows, Action updateView)
 {
     private string? cursorName;
     private string? rangeAnchor;
@@ -88,21 +88,7 @@ internal sealed class PanelSelection(TableView table, Func<List<FileRow>> rows, 
     public void FocusCurrent(bool scrollIntoView = true)
     {
         updateView();
-        table.UpdateLayout();
-        var index = Current is { } current ? Rows.IndexOf(current) : -1;
-        if (index >= 0)
-        {
-            if (scrollIntoView) table.ScrollIntoView(index);
-            table.UpdateLayout();
-            if (table.ContainerFromIndex(index) is Control container) { container.Focus(); return; }
-        }
-        table.Focus();
-    }
-
-    public void SelectBoundary(bool last, bool extend)
-    {
-        if (Rows.Count == 0) return;
-        MoveTo(last ? Rows.Count - 1 : 0, extend);
+        table.FocusRow(table.CurrentIndex(), scrollIntoView);
     }
 
     public void SelectRow(FileRow row)
@@ -113,17 +99,9 @@ internal sealed class PanelSelection(TableView table, Func<List<FileRow>> rows, 
         FocusCurrent();
     }
 
-    public void MovePage(bool down, bool extend)
+    internal void MoveTo(int index, Key key, bool extend)
     {
-        if (Rows.Count == 0) return;
-        var rowHeight = table.GetRealizedContainers().FirstOrDefault()?.Bounds.Height ?? 36;
-        var page = Math.Max(1, (int)(table.Bounds.Height / Math.Max(1, rowHeight)) - 2);
-        var current = Current is { } row ? Rows.IndexOf(row) : 0;
-        MoveTo(Math.Clamp(current + (down ? page : -page), 0, Rows.Count - 1), extend);
-    }
-
-    private void MoveTo(int index, bool extend)
-    {
+        if (key is Key.Up or Key.Down) { MoveOneRow(index, extend); return; }
         if (extend) ToggleRange(index);
         else SelectIndex(index);
         SetCursor(Rows[index]);
@@ -149,12 +127,10 @@ internal sealed class PanelSelection(TableView table, Func<List<FileRow>> rows, 
         updateView();
     }
 
-    public void MoveCursor(bool down, bool mark)
+    private void MoveOneRow(int next, bool mark)
     {
         ResetRange();
         if (Current is not { } current || Rows.Count == 0) return;
-        var index = Rows.IndexOf(current);
-        var next = Math.Clamp(index + (down ? 1 : -1), 0, Rows.Count - 1);
         var hadMarks = HasMarks;
         if (mark || hadMarks) SetKeyboardMarks(true);
         if (HasKeyboardMarks)

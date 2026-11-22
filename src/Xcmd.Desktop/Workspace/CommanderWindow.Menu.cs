@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, RecognizeFileTypes, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback
+// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, RecognizeFileTypes, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback, ViewRecentAgentSessions, ResumeAgentSession
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -11,7 +11,7 @@ public sealed partial class CommanderWindow
 {
     private Menu BuildMenu()
     {
-        MenuItem Item(string title, Action action, KeyGesture? gesture = null, bool historyAllowed = false)
+        MenuItem Item(string title, Action action, KeyGesture? gesture = null, bool historyAllowed = false, bool sessionsAllowed = false)
         {
             var item = new MenuItem { Header = title, InputGesture = gesture }.WithFeedbackId("CommanderWindow.Menu.item");
             item.Click += (_, _) =>
@@ -20,7 +20,7 @@ public sealed partial class CommanderWindow
                 if (ActivePanel.HasHistory && !historyAllowed) { SetError("Git history is read-only. Close the log to use this command."); return; }
                 action();
             };
-            GitHistory.RegisterMenuItem(item, historyAllowed);
+            GitHistory.RegisterMenuItem(item, historyAllowed, sessionsAllowed);
             return item;
         }
         MenuItem Sort(string title, SortField field)
@@ -33,7 +33,7 @@ public sealed partial class CommanderWindow
             var item = Item("Changed files in current commit", GitHistory.ShowChanges, historyAllowed: true);
             GitHistory.MarkChanges(item); return item;
         }
-        var operationHistory = Item("File operation history", OperationsView.ToggleDetails, historyAllowed: true);
+        var operationHistory = Item("File operation history", OperationsView.ToggleDetails, historyAllowed: true, sessionsAllowed: true);
         operationHistory.IsVisible = Operations.Jobs.Count > 0;
         Operations.Changed += () => operationHistory.IsVisible = Operations.Jobs.Count > 0;
         return new Menu
@@ -58,18 +58,20 @@ public sealed partial class CommanderWindow
                     .. TransferCommands.Select(command => Item(command.MenuLabel, () => command.Execute(this), command.Gesture)),
                     Item("Move to Recycle Bin", () => DeleteSelected(false), new(Key.F8)),
                     Item("Delete permanently", () => DeleteSelected(true), new(Key.Delete, KeyModifiers.Shift)),
-                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter), historyAllowed: true),
-                    Item("Open with Windows", OpenWithWindows), Item("Exit", Close, historyAllowed: true)
+                    Item("Open", () => Execute(() => OpenCurrentAsync(ActivePanel)), new(Key.Enter), historyAllowed: true, sessionsAllowed: true),
+                    Item("Open with Windows", OpenWithWindows), Item("Exit", Close, historyAllowed: true, sessionsAllowed: true)
                 ] }.WithFeedbackId("CommanderWindow.Menu.BuildMenu"),
                 new MenuItem() { Header = "Navigate", ItemsSource = new MenuItem[]
                 {
+                    Item("Choose left panel source", () => panelSources.ChoosePanelSource(Left), new(Key.F1, KeyModifiers.Alt), historyAllowed: true, sessionsAllowed: true),
+                    Item("Choose right panel source", () => panelSources.ChoosePanelSource(Right), new(Key.F2, KeyModifiers.Alt), historyAllowed: true, sessionsAllowed: true),
                     Item("Parent directory", OpenParent, new(Key.PageUp, KeyModifiers.Control), historyAllowed: true),
                     Item("Home folder", () => OpenDirectoryDestination(PanelView.HomeDirectory), new(Key.OemTilde, KeyModifiers.Control)),
                     Item("Drive root", () => OpenDirectoryDestination(Path.GetPathRoot(ArchivePath.PhysicalFile(ActivePanel.Session.DirectoryPath))), new(Key.OemBackslash, KeyModifiers.Control)),
                     Item("Open as archive", () => Execute(() => OpenArchiveAsync(ActivePanel)), new(Key.PageDown, KeyModifiers.Control)),
                     Item("Go to directory", () => OpenNavigation(ActivePanel, DirectoryList.History), new(Key.Down, KeyModifiers.Alt)),
                     Item("Favorite directories", () => OpenNavigation(ActivePanel, DirectoryList.Favorites), new(Key.D, KeyModifiers.Control)),
-                    Item("Switch panel", () => { Activate(OppositePanel); ActivePanel.FocusCurrent(); }, new(Key.Tab), historyAllowed: true),
+                    Item("Switch panel", () => { Activate(OppositePanel); ActivePanel.FocusCurrent(); }, new(Key.Tab), historyAllowed: true, sessionsAllowed: true),
                     Item("Focus command line", () => CommandLine.FocusCommand(), new(Key.L, KeyModifiers.Control), historyAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.2"),
                 new MenuItem() { Header = "Sort", ItemsSource = new[] { Sort("Name", SortField.Name), Sort("Type", SortField.Extension), Sort("Size", SortField.Size), Sort("Modified", SortField.Modified) } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.3"),
@@ -88,8 +90,8 @@ public sealed partial class CommanderWindow
                 } }.WithFeedbackId("CommanderWindow.Menu.git"),
                 new MenuItem() { Header = "Help", IsVisible = !Feedback.Connected, ItemsSource = new MenuItem[]
                 {
-                    Item("Comment on an element", () => Feedback.Begin(), new(Key.F12), historyAllowed: true),
-                    Item("Refinement list", () => Feedback.ShowNotes(), historyAllowed: true)
+                    Item("Comment on an element", () => Feedback.Begin(), new(Key.F12), historyAllowed: true, sessionsAllowed: true),
+                    Item("Refinement list", () => Feedback.ShowNotes(), historyAllowed: true, sessionsAllowed: true)
                 } }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.5")
             }
         }.WithFeedbackId("CommanderWindow.Menu.BuildMenu.6");

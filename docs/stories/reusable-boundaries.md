@@ -118,6 +118,13 @@ rendering so that I can add workflows without copying presentation mechanics.
 
 ### Implementation decisions
 
+- Use the same row navigation and cursor appearance in every list shown in the left
+  or right panel. Up and Down move one row. Page Up and Page Down move the current
+  row by one visible page and keep it in view. Home and End move to the first and
+  last rows. Moving the pointer over a row leaves its appearance and the current
+  row unchanged. Use the file panel as the reference for new panel lists.
+  Codex session ID 01a1ff87-944f-7732-a1a7-d22762c3e564.
+
 - Use square corners and compact spacing. Keep the inactive panel cursor faint and show
   the active panel with a top indicator rather than a full accent outline. Use
   consistent alignment across corresponding headers and values.

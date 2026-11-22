@@ -1,4 +1,4 @@
-// @implements DiscoverShortcuts, ReportControl, KeepFeedback, TryLocalRelease
+// @implements DiscoverShortcuts, ReportControl, KeepFeedback, TryLocalRelease, ViewRecentAgentSessions, ResumeAgentSession
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -45,6 +45,7 @@ internal sealed class CommanderFrame
         window.PropertyChanged += (_, e) => { if (e.Property == Window.TitleProperty) { title.Text = window.ReleaseCaption; uptime.Text = window.UptimeText; ToolTip.SetTip(title, window.Title); } };
         Grid.SetColumn(title, 1); TitleBar.Children.Add(title);
         Grid.SetColumn(uptime, 2); TitleBar.Children.Add(uptime);
+        update.VerticalAlignment = VerticalAlignment.Center;
         update.MaxWidth = 280; update.TextWrapping = TextWrapping.NoWrap; update.TextTrimming = TextTrimming.CharacterEllipsis;
         update.Margin = new Thickness(8, 0);
         update.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) ToolTip.SetTip(update, update.Text); };
@@ -56,6 +57,25 @@ internal sealed class CommanderFrame
         StatusBar.Children.Add(status);
         Grid.SetColumn(feedback, 1); StatusBar.Children.Add(feedback);
         Grid.SetColumn(notes, 2); StatusBar.Children.Add(notes);
+    }
+
+    internal Grid BuildLayout(CommanderWindow window, Control quickView)
+    {
+        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) }.WithFeedbackId("CommanderWindow.layout");
+        var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") }.WithFeedbackId("CommanderWindow.panels");
+        panels.Children.Add(window.Left);
+        Grid.SetColumn(window.Right, 2); panels.Children.Add(window.Right);
+        panels.Children.Add(quickView);
+        layout.Children.Add(panels);
+        var help = BuildKeyboardHelp(window);
+        Grid.SetRow(window.OperationsView, 1); layout.Children.Add(window.OperationsView);
+        Grid.SetRow(window.CommandLine, 2); layout.Children.Add(window.CommandLine);
+        Grid.SetRow(help, 3); layout.Children.Add(help);
+        Grid.SetRow(StatusBar, 4); layout.Children.Add(StatusBar);
+        var applicationLayout = new Grid { RowDefinitions = new RowDefinitions("32,*") }.WithFeedbackId("CommanderWindow.applicationLayout");
+        applicationLayout.Children.Add(TitleBar);
+        Grid.SetRow(layout, 1); applicationLayout.Children.Add(layout);
+        return applicationLayout;
     }
 
     public void AttachFeedback(FeedbackController controller)
@@ -93,13 +113,15 @@ internal sealed class CommanderFrame
         var help = new WrapPanel { Name = "KeyboardHelp" }.WithFeedbackId("CommanderFrame.help");
         void Update()
         {
-            string[] hints = window?.ActivePanel.HasHistory == true
+            string[] hints = window?.ActivePanel.ShowsAgentSessions == true
+                ? ["Enter  Resume session", "Ctrl+←/→  Open project in other panel", "Alt+F1 / F2  Choose panel source"]
+                : window?.ActivePanel.HasHistory == true
                 ? GitPath.IsLog(window.ActivePanel.Session.DirectoryPath)
                     ? ["Enter  Full repository snapshot", "F3  Commit details", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
                     : ["F3  View / changed files on ..", "Ctrl+Alt+D  Diff", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]
                 :
                 [
-                    "Alt+F7  Find files", "F3  View", "F4  Edit", "Ctrl+Shift+C  Compare",
+                    "Alt+F1 / F2  Choose panel source", "Alt+F7  Find files", "F3  View", "F4  Edit", "Ctrl+Shift+C  Compare",
                     .. CommanderWindow.TransferCommands.Select(command => command.Hint),
                     "F7  New folder", "Ctrl+L  Command line", "Alt+↑ ↓  Commands", "Ctrl+Enter  Name", "Ctrl+Shift+Enter  Path"
                 ];

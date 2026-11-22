@@ -14,6 +14,7 @@ public sealed partial class ProbeContext
     public string RightPath => Path.Combine(FixturePath, "right");
     public ControlledFileSystem FileSystem { get; } = new();
     public RecordingExternalLauncher Launcher { get; } = new();
+    internal AgentSessionFixture AgentSessions { get; } = new();
     public RecordingShellInteraction Shell { get; } = new();
     public RecordingFileDragSource FileDrag { get; } = new();
     public FileDragDropController DragDrop { get; }
@@ -24,7 +25,9 @@ public sealed partial class ProbeContext
     {
         Archives = new ControlledArchiveContents(Path.Combine(outputPath, "archive-cache"));
         DragDrop = new FileDragDropController(FileDrag);
-        Window = new CommanderWindow(FileSystem, Launcher, editorPath: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), archiveCacheRoot: Path.Combine(outputPath, "archive-cache"), archiveContents: Archives, shellInteraction: new ShellInteractionController(Shell, DragDrop), claudeExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"), comparisonExecutable: Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe"));
+        var probe = Path.Combine(AppContext.BaseDirectory, "launch-probe", "Xcmd.LaunchProbe.exe");
+        Window = new CommanderWindow(FileSystem, Launcher, new ExternalToolPaths(probe, probe, probe),
+            Path.Combine(outputPath, "archive-cache"), Archives, new ShellInteractionController(Shell, DragDrop), AgentSessions);
         OutputPath = outputPath;
         Window.Feedback.Store = new Xcmd.Infrastructure.IssueStore(Path.Combine(outputPath, "issues"));
         Window.Feedback.ListPath = Window.Feedback.Store.DatabasePath;

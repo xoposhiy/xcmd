@@ -7,6 +7,13 @@ requirements.
 
 ## Shared conventions
 
+Use the shared panel table for lists in the left and right workspace panels.
+It supplies row and page movement, scrolling to the current row, row rendering
+and double-click activation. A click selects the row. Enter and a double click
+run the same action for that row. Tab switches panels and preserves each cursor.
+Keep file marks separate from the current row wherever the panel supports marks.
+See [SharedControls](../stories/reusable-boundaries.md#sharedcontrols).
+
 Reuse the current Desktop [palette](../../src/Xcmd.Desktop/Shared/Ui/UiPalette.cs),
 [styles](../../src/Xcmd.Desktop/Shared/Ui/UiStyles.cs) and
 [layout helpers](../../src/Xcmd.Desktop/Shared/Ui/UiLayout.cs) so related controls stay

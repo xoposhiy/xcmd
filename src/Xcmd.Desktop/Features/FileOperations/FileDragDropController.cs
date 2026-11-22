@@ -130,7 +130,7 @@ public sealed class FileDragDropController
         if (!CanInteract) return null;
         foreach (var panel in context.Panels)
         {
-            if (panel.IsSearchResults || panel.EditingRow != null || !Physical(panel.Session.DirectoryPath)) continue;
+            if (panel.ShowsAgentSessions || panel.IsSearchResults || panel.EditingRow != null || !Physical(panel.Session.DirectoryPath)) continue;
             var local = panel.Table.PointToClient(point);
             if (!new Rect(panel.Table.Bounds.Size).Contains(local) || local.Y < UiPalette.RowHeight) continue;
             var control = panel.Table.InputHitTest(local) as Control;

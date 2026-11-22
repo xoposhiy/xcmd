@@ -19,7 +19,7 @@ public sealed partial class GitHistoryController
     private readonly Action<ViewerDocument> viewFile;
     private readonly GitActionRunner actions;
     private GitFileSystem files = null!;
-    private readonly List<(MenuItem Item, bool Allowed)> menuItems = [];
+    private readonly List<(MenuItem Item, bool HistoryAllowed, bool SessionsAllowed)> menuItems = [];
     private readonly HashSet<MenuItem> sortItems = [];
     private readonly HashSet<MenuItem> changesItems = [];
 
@@ -38,20 +38,21 @@ public sealed partial class GitHistoryController
 
     internal IFileSystem Wrap(IFileSystem fileSystem) => files = new GitFileSystem(fileSystem, reader);
 
-    public void RegisterMenuItem(MenuItem item, bool historyAllowed) { menuItems.Add((item, historyAllowed)); UpdateCommands(); }
+    public void RegisterMenuItem(MenuItem item, bool historyAllowed, bool sessionsAllowed = false) { menuItems.Add((item, historyAllowed, sessionsAllowed)); UpdateCommands(); }
     public void MarkSort(MenuItem item) { sortItems.Add(item); UpdateCommands(); }
     public void MarkChanges(MenuItem item) { changesItems.Add(item); UpdateCommands(); }
 
     public void UpdateCommands()
     {
         var panel = activePanel();
-        foreach (var (item, allowed) in menuItems)
+        foreach (var (item, allowed, sessionsAllowed) in menuItems)
         {
             var enabled = !panel.HasHistory || allowed;
             if (sortItems.Contains(item) && GitPath.IsLog(panel.Session.DirectoryPath)) enabled = false;
             if (changesItems.Contains(item)) enabled = panel.HasHistory && GitPath.Parse(panel.Session.DirectoryPath).Kind == "tree";
+            if (panel.ShowsAgentSessions) enabled = sessionsAllowed;
             item.IsEnabled = enabled;
-            ToolTip.SetTip(item, enabled ? null : sortItems.Contains(item) ? "Git history is ordered newest first. File sorting is unchanged."
+            ToolTip.SetTip(item, enabled ? null : panel.ShowsAgentSessions ? "Choose a file panel to use this command." : sortItems.Contains(item) ? "Git history is ordered newest first. File sorting is unchanged."
                 : changesItems.Contains(item) ? "Open a commit snapshot first." : "Unavailable in Git history. Choose a regular folder.");
         }
     }
@@ -69,6 +70,7 @@ public sealed partial class GitHistoryController
             token.ThrowIfCancellationRequested();
             if (!await destination.OpenHistoryAsync(log, token)) { if (!token.IsCancellationRequested) ui.SetError(destination.Session.Error); return; }
             token.ThrowIfCancellationRequested();
+            destination.LeaveAgentSessions();
             activate(destination); destination.FocusCurrent();
         });
     }

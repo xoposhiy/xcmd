@@ -1,10 +1,8 @@
 // @tests OpenViewers, ReleaseHandoff, RestoreWorkspace, ReadWorkingFileDiff
-using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
-using Avalonia.Platform;
 using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Desktop.Workspace;
 
@@ -48,8 +46,8 @@ internal static class ViewerHandoffProbe
         await OpenAsync(window, MissingFile);
         await OpenAsync(window, LockedFile);
         await OpenDiffAsync(window);
-        foreach (var viewer in window.Viewers) Deactivate(viewer);
-        Deactivate(window);
+        foreach (var viewer in window.Viewers) InputDriver.Deactivate(viewer);
+        InputDriver.Deactivate(window);
         ProbeContext.Check(window.Readiness.CanRestart, "The background fixture allows updates with its viewers open.");
     }
 
@@ -90,13 +88,5 @@ internal static class ViewerHandoffProbe
     {
         window.KeyPress(key, modifiers, physical, null);
         window.KeyRelease(key, modifiers, physical, null);
-    }
-
-    private static void Deactivate(Window window)
-    {
-        var notification = typeof(IWindowBaseImpl).GetProperty("Deactivated", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (notification?.GetValue(window.PlatformImpl) is not Action deactivate)
-            throw new InvalidOperationException("The headless window has no deactivation callback.");
-        deactivate();
     }
 }

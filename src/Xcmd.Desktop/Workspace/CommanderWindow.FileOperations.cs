@@ -32,6 +32,7 @@ public sealed partial class CommanderWindow
         ResetQuickJump();
         SetError(null);
         var sourceDirectory = ActivePanel.OperationDirectory;
+        if (!samePanel && OppositePanel.ShowsAgentSessions) { SetError("Choose a destination folder in the other panel first."); return; }
         if (!samePanel && (OppositePanel.IsSearchResults || OppositePanel.HasHistory)) { SetError("Open a destination folder in the other panel first (Escape leaves search results or Git history)."); return; }
         var targetDirectory = samePanel ? sourceDirectory : OppositePanel.Session.DirectoryPath;
         if (ArchivePath.IsEntry(targetDirectory)) { SetError(ArchivePath.ReadOnlyMessage(targetDirectory, "Archives are read-only. Choose a regular destination folder.")); return; }

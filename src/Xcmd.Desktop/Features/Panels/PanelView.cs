@@ -1,4 +1,4 @@
-// @implements ReadablePanels, NavigatePanels, SortEntries, RenameEntry, QuickViewFile
+// @implements ReadablePanels, NavigatePanels, SortEntries, RenameEntry, QuickViewFile, ViewRecentAgentSessions, ResumeAgentSession
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -25,6 +25,14 @@ public sealed class PanelView : Border
     private readonly PanelRename rename;
     private readonly GitPanelRows gitRows = new();
     private readonly GitCommitMessageView commitMessage;
+    private readonly Grid files;
+    private readonly Grid views = new Grid().WithFeedbackId("PanelView.views");
+    private AgentSessionView? sessions;
+    private bool panelActive;
+    public bool ShowsAgentSessions => sessions?.IsVisible == true;
+    internal SessionAgent? AgentFilter { get; private set; }
+    internal Control SourceMenuAnchor => ShowsAgentSessions ? sessions!.Heading : header.Border;
+    internal AgentSession? SelectedSession => sessions?.Table.SelectedItem as AgentSession;
 
     public PanelSession Session { get; }
     public string DisplayPath => PanelLocationHeader.DisplayPath(Session);
@@ -32,7 +40,7 @@ public sealed class PanelView : Border
     public List<FileRow> Rows => fileTable.Rows;
     public FileRow? EditingRow => rename.EditingRow;
     public bool IsCommitting => rename.IsCommitting;
-    public FileRow? Current => Selection.Current;
+    public FileRow? Current => ShowsAgentSessions ? null : Selection.Current;
     public string Id { get; }
     public FileIconCache Icons { get; }
     public GitStatusView Git { get; }
@@ -95,7 +103,7 @@ public sealed class PanelView : Border
             Name = id + "Footer",
             Padding = new Thickness(8, 0),
             Child = summary,
-            Background = Background,
+            Background = Brushes.Transparent,
             BorderBrush = UiPalette.Divider,
             BorderThickness = new Thickness(0, 1, 0, 0),
             ClipToBounds = true
@@ -103,13 +111,19 @@ public sealed class PanelView : Border
         AutomationProperties.SetAutomationId(summary, id + ".summary");
         Grid.SetRow(summaryContainer, 3);
         content.Children.Add(summaryContainer);
-        Child = content;
+        files = content;
+        views.Children.Add(files);
+        Child = views;
 
         fileTable.Activated += Activate;
         fileTable.RowFocused += rename.CancelOnFocusChange;
         fileTable.OpenRequested += () => { if (EditingRow == null) OpenRequested?.Invoke(this); };
         fileTable.SortRequested += SortBy;
-        fileTable.RowsPublished += ApplyGitStatus;
+        fileTable.RowsPublished += () =>
+        {
+            Background = IsSearchResults ? UiPalette.SearchResults : HasHistory ? UiPalette.GitHistory : UiPalette.Surface;
+            ApplyGitStatus();
+        };
         fileTable.StateChanged += UpdateSummary;
         Git.StatusChanged += ApplyGitStatus;
         header.HistoryRequested += () => { Activate(); HistoryRequested?.Invoke(this); };
@@ -173,11 +187,46 @@ public sealed class PanelView : Border
     public void ResetColumns() => fileTable.Columns.Reset();
 
     public string[] SelectedNames() => Selection.SelectedNames();
-    public void FocusCurrent(bool scrollIntoView = true) => Selection.FocusCurrent(scrollIntoView);
-    public void SelectBoundary(bool last, bool extend) => Selection.SelectBoundary(last, extend);
+    public void FocusCurrent(bool scrollIntoView = true)
+    {
+        if (ShowsAgentSessions) sessions!.Table.FocusRow(sessions.Table.SelectedIndex, scrollIntoView);
+        else Selection.FocusCurrent(scrollIntoView);
+    }
+
+    internal Task ShowAgentSessionsAsync(IAgentSessions source, SessionAgent? filter)
+    {
+        AgentFilter = filter;
+        CancelRename();
+        loader.InvalidateNavigation();
+        Session.CancelLoad();
+        if (sessions == null)
+        {
+            sessions = new AgentSessionView().WithFeedbackId("PanelView.agentSessions");
+            sessions.Table.RowOpened += () => OpenRequested?.Invoke(this);
+            sessions.GotFocus += (_, _) => Activate();
+            sessions.PointerPressed += (_, _) => Activate();
+            views.Children.Add(sessions);
+        }
+        files.IsVisible = false;
+        sessions.IsVisible = true;
+        FocusCurrent();
+        return sessions.LoadAsync(source, filter, panelActive && (TopLevel.GetTopLevel(this) as Window)?.IsActive == true);
+    }
+
+    internal void SessionWindowActivation(bool active)
+    {
+        if (ShowsAgentSessions) sessions!.SetRefreshFocus(active && panelActive, windowReturned: active);
+    }
+
+    internal void LeaveAgentSessions()
+    {
+        if (!ShowsAgentSessions) return;
+        sessions!.Cancel();
+        sessions.IsVisible = false;
+        files.IsVisible = true;
+    }
+    internal bool HandleCursorKey(KeyEventArgs e) => (ShowsAgentSessions ? sessions!.Table : fileTable.Table).HandleCursorKey(e);
     public void SelectRow(FileRow row) => Selection.SelectRow(row);
-    public void MovePage(bool down, bool extend) => Selection.MovePage(down, extend);
-    public void MoveCursor(bool down, bool mark) => Selection.MoveCursor(down, mark);
     public void ClearMarks() => Selection.ClearMarks();
 
     public TextBox? RenameEditor => rename.Editor;
@@ -205,7 +254,10 @@ public sealed class PanelView : Border
 
     public void SetActive(bool active)
     {
+        panelActive = active;
         Selection.SetActive(active);
+        sessions?.Table.Classes.Set("active-panel", active);
+        if (ShowsAgentSessions) sessions!.SetRefreshFocus(active && (TopLevel.GetTopLevel(this) as Window)?.IsActive == true);
         BorderBrush = active ? UiPalette.Focus : Brushes.Transparent;
     }
 

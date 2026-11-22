@@ -1,7 +1,7 @@
 ---
 id: RepositoryWork
 title: "Work with repository changes"
-order: 7
+order: 8
 role: user
 ---
 

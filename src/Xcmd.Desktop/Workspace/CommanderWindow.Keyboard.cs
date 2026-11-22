@@ -40,7 +40,7 @@ public sealed partial class CommanderWindow
         favoritesKeyHeld = false;
         // Windows can deliver just the release if another shortcut consumes the press.
         return !sawPress && !restarting && !Feedback.IsActive && !IsMenuOpen && !HasOpenDialog
-            && !viewing.IsQuickViewFocused && HandleFavoritesShortcut(e);
+            && !ActivePanel.ShowsAgentSessions && !viewing.IsQuickViewFocused && HandleFavoritesShortcut(e);
     }
 
     private static bool IsFavoritesKey(KeyEventArgs e) => e.Key == Key.D || e.PhysicalKey == PhysicalKey.D;
@@ -251,6 +251,7 @@ public sealed partial class CommanderWindow
             var locate = source.IsSearchResults && entry != null;
             var directory = locate ? ArchivePath.Parent(entry!.FullPath)! : entry?.IsDirectory == true ? entry.FullPath : source.Session.DirectoryPath;
             if (!await destination.LoadAsync(directory, selectName: locate ? entry!.Name : null)) SetError(destination.Session.Error);
+            else destination.LeaveAgentSessions();
             source.FocusCurrent();
         });
     }
@@ -266,12 +267,10 @@ public sealed partial class CommanderWindow
         });
     }
 
-    private bool HandlePanelNavigation(KeyEventArgs e, bool ctrl, bool shift)
+    private bool HandlePanelNavigation(KeyEventArgs e, bool ctrl)
     {
-        if (!ctrl && e.Key is Key.Up or Key.Down) ActivePanel.MoveCursor(e.Key == Key.Down, shift);
-        else if (e.Key is Key.Home or Key.End) ActivePanel.SelectBoundary(e.Key == Key.End, shift);
-        else if (!ctrl && e.Key is (Key.PageUp or Key.PageDown)) ActivePanel.MovePage(e.Key == Key.PageDown, shift);
-        else if (ctrl && e.Key is Key.F3 or Key.F4 or Key.F5 or Key.F6)
+        if (ActivePanel.HandleCursorKey(e)) return true;
+        if (ctrl && e.Key is Key.F3 or Key.F4 or Key.F5 or Key.F6)
         {
             ActivePanel.SortBy(e.Key switch { Key.F3 => SortField.Name, Key.F4 => SortField.Extension, Key.F5 => SortField.Modified, _ => SortField.Size });
             ActivePanel.FocusCurrent();

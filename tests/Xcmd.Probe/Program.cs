@@ -54,6 +54,7 @@ internal static class Program
         scenarios = scenarios.Concat(IconPresentationScenarios.All).ToArray();
         scenarios = scenarios.Concat(FileLockScenarios.All).ToArray();
         scenarios = scenarios.Concat(MainKeyboardScenarios.All).ToArray();
+        scenarios = scenarios.Concat(AgentSessionScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitCommitScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitHistoryScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitUsabilityFixScenarios.All).ToArray();

@@ -26,6 +26,44 @@ the .NET runtime selected by the application are required.
 Use `Xcmd.lnk` for a stable shortcut across releases. See the
 [delivery process](docs/processes/delivery.md) for building and publishing.
 
+### Agent sessions prototype
+
+Press Alt+F1 or Alt+F2 to choose a drive or open agent sessions in the left or
+right panel. The menu opens on that panel's current drive or session list.
+Each opening reads fresh sessions. Recent sessions appear first. You can open
+a session while older conversations are still loading.
+Press Enter on a session to resume it in its CLI. To return to files, choose
+a drive in the same menu.
+
+Project shows the nearest Git work tree or the launch folder if it is outside Git.
+Hover over the project to see the full launch path. Press Ctrl+Left or Ctrl+Right
+to open the project in the other panel. A topic shows activity when its agent
+reports a state.
+
+Install the Codex CLI to browse Codex sessions. For Claude Code, install its CLI
+and the Claude Agent SDK. For the fastest first page, install the SDK for Node.js.
+
+```powershell
+$sdk = Join-Path $env:LOCALAPPDATA 'Xcmd/claude-session-js'
+npm install --prefix $sdk --omit=optional --ignore-scripts --save-exact '@anthropic-ai/claude-agent-sdk@0.3.330'
+```
+
+Xcmd starts each reader when you first open its list. Both panels share the
+readers. Each reader stops after ten minutes without a request.
+
+When you return to the window, each open session panel checks its recent
+sessions. The active session panel also checks every five seconds for the first
+five minutes after gaining focus. Older rows stay in place while the latest
+sessions update. Relative times update every minute while the list is open.
+
+You can also use the Python SDK for Claude Code.
+
+```powershell
+$sdk = Join-Path $env:LOCALAPPDATA 'Xcmd/claude-session-sdk'
+python -m venv $sdk
+& "$sdk/Scripts/python.exe" -m pip install claude-agent-sdk==0.2.187
+```
+
 ### GitHub Actions in a file panel
 
 For a GitHub.com remote, the repository button shows the workflow results for

@@ -1,4 +1,6 @@
 // @implements HeadlessVerification
+using System.Reflection;
+using Avalonia.Platform;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -9,6 +11,14 @@ namespace Xcmd.Probe.Infrastructure;
 
 public sealed class InputDriver(TopLevel window)
 {
+    internal static void Deactivate(Window window)
+    {
+        var notification = typeof(IWindowBaseImpl).GetProperty("Deactivated", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (notification?.GetValue(window.PlatformImpl) is not Action deactivate)
+            throw new InvalidOperationException("The headless window has no deactivation callback.");
+        deactivate();
+    }
+
     public void KeyDown(Key key, RawInputModifiers modifiers, PhysicalKey physical, string? symbol) => window.KeyPress(key, modifiers, physical, symbol);
     public void KeyUp(Key key, RawInputModifiers modifiers, PhysicalKey physical, string? symbol) => window.KeyRelease(key, modifiers, physical, symbol);
     public void Text(string text) => window.KeyTextInput(text);

@@ -16,6 +16,9 @@ internal static class UiPalette
     public static readonly Thickness ButtonPadding = new(10, 4);
     public static readonly IBrush Canvas = Brush.Parse("#0E1420");
     public static readonly IBrush Surface = Brush.Parse("#171E2B");
+    public static readonly IBrush AgentSessions = Brush.Parse("#30243E");
+    public static readonly IBrush GitHistory = Brush.Parse("#1C302B");
+    public static readonly IBrush SearchResults = Brush.Parse("#322B21");
     public static readonly IBrush Raised = Brush.Parse("#263247");
     public static readonly IBrush Text = Brush.Parse("#F1F5FA");
     public static readonly IBrush Secondary = Brush.Parse("#B5C0D0");

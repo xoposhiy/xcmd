@@ -77,7 +77,7 @@ public sealed class GitStatusReader : IGitStatusReader
 
     // A process's working directory cannot be deleted on Windows. Running Git in the work tree root
     // instead of the displayed directory lets the user delete or rename that directory during a read.
-    private static string? WorkTreeRoot(string directory, CancellationToken cancellationToken)
+    internal static string? WorkTreeRoot(string directory, CancellationToken cancellationToken)
     {
         for (var current = new DirectoryInfo(directory); current != null; current = current.Parent)
         {

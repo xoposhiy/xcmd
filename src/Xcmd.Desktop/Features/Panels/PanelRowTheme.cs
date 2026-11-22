@@ -10,9 +10,9 @@ using Avalonia.Styling;
 
 namespace Xcmd.Desktop.Features.Panels;
 
-internal static class FileRowTheme
+internal static class PanelRowTheme
 {
-    public static ControlTheme Create() => new(typeof(TableViewRow))
+    public static ControlTheme Create(bool fileRows) => new(typeof(TableViewRow))
     {
         Setters =
         {
@@ -20,14 +20,15 @@ internal static class FileRowTheme
             new Setter(TemplatedControl.PaddingProperty, new Thickness(0)),
             new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(0)),
             new Setter(Control.FocusAdornerProperty, null),
-            new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
+            new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((row, scope) =>
             {
                 var cells = new TableViewCellsPresenter { Name = "PART_CellsPresenter" }.WithFeedbackId("FileRowTheme.cells");
-                cells.Bind(Visual.OpacityProperty, new Binding(nameof(FileRow.ContentOpacity)));
+                if (fileRows) cells.Bind(Visual.OpacityProperty, new Binding(nameof(FileRow.ContentOpacity)));
                 scope.Register("PART_CellsPresenter", cells);
                 var border = new Border { Name = "Border", Child = cells }.WithFeedbackId("FileRowTheme.border");
                 scope.Register("Border", border);
-                border.Bind(Border.BackgroundProperty, new Binding(nameof(FileRow.RowBackground)));
+                border.Bind(Border.BackgroundProperty, fileRows ? new Binding(nameof(FileRow.RowBackground))
+                    : new Binding(nameof(TableViewRow.Background)) { Source = row });
                 return border;
             }))
         }

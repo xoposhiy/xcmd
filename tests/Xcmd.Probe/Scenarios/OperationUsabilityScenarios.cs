@@ -67,6 +67,15 @@ public static class OperationUsabilityScenarios
             }
             finally { gate.Release.TrySetResult(); }
             await c.SettleAsync();
+            await AgentSessionFixture.ChooseAsync(c, Key.F1, "All Agent Sessions");
+            var sessions = AgentSessionFixture.Table(c.Window.Left);
+            var selected = sessions.SelectedItem;
+            await OpenOperationsMenuAsync(c);
+            await c.KeyAsync(Key.Down);
+            Check(c.Window.OperationsView.IsKeyboardFocusWithin, "The job list keeps keyboard focus while navigating history");
+            Equal(selected, sessions.SelectedItem, "Navigating history keeps the selected agent session");
+            await c.KeyAsync(Key.Escape);
+            Check(sessions.IsKeyboardFocusWithin, "Escape returns focus to the active session panel");
             Check(!File.Exists(Path.Combine(c.RightPath, "file2.log")), "The cancelled queued request never starts.");
             Equal("abc", File.ReadAllText(Path.Combine(c.RightPath, "alpha.txt")), "Cancelling queued work keeps the current operation running");
         }),

@@ -91,12 +91,15 @@ public static class GitHistoryScenarios
             Check(panel.DisplayPath.Contains("folder1", StringComparison.Ordinal), "The normal path header identifies the history scope");
             Check(panel.Current!.Name.EndsWith(" Update nested files", StringComparison.Ordinal), "History is newest first");
             GitHistoryProbe.CheckLogPresentation(c, panel);
+            var historyBackground = panel.Background;
+            Check(historyBackground != c.Window.Left.Background, "Git history has a distinct panel background");
             await c.ScreenshotAsync("git-history-log");
             await c.KeyAsync(Key.F3);
             Check(c.Window.Viewer!.Reader.TextContent.Text!.Contains("Full nested commit message.", StringComparison.Ordinal), "F3 shows the full commit message");
             c.Window.Viewer.Close(); await c.SettleAsync(); panel.FocusCurrent();
             await c.KeyAsync(Key.Enter);
             Equal("tree", GitPath.Parse(panel.Session.DirectoryPath).Kind, "Enter opens the complete commit tree");
+            Equal(historyBackground, panel.Background, "Commit snapshots keep the history background");
             c.Window.Width = 1480;
             await c.SettleAsync();
             Equal(originalTable, panel.Table, "The same file table renders the log and snapshot");
@@ -133,6 +136,7 @@ public static class GitHistoryScenarios
             Check(GitPath.IsLog(panel.Session.DirectoryPath) && panel.Current!.Name.EndsWith(" Update nested files", StringComparison.Ordinal), "Back returns to the same commit");
             await c.KeyAsync(Key.Escape);
             Equal(c.RightPath, panel.Session.DirectoryPath, "Escape restores the original adjacent folder");
+            Equal(c.Window.Left.Background, panel.Background, "Leaving history restores the folder background");
             Check(originalTable.Columns[0].ActualWidth > 100, "Name fits the resized window when leaving history");
             Equal(125d, originalTable.Columns[1].Width.Value, "Leaving history preserves the custom Type width");
             c.Window.SetScaleForTest(1);

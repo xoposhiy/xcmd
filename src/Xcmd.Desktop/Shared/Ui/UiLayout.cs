@@ -32,10 +32,10 @@ internal static class UiLayout
         return row;
     }
 
-    public static void Table(TableView table, bool fileRows = false)
+    public static void Table(TableView table, bool panel = false)
     {
         table.FontSize = UiPalette.BodySize;
-        table.Background = UiPalette.Surface;
+        table.Background = panel ? Brushes.Transparent : UiPalette.Surface;
         table.ClipToBounds = true;
         table.Resources["TableViewRowPadding"] = new Thickness(0);
         table.Resources["TableViewColumnResizerMargin"] = new Thickness(0);
@@ -55,10 +55,10 @@ internal static class UiLayout
                 new Setter(TemplatedControl.BackgroundProperty, UiPalette.Raised),
                 new Setter(TemplatedControl.ForegroundProperty, UiPalette.Text),
                 new Setter(TemplatedControl.FontSizeProperty, UiPalette.BodySize),
-                new Setter(TemplatedControl.PaddingProperty, fileRows ? new Thickness(0) : UiPalette.CellPadding),
-                new Setter(ContentControl.HorizontalContentAlignmentProperty, fileRows ? (object)HorizontalAlignment.Stretch
+                new Setter(TemplatedControl.PaddingProperty, panel ? new Thickness(0) : UiPalette.CellPadding),
+                new Setter(ContentControl.HorizontalContentAlignmentProperty, panel ? (object)HorizontalAlignment.Stretch
                     : new Binding("Column.HorizontalContentAlignment") { RelativeSource = new RelativeSource(RelativeSourceMode.Self) }),
-                new Setter(ContentControl.VerticalContentAlignmentProperty, fileRows ? VerticalAlignment.Stretch : VerticalAlignment.Center)
+                new Setter(ContentControl.VerticalContentAlignmentProperty, panel ? VerticalAlignment.Stretch : VerticalAlignment.Center)
             }
         });
     }

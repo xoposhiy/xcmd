@@ -1,6 +1,8 @@
 // @implements IntegrationVerification
 using System.Text.Json;
 
+if (args.FirstOrDefault() == "--session-reader") return await SessionReaderStub.RunAsync(args[1]);
+
 if (args.FirstOrDefault() is "--hold-file" or "--hold-directory")
 {
     using var heldFile = args[0] == "--hold-file" ? new FileStream(args[1], FileMode.Open, FileAccess.Read, FileShare.None) : null;

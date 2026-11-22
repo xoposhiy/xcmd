@@ -1,4 +1,4 @@
-// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, RecognizeFileTypes, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease
+// @implements NavigatePanels, JumpToName, RecentLocations, FavoriteLocations, RecognizeFileTypes, CreateFolder, CreateFile, QueueOperations, FindFiles, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, TryLocalRelease, ViewRecentAgentSessions, ResumeAgentSession
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Automation;
@@ -21,12 +21,14 @@ using Xcmd.Desktop.Shared.Platform;
 
 namespace Xcmd.Desktop.Workspace;
 
+public sealed record ExternalToolPaths(string? Editor, string? Claude, string? Comparison);
+
 public sealed partial class CommanderWindow : Window
 {
     private readonly TextBlock status = new TextBlock() { Text = "Ready", FontSize = UiPalette.MetaSize, Foreground = UiPalette.Secondary }.WithFeedbackId("CommanderWindow.status");
     private bool altInput;
     private int pendingActions;
-    private readonly TextBlock updateMessage = new TextBlock() { FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 420, TextWrapping = TextWrapping.Wrap }.WithFeedbackId("CommanderWindow.updateMessage");
+    private readonly TextBlock updateMessage = new TextBlock() { FontSize = UiPalette.MetaSize }.WithFeedbackId("CommanderWindow.updateMessage");
     private long lastInput = Stopwatch.GetTimestamp();
     private readonly Stopwatch runningTime = Stopwatch.StartNew();
     private bool freshRelease;
@@ -48,7 +50,8 @@ public sealed partial class CommanderWindow : Window
     internal async Task NotifyViewerThemeChangedAsync() { if (ViewerThemeChanged != null) await ViewerThemeChanged(); }
     private readonly ShellInteractionController shell;
     private readonly PanelClipboardController panelClipboard;
-    public bool IsMenuOpen => shell.IsMenuOpen || mainMenu?.IsOpen == true || viewing.IsQuickViewMenuOpen || Left.Git.IsMenuOpen || Right.Git.IsMenuOpen;
+    private readonly PanelSourceController panelSources;
+    public bool IsMenuOpen => panelSources.IsOpen || shell.IsMenuOpen || mainMenu?.IsOpen == true || viewing.IsQuickViewMenuOpen || Left.Git.IsMenuOpen || Right.Git.IsMenuOpen;
     public PanelView Left { get; }
     public PanelView Right { get; }
     public PanelView ActivePanel { get; private set; }
@@ -100,7 +103,12 @@ public sealed partial class CommanderWindow : Window
     }
 
     public CommanderWindow(IFileSystem? fileSystem = null, IExternalLauncher? externalLauncher = null, string? editorPath = null, string? archiveCacheRoot = null, IArchiveContents? archiveContents = null, ShellInteractionController? shellInteraction = null, string? claudeExecutable = null, string? comparisonExecutable = null)
+        : this(fileSystem, externalLauncher, new ExternalToolPaths(editorPath, claudeExecutable, comparisonExecutable), archiveCacheRoot, archiveContents, shellInteraction, null) { }
+
+    public CommanderWindow(IFileSystem? fileSystem, IExternalLauncher? externalLauncher, ExternalToolPaths tools, string? archiveCacheRoot,
+        IArchiveContents? archiveContents, ShellInteractionController? shellInteraction, IAgentSessions? agentSessions)
     {
+        panelSources = new PanelSourceController(this, agentSessions);
         var ui = new UiActions(Execute, SetStatusMessage, SetError, Trace.Add);
         shell = shellInteraction ?? new ShellInteractionController();
         archives = new ArchiveController(archiveCacheRoot, archiveContents, ui, LaunchExternalAsync,
@@ -114,7 +122,7 @@ public sealed partial class CommanderWindow : Window
         var root = new Grid().WithFeedbackId("CommanderWindow.root");
         Feedback = new FeedbackController(this, root, new FeedbackActions(Execute, SetUpdateMessage, StopNameSearch,
             RecordActivity, () => !HasOpenDialog && !IsBusy, RestoreFeedbackFocus, LaunchExternalAsync, Trace.Add));
-        viewing = new FileViewingController(this, Feedback, archives.Files, editorPath, comparisonExecutable, ui,
+        viewing = new FileViewingController(this, Feedback, archives.Files, tools.Editor, tools.Comparison, ui,
             LaunchExternalAsync, OpenFileExternallyAsync);
         viewing.ViewerClosed += OnViewerClosed;
         viewing.ThemeChanged += () => Execute(NotifyViewerThemeChangedAsync);
@@ -141,26 +149,12 @@ public sealed partial class CommanderWindow : Window
         ActivePanel = Left;
         panelClipboard = new PanelClipboardController(this, operationStore, Operations, [Left, Right], ui);
         AttachPanelEvents();
-        var layout = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto,20"), Margin = new Thickness(12, 0, 12, 6) }.WithFeedbackId("CommanderWindow.layout");
         frame = new CommanderFrame(this, mainMenu = BuildMenu(), status, updateMessage);
-        var panels = new Grid { ColumnDefinitions = new ColumnDefinitions("*,8,*") }.WithFeedbackId("CommanderWindow.panels");
-        panels.Children.Add(Left);
-        Grid.SetColumn(Right, 2); panels.Children.Add(Right);
-        panels.Children.Add(viewing.QuickViewControl);
-        layout.Children.Add(panels);
-        var help = CommanderFrame.BuildKeyboardHelp(this);
-        Grid.SetRow(OperationsView, 1); layout.Children.Add(OperationsView);
-        Grid.SetRow(CommandLine, 2); layout.Children.Add(CommandLine);
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
-        Grid.SetRow(help, 3); layout.Children.Add(help);
-        Grid.SetRow(frame.StatusBar, 4); layout.Children.Add(frame.StatusBar);
-        var applicationLayout = new Grid { RowDefinitions = new RowDefinitions("32,*") }.WithFeedbackId("CommanderWindow.applicationLayout");
-        applicationLayout.Children.Add(frame.TitleBar);
-        Grid.SetRow(layout, 1); applicationLayout.Children.Add(layout);
-        root.Children.Add(applicationLayout);
+        root.Children.Add(frame.BuildLayout(this, viewing.QuickViewControl));
         Content = root;
         GitCommitController.Attach([Left, Right], Activate, RestoreFocusAfterGitMenu,
-            () => GitHistory.Open(selectedItem: false), ui, LaunchExternalAsync, claudeExecutable);
+            () => GitHistory.Open(selectedItem: false), ui, LaunchExternalAsync, tools.Claude);
         var shellContext = new ShellInteractionContext(this, [Left, Right], Activate, ui, RecordActivity);
         var packing = new ZipPackingController(operationDialogs, operationStore, Operations, Execute, () => HasOpenDialog);
         shell.Attach(shellContext, packing, () => !Feedback.IsActive && !HasOpenDialog,
@@ -193,7 +187,7 @@ public sealed partial class CommanderWindow : Window
         Activated += (_, _) => { lastInput = Stopwatch.GetTimestamp(); viewing.RefreshQuickViewAfterActivation(); };
         AddHandler(PointerWheelChangedEvent, (_, _) => { RecordActivity(); ResetQuickJump(); }, RoutingStrategies.Tunnel);
         Deactivated += (_, _) => { pointerHeld = false; launchKeysHeld.Clear(); favoritesKeyHeld = false; viewing.ResetQuickViewKeys(); ResetQuickJump(); };
-        Closing += (_, _) => { CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
+        Closing += (_, _) => { Left.LeaveAgentSessions(); Right.LeaveAgentSessions(); CancelDirectorySizes(); archives.CancelOpening(); Operations.CancelAll(); OperationDialog?.Close(); FileSearch.Close(); viewing.CloseAll(); };
         Closed += async (_, _) => { await Operations.Completion; await Task.Run(archives.Dispose); };
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnKeyUp, RoutingStrategies.Tunnel);
@@ -211,6 +205,7 @@ public sealed partial class CommanderWindow : Window
     {
         if (ActivePanel != panel) { viewing.CloseQuickView(); ActivePanel.CancelRename(); ResetQuickJump(); }
         ActivePanel = panel;
+        CommandLine.IsEnabled = !panel.ShowsAgentSessions;
         Left.SetActive(panel == Left);
         Right.SetActive(panel == Right);
         CommandLine.SetDirectory(ArchivePath.WorkingDirectory(panel.Session.DirectoryPath));
@@ -247,10 +242,7 @@ public sealed partial class CommanderWindow : Window
         if (restarting) { e.Handled = true; return; }
         if (Feedback.IsPicking) { if (e.Key == Key.Escape) Feedback.Cancel(); e.Handled = true; return; }
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
-        if (IsMenuOpen) return;
-        if (HasOpenDialog) return;
-        if (RouteQuickViewInput(e)) return;
-        if (HandlePanelSwitch(e)) return;
+        if (RouteWorkspaceInput(e)) return;
         if (HandleFavoritesShortcut(e)) { e.Handled = true; return; }
         if (HasGitActionsFocus) return;
         if (GitHistory.CancelPending(e)) { e.Handled = true; return; }
@@ -265,9 +257,22 @@ public sealed partial class CommanderWindow : Window
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         if (HandleNameSearchKey(e, ctrl)) return;
-        if (!HandlePanelCommand(e, ctrl, shift) && !HandlePanelNavigation(e, ctrl, shift)) return;
+        if (!HandlePanelCommand(e, ctrl, shift) && !HandlePanelNavigation(e, ctrl)) return;
         Trace.Add($"key: {e.KeyModifiers}+{e.Key}; panel: {ActivePanel.Id}");
         e.Handled = true;
+    }
+
+    private bool RouteWorkspaceInput(KeyEventArgs e) =>
+        IsMenuOpen || HasOpenDialog || panelSources.RouteKey(e) || RouteQuickViewInput(e) || HandlePanelSwitch(e);
+
+    internal bool BeginLaunchKey(Key key) => launchKeysHeld.Add(key);
+
+    internal void PreparePanelSource(PanelView panel)
+    {
+        ResetQuickJump();
+        panel.CancelRename();
+        viewing.CloseQuickView();
+        Activate(panel);
     }
 
     private void OnKeyUp(object? sender, KeyEventArgs e)
@@ -298,6 +303,7 @@ public sealed partial class CommanderWindow : Window
 
     private async Task OpenCurrentAsync(PanelView panel)
     {
+        if (panel.ShowsAgentSessions) { await panelSources.ResumeAsync(panel); return; }
         if (panel.HasHistory) { await GitHistory.OpenCurrentAsync(panel); return; }
         if (panel.Current is not { } row) return;
         if (row.Entry.IsParent) { await OpenParentAsync(panel); return; }
@@ -312,7 +318,7 @@ public sealed partial class CommanderWindow : Window
     private void OnTextInput(object? sender, TextInputEventArgs e)
     {
         if (restarting || Feedback.IsActive) return;
-        if (ActivePanel.EditingRow != null || HasOpenDialog || IsMenuOpen || viewing.IsQuickViewFocused || CommandLine.HasKeyboardFocus || string.IsNullOrEmpty(e.Text)) return;
+        if (ActivePanel.ShowsAgentSessions || ActivePanel.EditingRow != null || HasOpenDialog || IsMenuOpen || viewing.IsQuickViewFocused || CommandLine.HasKeyboardFocus || string.IsNullOrEmpty(e.Text)) return;
         if (!nameJump.Active)
         { CommandLine.InsertText(e.Text); e.Handled = true; return; }
         if (suppressQuickText) { suppressQuickText = false; e.Handled = true; return; }
