@@ -26,6 +26,17 @@ the .NET runtime selected by the application are required.
 Use `Xcmd.lnk` for a stable shortcut across releases. See the
 [delivery process](docs/processes/delivery.md) for building and publishing.
 
+### GitHub Actions in a file panel
+
+For a GitHub.com remote, the repository button shows the workflow results for
+the most recent commit with runs on the tracked branch. A detached checkout
+shows runs for that commit. Hover over the CI label to see the commit and each
+workflow result. Sign in with the GitHub CLI to read private repositories.
+
+Visible panels in the active window share one check per repository and ref.
+Xcmd checks every 30 seconds while a run is pending, every five minutes after
+completion or a connection error, and every 15 minutes when there are no runs.
+
 ## Develop
 
 See [verification](docs/processes/verification.md) for the environment and commands,

@@ -29,6 +29,7 @@ public static class StartupProcessHost
         WorkspaceLifecycle? lifecycle = null;
         var builder = AppBuilder.Configure(() => new App
         {
+            WorkflowStatuses = WorkflowFixture.NoRemoteWorkflows(),
             LifecycleFactory = (window, launch) =>
             {
                 Mark("windowCreatedMs");

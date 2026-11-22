@@ -8,6 +8,8 @@ using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Avalonia.Threading;
 using Xcmd.Infrastructure;
+using Xcmd.Core;
+using Xcmd.Desktop.Features.Panels.Git;
 using Xcmd.Desktop.Shared.Platform;
 
 namespace Xcmd.Desktop.Workspace;
@@ -30,8 +32,9 @@ internal static class Program
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UseDesktopPlatform();
 }
 
-public sealed class App : Application
+public sealed class App : Application, IWorkflowStatusProvider
 {
+    public WorkflowStatusCache WorkflowStatuses { get; init; } = new(GitHubWorkflows.ReadAsync, TimeProvider.System);
     public Func<CommanderWindow, LaunchSettings, WorkspaceLifecycle>? LifecycleFactory { get; init; }
     public Action<CommanderWindow> WindowPresenter { get; init; } = window => window.Show();
     public Task StartupTask { get; private set; } = Task.CompletedTask;

@@ -23,6 +23,7 @@ public static class LifecycleProcessHost
         var id = new DirectoryInfo(AppContext.BaseDirectory).Name;
         var builder = AppBuilder.Configure(() => new App
         {
+            WorkflowStatuses = WorkflowFixture.NoRemoteWorkflows(),
             LifecycleFactory = (window, launch) =>
             {
                 var lifecycle = new WorkspaceLifecycle(window, new SessionStore(launch.SessionPath),

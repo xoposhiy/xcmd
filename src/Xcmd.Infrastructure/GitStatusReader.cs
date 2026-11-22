@@ -1,6 +1,7 @@
 // @implements RepositoryStatus
 using System.ComponentModel;
 using System.Diagnostics;
+using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;
 
@@ -15,6 +16,7 @@ public sealed record GitStatus(string Branch, int Staged, int Changed, int Untra
 {
     public int Deleted { get; init; }
     public bool HasRemote { get; init; }
+    public WorkflowTarget? WorkflowTarget { get; init; }
     public string? Upstream { get; init; }
     public string? Root { get; init; }
     public GitPathStatus[] Paths { get; init; } = [];
@@ -57,9 +59,9 @@ public sealed class GitStatusReader : IGitStatusReader
             if (root == null) return null;
             var output = await RunAsync(root, ["status", "--porcelain=v2", "--branch", "-z", "--untracked-files=normal", "--ignored=matching"], timeout.Token).ConfigureAwait(false);
             if (output == null) return null;
-            var remotes = await RunAsync(root, ["remote"], timeout.Token).ConfigureAwait(false);
+            var remotes = await RunAsync(root, ["remote", "-v"], timeout.Token).ConfigureAwait(false);
             var records = output.Split('\0');
-            var status = Parse(records) with { HasRemote = !string.IsNullOrWhiteSpace(remotes), Root = root };
+            var status = Parse(records, remotes ?? "") with { HasRemote = !string.IsNullOrWhiteSpace(remotes), Root = root };
             var paths = GitStatusPaths.Parse(records);
             var trackedIgnored = await RunAsync(root, ["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"], timeout.Token).ConfigureAwait(false);
             return status with
@@ -119,7 +121,7 @@ public sealed class GitStatusReader : IGitStatusReader
         }
     }
 
-    private static GitStatus Parse(string[] records)
+    private static GitStatus Parse(string[] records, string remotes)
     {
         var branch = ""; var oid = "";
         string? upstream = null;
@@ -144,8 +146,10 @@ public sealed class GitStatusReader : IGitStatusReader
                 if (line[0] == '2') i++; // Rename source is a separate NUL-delimited path.
             }
         }
-        if (branch == "(detached)") branch = "detached " + oid[..Math.Min(8, oid.Length)];
-        return new(branch, staged, changed, untracked, conflicts, ahead, behind) { Deleted = deleted, Upstream = upstream };
+        var detached = branch == "(detached)" ? oid : null;
+        if (detached != null) branch = "detached " + oid[..Math.Min(8, oid.Length)];
+        return new(branch, staged, changed, untracked, conflicts, ahead, behind)
+        { Deleted = deleted, Upstream = upstream, WorkflowTarget = GitHubWorkflows.Target(remotes, branch, upstream, detached) };
     }
 
     private static (int Deleted, int Staged, int Changed) ChangeCounts(string line) =>

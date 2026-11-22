@@ -7,6 +7,7 @@ using Xcmd.Desktop.Features.Panels;
 using Xcmd.Desktop.Features.Panels.Git;
 using Xcmd.Desktop.Shared.Ui;
 using Xcmd.Infrastructure;
+using Xcmd.Core;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
 
@@ -16,6 +17,60 @@ public static class GitScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("git-workflows-polling", "Panels share workflow results and poll active runs more often", async c =>
+        {
+            var target = new WorkflowTarget("github.com/team/project", "main", false);
+            var clock = new WorkflowFixture();
+            var first = new TaskCompletionSource<WorkflowStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var calls = 0;
+            var cache = new WorkflowStatusCache(_ => { Interlocked.Increment(ref calls); return first.Task; }, clock);
+            var a = cache.ReadAsync(target);
+            var b = cache.ReadAsync(target);
+            var active = WorkflowStatus.FromRuns([new("1", "Build", "current", "in_progress", ""), new("2", "Tests", "current", "completed", "failure"),
+                new("2", "Tests", "older", "completed", "success")]);
+            first.SetResult(active);
+            await a;
+            await b;
+            Equal(1, calls, "Both panels share an in-flight request");
+            Equal("Failed", active.Label, "A failed workflow is visible while another is still running");
+            Equal(TimeSpan.FromSeconds(30), active.RefreshAfter, "A pending workflow receives a fast refresh");
+            clock.Advance(TimeSpan.FromSeconds(29)); await cache.ReadAsync(target);
+            Equal(1, calls, "Repeated directory reads reuse the cached result");
+            clock.Advance(TimeSpan.FromSeconds(1)); await cache.ReadAsync(target);
+            Equal(2, calls, "A visible panel refreshes when the active interval expires");
+            Equal(TimeSpan.FromMinutes(5), WorkflowStatus.FromRuns([new("1", "Build", "current", "completed", "success")]).RefreshAfter, "Completed work polls less often");
+            Equal("", WorkflowStatus.Empty(false).Label, "Repositories without workflows have no badge");
+            Equal("No runs", WorkflowStatus.Empty(true).Label, "An unused workflow is distinct from an unavailable service");
+        }),
+        new("git-workflows-panel", "A GitHub remote shows branch results and late responses cannot follow panel navigation", async c =>
+        {
+            var root = Directory.CreateDirectory(Path.Combine(c.FixturePath, "workflow-repo")).FullName;
+            await GitFixture.InitializeAsync(root);
+            await GitFixture.RunAsync(root, "remote", "add", "origin", "git@github.com:team/project.git");
+            var requested = new TaskCompletionSource<WorkflowTarget>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var response = new TaskCompletionSource<WorkflowStatus>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cache = new WorkflowStatusCache(target => { requested.TrySetResult(target); return response.Task; }, TimeProvider.System);
+            var view = new GitStatusView("workflow-probe", workflowCache: cache);
+            var host = new Window { Content = view, Width = 450, Height = 180 };
+            try
+            {
+                host.Show(); host.Activate();
+                view.SetDirectory(root);
+                var target = await requested.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Equal(new WorkflowTarget("github.com/team/project", "main", false), target, "The SSH remote and local branch select the GitHub query");
+                view.SetDirectory("");
+                response.SetResult(WorkflowStatus.FromRuns([new("1", "Verify", "abcdef12", "completed", "success")]));
+                await c.UpdateLayoutAsync();
+                Check(!WorkflowFixture.Indicator(view).IsVisible, "A late result stays hidden outside the repository");
+                view.SetDirectory(root);
+                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Indicator(view).Text == "CI Passed");
+                var indicator = WorkflowFixture.Indicator(view);
+                Check(indicator.IsVisible && ToolTip.GetTip(indicator)?.ToString()?.Contains("Verify: success", StringComparison.Ordinal) == true,
+                    "The repository button displays the result and individual workflow details");
+                await c.ScreenshotAsync("git-workflow-status", host);
+            }
+            finally { host.Close(); GitFixture.AllowCleanup(root); }
+        }),
         new("git-panel-status", "Repository branch and compact status share the path header without changing table geometry", async c =>
         {
             var initialTableBounds = c.Window.Left.Table.Bounds;

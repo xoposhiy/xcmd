@@ -14,6 +14,7 @@ namespace Xcmd.Desktop.Features.Panels.Git;
 public sealed class GitStatusView : Border
 {
     private readonly IGitStatusReader reader;
+    private readonly GitWorkflowIndicator workflows;
     private readonly List<GitStatus> snapshots = [];
     private readonly TextBlock branch = new TextBlock() { MaxWidth = 150, LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Focus, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("GitStatusView.branch");
     private readonly TextBlock state = new TextBlock() { LineHeight = 18, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, FontFamily = new FontFamily("Consolas"), FontSize = UiPalette.BodySize, FontWeight = FontWeight.SemiBold, Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis }.WithFeedbackId("GitStatusView.state");
@@ -66,8 +67,9 @@ public sealed class GitStatusView : Border
     public GitStatus[] ChildRepositories { get; private set; } = [];
     public string Summary => branch.Text + statusText;
 
-    public GitStatusView(string id, IGitStatusReader? reader = null)
+    public GitStatusView(string id, IGitStatusReader? reader = null, WorkflowStatusCache? workflowCache = null)
     {
+        workflows = new GitWorkflowIndicator(workflowCache).WithFeedbackId("GitStatusView.workflows");
         this.reader = reader ?? new GitStatusReader();
         Name = id + "Git";
         AutomationProperties.SetAutomationId(this, id + ".git");
@@ -78,9 +80,10 @@ public sealed class GitStatusView : Border
         ToolTip.SetTip(remote, "Repository has a remote");
         AutomationProperties.SetName(remote, "Repository has a remote");
         Height = 24; MaxWidth = 300; ClipToBounds = true; VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center; IsVisible = false;
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }.WithFeedbackId("GitStatusView.grid");
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto,Auto"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }.WithFeedbackId("GitStatusView.grid");
         grid.Children.Add(remote); Grid.SetColumn(branch, 1); grid.Children.Add(branch); Grid.SetColumn(state, 2); grid.Children.Add(state);
-        Grid.SetColumn(arrow, 3); grid.Children.Add(arrow); ActionsButton.Content = grid; Child = ActionsButton;
+        Grid.SetColumn(workflows, 3); grid.Children.Add(workflows);
+        Grid.SetColumn(arrow, 4); grid.Children.Add(arrow); ActionsButton.Content = grid; Child = ActionsButton;
         ActionsButton.Name = id + "GitActions";
         AutomationProperties.SetAutomationId(ActionsButton, id + ".git.actions");
         AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
@@ -199,6 +202,7 @@ public sealed class GitStatusView : Border
         ChildRepositories = children ?? [];
         StatusChanged?.Invoke();
         IsVisible = value != null;
+        _ = workflows.UpdateAsync(value?.WorkflowTarget, IsEffectivelyVisible && TopLevel.GetTopLevel(this) is Window { IsActive: true, WindowState: not WindowState.Minimized });
         ActionsButton.IsVisible = value != null;
         ActionsButton.IsEnabled = value != null;
         ActionsButton.ContextMenu = value == null ? null : Actions;
