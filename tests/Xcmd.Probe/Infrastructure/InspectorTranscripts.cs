@@ -88,6 +88,12 @@ internal sealed class InspectorTranscripts
     internal void EmptyClaude(AgentSession session) =>
         Save(Path.Combine(root, "projects", "sample", session.Id + ".jsonl"));
 
+    internal void AddClaudeChild(string main)
+    {
+        var agents = Path.Combine(Path.GetDirectoryName(main)!, Path.GetFileNameWithoutExtension(main), "subagents");
+        File.Copy(Path.Combine(agents, "agent-review.jsonl"), Path.Combine(agents, "agent-second.jsonl"));
+    }
+
     internal void LongFileList()
     {
         User(0, "Inspect file coverage");

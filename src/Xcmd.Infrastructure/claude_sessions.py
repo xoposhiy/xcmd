@@ -15,6 +15,7 @@ def write_page(sessions):
             "topic": session.summary,
             "cwd": session.cwd,
             "updated": session.last_modified,
+            "fileSize": getattr(session, "file_size", None),
         }
         for session in sessions
     ]

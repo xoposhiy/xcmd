@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
+using Xcmd.Desktop.Features.Panels;
 using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.AgentSessionFixture;
@@ -110,7 +111,7 @@ public static class AgentSessionScenarios
             await ChooseAsync(c, Key.F1, "All Agent Sessions");
             var table = Table(c.Window.Left);
             await c.KeyAsync(Key.Down);
-            foreach (var heading in new[] { "Project", "Topic", "Agent", "Updated" })
+            foreach (var heading in new[] { "Project", "Topic", "Agent", "Size", "Updated" })
                 await ClickHeaderAsync(c, table, heading);
             Equal(c.AgentSessions.Codex, table.Items[0], "The newest session stays first");
             Equal(c.AgentSessions.Claude, table.SelectedItem, "The selected session stays selected");
@@ -192,9 +193,14 @@ public static class AgentSessionScenarios
             try
             {
                 await using var reader = new SessionReaderFixture(nested);
+                File.WriteAllBytes(Path.Combine(nested, "session.jsonl.zst"), new byte[37]);
                 var rows = new List<AgentSession>();
                 await reader.Readers.ListAsync(SessionAgent.Codex, SessionListScope.Recent, page => { rows.AddRange(page); return Task.CompletedTask; }, CancellationToken.None);
                 var session = rows.Single();
+                Equal(37L, session.TranscriptBytes, "Codex reports the size of the archived transcript on disk");
+                rows.Clear();
+                await reader.Readers.ListAsync(SessionAgent.ClaudeCode, SessionListScope.Recent, page => { rows.AddRange(page); return Task.CompletedTask; }, CancellationToken.None);
+                Equal(2048L, rows.Single().TranscriptBytes, "Claude reports the size provided by the SDK");
                 Equal(c.RightPath, session.ProjectDirectory, "The real repository root contains the launch folder");
                 Equal(SessionActivity.Working, session.Activity, "The server reports an active turn");
                 c.AgentSessions.AddCodexSession("Testing", nested, DateTimeOffset.UtcNow, session.ProjectDirectory, session.Activity);
@@ -203,7 +209,7 @@ public static class AgentSessionScenarios
                 Equal("Project", ((TextBlock)table.Columns[0].Header!).Text, "The project is the first column");
                 Equal(nested, ToolTip.GetTip(Cell(table, 0, Path.GetFileName(c.RightPath))) as string, "Hover shows the full launch folder");
                 Check(Cell(table, 0, "Working · Testing").IsVisible, "The topic shows the reported activity");
-                Check(!Equals(Cell(table, 0, "Codex").Foreground, Cell(table, 2, "Claude Code").Foreground), "The agent labels have distinct colors");
+                Check(!Equals(Cell(table, 0, "Codex").Foreground, Cell(table, 2, "Claude").Foreground), "The agent labels have distinct colors");
                 await ChooseAsync(c, Key.F1, "Codex");
                 await c.KeyAsync(Key.Right, RawInputModifiers.Control);
                 Equal(c.RightPath, c.Window.Right.Session.DirectoryPath, "Ctrl+Right opens the project in the opposite panel");
@@ -303,7 +309,16 @@ public static class AgentSessionScenarios
             await ChooseAsync(c, Key.F2, "All Agent Sessions");
             Check(right.ShowsAgentSessions && !left.ShowsAgentSessions, "Alt+F2 opens sessions on the right.");
             var table = Table(right);
-            Equal(4, table.Columns.Count, "Session metadata columns");
+            Equal(5, table.Columns.Count, "Session metadata columns");
+            Equal($"Main transcript: {1536:N0} bytes", ToolTip.GetTip(Cell(table, 0, FileSizeText.Format(1536))), "Exact transcript size on hover");
+            Equal("Transcript size unavailable", ToolTip.GetTip(Cell(table, 1, "—")), "An unknown transcript size stays distinct from zero");
+            Check(Cell(table, 0, "Codex").IsVisible, "An unclassified session has no check mark");
+            c.AgentSessions.ClassificationReady = row => row.Id == c.AgentSessions.Codex.Id;
+            InputDriver.Deactivate(c.Window);
+            await c.UpdateLayoutAsync();
+            ((Window)c.Window).Activate();
+            await c.UpdateLayoutAsync();
+            Equal("F3 uses saved Luna results", ToolTip.GetTip(Cell(table, 0, "Codex ✓")), "Returning from the inspector refreshes the ready mark");
             Equal(c.AgentSessions.Codex, table.SelectedItem, "Most recently updated conversation");
             await c.KeyAsync(Key.Enter);
             Equal("resume " + c.AgentSessions.Codex.Id, c.Launcher.Requests.Single().Arguments, "Resume the selected Codex thread");

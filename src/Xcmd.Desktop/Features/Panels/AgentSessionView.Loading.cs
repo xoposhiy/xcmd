@@ -56,9 +56,7 @@ internal sealed partial class AgentSessionView
         var gained = active && !focused;
         if (active != focused) WatchFocus(active);
         if (!active && !windowReturned) refreshQueued = false;
-        if (!gained && !windowReturned) return;
-        if (loading == null) _ = ReadAsync(SessionListScope.Recent);
-        else refreshQueued = true;
+        if (gained || windowReturned) _ = RefreshRecentAsync();
     }
 
     private void WatchFocus(bool active)
@@ -71,7 +69,15 @@ internal sealed partial class AgentSessionView
     private async void PollRecent(object? sender, EventArgs e)
     {
         if (focusTime.Elapsed >= TimeSpan.FromMinutes(5)) { poll.Stop(); return; }
-        if (focused && loading == null) await ReadAsync(SessionListScope.Recent);
+        if (focused && loading == null) await RefreshRecentAsync();
+    }
+
+    private Task RefreshRecentAsync()
+    {
+        UpdateClassifications?.Invoke();
+        if (loading == null) return ReadAsync(SessionListScope.Recent);
+        refreshQueued = true;
+        return Task.CompletedTask;
     }
 
     private async Task ReadAsync(SessionListScope scope)

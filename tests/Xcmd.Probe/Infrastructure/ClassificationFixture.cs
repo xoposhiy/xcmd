@@ -1,4 +1,4 @@
-// @tests InspectAgentSession, OpenViewers
+// @tests InspectAgentSession, OpenViewers, ViewRecentAgentSessions
 using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
@@ -57,9 +57,13 @@ internal sealed class ClassificationFixture : IDisposable
         Check(changed != original, "Fixture edit changes a recorded field");
         File.WriteAllText(file, changed);
     }
-    internal Task<SessionTrace> ReadAsync(CancellationToken token = default) =>
-        new SessionTranscriptReader(root, root, new LunaSessionClassifier(Path.Combine(root, "cache"), () => Offline ? null : "fixture", http))
-            .ReadAsync(Session, token);
+    private SessionTranscriptReader Reader(string home) =>
+        new(home, home, new LunaSessionClassifier(Path.Combine(root, "cache"), () => Offline ? null : "fixture", http));
+
+    internal Task<bool> ReadyAsync(AgentSession? claude = null) =>
+        Reader(claude == null ? root : Path.Combine(root, "inspector")).IsClassificationReadyAsync(claude ?? Session, default);
+
+    internal Task<SessionTrace> ReadAsync(CancellationToken token = default) => Reader(root).ReadAsync(Session, token);
 
     internal Task<SessionTrace[]> OpenTwoInspectorsAsync() => Task.WhenAll(ReadAsync(), ReadAsync());
 
@@ -67,8 +71,7 @@ internal sealed class ClassificationFixture : IDisposable
     {
         transport.CheckCommandFixture = false;
         var transcripts = Path.Combine(root, "inspector");
-        return new SessionTranscriptReader(transcripts, transcripts, new LunaSessionClassifier(Path.Combine(root, "cache"), () => Offline ? null : "fixture", http))
-            .ReadAsync(session, default);
+        return Reader(transcripts).ReadAsync(session, default);
     }
 
     private static string Call(int n) => Event(new

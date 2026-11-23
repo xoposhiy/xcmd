@@ -10,6 +10,7 @@ public sealed record AgentSession(SessionAgent Agent, Guid Id, string Topic, str
 {
     public string ProjectDirectory { get; init; } = Directory;
     public string? TranscriptPath { get; init; }
+    public long? TranscriptBytes { get; init; }
     public string ProjectName => Path.GetFileName(Path.TrimEndingDirectorySeparator(ProjectDirectory)) is { Length: > 0 } name ? name : ProjectDirectory;
     public SessionActivity Activity { get; init; }
     public static string AgentName(SessionAgent agent) => agent == SessionAgent.Codex ? "Codex" : "Claude Code";
@@ -29,6 +30,7 @@ public sealed record AgentSession(SessionAgent Agent, Guid Id, string Topic, str
 
 public interface IAgentSessions
 {
+    Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token);
     Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token);
     Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null);
     Task ListAsync(SessionAgent agent, SessionListScope scope, Func<IReadOnlyList<AgentSession>, Task> showPage, CancellationToken token);

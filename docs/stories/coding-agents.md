@@ -22,6 +22,10 @@ folder so that I can find the work I am looking for.
 - Open the selected session's project folder in the other panel. Keep the session
   selected so the user can continue browsing the list.
   Codex session ID 01a20024-3466-7680-b829-784bc0a74a0a.
+- Mark sessions with complete Luna results in the list so users can see which
+  sessions F3 can open without waiting for Luna. Show a size that is quick to
+  read for each session. Use the short label Claude in the Agent column.
+  Point Taken #64. Codex session ID 01a20814-7061-7c11-ba7f-e584674e688b.
 - Use one footer line for the session count and the size of the selected
   conversation. Separate the footer from the list with a line. Use short token
   counts such as 100k and 10m. Keep exact counts in the tooltip. Point Taken #48.

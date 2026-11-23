@@ -1,4 +1,4 @@
-// @implements InspectAgentSession, OpenViewers
+// @implements InspectAgentSession, OpenViewers, ViewRecentAgentSessions
 using System.Text.Json;
 using Xcmd.Core;
 
@@ -7,6 +7,7 @@ namespace Xcmd.Infrastructure;
 public sealed class SessionTranscriptReader(string codexHome, string claudeHome, LunaSessionClassifier? classifier = null)
 {
     private bool FileCoverageStudy { get; init; }
+    private readonly SemaphoreSlim statusReads = new(2);
     public static SessionTranscriptReader ForFileCoverageStudy(string home) => new(home, home) { FileCoverageStudy = true };
     public static SessionTranscriptReader Local() => new(Home("CODEX_HOME", ".codex"), Home("CLAUDE_CONFIG_DIR", ".claude"), LunaSessionClassifier.Local());
 
@@ -19,12 +20,33 @@ public sealed class SessionTranscriptReader(string codexHome, string claudeHome,
 
     public Task<SessionTrace> ReadAsync(AgentSession session, CancellationToken token, IProgress<string>? progress) => Task.Run(async () =>
     {
-        var trace = new TraceRecords(session.ProjectDirectory, FileCoverageStudy);
-        if (session.Agent == SessionAgent.ClaudeCode) ReadClaude(session, trace, token);
-        else ReadCodex(session, trace, token);
+        var trace = ReadRecords(session, null, token);
         if (classifier != null) await classifier.ClassifyAsync(session, trace, progress, token).ConfigureAwait(false);
         return trace.Finish(session);
     }, token);
+
+    public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) => Task.Run(async () =>
+    {
+        if (classifier == null) return false;
+        var status = classifier.StatusFor(session);
+        if (status.Read() is { } ready) return ready;
+        await statusReads.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            if (status.Read() is { } cached) return cached;
+            var trace = ReadRecords(session, status, token);
+            return trace.MissingAgents == 0 && status.Save(classifier.HasAllCalls(session, trace, status, token));
+        }
+        finally { statusReads.Release(); }
+    }, token);
+
+    private TraceRecords ReadRecords(AgentSession session, ClassificationStatus? status, CancellationToken token)
+    {
+        var trace = new TraceRecords(session.ProjectDirectory, FileCoverageStudy) { Status = status };
+        if (session.Agent == SessionAgent.ClaudeCode) ReadClaude(session, trace, token);
+        else ReadCodex(session, trace, token);
+        return trace;
+    }
 
     private void ReadCodex(AgentSession session, TraceRecords trace, CancellationToken token)
     {
@@ -87,6 +109,7 @@ public sealed class SessionTranscriptReader(string codexHome, string claudeHome,
         if (path == null) throw Missing();
         Parse(path, SessionTrace.MainAgent);
         var children = Path.Combine(Path.GetDirectoryName(path)!, session.Id.ToString("D"), "subagents");
+        trace.Status?.Watch(children, directory: true);
         if (Directory.Exists(children))
             foreach (var sub in Directory.EnumerateFiles(children, "agent-*.jsonl").Order(StringComparer.OrdinalIgnoreCase))
             {
@@ -116,6 +139,7 @@ public sealed class SessionTranscriptReader(string codexHome, string claudeHome,
 
     private static void ReadLines(string path, TraceRecords trace, Action<JsonElement, long, int> record, CancellationToken token)
     {
+        trace.Status?.Watch(path);
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 65536, FileOptions.SequentialScan);
         using var data = path.EndsWith(".zst", StringComparison.OrdinalIgnoreCase) ? ArchiveCompression.Open(stream, SharpCompress.Common.CompressionType.ZStandard) : stream;
         using var reader = new StreamReader(data);

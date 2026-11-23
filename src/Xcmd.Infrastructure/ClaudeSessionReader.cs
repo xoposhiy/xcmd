@@ -18,7 +18,10 @@ internal static class ClaudeSessionReader
             using var page = JsonDocument.Parse(line);
             var rows = page.RootElement.EnumerateArray().Select(row => new AgentSession(SessionAgent.ClaudeCode,
                 row.GetProperty("id").GetGuid(), row.GetProperty("topic").GetString() ?? "", row.GetProperty("cwd").GetString() ?? "",
-                DateTimeOffset.FromUnixTimeMilliseconds(row.GetProperty("updated").GetInt64()))).ToArray();
+                DateTimeOffset.FromUnixTimeMilliseconds(row.GetProperty("updated").GetInt64()))
+            {
+                TranscriptBytes = row.Field("fileSize") is { ValueKind: JsonValueKind.Number } size && size.TryGetInt64(out var bytes) && bytes >= 0 ? bytes : null
+            }).ToArray();
             if (rows.Length != 0) await showPage(rows).ConfigureAwait(false);
         }
         throw new EndOfStreamException("The Claude session reader closed before finishing.");

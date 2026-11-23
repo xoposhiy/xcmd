@@ -33,11 +33,13 @@ internal sealed partial class AgentSessionView : Grid
             userSelected = true;
             ShowStatistics();
         };
-        AddColumn("Project", new GridLength(1, GridUnitType.Star), row => Cell(row.ProjectName, tip: row.Directory));
+        AddColumn("Project", new GridLength(1, GridUnitType.Star), row => Cell(row.ProjectName, tip: row.Directory)).MinWidth = 66;
         AddColumn("Topic", new GridLength(2, GridUnitType.Star), TopicCell);
-        AddColumn("Agent", new GridLength(96), row => Cell(AgentSession.AgentName(row.Agent),
-            row.Agent == SessionAgent.Codex ? UiPalette.Focus : UiPalette.Mark));
-        AddColumn("Updated", new GridLength(132), UpdatedCell);
+        AddColumn("Agent", new GridLength(74), AgentCell);
+        AddColumn("Size", new GridLength(82), row => row.TranscriptBytes is { } bytes
+            ? Cell(FileSizeText.Format(bytes), tip: $"Main transcript: {bytes:N0} bytes")
+            : Cell("—", UiPalette.Secondary, "Transcript size unavailable"));
+        AddColumn("Updated", new GridLength(1.5, GridUnitType.Star), UpdatedCell).MaxWidth = 132;
         Children.Add(Heading);
         SetRow(Table, 1); Children.Add(Table);
         var line = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 12 }.WithFeedbackId("AgentSessionView.footerLine");
@@ -54,7 +56,7 @@ internal sealed partial class AgentSessionView : Grid
         SetRow(footer, 2); Children.Add(footer);
     }
 
-    private void AddColumn(string title, GridLength width, Func<AgentSession, TextBlock> cell)
+    private TableViewColumn AddColumn(string title, GridLength width, Func<AgentSession, TextBlock> cell)
     {
         var header = new TextBlock
         {
@@ -63,13 +65,15 @@ internal sealed partial class AgentSessionView : Grid
             VerticalAlignment = VerticalAlignment.Center,
             FontWeight = FontWeight.SemiBold
         }.WithFeedbackId("AgentSessionView.columnHeader");
-        Table.Columns.Add(new TableViewColumn
+        var column = new TableViewColumn
         {
             Header = header,
             Width = width,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
             CellTemplate = new FuncDataTemplate<AgentSession>((row, _) => row == null ? null : cell(row))
-        });
+        };
+        Table.Columns.Add(column);
+        return column;
     }
 
     private void UpdateRows(Action change, bool preserveSelection)

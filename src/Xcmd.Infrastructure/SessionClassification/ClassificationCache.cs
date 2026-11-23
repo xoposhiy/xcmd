@@ -24,7 +24,7 @@ internal sealed class ClassificationCache(string path)
     {
         try
         {
-            using var file = File.OpenRead(path);
+            using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             var saved = JsonSerializer.Deserialize<Snapshot>(file);
             if (saved?.Version == ClassificationPacket.Version && saved.Rows != null) rows = saved.Rows;
         }

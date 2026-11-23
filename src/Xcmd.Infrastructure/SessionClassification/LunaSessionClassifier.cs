@@ -1,4 +1,4 @@
-// @implements InspectAgentSession
+// @implements InspectAgentSession, ViewRecentAgentSessions
 using System.Text.Json;
 using Xcmd.Core;
 
@@ -15,14 +15,13 @@ public sealed class LunaSessionClassifier(string cacheDirectory, Func<string?> a
     {
         var answers = new Dictionary<(string Agent, int Id), ToolClassification>();
         var run = new ClassificationRun(progress, trace.Calls.Count);
-        var project = new ClassificationText(session.ProjectDirectory).Clean(session.ProjectName).ReplaceLineEndings(" ");
-        var folder = Path.Combine(cacheDirectory, session.Agent.ToString(), session.Id.ToString("D"));
+        var project = Project(session);
         run.Report(0);
         foreach (var group in trace.Calls.GroupBy(c => c.Agent))
         {
             var evidence = trace.Evidence[group.Key];
             var calls = ClassificationPacket.Prepare(group, evidence, project);
-            var cache = new ClassificationCache(Path.Combine(folder, evidence.Stream + ".json"));
+            var cache = new ClassificationCache(CachePath(session, evidence));
             var found = await ClassifyStreamAsync(project, calls, cache, run, token).ConfigureAwait(false);
             foreach (var row in found) answers[(group.Key, row.Key)] = row.Value;
         }
@@ -35,6 +34,27 @@ public sealed class LunaSessionClassifier(string cacheDirectory, Func<string?> a
             trace.ClassificationError = $"Luna classified {answers.Count:N0} of {trace.Calls.Count:N0} tool calls. " +
                 (run.Error ?? "Some replies did not contain a valid classification.");
     }
+
+    internal ClassificationStatus StatusFor(AgentSession session) => new(Folder(session), session);
+
+    internal bool HasAllCalls(AgentSession session, TraceRecords trace, ClassificationStatus status, CancellationToken token)
+    {
+        var project = Project(session);
+        foreach (var group in trace.Calls.GroupBy(c => c.Agent))
+        {
+            token.ThrowIfCancellationRequested();
+            var evidence = trace.Evidence[group.Key];
+            var path = CachePath(session, evidence);
+            status.Watch(path);
+            var calls = ClassificationPacket.Prepare(group, evidence, project);
+            if (new ClassificationCache(path).Load(calls).Count != calls.Length) return false;
+        }
+        return trace.Calls.Count > 0;
+    }
+
+    private string Folder(AgentSession session) => Path.Combine(cacheDirectory, session.Agent.ToString(), session.Id.ToString("D"));
+    private string CachePath(AgentSession session, ClassificationEvidence evidence) => Path.Combine(Folder(session), evidence.Stream + ".json");
+    private static string Project(AgentSession session) => new ClassificationText(session.ProjectDirectory).Clean(session.ProjectName).ReplaceLineEndings(" ");
 
     private async Task<Dictionary<int, ToolClassification>> ClassifyStreamAsync(string project, ClassificationCall[] calls,
         ClassificationCache cache, ClassificationRun run, CancellationToken token)

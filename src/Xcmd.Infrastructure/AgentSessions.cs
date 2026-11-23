@@ -12,6 +12,7 @@ public sealed class AgentSessions : IAgentSessions, IAsyncDisposable
     private readonly SessionReaderLease claude;
     private readonly SessionReaderLease codex;
     private readonly ClaudeSessionActivity? activity;
+    private readonly SessionTranscriptReader transcripts = SessionTranscriptReader.Local();
 
     public AgentSessions() : this(TimeSpan.FromMinutes(10), ClaudeSessionReader.StartInfo, CodexStartInfo) => activity = new();
 
@@ -33,7 +34,10 @@ public sealed class AgentSessions : IAgentSessions, IAsyncDisposable
         SessionStatisticsReader.ReadAsync(session, token);
 
     public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
-        SessionTranscriptReader.Local().ReadAsync(session, token, progress);
+        transcripts.ReadAsync(session, token, progress);
+
+    public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) =>
+        transcripts.IsClassificationReadyAsync(session, token);
 
     public ExternalLaunch Resume(AgentSession session)
     {

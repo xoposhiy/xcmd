@@ -20,6 +20,7 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
     internal int MissingAgents { get; set; }
     internal string Project { get; } = project;
     internal bool FileCoverageStudy { get; } = fileCoverageStudy;
+    internal ClassificationStatus? Status { get; init; }
     internal Dictionary<string, ClassificationEvidence> Evidence { get; } = [];
     internal string? ClassificationError { get; set; }
 

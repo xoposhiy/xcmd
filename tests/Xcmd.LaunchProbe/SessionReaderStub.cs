@@ -13,7 +13,7 @@ internal static class SessionReaderStub
             if (agent == "Claude")
             {
                 if (line is not ("recent" or "list")) return 1;
-                Console.WriteLine(JsonSerializer.Serialize(new[] { new { id = session, topic = title, cwd = "", updated = 0 } }));
+                Console.WriteLine(JsonSerializer.Serialize(new[] { new { id = session, topic = title, cwd = "", updated = 0, fileSize = 2048 } }));
                 Console.WriteLine();
                 continue;
             }
@@ -26,7 +26,7 @@ internal static class SessionReaderStub
             else if (method == "thread/list" && initialized)
             {
                 var archived = root.GetProperty("params").GetProperty("archived").GetBoolean();
-                var rows = new[] { new { id = session, name = title, cwd = Environment.CurrentDirectory, updatedAt = 0, status = new { type = "active", activeFlags = Array.Empty<string>() } } };
+                var rows = new[] { new { id = session, name = title, cwd = Environment.CurrentDirectory, path = Path.Combine(Environment.CurrentDirectory, "session.jsonl"), updatedAt = 0, status = new { type = "active", activeFlags = Array.Empty<string>() } } };
                 result = new { data = archived ? [] : rows, nextCursor = (string?)null };
             }
             else return 1;

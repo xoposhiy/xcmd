@@ -8,8 +8,8 @@ const sdk = createRequire(join(process.argv[2], "package.json"));
 const { listSessions } = await import(pathToFileURL(sdk.resolve("@anthropic-ai/claude-agent-sdk")));
 
 function writePage(sessions) {
-    const rows = sessions.map(({ sessionId, summary, cwd, lastModified }) =>
-        ({ id: sessionId, topic: summary, cwd: cwd ?? "", updated: lastModified }));
+    const rows = sessions.map(({ sessionId, summary, cwd, lastModified, fileSize }) =>
+        ({ id: sessionId, topic: summary, cwd: cwd ?? "", updated: lastModified, fileSize }));
     process.stdout.write(JSON.stringify(rows) + "\n");
 }
 

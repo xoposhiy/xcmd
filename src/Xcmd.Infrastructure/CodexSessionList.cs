@@ -33,13 +33,26 @@ internal sealed class CodexSessionList(Process process, CancellationToken token)
         var rows = page.GetProperty("data").EnumerateArray().Select(row =>
         {
             var name = row.TryGetProperty("name", out var title) ? title.GetString() : null;
+            var path = row.Str("path") is { Length: > 0 } transcript ? transcript : null;
             return new AgentSession(SessionAgent.Codex, row.GetProperty("id").GetGuid(), string.IsNullOrWhiteSpace(name) ? row.GetProperty("preview").GetString() ?? "" : name,
                 row.GetProperty("cwd").GetString() ?? "", DateTimeOffset.FromUnixTimeSeconds(row.GetProperty("updatedAt").GetInt64()))
-            { Activity = Activity(row), TranscriptPath = row.Str("path") is { Length: > 0 } path ? path : null };
+            { Activity = Activity(row), TranscriptPath = path, TranscriptBytes = TranscriptSize(path) };
         }).ToArray();
         if (rows.Length != 0) await showPage(rows).ConfigureAwait(false);
         var next = page.GetProperty("nextCursor").GetString();
         return string.IsNullOrEmpty(next) ? null : next;
+    }
+
+    private static long? TranscriptSize(string? path)
+    {
+        if (path == null) return null;
+        try
+        {
+            var file = new FileInfo(path);
+            if (!file.Exists) file = new FileInfo(path + ".zst");
+            return file.Exists ? file.Length : null;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException) { return null; }
     }
 
     private static SessionActivity Activity(JsonElement row)

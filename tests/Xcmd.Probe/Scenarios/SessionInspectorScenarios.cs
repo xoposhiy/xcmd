@@ -1,4 +1,4 @@
-// @tests InspectAgentSession, OpenViewers
+// @tests InspectAgentSession, OpenViewers, ViewRecentAgentSessions
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -16,20 +16,26 @@ public static class SessionInspectorScenarios
         {
             using var fixture = new ClassificationFixture(c);
             fixture.Write(103);
+            Check(!await fixture.ReadyAsync(), "A session without a Luna cache has no ready mark");
             var viewers = await fixture.OpenTwoInspectorsAsync();
             Check(viewers.All(t => t.ClassificationError == null && t.Calls.Count == 103), "Both inspectors have all results");
             Equal("3,20,20,20,20,20", string.Join(',', fixture.Packets.Select(p => p.Length).Order()), "20 calls per request including the final partial batch");
             Check(fixture.Peak is > 1 and <= 5, "Requests overlap within the five-request limit");
             fixture.Reset();
+            Check(await fixture.ReadyAsync(), "A complete cache from an earlier inspector is recognized");
+            Check(await fixture.ReadyAsync() && fixture.Packets.Length == 0, "Checking a saved result never calls Luna");
             fixture.Offline = true;
             fixture.Append(104);
+            Check(!await fixture.ReadyAsync(), "An appended call clears the ready mark");
             var partial = await fixture.ReadAsync();
             Check(partial.ClassificationError?.Contains("103 of 104") == true, "Offline viewers keep validated rows and report missing labels");
             fixture.Offline = false;
             await fixture.ReadAsync();
+            Check(await fixture.ReadyAsync(), "Finishing the missing call restores the ready mark");
             Equal(106, fixture.Packets.Single().Single(), "Appending one call reuses even the last partial batch");
             fixture.Reset();
             fixture.Rewrite("component-20.cs", "component-XX.cs");
+            Check(!await fixture.ReadyAsync(), "A same-size edit clears the ready mark");
             await fixture.ReadAsync();
             Equal(22, fixture.Packets.Single().Single(), "Only the edited call is classified again");
             fixture.Reset();
@@ -50,6 +56,7 @@ public static class SessionInspectorScenarios
             await fixture.ReadAsync();
             Equal(6, fixture.Packets.Single().Single(), "Only the call with changed message context expires");
             fixture.InvalidateVersion();
+            Check(!await fixture.ReadyAsync(), "A cache from another prompt version has no ready mark");
             fixture.Reset();
             fixture.UnreadableReply = true;
             var incomplete = await fixture.ReadAsync();
@@ -66,7 +73,7 @@ public static class SessionInspectorScenarios
             using var fixture = new ClassificationFixture(c);
             var transcript = new InspectorTranscripts(c);
             var session = c.AgentSessions.Claude;
-            transcript.Claude(session);
+            var main = transcript.Claude(session);
             var trace = await fixture.ReadClaudeAsync(session);
             Equal("1,2|1", string.Join('|', fixture.Packets.Select(ids => string.Join(',', ids))), "Each transcript has its own integer IDs");
             Check(trace.Calls.All(call => call.Classification != null) && trace.Calls.Count == 3, "Only completed results are classified");
@@ -76,6 +83,9 @@ public static class SessionInspectorScenarios
             fixture.Offline = true;
             var reopened = await fixture.ReadClaudeAsync(session);
             Check(reopened.ClassificationError == null && fixture.Packets.Length == 0, "Main and child calls reopen offline");
+            Check(await fixture.ReadyAsync(session), "The ready mark includes the linked agent");
+            transcript.AddClaudeChild(main);
+            Check(!await fixture.ReadyAsync(session) && fixture.Packets.Length == 0, "A new linked agent clears the ready mark without calling Luna");
         }),
         new("session-inspector-classification-repair", "Repair only duplicate and generic rows, then show all classified operations", async c =>
         {

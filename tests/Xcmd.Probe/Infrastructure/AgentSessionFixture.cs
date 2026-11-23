@@ -14,12 +14,15 @@ internal sealed class AgentSessionFixture : IAgentSessions
     internal readonly AgentSession Claude = new(SessionAgent.ClaudeCode, Guid.Parse("22222222-1111-4111-8111-222222222222"),
         "Review keyboard navigation", @"C:\work\keyboard", DateTimeOffset.UnixEpoch.AddDays(2));
     internal readonly AgentSession Codex = new(SessionAgent.Codex, Guid.Parse("11111111-1111-4111-8111-111111111111"),
-        "Add session columns", @"C:\work\panel", DateTimeOffset.UtcNow.AddMinutes(-5));
+        "Add session columns", @"C:\work\panel", DateTimeOffset.UtcNow.AddMinutes(-5))
+    { TranscriptBytes = 1536 };
 
     private AgentSession[] older = [];
     internal Func<AgentSession, CancellationToken, Task<SessionStatistics?>> Statistics { get; set; } =
         (_, _) => Task.FromResult<SessionStatistics?>(null);
     public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) => Statistics(session, token);
+    internal Func<AgentSession, bool> ClassificationReady { get; set; } = _ => false;
+    public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) => Task.FromResult(ClassificationReady(session));
     private TaskCompletionSource? historyReady;
     internal Func<AgentSession, CancellationToken, Task<SessionTrace>> Inspector { get; set; } =
         (_, _) => throw new FileNotFoundException("The local transcript is missing.");
