@@ -17,6 +17,8 @@ internal sealed class InspectorProbe(ProbeContext c)
     internal Task Click(string caption) => c.ClickAsync(Find<Button>(button => Equals(button.Content, caption)), target: Window);
     internal Task Key(Key key) => c.KeyAsync(key, target: Window);
     internal Task Screenshot(string file) => c.ScreenshotAsync(file, Window);
+    internal double ActivityRowTop(string label) =>
+        Find<TextBlock>(t => Equals(ToolTip.GetTip(t), label)).TranslatePoint(default, Window)!.Value.Y;
     internal void FocusTimeline() => Find<Control>(control => control.GetType().Name == "SessionTimeline").Focus();
     internal async Task DragRange(double from, double to)
     {

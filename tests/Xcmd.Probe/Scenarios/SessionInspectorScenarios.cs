@@ -142,6 +142,20 @@ public static class SessionInspectorScenarios
             await probe.Key(Key.Escape);
             await probe.Key(Key.Escape);
         }),
+        new("session-inspector-activity-order", "Rank activities by estimated tokens in the selected range", async c =>
+        {
+            c.AgentSessions.UseActivityBreakdownTrace();
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Activity breakdown");
+            Check(probe.ActivityRowTop("source/read") < probe.ActivityRowTop("tests/exec"), "Two reads with 950 tokens rank above three longer test runs with 900 tokens");
+            await probe.Click("Time");
+            Check(probe.ActivityRowTop("source/read") < probe.ActivityRowTop("tests/exec"), "The time axis keeps the token order");
+            await probe.DragRange(0.05, 0.80);
+            Check(probe.ActivityRowTop("tests/exec") < probe.ActivityRowTop("source/read"), "Test runs lead with 600 tokens over 450 in the selected range");
+            await probe.Key(Key.Escape);
+        }),
         new("session-inspector-codex", "Archived child calls and nested commands contribute once to the selected range", async c =>
         {
             var fixture = new InspectorTranscripts(c);

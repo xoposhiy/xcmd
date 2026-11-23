@@ -46,7 +46,8 @@ public sealed class SessionSelection
         var activities = calls.SelectMany(c => c.Labels.Select(label => (label, c))).GroupBy(x => x.label, x => x.c)
             .Select(group => new ActivityTotal(group.Key, group.Sum(Duration),
             group.Where(c => Includes(c.End)).Sum(c => c.EstimatedTokens), group.Count(c => Includes(c.End))))
-            .Where(row => row.Calls > 0 || row.Milliseconds > 0).OrderByDescending(row => row.Milliseconds).ToArray();
+            .Where(row => row.Calls > 0 || row.Milliseconds > 0)
+            .OrderByDescending(row => row.Tokens).ThenByDescending(row => row.Milliseconds).ToArray();
         var busy = 0L;
         var last = From;
         foreach (var call in calls.OrderBy(c => c.Start))

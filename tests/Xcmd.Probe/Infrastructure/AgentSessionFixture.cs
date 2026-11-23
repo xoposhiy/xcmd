@@ -27,6 +27,23 @@ internal sealed class AgentSessionFixture : IAgentSessions
     internal Func<AgentSession, CancellationToken, Task<SessionTrace>> Inspector { get; set; } =
         (_, _) => throw new FileNotFoundException("The local transcript is missing.");
     public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) => Inspector(session, token);
+
+    internal void UseActivityBreakdownTrace()
+    {
+        var read = new ToolLabel("source", "read");
+        var test = new ToolLabel("tests", "exec");
+        var trace = new SessionTrace(0, 10000, [
+            Call(test, 0, 3000, 300), Call(read, 3000, 3500, 450),
+            Call(test, 3500, 6500, 300), Call(test, 6500, 9500, 300),
+            Call(read, 9500, 10000, 500)
+        ], [], []);
+        Inspector = (_, _) => Task.FromResult(trace);
+
+        static TraceCall Call(ToolLabel label, long start, long end, long tokens) =>
+            new(SessionTrace.MainAgent, label.ToString(), start, end, tokens, [])
+            { Classification = new(label.ToString(), [new(label, [])], []) };
+    }
+
     internal List<(SessionAgent Agent, SessionListScope Scope)> Reads { get; } = [];
     internal void AddOlderSessions(int count) => older = Enumerable.Range(1, count).Select(i => Codex with
     {

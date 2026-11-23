@@ -43,6 +43,9 @@ As a user, I want to inspect what an agent did during a session so that I can un
 - Open the session timeline with estimated tokens selected when the session has
   token estimates. Point Taken #60.
   Codex session ID 01a207d0-dfad-7c01-89a6-e6ae815ea892.
+- Sort rows in Activity breakdown by estimated tokens in the selected range,
+  highest first. Point Taken #68.
+  Codex session ID 01a208da-a802-7092-8d93-a9bf938c907b.
 - Keep each inspector in an independent window. Let users browse other sessions
   while it is open.
   Codex session ID 01a20095-f346-7aa1-bffe-b63fc3b3d258.
