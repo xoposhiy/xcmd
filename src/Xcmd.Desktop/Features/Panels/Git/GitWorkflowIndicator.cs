@@ -2,7 +2,9 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Panels.Git;
@@ -22,9 +24,13 @@ internal sealed class GitWorkflowIndicator : TextBlock
     {
         this.cache = cache ?? (Application.Current as IWorkflowStatusProvider)?.WorkflowStatuses;
         IsVisible = false;
-        Margin = new Thickness(5, 0, 0, 0);
+        Margin = new Thickness(8, 0, 0, 0);
         VerticalAlignment = VerticalAlignment.Center;
-        FontSize = UiPalette.MetaSize;
+        FontFamily = new FontFamily("Consolas");
+        FontSize = UiPalette.BodySize;
+        FontWeight = FontWeight.SemiBold;
+        LineHeight = 18;
+        Foreground = UiPalette.Secondary;
     }
 
     internal async Task UpdateAsync(WorkflowTarget? current, bool poll)
@@ -33,8 +39,8 @@ internal sealed class GitWorkflowIndicator : TextBlock
         {
             target = current;
             lastRead = null;
-            Text = "";
-            IsVisible = false;
+            if (current == null) IsVisible = false;
+            else ShowStatus(current, "Unknown", "Waiting for the workflow status.");
         }
         if (current == null || !poll || cache == null) return;
         var read = cache.ReadAsync(current);
@@ -42,10 +48,24 @@ internal sealed class GitWorkflowIndicator : TextBlock
         lastRead = read;
         var result = await read;
         if (lastRead != read || target != current) return;
-        Text = result.Label.Length == 0 ? "" : "CI " + result.Label;
-        IsVisible = result.Label.Length > 0;
-        Foreground = result.Label switch { "Passed" => UiPalette.Success, "Failed" => UiPalette.Error, "Running" or "Pending" => UiPalette.Mark, _ => UiPalette.Secondary };
-        var description = $"GitHub Actions · {current.Repository} · {current.Ref}\n{result.Details}";
+        ShowStatus(current, result.Label, result.Details);
+    }
+
+    private void ShowStatus(WorkflowTarget current, string label, string details)
+    {
+        IsVisible = label.Length > 0;
+        Inlines!.Clear();
+        if (!IsVisible) return;
+        var (symbol, color) = label switch
+        {
+            "Passed" => ("●", UiPalette.Success),
+            "Failed" => ("×", UiPalette.Error),
+            "Running" or "Pending" => ("●", UiPalette.Mark),
+            _ => ("○", UiPalette.Mark)
+        };
+        Inlines.Add(new Run("CI: "));
+        Inlines.Add(new Run(symbol) { Foreground = color });
+        var description = $"GitHub Actions · {label} · {current.Repository} · {current.Ref}\n{details}";
         ToolTip.SetTip(this, description);
         AutomationProperties.SetName(this, description);
     }

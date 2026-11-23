@@ -42,7 +42,7 @@ public sealed class GitStatusView : Border
         MinWidth = 0,
         Padding = new Thickness(6, 0),
         BorderThickness = new Thickness(0),
-        Background = Brushes.Transparent,
+        Background = UiPalette.Raised,
         HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
         VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -80,10 +80,15 @@ public sealed class GitStatusView : Border
         ToolTip.SetTip(remote, "Repository has a remote");
         AutomationProperties.SetName(remote, "Repository has a remote");
         Height = 24; MaxWidth = 300; ClipToBounds = true; VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center; IsVisible = false;
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto,Auto"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }.WithFeedbackId("GitStatusView.grid");
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }.WithFeedbackId("GitStatusView.grid");
         grid.Children.Add(remote); Grid.SetColumn(branch, 1); grid.Children.Add(branch); Grid.SetColumn(state, 2); grid.Children.Add(state);
-        Grid.SetColumn(workflows, 3); grid.Children.Add(workflows);
-        Grid.SetColumn(arrow, 4); grid.Children.Add(arrow); ActionsButton.Content = grid; Child = ActionsButton;
+        Grid.SetColumn(arrow, 3); grid.Children.Add(arrow);
+        ActionsButton.Content = grid;
+        var indicators = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left }.WithFeedbackId("GitStatusView.indicators");
+        indicators.Children.Add(ActionsButton);
+        Grid.SetColumn(workflows, 1);
+        indicators.Children.Add(workflows);
+        Child = indicators;
         ActionsButton.Name = id + "GitActions";
         AutomationProperties.SetAutomationId(ActionsButton, id + ".git.actions");
         AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
@@ -208,12 +213,11 @@ public sealed class GitStatusView : Border
         ActionsButton.ContextMenu = value == null ? null : Actions;
         ActionsButton.Cursor = value == null ? null : new Cursor(StandardCursorType.Hand);
         arrow.IsVisible = value != null;
-        Background = value == null ? Brushes.Transparent : UiPalette.Raised;
         remote.IsVisible = value?.HasRemote == true;
         state.Inlines!.Clear(); statusText = "";
         if (value == null)
         {
-            Actions.Close(); branch.Text = ""; ToolTip.SetTip(this, null); ToolTip.SetTip(ActionsButton, null);
+            Actions.Close(); branch.Text = ""; ToolTip.SetTip(ActionsButton, null);
             AutomationProperties.SetName(this, ""); AutomationProperties.SetName(ActionsButton, ""); return;
         }
         branch.Text = value.Branch;
@@ -221,7 +225,6 @@ public sealed class GitStatusView : Border
         branch.Foreground = clean ? UiPalette.Success : UiPalette.Focus;
         AddCounts(value);
         var description = $"Git · {value.Branch} · {(clean ? "clean" : "changes")}\nWhole repository: {value.Staged} staged (+), {value.Changed} changed (~), {value.Untracked} untracked (?), {value.Deleted} deleted (−), {value.Conflicts} conflicts (!)\nUpstream: {value.Upstream ?? "not configured"} · {value.Ahead} ahead (↑), {value.Behind} behind (↓) · local status, no fetch";
-        ToolTip.SetTip(this, description);
         ToolTip.SetTip(ActionsButton, description + "\nClick for repository actions.");
         AutomationProperties.SetName(ActionsButton, "Repository actions · " + value.Branch);
         AutomationProperties.SetName(this, description);

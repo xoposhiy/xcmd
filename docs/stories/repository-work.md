@@ -32,6 +32,10 @@ that I can understand how my files relate to current repository work.
   more than one change type in the same status column.
   Feedback 2e4213d and 3a65f60. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
+- Show CI status beside the repository actions button. Keep the branch and
+  change counts inside the button. Point Taken #47 and #63.
+  Codex session ID 01a207d0-dfad-7c01-89a6-e6ae815ea892.
+
 ## SyncRepository
 
 As a user, I want to push and pull from the Git status menu so that I can

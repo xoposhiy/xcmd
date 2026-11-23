@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
+using Xcmd.Infrastructure;
 using Xcmd.Probe.Infrastructure;
 using static Xcmd.Probe.Infrastructure.AgentSessionFixture;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
@@ -12,6 +13,40 @@ public static class AgentSessionScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("agent-session-statistics", "One footer line shows the session count and the size of the selected conversation", async c =>
+        {
+            var codex = SessionStatisticsFixture.CodexTranscript(c.FixturePath, c.AgentSessions.Codex);
+            var claude = SessionStatisticsFixture.ClaudeTranscript(c.FixturePath, c.AgentSessions.Claude);
+            var codexStats = await SessionStatisticsReader.ReadAsync(codex, CancellationToken.None);
+            Equal(new SessionStatistics(2, 2, TimeSpan.FromMinutes(8), 1200, 64000, null, "test-model", 10_000_123), codexStats,
+                "Codex keeps the session total separate from the latest request and context limit");
+            var pending = new TaskCompletionSource<SessionStatistics?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            c.AgentSessions.Statistics = (row, token) => row.Agent == SessionAgent.Codex ? pending.Task : SessionStatisticsReader.ReadAsync(claude, token);
+            await ChooseAsync(c, Key.F1, "All Agent Sessions");
+            var bar = SessionStatisticsFixture.Bar(c.Window.Left);
+            Equal("Loading session statistics…", bar.Text, "The list is ready before its statistics");
+            await c.KeyAsync(Key.Down);
+            await WorkspaceProbe.WaitAsync(() => bar.Text?.Contains("claude-test", StringComparison.Ordinal) == true);
+            Equal("2 user prompts · 100k context tokens · claude-test", bar.Text, "The footer shows context usage in thousands");
+            Check(ToolTip.GetTip(bar)?.ToString()?.Contains($"Tokens in last request: {100_007:N0}", StringComparison.Ordinal) == true, "The details show the exact context count");
+            Check(ToolTip.GetTip(bar)?.ToString()?.Contains("Recorded cost: $2.75", StringComparison.Ordinal) == true, "Recorded cost is available in the details");
+            pending.SetResult(codexStats);
+            await c.UpdateLayoutAsync();
+            Check(bar.Text!.Contains("claude-test", StringComparison.Ordinal), "Late statistics cannot overwrite the current row");
+            await c.KeyAsync(Key.Up);
+            await WorkspaceProbe.WaitAsync(() => bar.Text?.Contains("test-model", StringComparison.Ordinal) == true);
+            Equal("2 user prompts · 10m tokens · test-model", bar.Text, "The footer shows the session total in millions");
+            Check(ToolTip.GetTip(bar)?.ToString()?.Contains($"Total tokens: {10_000_123:N0}", StringComparison.Ordinal) == true, "The details show the exact session total");
+            await c.ScreenshotAsync("session-statistics");
+            SessionStatisticsFixture.CheckFooter(c.Window.Left);
+            c.Window.Width = c.Window.MinWidth;
+            c.Window.SetScaleForTest(1.5);
+            await c.ScreenshotAsync("session-statistics-narrow");
+            SessionStatisticsFixture.CheckFooter(c.Window.Left);
+            c.AgentSessions.Statistics = (_, _) => throw new FileNotFoundException();
+            await c.KeyAsync(Key.Down);
+            Equal("Session statistics unavailable", bar.Text, "An unreadable transcript clears the previous metrics");
+        }),
         new("agent-session-reader-lease", "Readers start on demand and expire independently after the last request", async c =>
         {
             await using var fixture = new SessionReaderFixture();

@@ -61,11 +61,16 @@ public sealed class GitStatusReader : IGitStatusReader
             if (output == null) return null;
             var remotes = await RunAsync(root, ["remote", "-v"], timeout.Token).ConfigureAwait(false);
             var records = output.Split('\0');
-            var status = Parse(records, remotes ?? "") with { HasRemote = !string.IsNullOrWhiteSpace(remotes), Root = root };
+            var status = Parse(records, out var detached);
+            var workflow = await GitHubWorkflows.TargetAsync(remotes ?? "", status.Branch, status.Upstream, detached,
+                trackingRef => RunAsync(root, ["rev-parse", "--verify", "--quiet", trackingRef], timeout.Token)).ConfigureAwait(false);
             var paths = GitStatusPaths.Parse(records);
             var trackedIgnored = await RunAsync(root, ["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"], timeout.Token).ConfigureAwait(false);
             return status with
             {
+                HasRemote = !string.IsNullOrWhiteSpace(remotes),
+                Root = root,
+                WorkflowTarget = workflow,
                 Paths = paths.Changes,
                 IgnoredPaths = paths.Ignored,
                 TrackedIgnoredPaths = trackedIgnored?.Split('\0', StringSplitOptions.RemoveEmptyEntries) ?? []
@@ -121,7 +126,7 @@ public sealed class GitStatusReader : IGitStatusReader
         }
     }
 
-    private static GitStatus Parse(string[] records, string remotes)
+    private static GitStatus Parse(string[] records, out string? detached)
     {
         var branch = ""; var oid = "";
         string? upstream = null;
@@ -146,10 +151,10 @@ public sealed class GitStatusReader : IGitStatusReader
                 if (line[0] == '2') i++; // Rename source is a separate NUL-delimited path.
             }
         }
-        var detached = branch == "(detached)" ? oid : null;
+        detached = branch == "(detached)" ? oid : null;
         if (detached != null) branch = "detached " + oid[..Math.Min(8, oid.Length)];
         return new(branch, staged, changed, untracked, conflicts, ahead, behind)
-        { Deleted = deleted, Upstream = upstream, WorkflowTarget = GitHubWorkflows.Target(remotes, branch, upstream, detached) };
+        { Deleted = deleted, Upstream = upstream };
     }
 
     private static (int Deleted, int Staged, int Changed) ChangeCounts(string line) =>

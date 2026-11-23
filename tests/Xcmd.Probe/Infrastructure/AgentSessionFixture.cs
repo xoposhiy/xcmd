@@ -17,6 +17,9 @@ internal sealed class AgentSessionFixture : IAgentSessions
         "Add session columns", @"C:\work\panel", DateTimeOffset.UtcNow.AddMinutes(-5));
 
     private AgentSession[] older = [];
+    internal Func<AgentSession, CancellationToken, Task<SessionStatistics?>> Statistics { get; set; } =
+        (_, _) => Task.FromResult<SessionStatistics?>(null);
+    public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) => Statistics(session, token);
     private TaskCompletionSource? historyReady;
     internal List<(SessionAgent Agent, SessionListScope Scope)> Reads { get; } = [];
     internal void AddOlderSessions(int count) => older = Enumerable.Range(1, count).Select(i => Codex with

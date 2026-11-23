@@ -1,17 +1,19 @@
 // @implements SeeRepositoryState
 namespace Xcmd.Core;
 
-public sealed record WorkflowTarget(string Repository, string Ref, bool IsCommit);
+public sealed record WorkflowTarget(string Repository, string Ref, bool IsCommit, string? TrackingCommit = null);
 public sealed record WorkflowRun(string Workflow, string Name, string Commit, string Status, string Conclusion);
 public sealed record WorkflowStatus(string Label, string Details, TimeSpan RefreshAfter)
 {
     public static WorkflowStatus Unavailable => new("Unavailable", "Could not read GitHub Actions. Check the connection and GitHub CLI sign-in.", TimeSpan.FromMinutes(5));
-    public static WorkflowStatus Empty(bool hasWorkflows) => new(hasWorkflows ? "No runs" : "", "No workflow runs for this ref.", TimeSpan.FromMinutes(15));
+    public static WorkflowStatus Empty(bool hasWorkflows) => hasWorkflows
+        ? new("Unknown", "No workflow runs for this commit yet.", TimeSpan.FromSeconds(30))
+        : new("", "This repository has no workflows.", TimeSpan.FromMinutes(15));
 
-    public static WorkflowStatus FromRuns(IReadOnlyList<WorkflowRun> runs)
+    public static WorkflowStatus FromRuns(string commit, IEnumerable<WorkflowRun> runs)
     {
-        var commit = runs[0].Commit;
         var latest = runs.Where(run => run.Commit == commit).DistinctBy(run => run.Workflow).ToArray();
+        if (latest.Length == 0) return Empty(true);
         var pending = latest.Any(run => run.Status != "completed");
         var failed = latest.Any(run => run.Conclusion is "failure" or "timed_out" or "action_required" or "startup_failure");
         var label = failed ? "Failed" : pending ? PendingLabel(latest) : CompletedLabel(latest);

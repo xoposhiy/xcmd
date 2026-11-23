@@ -9,6 +9,7 @@ public enum SessionActivity { Unknown, Working, Waiting, Idle, Completed, Failed
 public sealed record AgentSession(SessionAgent Agent, Guid Id, string Topic, string Directory, DateTimeOffset Updated)
 {
     public string ProjectDirectory { get; init; } = Directory;
+    public string? TranscriptPath { get; init; }
     public string ProjectName => Path.GetFileName(Path.TrimEndingDirectorySeparator(ProjectDirectory)) is { Length: > 0 } name ? name : ProjectDirectory;
     public SessionActivity Activity { get; init; }
     public static string AgentName(SessionAgent agent) => agent == SessionAgent.Codex ? "Codex" : "Claude Code";
@@ -28,6 +29,7 @@ public sealed record AgentSession(SessionAgent Agent, Guid Id, string Topic, str
 
 public interface IAgentSessions
 {
+    Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token);
     Task ListAsync(SessionAgent agent, SessionListScope scope, Func<IReadOnlyList<AgentSession>, Task> showPage, CancellationToken token);
     ExternalLaunch Resume(AgentSession session);
 }

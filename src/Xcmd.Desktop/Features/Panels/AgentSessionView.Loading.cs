@@ -1,5 +1,6 @@
 // @implements NavigatePanels, ViewRecentAgentSessions
 using System.Diagnostics;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using Xcmd.Core;
 
@@ -21,6 +22,7 @@ internal sealed partial class AgentSessionView
     internal void Cancel()
     {
         source = null;
+        ShowStatistics();
         loading?.Cancel();
         loading = null;
         refreshQueued = false;
@@ -41,6 +43,7 @@ internal sealed partial class AgentSessionView
         historyLoaded.Clear();
         userSelected = false;
         status.Text = "Loading sessions…";
+        ToolTip.SetTip(status, null);
         updatedTimeTimer.Start();
         WatchFocus(active);
         return ReadAsync(SessionListScope.History);
@@ -132,9 +135,15 @@ internal sealed partial class AgentSessionView
 
         void UpdateStatus()
         {
-            var count = sessions.Rows.Count == 0 && pending == 0 && errors.Count == 0 ? "No sessions found" : $"{sessions.Rows.Count:N0} sessions";
+            var count = sessions.Rows.Count switch
+            {
+                0 when pending == 0 && errors.Count == 0 => "No sessions found",
+                1 => "1 session",
+                var total => $"{total:N0} sessions"
+            };
             var text = scope == SessionListScope.History && pending > 0 ? count + " · Loading…" : count;
             status.Text = string.Join(" · ", errors.Values.Prepend(text));
+            ToolTip.SetTip(status, status.Text);
         }
     }
 }

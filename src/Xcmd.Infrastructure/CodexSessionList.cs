@@ -35,7 +35,7 @@ internal sealed class CodexSessionList(Process process, CancellationToken token)
             var name = row.TryGetProperty("name", out var title) ? title.GetString() : null;
             return new AgentSession(SessionAgent.Codex, row.GetProperty("id").GetGuid(), string.IsNullOrWhiteSpace(name) ? row.GetProperty("preview").GetString() ?? "" : name,
                 row.GetProperty("cwd").GetString() ?? "", DateTimeOffset.FromUnixTimeSeconds(row.GetProperty("updatedAt").GetInt64()))
-            { Activity = Activity(row) };
+            { Activity = Activity(row), TranscriptPath = row.Str("path") is { Length: > 0 } path ? path : null };
         }).ToArray();
         if (rows.Length != 0) await showPage(rows).ConfigureAwait(false);
         var next = page.GetProperty("nextCursor").GetString();

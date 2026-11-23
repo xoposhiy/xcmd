@@ -26,7 +26,7 @@ public static class GitScenarios
             var cache = new WorkflowStatusCache(_ => { Interlocked.Increment(ref calls); return first.Task; }, clock);
             var a = cache.ReadAsync(target);
             var b = cache.ReadAsync(target);
-            var active = WorkflowStatus.FromRuns([new("1", "Build", "current", "in_progress", ""), new("2", "Tests", "current", "completed", "failure"),
+            var active = WorkflowStatus.FromRuns("current", [new("1", "Build", "current", "in_progress", ""), new("2", "Tests", "current", "completed", "failure"),
                 new("2", "Tests", "older", "completed", "success")]);
             first.SetResult(active);
             await a;
@@ -38,9 +38,9 @@ public static class GitScenarios
             Equal(1, calls, "Repeated directory reads reuse the cached result");
             clock.Advance(TimeSpan.FromSeconds(1)); await cache.ReadAsync(target);
             Equal(2, calls, "A visible panel refreshes when the active interval expires");
-            Equal(TimeSpan.FromMinutes(5), WorkflowStatus.FromRuns([new("1", "Build", "current", "completed", "success")]).RefreshAfter, "Completed work polls less often");
+            Equal(TimeSpan.FromMinutes(5), WorkflowStatus.FromRuns("current", [new("1", "Build", "current", "completed", "success")]).RefreshAfter, "Completed work polls less often");
             Equal("", WorkflowStatus.Empty(false).Label, "Repositories without workflows have no badge");
-            Equal("No runs", WorkflowStatus.Empty(true).Label, "An unused workflow is distinct from an unavailable service");
+            Equal("Unknown", WorkflowStatus.Empty(true).Label, "A commit with no runs has an unknown result");
         }),
         new("git-workflows-panel", "A GitHub remote shows branch results and late responses cannot follow panel navigation", async c =>
         {
@@ -59,17 +59,61 @@ public static class GitScenarios
                 var target = await requested.Task.WaitAsync(TimeSpan.FromSeconds(10));
                 Equal(new WorkflowTarget("github.com/team/project", "main", false), target, "The SSH remote and local branch select the GitHub query");
                 view.SetDirectory("");
-                response.SetResult(WorkflowStatus.FromRuns([new("1", "Verify", "abcdef12", "completed", "success")]));
+                response.SetResult(WorkflowStatus.FromRuns("abcdef12", [new("1", "Verify", "abcdef12", "completed", "success")]));
                 await c.UpdateLayoutAsync();
-                Check(!WorkflowFixture.Indicator(view).IsVisible, "A late result stays hidden outside the repository");
+                Check(WorkflowFixture.Indicator(view)?.IsVisible != true, "A late result stays hidden outside the repository");
                 view.SetDirectory(root);
-                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Indicator(view).Text == "CI Passed");
-                var indicator = WorkflowFixture.Indicator(view);
-                Check(indicator.IsVisible && ToolTip.GetTip(indicator)?.ToString()?.Contains("Verify: success", StringComparison.Ordinal) == true,
-                    "The repository button displays the result and individual workflow details");
+                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Passed", "●"));
+                var indicator = WorkflowFixture.Indicator(view)!;
+                Check(WorkflowFixture.Details(view).Contains("Verify: success", StringComparison.Ordinal), "The CI indicator describes each workflow");
                 await c.ScreenshotAsync("git-workflow-status", host);
+                File.WriteAllText(Path.Combine(root, "untracked.txt"), "change");
+                await GitFixture.RefreshAsync(view);
+                view.MaxWidth = 190;
+                host.SetScaleForTest(1.5);
+                await c.ScreenshotAsync("git-workflow-changes-150", host);
+                await c.ClickAsync(indicator, target: host);
+                Check(!view.IsMenuOpen, "Clicking CI leaves the repository menu closed");
+                await c.ClickAsync(view.ActionsButton, target: host);
+                Check(view.IsMenuOpen, "The adjacent branch and change counts open repository actions");
             }
-            finally { host.Close(); GitFixture.AllowCleanup(root); }
+            finally { view.SetDirectory(""); host.Close(); await view.PendingWork; GitFixture.AllowCleanup(root); }
+        }),
+        new("git-workflows-remote-tip", "The badge follows the remote commit after a push and ignores runs for older commits", async c =>
+        {
+            var root = Directory.CreateDirectory(Path.Combine(c.FixturePath, "remote-tip")).FullName;
+            await GitFixture.InitializeAsync(root);
+            await GitFixture.RunAsync(root, "remote", "add", "origin", "https://github.com/team/project.git");
+            await WorkflowFixture.AdvanceRemoteAsync(root, "first");
+            var remote = new WorkflowRemote();
+            var clock = new WorkflowFixture();
+            var cache = new WorkflowStatusCache(target => GitHubWorkflows.ReadAsync(target, remote.RunAsync), clock);
+            var view = new GitStatusView("workflow-tip", workflowCache: cache);
+            var host = new Window { Content = view, Width = 450, Height = 180 };
+            try
+            {
+                host.Show(); host.Activate();
+                view.SetDirectory(root);
+                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Passed", "●"));
+                var previous = view.Status!.WorkflowTarget!.TrackingCommit;
+                remote.DelayTip();
+                await WorkflowFixture.AdvanceRemoteAsync(root, "second");
+                await GitFixture.RefreshAsync(view);
+                Check(view.Status!.WorkflowTarget!.TrackingCommit != previous, "A push changes the cache key before the completed run expires");
+                Check(WorkflowFixture.Shows(view, "Unknown", "○"), "The old pass clears while the new tip is being checked");
+                remote.ReturnTip("next");
+                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Details(view).Contains("No workflow runs", StringComparison.Ordinal));
+                Equal("next", remote.RequestedCommit, "Query workflow runs for the live remote commit");
+                Check(WorkflowFixture.Shows(view, "Unknown", "○"), "An old successful run cannot turn the new tip green");
+                await c.ScreenshotAsync("git-workflow-unknown", host);
+                remote.RunCommit = "next";
+                remote.Conclusion = "failure";
+                clock.Advance(TimeSpan.FromSeconds(30));
+                await GitFixture.RefreshAsync(view);
+                await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Failed", "×"));
+                await c.ScreenshotAsync("git-workflow-failed", host);
+            }
+            finally { remote.ReturnTip("next"); view.SetDirectory(""); host.Close(); await view.PendingWork; GitFixture.AllowCleanup(root); }
         }),
         new("git-panel-status", "Repository branch and compact status share the path header without changing table geometry", async c =>
         {

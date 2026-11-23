@@ -29,6 +29,9 @@ public sealed class AgentSessions : IAgentSessions, IAsyncDisposable
 
     public static string[] Drives() => Environment.GetLogicalDrives();
 
+    public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) =>
+        SessionStatisticsReader.ReadAsync(session, token);
+
     public ExternalLaunch Resume(AgentSession session)
     {
         if (!Directory.Exists(session.Directory)) throw new IOException("The session working folder is unavailable: " + session.Directory);

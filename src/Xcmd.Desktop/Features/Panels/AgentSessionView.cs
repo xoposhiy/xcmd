@@ -13,7 +13,8 @@ internal sealed partial class AgentSessionView : Grid
 {
     internal TextBlock Heading { get; } = new TextBlock { Margin = UiPalette.CellPadding, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("AgentSessionView.heading");
     internal PanelTable Table { get; } = new PanelTable().WithFeedbackId("AgentSessionView.table");
-    private readonly TextBlock status = new TextBlock { Margin = new Thickness(8, 4), Foreground = UiPalette.Secondary, TextWrapping = TextWrapping.Wrap, FontSize = UiPalette.MetaSize }.WithFeedbackId("AgentSessionView.status");
+    private readonly SessionStatisticsBar statistics = new SessionStatisticsBar().WithFeedbackId("AgentSessionView.statistics");
+    private readonly TextBlock status = new TextBlock { Foreground = UiPalette.Secondary, TextTrimming = TextTrimming.CharacterEllipsis, FontSize = UiPalette.MetaSize, VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("AgentSessionView.status");
     private readonly DispatcherTimer updatedTimeTimer = new() { Interval = TimeSpan.FromMinutes(1) };
     private event Action? UpdateTimes;
     private bool updatingRows;
@@ -24,9 +25,14 @@ internal sealed partial class AgentSessionView : Grid
         poll.Tick += PollRecent;
         updatedTimeTimer.Tick += (_, _) => UpdateTimes?.Invoke();
         Background = UiPalette.AgentSessions;
-        RowDefinitions = new RowDefinitions("34,*,Auto");
+        RowDefinitions = new RowDefinitions("34,*,29");
         Table.Background = Background;
-        Table.SelectionChanged += (_, _) => { if (!updatingRows) userSelected = true; };
+        Table.SelectionChanged += (_, _) =>
+        {
+            if (updatingRows) return;
+            userSelected = true;
+            ShowStatistics();
+        };
         AddColumn("Project", new GridLength(1, GridUnitType.Star), row => Cell(row.ProjectName, tip: row.Directory));
         AddColumn("Topic", new GridLength(2, GridUnitType.Star), TopicCell);
         AddColumn("Agent", new GridLength(96), row => Cell(AgentSession.AgentName(row.Agent),
@@ -34,7 +40,18 @@ internal sealed partial class AgentSessionView : Grid
         AddColumn("Updated", new GridLength(132), UpdatedCell);
         Children.Add(Heading);
         SetRow(Table, 1); Children.Add(Table);
-        SetRow(status, 2); Children.Add(status);
+        var line = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 12 }.WithFeedbackId("AgentSessionView.footerLine");
+        line.Children.Add(statistics);
+        SetColumn(status, 1); line.Children.Add(status);
+        var footer = new Border
+        {
+            Child = line,
+            Padding = UiPalette.CellPadding,
+            BorderBrush = UiPalette.Divider,
+            BorderThickness = new Thickness(0, 1, 0, 0),
+            ClipToBounds = true
+        }.WithFeedbackId("AgentSessionView.footer");
+        SetRow(footer, 2); Children.Add(footer);
     }
 
     private void AddColumn(string title, GridLength width, Func<AgentSession, TextBlock> cell)
@@ -71,7 +88,10 @@ internal sealed partial class AgentSessionView : Grid
             if (focus && selected != current) Table.FocusRow(Table.SelectedIndex, scrollIntoView: false);
         }
         finally { updatingRows = false; }
+        ShowStatistics();
     }
+
+    private void ShowStatistics() => _ = statistics.ShowAsync(Table.SelectedItem as AgentSession, source);
 
     private static TextBlock TopicCell(AgentSession row)
     {
