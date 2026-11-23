@@ -1,0 +1,306 @@
+{
+  "previous": {
+    "point-taken-L18": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L20": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L19": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L22": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L21": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L24": {
+      "target": "docs",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L28": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L31": {
+      "target": "tests",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L29": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L30": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L36": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L32": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L35": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L39": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L41": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L40": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L42": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L44": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L48": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "point-taken-L49": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L52": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L51": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L53": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L50": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L19": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L24": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L31": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L38": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L55": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L60": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    }
+  },
+  "candidate": {
+    "point-taken-L18": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L19": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L20": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L21": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L22": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L24": {
+      "target": "docs",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L28": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L29": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L30": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L31": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L32": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L35": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L36": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L39": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L40": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L41": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L42": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L44": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L48": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "point-taken-L49": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L50": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L51": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "point-taken-L52": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "point-taken-L53": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "reviewer-L19": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L24": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L31": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L38": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L55": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "reviewer-L60": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    }
+  }
+}

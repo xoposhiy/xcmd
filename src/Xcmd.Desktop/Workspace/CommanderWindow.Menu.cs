@@ -1,4 +1,4 @@
-// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, RecognizeFileTypes, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback, ViewRecentAgentSessions, ResumeAgentSession
+// @implements NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, ReadablePanels, RecognizeFileTypes, DiscoverShortcuts, MeasureFolders, RenameEntry, CreateFolder, CreateFile, TransferEntries, DuplicateEntry, ClipboardTransfer, DeleteEntries, QueueOperations, FindFiles, SearchResultPanel, OpenViewers, QuickViewFile, BrowseArchives, OpenExternalTool, RunCommand, ReusePaths, ComparePanelFiles, BrowseHistory, InspectCommitChanges, ReadDiff, ReportControl, KeepFeedback, ViewRecentAgentSessions, ResumeAgentSession, InspectAgentSession
 using Avalonia.Controls;
 using Avalonia.Input;
 using Xcmd.Core;
@@ -43,7 +43,7 @@ public sealed partial class CommanderWindow
             {
                 new MenuItem() { Header = "File", ItemsSource = (MenuItem[])
                 [
-                    Item("View file or commit", ViewCurrent, new(Key.F3), historyAllowed: true),
+                    Item("View file, commit or session", ViewCurrent, new(Key.F3), historyAllowed: true, sessionsAllowed: true),
                     Item("Quick view in other panel", ToggleQuickView, new(Key.Q, KeyModifiers.Control)),
                     Item("Find files", FileSearch.Open, new(Key.F7, KeyModifiers.Alt)),
                     Item("Edit in Notepad++", () => Execute(EditCurrentAsync), new(Key.F4)),

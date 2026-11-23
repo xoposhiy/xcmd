@@ -1,0 +1,1006 @@
+{
+  "previous": {
+    "v1-L117": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v1-L124": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v1-L138": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L139": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L148": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v1-L161": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L162": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L187": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L192": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L193": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L216": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L217": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L218": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L236": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L237": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L238": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L256": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v1-L262": {
+      "target": "tooling",
+      "action": "write",
+      "local": false
+    },
+    "v1-L264": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L282": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L283": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L284": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L300": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v1-L307": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L308": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v1-L324": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L325": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L326": {
+      "target": "mixed",
+      "action": "other",
+      "local": false
+    },
+    "v1-L333": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v1-L334": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v2-L18": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "v2-L19": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L20": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L21": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L29": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L26": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L31": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L28": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L30": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L27": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L36": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L38": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L39": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L37": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L46": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L49": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L48": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L47": {
+      "target": "tests",
+      "action": "read",
+      "local": false
+    },
+    "v2-L58": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L62": {
+      "target": "tests",
+      "action": "other",
+      "local": false
+    },
+    "v2-L61": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v2-L81": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L92": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L93": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L94": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "v2-L109": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L130": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "v2-L139": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L140": {
+      "target": "git",
+      "action": "read",
+      "local": false
+    },
+    "v2-L145": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L154": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L171": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    },
+    "v2-L209": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L211": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L208": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "v2-L210": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L224": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L225": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L226": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L227": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L242": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L251": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L260": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L261": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L270": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L271": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L280": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L282": {
+      "target": "tests",
+      "action": "other",
+      "local": false
+    },
+    "v2-L281": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L295": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L296": {
+      "target": "docs",
+      "action": "write",
+      "local": true
+    },
+    "v2-L297": {
+      "target": "docs",
+      "action": "write",
+      "local": false
+    },
+    "v2-L298": {
+      "target": "docs",
+      "action": "write",
+      "local": true
+    },
+    "v2-L307": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v2-L322": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    },
+    "v2-L362": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    },
+    "v2-L367": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L366": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v2-L390": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L391": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L392": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L393": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L404": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "v2-L419": {
+      "target": "mixed",
+      "action": "other",
+      "local": false
+    },
+    "v2-L438": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L463": {
+      "target": "git",
+      "action": "read",
+      "local": false
+    },
+    "v2-L464": {
+      "target": "git",
+      "action": "read",
+      "local": false
+    },
+    "v2-L465": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L490": {
+      "target": "git",
+      "action": "write",
+      "local": false
+    },
+    "v2-L503": {
+      "target": "git",
+      "action": "write",
+      "local": false
+    }
+  },
+  "candidate": {
+    "v1-L117": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L124": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v1-L138": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "v1-L139": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L148": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L161": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L162": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L187": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L192": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L193": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L216": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L217": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L218": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L236": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L237": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L238": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L256": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v1-L262": {
+      "target": "tooling",
+      "action": "write",
+      "local": false
+    },
+    "v1-L264": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L282": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v1-L283": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L284": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L300": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v1-L307": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L308": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v1-L324": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v1-L325": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L326": {
+      "target": "mixed",
+      "action": "other",
+      "local": false
+    },
+    "v1-L333": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "v1-L334": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "v2-L18": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "v2-L19": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L20": {
+      "target": "docs",
+      "action": "read",
+      "local": true
+    },
+    "v2-L21": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L29": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L26": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L31": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L28": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L30": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "v2-L27": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L36": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L38": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L39": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L37": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L46": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L49": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L48": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L47": {
+      "target": "tests",
+      "action": "read",
+      "local": false
+    },
+    "v2-L58": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L62": {
+      "target": "tests",
+      "action": "other",
+      "local": false
+    },
+    "v2-L61": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L81": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L92": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "v2-L93": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L94": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L109": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L130": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L139": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L140": {
+      "target": "git",
+      "action": "read",
+      "local": false
+    },
+    "v2-L145": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L154": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L171": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    },
+    "v2-L209": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L211": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L208": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "v2-L210": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L224": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L225": {
+      "target": "source",
+      "action": "read",
+      "local": true
+    },
+    "v2-L226": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L227": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L242": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L251": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L260": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L261": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L270": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L271": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L280": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L282": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "v2-L281": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "v2-L295": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L296": {
+      "target": "docs",
+      "action": "write",
+      "local": true
+    },
+    "v2-L297": {
+      "target": "docs",
+      "action": "write",
+      "local": true
+    },
+    "v2-L298": {
+      "target": "docs",
+      "action": "write",
+      "local": true
+    },
+    "v2-L307": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "v2-L322": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    },
+    "v2-L362": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L367": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "v2-L366": {
+      "target": "tooling",
+      "action": "read",
+      "local": false
+    },
+    "v2-L390": {
+      "target": "tooling",
+      "action": "write",
+      "local": true
+    },
+    "v2-L391": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L392": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L393": {
+      "target": "source",
+      "action": "write",
+      "local": true
+    },
+    "v2-L404": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "v2-L419": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "v2-L438": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "v2-L463": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "v2-L464": {
+      "target": "git",
+      "action": "read",
+      "local": true
+    },
+    "v2-L465": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "v2-L490": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "v2-L503": {
+      "target": "git",
+      "action": "write",
+      "local": false
+    }
+  }
+}

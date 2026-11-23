@@ -1,0 +1,125 @@
+{
+  "model": "gpt-6.1-terra",
+  "reasoning_effort": "medium",
+  "independent_runs_per_trace": 2,
+  "reviews_sha256": "b1222eea8ef04e6cd0a0d961c9bebbca4d7a582a0941e88675571e6936a8c05b",
+  "tool_calls_sha256": "06977ac5578ec15b7d87019d0dc20b28b4c7a56204637ee676747292f170da70",
+  "scores": {
+    "item": {
+      "total": {
+        "calls": 412,
+        "exact": 342,
+        "disjoint": 29,
+        "mean_jaccard": 0.8796925566343042
+      },
+      "sessions": {
+        "point": {
+          "calls": 44,
+          "exact": 41,
+          "disjoint": 0,
+          "mean_jaccard": 0.9583333333333334
+        },
+        "xcmd": {
+          "calls": 48,
+          "exact": 48,
+          "disjoint": 0,
+          "mean_jaccard": 1.0
+        },
+        "v1": {
+          "calls": 33,
+          "exact": 32,
+          "disjoint": 1,
+          "mean_jaccard": 0.9696969696969697
+        },
+        "v2": {
+          "calls": 70,
+          "exact": 60,
+          "disjoint": 1,
+          "mean_jaccard": 0.9038095238095238
+        },
+        "point-taken": {
+          "calls": 60,
+          "exact": 51,
+          "disjoint": 0,
+          "mean_jaccard": 0.9372222222222222
+        },
+        "reviewer": {
+          "calls": 6,
+          "exact": 2,
+          "disjoint": 0,
+          "mean_jaccard": 0.7555555555555555
+        },
+        "fresh": {
+          "calls": 46,
+          "exact": 28,
+          "disjoint": 14,
+          "mean_jaccard": 0.6452898550724637
+        },
+        "reserve": {
+          "calls": 105,
+          "exact": 80,
+          "disjoint": 13,
+          "mean_jaccard": 0.8242857142857143
+        }
+      }
+    },
+    "model": {
+      "total": {
+        "calls": 247,
+        "exact": 166,
+        "disjoint": 9,
+        "mean_jaccard": 0.8279352226720648
+      },
+      "sessions": {
+        "point": {
+          "calls": 26,
+          "exact": 25,
+          "disjoint": 0,
+          "mean_jaccard": 0.9871794871794872
+        },
+        "xcmd": {
+          "calls": 23,
+          "exact": 22,
+          "disjoint": 0,
+          "mean_jaccard": 0.9826086956521739
+        },
+        "v1": {
+          "calls": 49,
+          "exact": 34,
+          "disjoint": 2,
+          "mean_jaccard": 0.8846938775510204
+        },
+        "v2": {
+          "calls": 53,
+          "exact": 25,
+          "disjoint": 2,
+          "mean_jaccard": 0.6597484276729559
+        },
+        "point-taken": {
+          "calls": 21,
+          "exact": 14,
+          "disjoint": 0,
+          "mean_jaccard": 0.876984126984127
+        },
+        "reviewer": {
+          "calls": 6,
+          "exact": 2,
+          "disjoint": 0,
+          "mean_jaccard": 0.7555555555555555
+        },
+        "fresh": {
+          "calls": 22,
+          "exact": 11,
+          "disjoint": 4,
+          "mean_jaccard": 0.6575757575757576
+        },
+        "reserve": {
+          "calls": 47,
+          "exact": 33,
+          "disjoint": 1,
+          "mean_jaccard": 0.8617021276595744
+        }
+      }
+    }
+  }
+}

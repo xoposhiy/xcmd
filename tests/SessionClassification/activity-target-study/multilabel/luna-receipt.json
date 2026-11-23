@@ -1,0 +1,11 @@
+{
+  "packet_sha256": "d36e38808fbd9cefe63511216c67cdb974babdc304e77445ecf54f918d07dce9",
+  "prompt_sha256": "855f9fa5798a5b6504842dc89d04f7987729cbca28327a520b7b83fc2f359156",
+  "prediction_sha256": "926d59f48ad25a3265a98c28fcc5158fdcb19582f408a760f611adccfed947b6",
+  "usage": {
+    "usd": 0.002872900000000001,
+    "requests": 31,
+    "input": 20469,
+    "output": 1652
+  }
+}

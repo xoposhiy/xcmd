@@ -20,6 +20,12 @@ internal static class Program
 {
     public static int Main(string[] args)
     {
+        if (args.FirstOrDefault() is "--evaluate-tool-classification-live" or "--read-classification-fixture")
+        {
+            if (args.Length != 4) { Console.Error.WriteLine("Expected a transcript path, project and cache directory."); return 2; }
+            return ToolClassificationEvaluation.RunAsync(args[1], args[2], args[3], args[0] == "--evaluate-tool-classification-live").GetAwaiter().GetResult();
+        }
+        if (args is ["--evaluate-file-reads", var folder, var split]) return LunaEvaluation.RunAsync(folder, split).GetAwaiter().GetResult();
         if (args.FirstOrDefault() == "--startup-host") return StartupProcessHost.Run(args.Skip(1).ToArray());
         if (args.FirstOrDefault() == "--lifecycle-host") return LifecycleProcessHost.Run(args.Skip(1).ToArray());
         return RunScenarios(args);
@@ -55,6 +61,7 @@ internal static class Program
         scenarios = scenarios.Concat(FileLockScenarios.All).ToArray();
         scenarios = scenarios.Concat(MainKeyboardScenarios.All).ToArray();
         scenarios = scenarios.Concat(AgentSessionScenarios.All).ToArray();
+        scenarios = scenarios.Concat(SessionInspectorScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitCommitScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitHistoryScenarios.All).ToArray();
         scenarios = scenarios.Concat(GitUsabilityFixScenarios.All).ToArray();

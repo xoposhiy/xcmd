@@ -1,4 +1,4 @@
-// @tests NavigatePanels, ViewRecentAgentSessions, ResumeAgentSession
+// @tests NavigatePanels, ViewRecentAgentSessions, ResumeAgentSession, InspectAgentSession
 using Avalonia.Controls;
 using Avalonia;
 using Avalonia.Input;
@@ -21,6 +21,9 @@ internal sealed class AgentSessionFixture : IAgentSessions
         (_, _) => Task.FromResult<SessionStatistics?>(null);
     public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) => Statistics(session, token);
     private TaskCompletionSource? historyReady;
+    internal Func<AgentSession, CancellationToken, Task<SessionTrace>> Inspector { get; set; } =
+        (_, _) => throw new FileNotFoundException("The local transcript is missing.");
+    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) => Inspector(session, token);
     internal List<(SessionAgent Agent, SessionListScope Scope)> Reads { get; } = [];
     internal void AddOlderSessions(int count) => older = Enumerable.Range(1, count).Select(i => Codex with
     {

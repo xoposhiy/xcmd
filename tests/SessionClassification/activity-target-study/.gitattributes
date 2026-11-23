@@ -1,0 +1,5 @@
+# The study receipts hash the original Windows line endings.
+validation/*.json text eol=crlf
+context/study/*.json text eol=crlf
+context/literal-study/*.json text eol=crlf
+*.zip binary

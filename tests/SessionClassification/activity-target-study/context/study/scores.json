@@ -1,0 +1,82 @@
+{
+  "development": {
+    "previous": {
+      "n": 92,
+      "target": 91,
+      "action": 92,
+      "pair": 91,
+      "local": 80,
+      "local_correct": 80
+    },
+    "candidate": {
+      "n": 92,
+      "target": 90,
+      "action": 92,
+      "pair": 90,
+      "local": 80,
+      "local_correct": 80
+    },
+    "fixed": 0,
+    "lost": 1
+  },
+  "extra": {
+    "previous": {
+      "n": 30,
+      "target": 12,
+      "action": 29,
+      "pair": 12,
+      "local": 5,
+      "local_correct": 5
+    },
+    "candidate": {
+      "n": 30,
+      "target": 26,
+      "action": 30,
+      "pair": 26,
+      "local": 23,
+      "local_correct": 23
+    },
+    "fixed": 16,
+    "lost": 2
+  },
+  "previous": {
+    "previous": {
+      "n": 100,
+      "target": 51,
+      "action": 84,
+      "pair": 50,
+      "local": 17,
+      "local_correct": 17
+    },
+    "candidate": {
+      "n": 100,
+      "target": 46,
+      "action": 85,
+      "pair": 45,
+      "local": 26,
+      "local_correct": 25
+    },
+    "fixed": 5,
+    "lost": 10
+  },
+  "fresh": {
+    "previous": {
+      "n": 32,
+      "target": 8,
+      "action": 29,
+      "pair": 8,
+      "local": 0,
+      "local_correct": 0
+    },
+    "candidate": {
+      "n": 32,
+      "target": 8,
+      "action": 28,
+      "pair": 8,
+      "local": 5,
+      "local_correct": 1
+    },
+    "fixed": 4,
+    "lost": 4
+  }
+}

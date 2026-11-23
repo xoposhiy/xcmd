@@ -1,0 +1,382 @@
+{
+  "models": {
+    "terra": "gpt-6.1-terra",
+    "luna": "gpt-6-luna"
+  },
+  "reasoning_effort": "medium",
+  "review_threads": {
+    "point": {
+      "terra": "01a2058e-cda1-72c0-821e-e91c9b62622c",
+      "luna": "01a2058e-b1f8-78e3-ac16-bdd0065ee96a"
+    },
+    "xcmd": {
+      "terra": "01a2058d-a9c1-7bc1-a95b-260c8ecb0bde",
+      "luna": "01a2058d-5f7d-7360-b1d6-949f54038aaf"
+    },
+    "v2": {
+      "terra": "01a2058a-fa0f-7fd0-afaf-cc0302d3a289",
+      "luna": "01a2058c-2cd6-7b01-b52c-07da3ac00658"
+    },
+    "point-taken": {
+      "terra": "01a2058c-463d-7691-ba5a-df0bff85a198",
+      "luna": "01a2058d-0871-7a70-8e51-ad8276930cd3"
+    },
+    "klava-sorting": {
+      "terra": "01a2058f-e573-7bb2-bf33-a4e93299837b",
+      "luna": "01a2058e-f6bb-78b2-8abb-452c22308b68"
+    },
+    "digester-recovery": {
+      "terra": "01a2058a-c3e3-7240-bd4a-19c19a2ec3d3",
+      "luna": "01a2058a-de8a-7e20-89b5-9cff70036878"
+    }
+  },
+  "repeated_pairs_merged": {
+    "luna/digester-recovery.jsonl": [
+      "digester-recovery-L74",
+      "digester-recovery-L202"
+    ]
+  },
+  "followup": "The same reviewers checked their own summaries and concrete objects against the raw calls in luna/v2 and terra/digester-recovery. They did not see the other review. The first pass is preserved.",
+  "results": {
+    "guide_sha256": "21c476f570e82030a3a0210dbf9da8878295aabc20d3c7e3f55aace71a2d42da",
+    "archive_sha256": "47f435cc4f13d250fba9bf93e8e673602191e16b2c8f82847095996c42e95925",
+    "agreement": {
+      "total": {
+        "calls": 335,
+        "exact": 275,
+        "disjoint": 16,
+        "mean_jaccard": 0.8888557213930348
+      },
+      "sessions": {
+        "point": {
+          "calls": 44,
+          "exact": 40,
+          "disjoint": 4,
+          "mean_jaccard": 0.9090909090909091
+        },
+        "xcmd": {
+          "calls": 48,
+          "exact": 44,
+          "disjoint": 2,
+          "mean_jaccard": 0.9375
+        },
+        "v2": {
+          "calls": 70,
+          "exact": 50,
+          "disjoint": 1,
+          "mean_jaccard": 0.8480952380952381
+        },
+        "point-taken": {
+          "calls": 60,
+          "exact": 45,
+          "disjoint": 5,
+          "mean_jaccard": 0.8402777777777778
+        },
+        "klava-sorting": {
+          "calls": 42,
+          "exact": 31,
+          "disjoint": 4,
+          "mean_jaccard": 0.825
+        },
+        "digester-recovery": {
+          "calls": 71,
+          "exact": 65,
+          "disjoint": 0,
+          "mean_jaccard": 0.9624413145539906
+        }
+      }
+    },
+    "confusion": {
+      "target": {
+        "labels": [
+          "build_release",
+          "agent_instructions",
+          "tests",
+          "source",
+          "git",
+          "docs",
+          "tracker",
+          "project",
+          "unknown",
+          "Unpaired"
+        ],
+        "rows_terra_columns_luna": [
+          [
+            53,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            1,
+            34,
+            0,
+            0,
+            0,
+            3,
+            0,
+            0,
+            0,
+            7
+          ],
+          [
+            1,
+            0,
+            112,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            13
+          ],
+          [
+            2,
+            0,
+            0,
+            125,
+            0,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            66,
+            0,
+            0,
+            0,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            33,
+            0,
+            0,
+            0,
+            3
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            7,
+            0,
+            2
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            1,
+            4,
+            3,
+            0,
+            3,
+            0,
+            7,
+            0,
+            0
+          ]
+        ],
+        "calls_by_set_relation": {
+          "equal": 279,
+          "substitution": 10,
+          "ambiguous": 6,
+          "one_sided": 40
+        }
+      },
+      "action": {
+        "labels": [
+          "read",
+          "write",
+          "exec",
+          "other",
+          "Unpaired"
+        ],
+        "rows_terra_columns_luna": [
+          [
+            227,
+            0,
+            0,
+            0,
+            5
+          ],
+          [
+            0,
+            64,
+            2,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            51,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "calls_by_set_relation": {
+          "equal": 326,
+          "substitution": 3,
+          "one_sided": 6
+        }
+      }
+    },
+    "manifest_sha256": "50777df7ed5fbe1d5142bc44f4b75a01748f2b0029d3c00d492cddcb244f56eb",
+    "first_pass": {
+      "archive_sha256": "d6618c6e60e5d260e11997d38eaf50f8485e232e2e4235e1798689a0886d3284",
+      "agreement": {
+        "total": {
+          "calls": 335,
+          "exact": 253,
+          "disjoint": 29,
+          "mean_jaccard": 0.8340298507462687
+        },
+        "sessions": {
+          "point": {
+            "calls": 44,
+            "exact": 40,
+            "disjoint": 4,
+            "mean_jaccard": 0.9090909090909091
+          },
+          "xcmd": {
+            "calls": 48,
+            "exact": 44,
+            "disjoint": 2,
+            "mean_jaccard": 0.9375
+          },
+          "v2": {
+            "calls": 70,
+            "exact": 28,
+            "disjoint": 14,
+            "mean_jaccard": 0.5857142857142857
+          },
+          "point-taken": {
+            "calls": 60,
+            "exact": 45,
+            "disjoint": 5,
+            "mean_jaccard": 0.8402777777777778
+          },
+          "klava-sorting": {
+            "calls": 42,
+            "exact": 31,
+            "disjoint": 4,
+            "mean_jaccard": 0.825
+          },
+          "digester-recovery": {
+            "calls": 71,
+            "exact": 65,
+            "disjoint": 0,
+            "mean_jaccard": 0.9624413145539906
+          }
+        }
+      }
+    },
+    "calls_by_target": {
+      "build_release": {
+        "terra": 65,
+        "luna": 61,
+        "both": 53
+      },
+      "agent_instructions": {
+        "terra": 45,
+        "luna": 35,
+        "both": 34
+      },
+      "tests": {
+        "terra": 127,
+        "luna": 116,
+        "both": 112
+      },
+      "source": {
+        "terra": 138,
+        "luna": 130,
+        "both": 125
+      },
+      "git": {
+        "terra": 68,
+        "luna": 66,
+        "both": 66
+      },
+      "docs": {
+        "terra": 37,
+        "luna": 39,
+        "both": 33
+      },
+      "tracker": {
+        "terra": 4,
+        "luna": 4,
+        "both": 4
+      },
+      "project": {
+        "terra": 9,
+        "luna": 14,
+        "both": 7
+      },
+      "unknown": {
+        "terra": 0,
+        "luna": 0,
+        "both": 0
+      }
+    }
+  }
+}

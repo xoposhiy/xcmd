@@ -1,4 +1,4 @@
-// @implements OpenSearchMatch, SearchResultPanel, OpenViewers, QuickViewFile, ComparePanelFiles, ReportControl, BrowseHistory
+// @implements OpenSearchMatch, SearchResultPanel, OpenViewers, QuickViewFile, ComparePanelFiles, ReportControl, BrowseHistory, InspectAgentSession
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Xcmd.Core;
@@ -45,7 +45,8 @@ public sealed partial class CommanderWindow
 
     private void ViewCurrent()
     {
-        if (ActivePanel.HasHistory) GitHistory.ViewCurrent();
+        if (ActivePanel.ShowsAgentSessions) panelSources.Inspect(ActivePanel);
+        else if (ActivePanel.HasHistory) GitHistory.ViewCurrent();
         else if (!HasOpenDialog) viewing.ViewCurrent(ActivePanel);
     }
 

@@ -81,6 +81,7 @@ public sealed partial class ProbeContext
         if (Window.ActiveNavigationDialog is { } history) yield return history;
         if (Window.OperationDialog is { } operation) yield return operation;
         if (Window.FileSearch.Window is { } search) yield return search;
+        foreach (var inspector in Window.SessionInspectors) yield return inspector;
         foreach (var viewer in Window.Viewers) yield return viewer;
         if (Window.Feedback.ActiveComment is { } comment) yield return comment;
         if (Window.Feedback.ActiveNotes is { } notes) yield return notes;

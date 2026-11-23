@@ -1,0 +1,4656 @@
+{
+  "guide_sha256": "3864004b0dc4555433fa86ef5fe45dce1da2a67121a13a05af9b003fb73749b1",
+  "manifest_sha256": "50777df7ed5fbe1d5142bc44f4b75a01748f2b0029d3c00d492cddcb244f56eb",
+  "requests": [
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "ef4834f71f5e277b59bebaa47b2997ddf758c846d8e7979292d8380ee7192dfb",
+      "input_sha256": "8ed56ba5416bbb39e329d4e73ce2de256f5ef8d62d83af8df0af5966a304ebf0",
+      "response_id": "resp_0f8b8a42ab5ff79c016b0406b9b14087d281c3c2c59aff6b9a",
+      "usage": {
+        "input_tokens": 2264,
+        "input_tokens_details": {
+          "cache_write_tokens": 2261,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2261
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 196,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2460
+      },
+      "ids": [
+        "point-L18",
+        "point-L19",
+        "point-L20",
+        "point-L21",
+        "point-L26",
+        "point-L27",
+        "point-L32",
+        "point-L37"
+      ],
+      "labels_sha256": "82a49434b3efc338c00576b94d2f8d965e675489be86b199cf447142b0cb3723"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "b1d565828dbc0162364da82412b550f1fc34784a4695fb90f1a824597b5260c1",
+      "input_sha256": "8ed56ba5416bbb39e329d4e73ce2de256f5ef8d62d83af8df0af5966a304ebf0",
+      "response_id": "resp_0b67563869bb4c27016b0406b9a83887d28c82aa4ccb3bb3fe",
+      "usage": {
+        "input_tokens": 2297,
+        "input_tokens_details": {
+          "cache_write_tokens": 1579,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1579
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 210,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2507
+      },
+      "ids": [
+        "point-L18",
+        "point-L19",
+        "point-L20",
+        "point-L21",
+        "point-L26",
+        "point-L27",
+        "point-L32",
+        "point-L37"
+      ],
+      "labels_sha256": "82a49434b3efc338c00576b94d2f8d965e675489be86b199cf447142b0cb3723"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "e0781fad03f789eb8be124f6625778145ae02f23313d7c067cc79d6bc62fa038",
+      "input_sha256": "8ed56ba5416bbb39e329d4e73ce2de256f5ef8d62d83af8df0af5966a304ebf0",
+      "response_id": "resp_0b76e120fb9291a0016b0406b9a82087d28193c3748566922b",
+      "usage": {
+        "input_tokens": 2264,
+        "input_tokens_details": {
+          "cache_write_tokens": 2261,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2261
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 194,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2458
+      },
+      "ids": [
+        "point-L18",
+        "point-L19",
+        "point-L20",
+        "point-L21",
+        "point-L26",
+        "point-L27",
+        "point-L32",
+        "point-L37"
+      ],
+      "labels_sha256": "48b740fc3230fc72e1609a7869de3d1e10749af7aad88f8e69842eb4f6b2e261"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "c4bdc16075d203cf672e12cc4724cc93584f8fe71dc4748641eb06f761be1a9b",
+      "input_sha256": "dcd4ab6786b3ff0e65a2a23298810c5748b45b5b68267447b00b930b34d0acea",
+      "response_id": "resp_06b1ae28e2575579016b0406b9b9f487d2aabc7a8cb0301aa8",
+      "usage": {
+        "input_tokens": 4111,
+        "input_tokens_details": {
+          "cache_write_tokens": 4108,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4108
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 369,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4480
+      },
+      "ids": [
+        "point-L44",
+        "point-L45",
+        "point-L46",
+        "point-L47",
+        "point-L52",
+        "point-L53",
+        "point-L54",
+        "point-L55"
+      ],
+      "labels_sha256": "3c8563270ffbf50e7f83c024549a12feee41057bf6f8b9b4792b2ff1d40ff74c"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "cdeb486adc0419e5153297108a389096dc30341a1f17b7054c37aa562bbd38c6",
+      "input_sha256": "dcd4ab6786b3ff0e65a2a23298810c5748b45b5b68267447b00b930b34d0acea",
+      "response_id": "resp_01c5a3555058c741016b0406b9b80c87d2aa3a5f7dd1807e80",
+      "usage": {
+        "input_tokens": 4144,
+        "input_tokens_details": {
+          "cache_write_tokens": 3426,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3426
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 551,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4695
+      },
+      "ids": [
+        "point-L44",
+        "point-L45",
+        "point-L46",
+        "point-L47",
+        "point-L52",
+        "point-L53",
+        "point-L54",
+        "point-L55"
+      ],
+      "labels_sha256": "3c8563270ffbf50e7f83c024549a12feee41057bf6f8b9b4792b2ff1d40ff74c"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "4fd67f4178068d6467d6d6a8d91997a1370cba47cd629b189c0ee86551dd9cbe",
+      "input_sha256": "dcd4ab6786b3ff0e65a2a23298810c5748b45b5b68267447b00b930b34d0acea",
+      "response_id": "resp_0c799663c445eb47016b0406b9b65c87d28c86e426572029fb",
+      "usage": {
+        "input_tokens": 4111,
+        "input_tokens_details": {
+          "cache_write_tokens": 4108,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4108
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 369,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4480
+      },
+      "ids": [
+        "point-L44",
+        "point-L45",
+        "point-L46",
+        "point-L47",
+        "point-L52",
+        "point-L53",
+        "point-L54",
+        "point-L55"
+      ],
+      "labels_sha256": "280a9211cfea3a576289e730d32ae3aea8f604a9b2118bca812473899c983be0"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "f596c907203a9923ed4e27078bbb8db10e4d87e0c9e9930e9106ab87664e58e5",
+      "input_sha256": "cd506bbc98de892eb9cf1eab8324027a5682618daec570c84ec25e17d434ed14",
+      "response_id": "resp_09f17a072d4e1f2f016b0406b9ba3487d2aad702a183701767",
+      "usage": {
+        "input_tokens": 3837,
+        "input_tokens_details": {
+          "cache_write_tokens": 3834,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3834
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 230,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4067
+      },
+      "ids": [
+        "point-L56",
+        "point-L61",
+        "point-L62",
+        "point-L63",
+        "point-L64",
+        "point-L65",
+        "point-L66",
+        "point-L73"
+      ],
+      "labels_sha256": "feb7fb668b4bdc17fe9eb712420f729a1b7bc6eee98d53cdca68957886207b98"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "438ef5c9e1c75622895f9f267c32330802cadc98da70522c53f9a806bd41afc4",
+      "input_sha256": "cd506bbc98de892eb9cf1eab8324027a5682618daec570c84ec25e17d434ed14",
+      "response_id": "resp_0993136f77e20853016b0406b9ad3c87d2a673912fd2b47158",
+      "usage": {
+        "input_tokens": 3870,
+        "input_tokens_details": {
+          "cache_write_tokens": 3152,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3152
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 243,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4113
+      },
+      "ids": [
+        "point-L56",
+        "point-L61",
+        "point-L62",
+        "point-L63",
+        "point-L64",
+        "point-L65",
+        "point-L66",
+        "point-L73"
+      ],
+      "labels_sha256": "feb7fb668b4bdc17fe9eb712420f729a1b7bc6eee98d53cdca68957886207b98"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "72588baef1c69b10ac92b2770bfc7589ff499c78eacbbddab585b33a3a2ae34e",
+      "input_sha256": "cd506bbc98de892eb9cf1eab8324027a5682618daec570c84ec25e17d434ed14",
+      "response_id": "resp_0e9cb9c555ca07f2016b0406b9b58c87d29393125d1a73cbb0",
+      "usage": {
+        "input_tokens": 3837,
+        "input_tokens_details": {
+          "cache_write_tokens": 3834,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3834
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 221,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4058
+      },
+      "ids": [
+        "point-L56",
+        "point-L61",
+        "point-L62",
+        "point-L63",
+        "point-L64",
+        "point-L65",
+        "point-L66",
+        "point-L73"
+      ],
+      "labels_sha256": "b8281264c63e39dedee6fd1f91ba035c2fffa5b7567e6b48282d7e3608e1b0f6"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "61cfdf8ab3f2f74c6fc0a91f580dec1b7a16846bd714e515647713068724dd2f",
+      "input_sha256": "5eb8ed86aa95184878cb3661893cda43001b56e2c7cd813e24ac494532c959e4",
+      "response_id": "resp_0a0eb5d4abf8112f016b0406bbc91887d2a0193cd3e49130b6",
+      "usage": {
+        "input_tokens": 3344,
+        "input_tokens_details": {
+          "cache_write_tokens": 3341,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3341
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 472,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3816
+      },
+      "ids": [
+        "point-L74",
+        "point-L75",
+        "point-L78",
+        "point-L83",
+        "point-L90",
+        "point-L91",
+        "point-L99",
+        "point-L106"
+      ],
+      "labels_sha256": "c1d86ff02364e06a7d1213011c79cbfd6817b4cb9618f1a62124b95c3b8ef4ca"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "83daaac8721931a2cfe5cd72c7369beae6357a157e1a97455c29da46526c6635",
+      "input_sha256": "5eb8ed86aa95184878cb3661893cda43001b56e2c7cd813e24ac494532c959e4",
+      "response_id": "resp_0f54ded3afa82e77016b0406bbe2a087d29afdf03bb3947596",
+      "usage": {
+        "input_tokens": 3377,
+        "input_tokens_details": {
+          "cache_write_tokens": 2659,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2659
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 614,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3991
+      },
+      "ids": [
+        "point-L74",
+        "point-L75",
+        "point-L78",
+        "point-L83",
+        "point-L90",
+        "point-L91",
+        "point-L99",
+        "point-L106"
+      ],
+      "labels_sha256": "046bb1211af9c0f6c5d554810cc906a6240b4e94944faf5210f11d02375c5880"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "563092b31c592ea91086e67bf4bba019cbca2abf4bf375cddee37c3b9b42934c",
+      "input_sha256": "5eb8ed86aa95184878cb3661893cda43001b56e2c7cd813e24ac494532c959e4",
+      "response_id": "resp_076c20bd8b9d9e22016b0406bd3ad487d28ec4e67d811df27f",
+      "usage": {
+        "input_tokens": 3344,
+        "input_tokens_details": {
+          "cache_write_tokens": 3341,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3341
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 378,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3722
+      },
+      "ids": [
+        "point-L74",
+        "point-L75",
+        "point-L78",
+        "point-L83",
+        "point-L90",
+        "point-L91",
+        "point-L99",
+        "point-L106"
+      ],
+      "labels_sha256": "75084ba70c4871f5d15adeb91ef8ff2234ac1bfa83936824be7ce8ddd5bcf7f5"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "052352c34dc94e34bc144315926a4ff19a8ed2d8327d0d8c876948870d79de97",
+      "input_sha256": "af5a0192cd809f982d18d30f298b4b3fd0c83fe95cf6d8730a64bd4eeabc7fbd",
+      "response_id": "resp_0298fe935258f366016b0406bd3d6c87d2a15cc68b979d8ffa",
+      "usage": {
+        "input_tokens": 2420,
+        "input_tokens_details": {
+          "cache_write_tokens": 2417,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2417
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 193,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2613
+      },
+      "ids": [
+        "point-L111",
+        "point-L117",
+        "point-L138",
+        "point-L145",
+        "point-L186",
+        "point-L187",
+        "point-L194",
+        "point-L201"
+      ],
+      "labels_sha256": "e84d152f97f8062a3b17783cc36245d01781eb326588cb92d271acafe2da8520"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "ba51392299e747c081b911f00a6a9a60cbe4c8cc65099faa36d9efc273487639",
+      "input_sha256": "af5a0192cd809f982d18d30f298b4b3fd0c83fe95cf6d8730a64bd4eeabc7fbd",
+      "response_id": "resp_03c538c9b52847f3016b0406bd734487d2bb320f80d1b8bba5",
+      "usage": {
+        "input_tokens": 2453,
+        "input_tokens_details": {
+          "cache_write_tokens": 1735,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1735
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 206,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2659
+      },
+      "ids": [
+        "point-L111",
+        "point-L117",
+        "point-L138",
+        "point-L145",
+        "point-L186",
+        "point-L187",
+        "point-L194",
+        "point-L201"
+      ],
+      "labels_sha256": "e84d152f97f8062a3b17783cc36245d01781eb326588cb92d271acafe2da8520"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "886e0ed0dda2420be8c6c62665e03001b6416767fe44405fb5bc4aaa4a82ed42",
+      "input_sha256": "af5a0192cd809f982d18d30f298b4b3fd0c83fe95cf6d8730a64bd4eeabc7fbd",
+      "response_id": "resp_01eeed5691903d82016b0406bdd9a487d2807e84dcf3efcebb",
+      "usage": {
+        "input_tokens": 2420,
+        "input_tokens_details": {
+          "cache_write_tokens": 2417,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2417
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 200,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2620
+      },
+      "ids": [
+        "point-L111",
+        "point-L117",
+        "point-L138",
+        "point-L145",
+        "point-L186",
+        "point-L187",
+        "point-L194",
+        "point-L201"
+      ],
+      "labels_sha256": "4358fbf390cb41658b12708a99af048ddc9084822d33177df6ed27ffc0f29b5c"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "b88fa25b4ab19af5266d083d6aa20fbc4032d23e10c2e148ed918be1a18e4c6b",
+      "input_sha256": "126efd5338b35511b43b94afbb0157de3418d86cd0fcbfde30ed2ee54fd2a13f",
+      "response_id": "resp_01806982c0728758016b0406bdd1e887d29806afa0b3f8a739",
+      "usage": {
+        "input_tokens": 2140,
+        "input_tokens_details": {
+          "cache_write_tokens": 2137,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2137
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 104,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2244
+      },
+      "ids": [
+        "point-L206",
+        "point-L207",
+        "point-L208",
+        "point-L223"
+      ],
+      "labels_sha256": "0da87799ad1c35a5841c416c39539bb366893d0eadc96222cce8e6edd6f993aa"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "5f65151d76b76338d5c95f9012dab0a7295bbfacf3b349c81e0938bd9e1d8029",
+      "input_sha256": "126efd5338b35511b43b94afbb0157de3418d86cd0fcbfde30ed2ee54fd2a13f",
+      "response_id": "resp_07d03936e413cfe2016b0406bf623c87d2bc013a7fee04f0ff",
+      "usage": {
+        "input_tokens": 2173,
+        "input_tokens_details": {
+          "cache_write_tokens": 1455,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1455
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 133,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2306
+      },
+      "ids": [
+        "point-L206",
+        "point-L207",
+        "point-L208",
+        "point-L223"
+      ],
+      "labels_sha256": "0da87799ad1c35a5841c416c39539bb366893d0eadc96222cce8e6edd6f993aa"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "232a6d97dc8dc698ef882d2d39e10e49b33a26f1ab37ebe672d48d9ddd8e5d89",
+      "input_sha256": "126efd5338b35511b43b94afbb0157de3418d86cd0fcbfde30ed2ee54fd2a13f",
+      "response_id": "resp_0af26755fa714988016b0406bff99487d2831283e2b2d4be62",
+      "usage": {
+        "input_tokens": 2140,
+        "input_tokens_details": {
+          "cache_write_tokens": 2137,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2137
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 132,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2272
+      },
+      "ids": [
+        "point-L206",
+        "point-L207",
+        "point-L208",
+        "point-L223"
+      ],
+      "labels_sha256": "d0c02ebeaad4746909c3e41d294da08c22b570041440b2ac6f619e2329e2ec4a"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "79f904a6e522c835000e71af1007e90b6a12f8a1855f106a74fcdf766e18785d",
+      "input_sha256": "10939e33382fb37206406ab9a8d6b028396257004fe998d9cebb53d346cd32c5",
+      "response_id": "resp_05f0e027b31ab557016b0406c0163887d2bdc37f39f1ed54e0",
+      "usage": {
+        "input_tokens": 3936,
+        "input_tokens_details": {
+          "cache_write_tokens": 3933,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3933
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 207,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4143
+      },
+      "ids": [
+        "xcmd-L18",
+        "xcmd-L19",
+        "xcmd-L20",
+        "xcmd-L23",
+        "xcmd-L24",
+        "xcmd-L27",
+        "xcmd-L28",
+        "xcmd-L29"
+      ],
+      "labels_sha256": "b07c99f9495d881142fc3551ad6222ed35b9eeba1f5b01eb08731e121790d624"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "9548265453dfa01d03cbe4f3c0ba8fb483e116497bf06fe564fa62c3b5c3c605",
+      "input_sha256": "10939e33382fb37206406ab9a8d6b028396257004fe998d9cebb53d346cd32c5",
+      "response_id": "resp_0352c5c6628e6b6a016b0406c0752087d28ea75fba83fe9301",
+      "usage": {
+        "input_tokens": 3969,
+        "input_tokens_details": {
+          "cache_write_tokens": 3251,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3251
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 221,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4190
+      },
+      "ids": [
+        "xcmd-L18",
+        "xcmd-L19",
+        "xcmd-L20",
+        "xcmd-L23",
+        "xcmd-L24",
+        "xcmd-L27",
+        "xcmd-L28",
+        "xcmd-L29"
+      ],
+      "labels_sha256": "b07c99f9495d881142fc3551ad6222ed35b9eeba1f5b01eb08731e121790d624"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0846b6a199427a8c95fc1e1810bd4df592652a9f566cbada6006c4f887fd41bb",
+      "input_sha256": "10939e33382fb37206406ab9a8d6b028396257004fe998d9cebb53d346cd32c5",
+      "response_id": "resp_0ab5cb1c614e1661016b0406c07cbc87d29e14e8cf18180bd5",
+      "usage": {
+        "input_tokens": 3936,
+        "input_tokens_details": {
+          "cache_write_tokens": 3933,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3933
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 207,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4143
+      },
+      "ids": [
+        "xcmd-L18",
+        "xcmd-L19",
+        "xcmd-L20",
+        "xcmd-L23",
+        "xcmd-L24",
+        "xcmd-L27",
+        "xcmd-L28",
+        "xcmd-L29"
+      ],
+      "labels_sha256": "b07c99f9495d881142fc3551ad6222ed35b9eeba1f5b01eb08731e121790d624"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "887a5927775dde5da473c1f5ce1d08a3b819a0d5ad89825f019e6865cf72319f",
+      "input_sha256": "9001c7077da95529e74561ab898cb2b289cad473f8e2199eff7e8a2bf46e20b2",
+      "response_id": "resp_0ec8ed4527dd4537016b0406c0ad8487d2bcbb5b06c8ebe2ef",
+      "usage": {
+        "input_tokens": 3740,
+        "input_tokens_details": {
+          "cache_write_tokens": 3737,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3737
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 545,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4285
+      },
+      "ids": [
+        "xcmd-L30",
+        "xcmd-L31",
+        "xcmd-L36",
+        "xcmd-L37",
+        "xcmd-L38",
+        "xcmd-L39",
+        "xcmd-L46",
+        "xcmd-L51"
+      ],
+      "labels_sha256": "19f9b96d3c033c83b16e3e3d5615e9b54a9934ef5fc5331d1f268d54db4364da"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "5dec670c8a8c858ccbc5ba0fb43b1ac06c062039213a474b45a5636e3b79dc61",
+      "input_sha256": "9001c7077da95529e74561ab898cb2b289cad473f8e2199eff7e8a2bf46e20b2",
+      "response_id": "resp_0ea6fa38d0325d68016b0406c0dcb887d2a702fa4f1182fef2",
+      "usage": {
+        "input_tokens": 3773,
+        "input_tokens_details": {
+          "cache_write_tokens": 3055,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3055
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 593,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4366
+      },
+      "ids": [
+        "xcmd-L30",
+        "xcmd-L31",
+        "xcmd-L36",
+        "xcmd-L37",
+        "xcmd-L38",
+        "xcmd-L39",
+        "xcmd-L46",
+        "xcmd-L51"
+      ],
+      "labels_sha256": "19f9b96d3c033c83b16e3e3d5615e9b54a9934ef5fc5331d1f268d54db4364da"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "61c77d9bcc5ef09b149d496f078540adfd375e25da155b47958c0f4e490e0888",
+      "input_sha256": "9001c7077da95529e74561ab898cb2b289cad473f8e2199eff7e8a2bf46e20b2",
+      "response_id": "resp_026627fc9f46faf2016b0406d698c887d284de9ae054d508d8",
+      "usage": {
+        "input_tokens": 3740,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 3737
+        },
+        "output_tokens": 506,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4246
+      },
+      "ids": [
+        "xcmd-L30",
+        "xcmd-L31",
+        "xcmd-L36",
+        "xcmd-L37",
+        "xcmd-L38",
+        "xcmd-L39",
+        "xcmd-L46",
+        "xcmd-L51"
+      ],
+      "labels_sha256": "18da6b1ebef3c9306bf03bcb87a8c15cd262cae72bfd23449b5cdd7325448b68"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "c7818de2f8bf0e6a605cd9e3ba994215855b5ea3f56221cb8a9268339b8c5bc5",
+      "input_sha256": "8b3b051d2b6f0be0f1e411a7486ddd0e63cac7bce4f7083184d651e11ecf5e03",
+      "response_id": "resp_0580dc3d0ec51d13016b0406c2008087d2a55a668cd3ff4a0d",
+      "usage": {
+        "input_tokens": 2903,
+        "input_tokens_details": {
+          "cache_write_tokens": 2900,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2900
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 326,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3229
+      },
+      "ids": [
+        "xcmd-L52",
+        "xcmd-L53",
+        "xcmd-L70",
+        "xcmd-L71",
+        "xcmd-L75",
+        "xcmd-L81",
+        "xcmd-L100",
+        "xcmd-L101"
+      ],
+      "labels_sha256": "943cef85da561f719520c9effc746fcab3325c8f1d0b6e546818da89c6849708"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "ac97659756952b0ca66ce334431ae25703844459e53d3c260018036ca82afdd8",
+      "input_sha256": "8b3b051d2b6f0be0f1e411a7486ddd0e63cac7bce4f7083184d651e11ecf5e03",
+      "response_id": "resp_0ce46b62323caf8b016b0406c216cc87d2a1287f85d7344d9c",
+      "usage": {
+        "input_tokens": 2936,
+        "input_tokens_details": {
+          "cache_write_tokens": 2218,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2218
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 596,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3532
+      },
+      "ids": [
+        "xcmd-L52",
+        "xcmd-L53",
+        "xcmd-L70",
+        "xcmd-L71",
+        "xcmd-L75",
+        "xcmd-L81",
+        "xcmd-L100",
+        "xcmd-L101"
+      ],
+      "labels_sha256": "a5d2cb14f3f67025cb481e74c73c200a48a24b4f42dda55c1082a2cee77a677b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "d454d00060b5254130379aec61ea4fb23c63f1d9bf3287729caa101b5f511ecc",
+      "input_sha256": "8b3b051d2b6f0be0f1e411a7486ddd0e63cac7bce4f7083184d651e11ecf5e03",
+      "response_id": "resp_037a91ec13be9971016b0406c2ba5487d28f9a066481275a74",
+      "usage": {
+        "input_tokens": 2903,
+        "input_tokens_details": {
+          "cache_write_tokens": 2900,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2900
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 304,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3207
+      },
+      "ids": [
+        "xcmd-L52",
+        "xcmd-L53",
+        "xcmd-L70",
+        "xcmd-L71",
+        "xcmd-L75",
+        "xcmd-L81",
+        "xcmd-L100",
+        "xcmd-L101"
+      ],
+      "labels_sha256": "35d6456c9cdccbb72c8fd86b806663aad6ed15808515dbfa0ea007d4164c9377"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "17c7d26a1f59c3931d8f844432957eb85ebd0203b58f5f99ad293b05c98ee390",
+      "input_sha256": "b06597defc97d95996757a389ff1dddf04f449f5760775664d00e23e017cc401",
+      "response_id": "resp_0940ea3f861d49a9016b0406c3618887d284b56ee814deb70d",
+      "usage": {
+        "input_tokens": 2994,
+        "input_tokens_details": {
+          "cache_write_tokens": 2991,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2991
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 492,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3486
+      },
+      "ids": [
+        "xcmd-L108",
+        "xcmd-L109",
+        "xcmd-L114",
+        "xcmd-L120",
+        "xcmd-L126",
+        "xcmd-L127",
+        "xcmd-L144",
+        "xcmd-L145"
+      ],
+      "labels_sha256": "73fabb3355675f3283b34b353a3cbb22ec0590c8e7d9894a0cd8545d0ee8cf8d"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "a62ce5a70bc77736b33c6b03f36264da8fd6cfa08ca14ae27d6b66bee92bf100",
+      "input_sha256": "b06597defc97d95996757a389ff1dddf04f449f5760775664d00e23e017cc401",
+      "response_id": "resp_068220df6f4d3e7f016b0406c39e8c87d28653c37ea59fd30e",
+      "usage": {
+        "input_tokens": 3027,
+        "input_tokens_details": {
+          "cache_write_tokens": 2309,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2309
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 505,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3532
+      },
+      "ids": [
+        "xcmd-L108",
+        "xcmd-L109",
+        "xcmd-L114",
+        "xcmd-L120",
+        "xcmd-L126",
+        "xcmd-L127",
+        "xcmd-L144",
+        "xcmd-L145"
+      ],
+      "labels_sha256": "5a4226e2b98c13deca424247b7f902c07146f4370b041953f8182bee6dca4242"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "1c54aac7bb2b2d0434e5daf6d856352cfb6e24aab23dc575957e2bca436a1620",
+      "input_sha256": "b06597defc97d95996757a389ff1dddf04f449f5760775664d00e23e017cc401",
+      "response_id": "resp_0bfa3f5647aabb03016b0406c40d4c87d2ab4659c54a922b15",
+      "usage": {
+        "input_tokens": 2994,
+        "input_tokens_details": {
+          "cache_write_tokens": 2991,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2991
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 316,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3310
+      },
+      "ids": [
+        "xcmd-L108",
+        "xcmd-L109",
+        "xcmd-L114",
+        "xcmd-L120",
+        "xcmd-L126",
+        "xcmd-L127",
+        "xcmd-L144",
+        "xcmd-L145"
+      ],
+      "labels_sha256": "c8d2b5bcb19fab3bb136586ad158ec454e374cdc831d4f9a07226a72bd47cb5e"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "287e974d7b83e8c033086f87a8efac794bbd47b07c7169d2f54e4c9617736bfc",
+      "input_sha256": "4eee13cb491836c4423d9fccc831e6dfb6be03c105f5c1b5e2afcf0dbaa65f7a",
+      "response_id": "resp_0137720a7ae07668016b0406c5e04487d29de4167a85f29d31",
+      "usage": {
+        "input_tokens": 3089,
+        "input_tokens_details": {
+          "cache_write_tokens": 3086,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3086
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 678,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3767
+      },
+      "ids": [
+        "xcmd-L152",
+        "xcmd-L153",
+        "xcmd-L154",
+        "xcmd-L160",
+        "xcmd-L168",
+        "xcmd-L185",
+        "xcmd-L186",
+        "xcmd-L187"
+      ],
+      "labels_sha256": "96cf0ab99294b5f722ff40e2b16d9e5e5d6518ea2218a16849d7d33fd5190625"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "586fd4c5070be1051970a2f180cc9b2904bff26d04bd754c50cf7e0a8f4784c4",
+      "input_sha256": "4eee13cb491836c4423d9fccc831e6dfb6be03c105f5c1b5e2afcf0dbaa65f7a",
+      "response_id": "resp_0dec1eb68944adf9016b0406c6cf0087d2a482d661b7382f48",
+      "usage": {
+        "input_tokens": 3122,
+        "input_tokens_details": {
+          "cache_write_tokens": 2404,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2404
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 710,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3832
+      },
+      "ids": [
+        "xcmd-L152",
+        "xcmd-L153",
+        "xcmd-L154",
+        "xcmd-L160",
+        "xcmd-L168",
+        "xcmd-L185",
+        "xcmd-L186",
+        "xcmd-L187"
+      ],
+      "labels_sha256": "9ba45f89ae6481f1c2767b795c7059bf32ec7175ad52a7d1d97497d6533d202e"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "8acb7c945864da914396f9aabfec9d3c7a97873cbf4784f93ee4cffaa917c2da",
+      "input_sha256": "4eee13cb491836c4423d9fccc831e6dfb6be03c105f5c1b5e2afcf0dbaa65f7a",
+      "response_id": "resp_03686a7978d80a59016b0406c6dba887d2bdce7543aaa53323",
+      "usage": {
+        "input_tokens": 3089,
+        "input_tokens_details": {
+          "cache_write_tokens": 3086,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3086
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 472,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3561
+      },
+      "ids": [
+        "xcmd-L152",
+        "xcmd-L153",
+        "xcmd-L154",
+        "xcmd-L160",
+        "xcmd-L168",
+        "xcmd-L185",
+        "xcmd-L186",
+        "xcmd-L187"
+      ],
+      "labels_sha256": "5dd5ee7ea3978f3cfac85264b937bbb6bf81a0e956f559ca314c82c0a4dc62fa"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "9a189236877f86adcab885e3e36b5cf24100ca83cb77c68c58db9887f05aa441",
+      "input_sha256": "aea748601345a09cfbca02e48113c7691a20c23306f2baed185d9f9a3a886864",
+      "response_id": "resp_00b0614c339b3b19016b0406c7985887d289e09545b558d494",
+      "usage": {
+        "input_tokens": 2187,
+        "input_tokens_details": {
+          "cache_write_tokens": 2184,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2184
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 333,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2520
+      },
+      "ids": [
+        "xcmd-L188",
+        "xcmd-L195",
+        "xcmd-L196",
+        "xcmd-L201",
+        "xcmd-L206",
+        "xcmd-L211",
+        "xcmd-L216",
+        "xcmd-L217"
+      ],
+      "labels_sha256": "88b9ced5e94fe7754f0195a663c602027a9909bba8d208cb56ae5593a4a61f6d"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "9812bbd2f4fccbabc32778418f18dd2c3dae50f2d4f14c651215404f2908a225",
+      "input_sha256": "aea748601345a09cfbca02e48113c7691a20c23306f2baed185d9f9a3a886864",
+      "response_id": "resp_0700a7be29fbc4f7016b0406c89bcc87d2af8426e0014913ba",
+      "usage": {
+        "input_tokens": 2220,
+        "input_tokens_details": {
+          "cache_write_tokens": 1502,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1502
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 496,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2716
+      },
+      "ids": [
+        "xcmd-L188",
+        "xcmd-L195",
+        "xcmd-L196",
+        "xcmd-L201",
+        "xcmd-L206",
+        "xcmd-L211",
+        "xcmd-L216",
+        "xcmd-L217"
+      ],
+      "labels_sha256": "88a061af7b5924eca36f76c94c2c90979cc1397ca532a567e35c6bd8e00ae5d3"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "de696c0adc1d73a4df2553ed1f83e5e301e8fb4248a5ca483e6d68df38fc1eda",
+      "input_sha256": "aea748601345a09cfbca02e48113c7691a20c23306f2baed185d9f9a3a886864",
+      "response_id": "resp_0fd10a24a52ce497016b0406d2de1887d29fb23d395873fbc2",
+      "usage": {
+        "input_tokens": 2187,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 2184
+        },
+        "output_tokens": 360,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2547
+      },
+      "ids": [
+        "xcmd-L188",
+        "xcmd-L195",
+        "xcmd-L196",
+        "xcmd-L201",
+        "xcmd-L206",
+        "xcmd-L211",
+        "xcmd-L216",
+        "xcmd-L217"
+      ],
+      "labels_sha256": "6126430796c289a7cc4f7ff290a8cf7ade81bb16d3ca35fba29dedb888f91512"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "ca6afd0a1a272bde3809701ff9cd4db9f90253054486f9851b2383619b570a6e",
+      "input_sha256": "205da2c4f5d2b5afee5d9179cfea5e7311330f9426f2b1e6f51ad1badfe6de12",
+      "response_id": "resp_0ef44d6da4cd54cf016b0406ca092c87d28c70aa51b06901ec",
+      "usage": {
+        "input_tokens": 4526,
+        "input_tokens_details": {
+          "cache_write_tokens": 4523,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4523
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 448,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4974
+      },
+      "ids": [
+        "v2-L18",
+        "v2-L19",
+        "v2-L20",
+        "v2-L21",
+        "v2-L26",
+        "v2-L27",
+        "v2-L28",
+        "v2-L29"
+      ],
+      "labels_sha256": "8dd3c7b1d3df99ed9216631f6c8eaff5b2dcac28a9bf2578acf115e5d58730d1"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "b1e5daf803df28f4a2045f4d733dab2753105887d00292f48921a2cbdd346d30",
+      "input_sha256": "205da2c4f5d2b5afee5d9179cfea5e7311330f9426f2b1e6f51ad1badfe6de12",
+      "response_id": "resp_0f49ddca75a2831b016b0406ca202487d2aa31e12e5734402b",
+      "usage": {
+        "input_tokens": 4559,
+        "input_tokens_details": {
+          "cache_write_tokens": 3841,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3841
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 463,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5022
+      },
+      "ids": [
+        "v2-L18",
+        "v2-L19",
+        "v2-L20",
+        "v2-L21",
+        "v2-L26",
+        "v2-L27",
+        "v2-L28",
+        "v2-L29"
+      ],
+      "labels_sha256": "8dd3c7b1d3df99ed9216631f6c8eaff5b2dcac28a9bf2578acf115e5d58730d1"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0718cdaf1557af23af60353250785538e8d1a8e6abeeddcff388c47a69c6c649",
+      "input_sha256": "205da2c4f5d2b5afee5d9179cfea5e7311330f9426f2b1e6f51ad1badfe6de12",
+      "response_id": "resp_0876527034c33271016b0406cb724487d2aa547360236618f5",
+      "usage": {
+        "input_tokens": 4526,
+        "input_tokens_details": {
+          "cache_write_tokens": 4523,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4523
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 457,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4983
+      },
+      "ids": [
+        "v2-L18",
+        "v2-L19",
+        "v2-L20",
+        "v2-L21",
+        "v2-L26",
+        "v2-L27",
+        "v2-L28",
+        "v2-L29"
+      ],
+      "labels_sha256": "f86855c1346accd20d6efe851ce4f19dc3145caea8621513bdbf01a993a73413"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "5778568621f8d2b041c2e9d23b6f121f0fe9ca3da4143a42e9d922d22474b0be",
+      "input_sha256": "e9414875038970d32f27b8f306061b3c898fdb1e09e3278f19ffc60fd6304487",
+      "response_id": "resp_080e2950d5d75c7b016b0406cc855887d29534d15dc8054dbf",
+      "usage": {
+        "input_tokens": 4255,
+        "input_tokens_details": {
+          "cache_write_tokens": 4252,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4252
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 438,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4693
+      },
+      "ids": [
+        "v2-L30",
+        "v2-L31",
+        "v2-L36",
+        "v2-L37",
+        "v2-L38",
+        "v2-L39",
+        "v2-L46",
+        "v2-L47"
+      ],
+      "labels_sha256": "73c778423bae1bc80aef4c1731acbfcbf9b11d8ab0c6fe726b1d87e7efc3f137"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "ee6463010daffd772a4c134131a7683472ccc0e01d86ad19ee678af0f35117f8",
+      "input_sha256": "e9414875038970d32f27b8f306061b3c898fdb1e09e3278f19ffc60fd6304487",
+      "response_id": "resp_0bb6d7628407d0d2016b0406ce78e887d2881a2699f6f945a6",
+      "usage": {
+        "input_tokens": 4288,
+        "input_tokens_details": {
+          "cache_write_tokens": 3570,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3570
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 452,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4740
+      },
+      "ids": [
+        "v2-L30",
+        "v2-L31",
+        "v2-L36",
+        "v2-L37",
+        "v2-L38",
+        "v2-L39",
+        "v2-L46",
+        "v2-L47"
+      ],
+      "labels_sha256": "d2c4eaae531cf06b49a95c538fbc24ab5730c8feecd76fbe4d2f99fb2f723fcc"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "82d87f0f20a009c5a4bb3833fb40710ce124e05ee837378d90b26d28e6264e95",
+      "input_sha256": "e9414875038970d32f27b8f306061b3c898fdb1e09e3278f19ffc60fd6304487",
+      "response_id": "resp_0131887d4b99bd19016b0406ff891487d299049824a2188fc0",
+      "usage": {
+        "input_tokens": 4255,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 4252
+        },
+        "output_tokens": 422,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4677
+      },
+      "ids": [
+        "v2-L30",
+        "v2-L31",
+        "v2-L36",
+        "v2-L37",
+        "v2-L38",
+        "v2-L39",
+        "v2-L46",
+        "v2-L47"
+      ],
+      "labels_sha256": "47e775a899ddd8d61610c488f271950d0a1caca657ec6ac5da055c2943d4c386"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "577e985928cd3a83a5960cffe7a8a1e72950bd12a7d7a2b2bebada39dbca902d",
+      "input_sha256": "ed4577c4beee8d1f5f1cc5599dabb618b2e294ed76ed614d4e22f3e7a495315f",
+      "response_id": "resp_048c6588ea61a625016b0406cf549c87d2bf1fa403bfe40410",
+      "usage": {
+        "input_tokens": 6046,
+        "input_tokens_details": {
+          "cache_write_tokens": 6043,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 6043
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1002,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7048
+      },
+      "ids": [
+        "v2-L48",
+        "v2-L49",
+        "v2-L58",
+        "v2-L61",
+        "v2-L62",
+        "v2-L81",
+        "v2-L92",
+        "v2-L93"
+      ],
+      "labels_sha256": "56cfcf711340d0f33b76283bf5899dca912c68916082235467e8e66edc6cdb93"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "578c941313315f5a4de436f413a3cab775d4718e3c2b72ba05dc73bf8a27fe69",
+      "input_sha256": "ed4577c4beee8d1f5f1cc5599dabb618b2e294ed76ed614d4e22f3e7a495315f",
+      "response_id": "resp_0bedb5da0c3a3157016b0406cfb52c87d29ddc5d39fbf0eafe",
+      "usage": {
+        "input_tokens": 6079,
+        "input_tokens_details": {
+          "cache_write_tokens": 5361,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5361
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1124,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7203
+      },
+      "ids": [
+        "v2-L48",
+        "v2-L49",
+        "v2-L58",
+        "v2-L61",
+        "v2-L62",
+        "v2-L81",
+        "v2-L92",
+        "v2-L93"
+      ],
+      "labels_sha256": "8f7133457e5d2e2fb28181d7590c99c99b1463e860721faa5da2706a2fb705ac"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "4a5a8c4936c01d5ad110cf695f769c4ccf5be0862f27729edf03c09d53d816e9",
+      "input_sha256": "ed4577c4beee8d1f5f1cc5599dabb618b2e294ed76ed614d4e22f3e7a495315f",
+      "response_id": "resp_01fb16cca0b2a3a4016b0407396dac87d2b996e0de5334aed4",
+      "usage": {
+        "input_tokens": 6046,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 6043
+        },
+        "output_tokens": 838,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6884
+      },
+      "ids": [
+        "v2-L48",
+        "v2-L49",
+        "v2-L58",
+        "v2-L61",
+        "v2-L62",
+        "v2-L81",
+        "v2-L92",
+        "v2-L93"
+      ],
+      "labels_sha256": "0f327ca06e88af7c12705a1c7f8cd98ff1577197ac60ce33c7b9f46693cca730"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "9a3230ad0a0f5525b98b6d890ad1082342a86d9652e7316b69ee8af4711d7bcf",
+      "input_sha256": "32e4a88a26f859edda32534e7259ce3136a09d9f8d44ca0dc06c10ea4d5b3f3d",
+      "response_id": "resp_027d817129cd09f8016b0406d0555c87d29d76d23e6fdfb3af",
+      "usage": {
+        "input_tokens": 6356,
+        "input_tokens_details": {
+          "cache_write_tokens": 6353,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 6353
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1760,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 8116
+      },
+      "ids": [
+        "v2-L94",
+        "v2-L109",
+        "v2-L130",
+        "v2-L139",
+        "v2-L140",
+        "v2-L145"
+      ],
+      "labels_sha256": "74630d5d3554f3a80b48eb756b40ce2862cad9a7076aac82614649480a9e8f64"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "626c095462ea30f8e54cc3242832b22471b4677da6719e4960e2d26809815c4f",
+      "input_sha256": "32e4a88a26f859edda32534e7259ce3136a09d9f8d44ca0dc06c10ea4d5b3f3d",
+      "response_id": "resp_0b89d49e74b2c281016b0406d2b1ec87d29c184e2bced58744",
+      "usage": {
+        "input_tokens": 6389,
+        "input_tokens_details": {
+          "cache_write_tokens": 5671,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5671
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 2130,
+        "output_tokens_details": {
+          "reasoning_tokens": 22
+        },
+        "total_tokens": 8519
+      },
+      "ids": [
+        "v2-L94",
+        "v2-L109",
+        "v2-L130",
+        "v2-L139",
+        "v2-L140",
+        "v2-L145"
+      ],
+      "labels_sha256": "24e4248a3482e3c450c1876042f3fe08f11b259079fd864d2f57508a3e0219f3"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "b0c16229ad62b4d8b372edc4b2d182867332a9c6c64ec232a06dee7c2f573463",
+      "input_sha256": "32e4a88a26f859edda32534e7259ce3136a09d9f8d44ca0dc06c10ea4d5b3f3d",
+      "response_id": "resp_002339a4da94164e016b0406d4975c87d29259da40889ad763",
+      "usage": {
+        "input_tokens": 6356,
+        "input_tokens_details": {
+          "cache_write_tokens": 6353,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 6353
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1631,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7987
+      },
+      "ids": [
+        "v2-L94",
+        "v2-L109",
+        "v2-L130",
+        "v2-L139",
+        "v2-L140",
+        "v2-L145"
+      ],
+      "labels_sha256": "bde1f051689f710e9bf507dc6ad856db0a3e49d3dc06e1dd5c93b81bc361dac8"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "d8ae9a2143cbddb59708bd080e83a456eb66fa75d831110ac0a8c40563e930e6",
+      "input_sha256": "5635d23c12757ef8cf4d321b431ae5a0edcee4776a5cbf24f7686f375a1504d9",
+      "response_id": "resp_0cdbe36964ee04ac016b0406d5e02887d289f2d251abbcacc6",
+      "usage": {
+        "input_tokens": 5521,
+        "input_tokens_details": {
+          "cache_write_tokens": 5518,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5518
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 700,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6221
+      },
+      "ids": [
+        "v2-L154",
+        "v2-L171",
+        "v2-L208",
+        "v2-L209",
+        "v2-L210",
+        "v2-L211",
+        "v2-L224",
+        "v2-L225"
+      ],
+      "labels_sha256": "d0e9dc737608bb8a0feee6e4b54ebf16e87da66c057c675d65366dfd4f03aae1"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "f3e0b90258b01d61f5bf4ac79229b6e1caad2a05d94ddaa6160821cdf799d335",
+      "input_sha256": "5635d23c12757ef8cf4d321b431ae5a0edcee4776a5cbf24f7686f375a1504d9",
+      "response_id": "resp_08312c47e59f2ee1016b0406db454487d2853703f55f5ca993",
+      "usage": {
+        "input_tokens": 5554,
+        "input_tokens_details": {
+          "cache_write_tokens": 4836,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4836
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 950,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6504
+      },
+      "ids": [
+        "v2-L154",
+        "v2-L171",
+        "v2-L208",
+        "v2-L209",
+        "v2-L210",
+        "v2-L211",
+        "v2-L224",
+        "v2-L225"
+      ],
+      "labels_sha256": "75965ab9602194322c1d45456e6c567ac8570f59ad8ffc4a43b4c0a72f8505fc"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "ea6f8ba6dfe0c77432f3717d6862c24de0ecec38b7801a4892a6dfbf9f9d4b54",
+      "input_sha256": "5635d23c12757ef8cf4d321b431ae5a0edcee4776a5cbf24f7686f375a1504d9",
+      "response_id": "resp_0d01221c138d1cec016b0406dbc50487d29e6e1c6e1f2d925a",
+      "usage": {
+        "input_tokens": 5521,
+        "input_tokens_details": {
+          "cache_write_tokens": 5518,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5518
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 771,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6292
+      },
+      "ids": [
+        "v2-L154",
+        "v2-L171",
+        "v2-L208",
+        "v2-L209",
+        "v2-L210",
+        "v2-L211",
+        "v2-L224",
+        "v2-L225"
+      ],
+      "labels_sha256": "35ae8aa0ab38e283449a8fde639e60fe530d580666729b71bcb9c913c2889ea3"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "cc732c1a24c39f5f868851389adff88b944c95ef5e8cad45b009706f925343d9",
+      "input_sha256": "b7d1bb8199a4b3a2c7a14fc68114f86d12e3005c8a71d87958b4ccddeb360aad",
+      "response_id": "resp_011a12a6398c6e5d016b0406dd008c87d29e8357960a64e2f5",
+      "usage": {
+        "input_tokens": 1843,
+        "input_tokens_details": {
+          "cache_write_tokens": 1840,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1840
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 212,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2055
+      },
+      "ids": [
+        "v2-L226",
+        "v2-L227",
+        "v2-L242",
+        "v2-L251",
+        "v2-L260",
+        "v2-L261",
+        "v2-L270",
+        "v2-L271"
+      ],
+      "labels_sha256": "84eef44b166ba2bb86a7b30b27870deeb23d552238767e5a33bed5a1b99bd311"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "9be2fe54369d01fd4502ee33f52b73de567a3914a30dc5aaefb0a1bedabe0c5c",
+      "input_sha256": "b7d1bb8199a4b3a2c7a14fc68114f86d12e3005c8a71d87958b4ccddeb360aad",
+      "response_id": "resp_0c29d08d968c13f2016b0406de715487d2b8db5e3680bbfaaf",
+      "usage": {
+        "input_tokens": 1876,
+        "input_tokens_details": {
+          "cache_write_tokens": 1158,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1158
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 225,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2101
+      },
+      "ids": [
+        "v2-L226",
+        "v2-L227",
+        "v2-L242",
+        "v2-L251",
+        "v2-L260",
+        "v2-L261",
+        "v2-L270",
+        "v2-L271"
+      ],
+      "labels_sha256": "84eef44b166ba2bb86a7b30b27870deeb23d552238767e5a33bed5a1b99bd311"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "e0057be09bed4d52a6b1e25f0d004f0daa7ca799f365c48b70cd160614e0f521",
+      "input_sha256": "b7d1bb8199a4b3a2c7a14fc68114f86d12e3005c8a71d87958b4ccddeb360aad",
+      "response_id": "resp_0de0748583f7187f016b0406e01ef487d2a7d247fad65e184b",
+      "usage": {
+        "input_tokens": 1843,
+        "input_tokens_details": {
+          "cache_write_tokens": 1840,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1840
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 221,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2064
+      },
+      "ids": [
+        "v2-L226",
+        "v2-L227",
+        "v2-L242",
+        "v2-L251",
+        "v2-L260",
+        "v2-L261",
+        "v2-L270",
+        "v2-L271"
+      ],
+      "labels_sha256": "66b982432055230da957cef673e4954d80ff918c365dd9cb0fc3aaf7189988a1"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "83da8fb0dd456f58c07bc28fd972bb079f8073242ab9bba999d976289244c704",
+      "input_sha256": "b248496c9c116bd6fbf6775eae6f0e0f9c8ff55567c80b7c7a3ff9939d93adb6",
+      "response_id": "resp_0be784ae1c772feb016b0406e0438887d28880016ea79fa539",
+      "usage": {
+        "input_tokens": 2127,
+        "input_tokens_details": {
+          "cache_write_tokens": 2124,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2124
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 307,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2434
+      },
+      "ids": [
+        "v2-L280",
+        "v2-L281",
+        "v2-L282",
+        "v2-L295",
+        "v2-L296",
+        "v2-L297",
+        "v2-L298",
+        "v2-L307"
+      ],
+      "labels_sha256": "471765f94bdeacd2ef9a9d0b22856b58ddd8ba42d8c2f28331da00214f7588cd"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "f4a35af9b512ca83d319d6ac99c6f3f50d0dddc986d3b05155a8378da6edea1d",
+      "input_sha256": "b248496c9c116bd6fbf6775eae6f0e0f9c8ff55567c80b7c7a3ff9939d93adb6",
+      "response_id": "resp_06bb25555278075d016b0406e1d4a087d2ad2645b592826024",
+      "usage": {
+        "input_tokens": 2160,
+        "input_tokens_details": {
+          "cache_write_tokens": 1442,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1442
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 493,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2653
+      },
+      "ids": [
+        "v2-L280",
+        "v2-L281",
+        "v2-L282",
+        "v2-L295",
+        "v2-L296",
+        "v2-L297",
+        "v2-L298",
+        "v2-L307"
+      ],
+      "labels_sha256": "0d1904c7fed7b63335a5a43fac4d710851a9a620dd684ec0094a75167ca5a6f6"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "6eb9d56628092b80be1f71c8a0c8d5c87c314873da723151b114499de42d9586",
+      "input_sha256": "b248496c9c116bd6fbf6775eae6f0e0f9c8ff55567c80b7c7a3ff9939d93adb6",
+      "response_id": "resp_0e08219bbb1b3926016b0406e200d087d28b7e06f5d3d4dbfc",
+      "usage": {
+        "input_tokens": 2127,
+        "input_tokens_details": {
+          "cache_write_tokens": 2124,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2124
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 394,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2521
+      },
+      "ids": [
+        "v2-L280",
+        "v2-L281",
+        "v2-L282",
+        "v2-L295",
+        "v2-L296",
+        "v2-L297",
+        "v2-L298",
+        "v2-L307"
+      ],
+      "labels_sha256": "9c203d5262edb336e07cc8393d7037d3e965eba495375f87ef0de6d0167bf3dc"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "6815eb7f1ef6e89be5d036de89b4ba256bbefa6ad2961faf81fb2b5df13546a0",
+      "input_sha256": "a310c7b3f971d3260d35642ef52fb8bafe005786612d89fd6740261bbcfce3c5",
+      "response_id": "resp_0b9856061f31ed6a016b0406e2803087d2a8adb36ecf5474ab",
+      "usage": {
+        "input_tokens": 4494,
+        "input_tokens_details": {
+          "cache_write_tokens": 4491,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4491
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 778,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5272
+      },
+      "ids": [
+        "v2-L322",
+        "v2-L362",
+        "v2-L366",
+        "v2-L367",
+        "v2-L390",
+        "v2-L391",
+        "v2-L392",
+        "v2-L393"
+      ],
+      "labels_sha256": "8b6cc68f99f31cce159e7245369ec9b24c6b9a83251eb5192d46f70d32d363b4"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "e05570f1c7281673bb0310bd11092a76a6be2f89ca5b543dbf020699cf407318",
+      "input_sha256": "a310c7b3f971d3260d35642ef52fb8bafe005786612d89fd6740261bbcfce3c5",
+      "response_id": "resp_082f0ee631c19e5c016b0406e4ba4c87d29b641c2c9c46fa91",
+      "usage": {
+        "input_tokens": 4527,
+        "input_tokens_details": {
+          "cache_write_tokens": 3809,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3809
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1252,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5779
+      },
+      "ids": [
+        "v2-L322",
+        "v2-L362",
+        "v2-L366",
+        "v2-L367",
+        "v2-L390",
+        "v2-L391",
+        "v2-L392",
+        "v2-L393"
+      ],
+      "labels_sha256": "e9bb98444f8216c2f79eabb9d4adc91421ebff1ba766e4eb1af6ea1b237ef2a0"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "be6655ba12035658c7bc0ec9e13bcbce9b8d7084d017d0eacf0c6ab3a78462b4",
+      "input_sha256": "a310c7b3f971d3260d35642ef52fb8bafe005786612d89fd6740261bbcfce3c5",
+      "response_id": "resp_05ec5c6efc1a6211016b0406e5a62c87d2829912f08184e38e",
+      "usage": {
+        "input_tokens": 4494,
+        "input_tokens_details": {
+          "cache_write_tokens": 4491,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4491
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 604,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5098
+      },
+      "ids": [
+        "v2-L322",
+        "v2-L362",
+        "v2-L366",
+        "v2-L367",
+        "v2-L390",
+        "v2-L391",
+        "v2-L392",
+        "v2-L393"
+      ],
+      "labels_sha256": "0bb62bdcb24f73fc234453ba88fe71ac9b26d214f252ab51cb373ee8c6c83cd5"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "1a3af5f66b103033fe488f42e6e90fc03e85714849852a56f7509bcc8cad7752",
+      "input_sha256": "dcf256e1595371ab5af18f386f3418a0d02ec2ef97ea1f03cc3cb70e908cdab3",
+      "response_id": "resp_043b91dd290f0102016b0406e6c2d087d2bf73700788d50830",
+      "usage": {
+        "input_tokens": 5882,
+        "input_tokens_details": {
+          "cache_write_tokens": 5879,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5879
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 940,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6822
+      },
+      "ids": [
+        "v2-L404",
+        "v2-L419",
+        "v2-L438",
+        "v2-L463",
+        "v2-L464"
+      ],
+      "labels_sha256": "a23be2fc87f2b13d99e5f3c3faf423bd8dbf5c21099af21c31e6622cd18e59ed"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "f42e9e958dd936b9f13c4a303bf06568cc2c40ee86de0ee33f0b2e202fcb9044",
+      "input_sha256": "dcf256e1595371ab5af18f386f3418a0d02ec2ef97ea1f03cc3cb70e908cdab3",
+      "response_id": "resp_02fa6893573c82c5016b0406e7575c87d29888522eca95aa7b",
+      "usage": {
+        "input_tokens": 5915,
+        "input_tokens_details": {
+          "cache_write_tokens": 5197,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5197
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1184,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 7099
+      },
+      "ids": [
+        "v2-L404",
+        "v2-L419",
+        "v2-L438",
+        "v2-L463",
+        "v2-L464"
+      ],
+      "labels_sha256": "bdcff96e50bfaa883e9f9e58ec3134de65a98a29b0506dd1befcb512371a741e"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "e6f3058006c58f42b2d4e02ad89bd0bde32c17feb9b710119562a9a56688b1af",
+      "input_sha256": "dcf256e1595371ab5af18f386f3418a0d02ec2ef97ea1f03cc3cb70e908cdab3",
+      "response_id": "resp_0c56c6a84d5737d5016b0406e8e2c487d2994b6f1f2070ac27",
+      "usage": {
+        "input_tokens": 5882,
+        "input_tokens_details": {
+          "cache_write_tokens": 5879,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5879
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 927,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6809
+      },
+      "ids": [
+        "v2-L404",
+        "v2-L419",
+        "v2-L438",
+        "v2-L463",
+        "v2-L464"
+      ],
+      "labels_sha256": "731c09c2e869092bacf7e1a56d1c17678ff1d7673f2b2524b253d78303839994"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "ed769a6da8e54e8f7cfcd9283aa045ce7d222560b4e0385c745ec4f1582ef295",
+      "input_sha256": "2d218de5ba56848760d692df2e159e72531cf7676b30552974c88b50018c471a",
+      "response_id": "resp_02431bcbf07260e2016b0406ea3ccc87d28f70ca2ccf8d4fc3",
+      "usage": {
+        "input_tokens": 2332,
+        "input_tokens_details": {
+          "cache_write_tokens": 2329,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2329
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 254,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2586
+      },
+      "ids": [
+        "v2-L465",
+        "v2-L490",
+        "v2-L503"
+      ],
+      "labels_sha256": "e5e6eff2740efdeacaa70151fb0e27d3650e7c95e5c29ac881a6acc2c3e234d9"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "887953d2e6465eef3f5b8d622e0b3802f3499631d61c987b591ac7f394cc59f9",
+      "input_sha256": "2d218de5ba56848760d692df2e159e72531cf7676b30552974c88b50018c471a",
+      "response_id": "resp_05d7f686e383d7d5016b0406eb323c87d2bbb9bb29f28c1be2",
+      "usage": {
+        "input_tokens": 2365,
+        "input_tokens_details": {
+          "cache_write_tokens": 1647,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1647
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 438,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2803
+      },
+      "ids": [
+        "v2-L465",
+        "v2-L490",
+        "v2-L503"
+      ],
+      "labels_sha256": "a95306db344fe80bf2f006b18377dd9bbf8fe3b6d388472d250380c00a894273"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "f953e93d2b85985e8b731f8a21b4be12bccb356d719f4b58eb698f1fd7aa9dfd",
+      "input_sha256": "2d218de5ba56848760d692df2e159e72531cf7676b30552974c88b50018c471a",
+      "response_id": "resp_0386ba822a6888ad016b0406ec7af887d2bd2a2022ca082993",
+      "usage": {
+        "input_tokens": 2332,
+        "input_tokens_details": {
+          "cache_write_tokens": 2329,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2329
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 236,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2568
+      },
+      "ids": [
+        "v2-L465",
+        "v2-L490",
+        "v2-L503"
+      ],
+      "labels_sha256": "4f48eeee599d0e45285fd4ae19d71c8fa223a35575b093526f31fb13e95e19a4"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "992330566a70d1716dcac788a30c1987f37287de02aa4be77a45ad882926866d",
+      "input_sha256": "ef2985c2443b5e22aeca27e2b3b1a63bb9adf6933621244acfdb96e634a2a453",
+      "response_id": "resp_099b7e62f3fc13ac016b0406ee03f887d2abbe71a6b48b62dd",
+      "usage": {
+        "input_tokens": 4020,
+        "input_tokens_details": {
+          "cache_write_tokens": 4017,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4017
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 314,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4334
+      },
+      "ids": [
+        "point-taken-L18",
+        "point-taken-L19",
+        "point-taken-L20",
+        "point-taken-L21",
+        "point-taken-L22",
+        "point-taken-L24",
+        "point-taken-L28",
+        "point-taken-L29"
+      ],
+      "labels_sha256": "a1a6716a53e3a5b0ed4917977d4ac6f6e6e340a62292d3a6a3b9c13375100b2f"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "fa82d5d9431bbfc519c54c21b27ed9a1eb766f1a85f93a7fe7a91c5ccb9ae602",
+      "input_sha256": "ef2985c2443b5e22aeca27e2b3b1a63bb9adf6933621244acfdb96e634a2a453",
+      "response_id": "resp_0882e3f3609ec01e016b0406ef83c487d2b57e6ef3d6fa89ee",
+      "usage": {
+        "input_tokens": 4053,
+        "input_tokens_details": {
+          "cache_write_tokens": 3335,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3335
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 406,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4459
+      },
+      "ids": [
+        "point-taken-L18",
+        "point-taken-L19",
+        "point-taken-L20",
+        "point-taken-L21",
+        "point-taken-L22",
+        "point-taken-L24",
+        "point-taken-L28",
+        "point-taken-L29"
+      ],
+      "labels_sha256": "a1a6716a53e3a5b0ed4917977d4ac6f6e6e340a62292d3a6a3b9c13375100b2f"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "13a4ce0f507a81f4039f3a4019edb83cfd5cecbce5a8b58f55853a8bd9d79c5d",
+      "input_sha256": "ef2985c2443b5e22aeca27e2b3b1a63bb9adf6933621244acfdb96e634a2a453",
+      "response_id": "resp_0d6a75d29e298673016b0406efa7ac87d2ae090cc7f4d46d21",
+      "usage": {
+        "input_tokens": 4020,
+        "input_tokens_details": {
+          "cache_write_tokens": 4017,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4017
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 313,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4333
+      },
+      "ids": [
+        "point-taken-L18",
+        "point-taken-L19",
+        "point-taken-L20",
+        "point-taken-L21",
+        "point-taken-L22",
+        "point-taken-L24",
+        "point-taken-L28",
+        "point-taken-L29"
+      ],
+      "labels_sha256": "384e1be236fcb5565691d1813cc651eb780459f4c9a48d2bb4c372cb564978c3"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "0c36cbc56120e2f3036586ba827897b3499dc92377f83dd30cbdc8920b51a7e7",
+      "input_sha256": "1cece70cb577f5e35641b01f8d43cd7f3cb66b15cf1e753f15ee1830a8e74167",
+      "response_id": "resp_09c0883b2367bf40016b0406f1161c87d2a60a79db42e944a9",
+      "usage": {
+        "input_tokens": 4716,
+        "input_tokens_details": {
+          "cache_write_tokens": 4713,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4713
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1370,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6086
+      },
+      "ids": [
+        "point-taken-L30",
+        "point-taken-L31",
+        "point-taken-L32",
+        "point-taken-L35",
+        "point-taken-L36",
+        "point-taken-L39",
+        "point-taken-L40",
+        "point-taken-L41"
+      ],
+      "labels_sha256": "b3af9eb7ff3b7e65f7091f460996c394c1e8b3eb0a85ce4505c99483ae6792a4"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "43db3eeab9fed697bfe4c00e1f3f3bafec33b5eaa34727e6cfbedb801152ebc7",
+      "input_sha256": "1cece70cb577f5e35641b01f8d43cd7f3cb66b15cf1e753f15ee1830a8e74167",
+      "response_id": "resp_0568146266e09a1a016b0406f2339087d2847530fc28b87efd",
+      "usage": {
+        "input_tokens": 4749,
+        "input_tokens_details": {
+          "cache_write_tokens": 4031,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4031
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1571,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6320
+      },
+      "ids": [
+        "point-taken-L30",
+        "point-taken-L31",
+        "point-taken-L32",
+        "point-taken-L35",
+        "point-taken-L36",
+        "point-taken-L39",
+        "point-taken-L40",
+        "point-taken-L41"
+      ],
+      "labels_sha256": "b3af9eb7ff3b7e65f7091f460996c394c1e8b3eb0a85ce4505c99483ae6792a4"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0cec3ba82cc30ad0e3315fe04207438b7781fb14d01e50f2f52c82509750e0ed",
+      "input_sha256": "1cece70cb577f5e35641b01f8d43cd7f3cb66b15cf1e753f15ee1830a8e74167",
+      "response_id": "resp_0058851a3a2b001d016b040765e0b487d2a96c700c703f9d1e",
+      "usage": {
+        "input_tokens": 4716,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 4713
+        },
+        "output_tokens": 1315,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6031
+      },
+      "ids": [
+        "point-taken-L30",
+        "point-taken-L31",
+        "point-taken-L32",
+        "point-taken-L35",
+        "point-taken-L36",
+        "point-taken-L39",
+        "point-taken-L40",
+        "point-taken-L41"
+      ],
+      "labels_sha256": "a30ffe4bc1c8a3facc7e87c36a7e38473188cadf52c9f135dc4c4ba8817d542a"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "ea9777c64ae750946f55f00352c6c54749fe968abe1230676fb749dfba26bea9",
+      "input_sha256": "f3dd7a56dbcba40049f6e20e18c58ffdbe149f130fd1d74b57d86498016d2675",
+      "response_id": "resp_004460d7b1460ecc016b0406f2fa6087d2be3d62b705bd5e7a",
+      "usage": {
+        "input_tokens": 4417,
+        "input_tokens_details": {
+          "cache_write_tokens": 4414,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4414
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 411,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4828
+      },
+      "ids": [
+        "point-taken-L42",
+        "point-taken-L44",
+        "point-taken-L48",
+        "point-taken-L49",
+        "point-taken-L50",
+        "point-taken-L51",
+        "point-taken-L52",
+        "point-taken-L53"
+      ],
+      "labels_sha256": "40962c463b1bd0dd7d5ff99ab3405569c4301a1e121935ff1da5d120bca1c27e"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "e2d3258e8d70e68b408ceb18680cdf6dde31e00c75f4a525e807badc4e0ab55d",
+      "input_sha256": "f3dd7a56dbcba40049f6e20e18c58ffdbe149f130fd1d74b57d86498016d2675",
+      "response_id": "resp_0f7b999b372a9e12016b0406f3e59487d2956592d15201233b",
+      "usage": {
+        "input_tokens": 4450,
+        "input_tokens_details": {
+          "cache_write_tokens": 3732,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3732
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 584,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5034
+      },
+      "ids": [
+        "point-taken-L42",
+        "point-taken-L44",
+        "point-taken-L48",
+        "point-taken-L49",
+        "point-taken-L50",
+        "point-taken-L51",
+        "point-taken-L52",
+        "point-taken-L53"
+      ],
+      "labels_sha256": "40962c463b1bd0dd7d5ff99ab3405569c4301a1e121935ff1da5d120bca1c27e"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "253d2e57408db4ec829e94ff652a8b94b82360bd94815acc0762e548a4d0ac4d",
+      "input_sha256": "f3dd7a56dbcba40049f6e20e18c58ffdbe149f130fd1d74b57d86498016d2675",
+      "response_id": "resp_05cd3610471afad3016b0406f4ef1c87d2acf77cc751e7f04b",
+      "usage": {
+        "input_tokens": 4417,
+        "input_tokens_details": {
+          "cache_write_tokens": 4414,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4414
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 387,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4804
+      },
+      "ids": [
+        "point-taken-L42",
+        "point-taken-L44",
+        "point-taken-L48",
+        "point-taken-L49",
+        "point-taken-L50",
+        "point-taken-L51",
+        "point-taken-L52",
+        "point-taken-L53"
+      ],
+      "labels_sha256": "93fe514c61503543a37fba95ed818e8d43ab2b8a63bc005390f07baed57a790a"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "fa489ad67056b2cceac22cff27e7060312a0d86187988199f5050279287920fc",
+      "input_sha256": "ec0b3db46946a411eb9b3a2c83ffad21c949dc0c3aad1a30219f171b39964e8d",
+      "response_id": "resp_00aa0dbf634ce5c4016b0406f57e6887d28ceda04a23e6b5ed",
+      "usage": {
+        "input_tokens": 3468,
+        "input_tokens_details": {
+          "cache_write_tokens": 3465,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3465
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 323,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3791
+      },
+      "ids": [
+        "point-taken-L60",
+        "point-taken-L61",
+        "point-taken-L62",
+        "point-taken-L63",
+        "point-taken-L64",
+        "point-taken-L65",
+        "point-taken-L77",
+        "point-taken-L78"
+      ],
+      "labels_sha256": "96b98431f48b1642e8b3c91cc6860f9af8d5d1d02e3486cd24887bd5c151f17d"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "26baba8623ae5c857de7bd207479d72fd3ca7b9c33112bc16287f922a8d29d9c",
+      "input_sha256": "ec0b3db46946a411eb9b3a2c83ffad21c949dc0c3aad1a30219f171b39964e8d",
+      "response_id": "resp_0f4955e3d43550b9016b0406f84e5087d288191a0c20650470",
+      "usage": {
+        "input_tokens": 3501,
+        "input_tokens_details": {
+          "cache_write_tokens": 2783,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2783
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 471,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3972
+      },
+      "ids": [
+        "point-taken-L60",
+        "point-taken-L61",
+        "point-taken-L62",
+        "point-taken-L63",
+        "point-taken-L64",
+        "point-taken-L65",
+        "point-taken-L77",
+        "point-taken-L78"
+      ],
+      "labels_sha256": "96b98431f48b1642e8b3c91cc6860f9af8d5d1d02e3486cd24887bd5c151f17d"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "e8edfb02e6fb79cf56b081391a703c987cf61c861d8f779941db66a25f038e72",
+      "input_sha256": "ec0b3db46946a411eb9b3a2c83ffad21c949dc0c3aad1a30219f171b39964e8d",
+      "response_id": "resp_0f28833bb843549c016b0406f95ec487d2a951beb52a3a9f1e",
+      "usage": {
+        "input_tokens": 3468,
+        "input_tokens_details": {
+          "cache_write_tokens": 3465,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3465
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 297,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3765
+      },
+      "ids": [
+        "point-taken-L60",
+        "point-taken-L61",
+        "point-taken-L62",
+        "point-taken-L63",
+        "point-taken-L64",
+        "point-taken-L65",
+        "point-taken-L77",
+        "point-taken-L78"
+      ],
+      "labels_sha256": "4656a52d733bf93729749e909ee76a56e64dbe8a7253217c3c2fd7d94f20e32b"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "64e28ce83f868599f129e6e652558d1b567da6a69e11f82e4631ed8756656e65",
+      "input_sha256": "99a79e96db06aafcdf67affd17b34708283defb5f6097fb58e5fd10296edc0de",
+      "response_id": "resp_037621b34bd09132016b0406fab51087d2bd2fa1680310359d",
+      "usage": {
+        "input_tokens": 2979,
+        "input_tokens_details": {
+          "cache_write_tokens": 2976,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2976
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 394,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3373
+      },
+      "ids": [
+        "point-taken-L79",
+        "point-taken-L80",
+        "point-taken-L87",
+        "point-taken-L88",
+        "point-taken-L89",
+        "point-taken-L96",
+        "point-taken-L102",
+        "point-taken-L110"
+      ],
+      "labels_sha256": "8aa9d43240164c960ee33279fc90c2a6189b15c72d64137685f379584716e13b"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "73eaf280af10cbfe08bff24d458a584536f7360b5d010e45da381113867faa07",
+      "input_sha256": "99a79e96db06aafcdf67affd17b34708283defb5f6097fb58e5fd10296edc0de",
+      "response_id": "resp_0f64c815bf6eb8d0016b0406fb5ac487d2b1c83f4793d10be6",
+      "usage": {
+        "input_tokens": 3012,
+        "input_tokens_details": {
+          "cache_write_tokens": 2294,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2294
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 407,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3419
+      },
+      "ids": [
+        "point-taken-L79",
+        "point-taken-L80",
+        "point-taken-L87",
+        "point-taken-L88",
+        "point-taken-L89",
+        "point-taken-L96",
+        "point-taken-L102",
+        "point-taken-L110"
+      ],
+      "labels_sha256": "8aa9d43240164c960ee33279fc90c2a6189b15c72d64137685f379584716e13b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "4a4352eba8f7e9d0cb9b50313528f0b7181963ddc4ff4f1abe9139ca8fcb6524",
+      "input_sha256": "99a79e96db06aafcdf67affd17b34708283defb5f6097fb58e5fd10296edc0de",
+      "response_id": "resp_012e2200cec018b2016b0406fc2ac487d29e8cb3b6ddbf33d9",
+      "usage": {
+        "input_tokens": 2979,
+        "input_tokens_details": {
+          "cache_write_tokens": 2976,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2976
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 394,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3373
+      },
+      "ids": [
+        "point-taken-L79",
+        "point-taken-L80",
+        "point-taken-L87",
+        "point-taken-L88",
+        "point-taken-L89",
+        "point-taken-L96",
+        "point-taken-L102",
+        "point-taken-L110"
+      ],
+      "labels_sha256": "8aa9d43240164c960ee33279fc90c2a6189b15c72d64137685f379584716e13b"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "bcb64872e88b24afc530e171254491944edc1c1c664a187c474ec3b8a6c91c00",
+      "input_sha256": "fdc6dee820228b3bd4f3efc48cc360cba5df8ce92439df53ef071fcd8e053f37",
+      "response_id": "resp_0392bde31d05f6ab016b0406fe97fc87d28afc99a8cbce50cd",
+      "usage": {
+        "input_tokens": 2589,
+        "input_tokens_details": {
+          "cache_write_tokens": 2586,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2586
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 468,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3057
+      },
+      "ids": [
+        "point-taken-L117",
+        "point-taken-L118",
+        "point-taken-L119",
+        "point-taken-L120",
+        "point-taken-L121",
+        "point-taken-L128",
+        "point-taken-L129",
+        "point-taken-L132"
+      ],
+      "labels_sha256": "afd91c3047cac1bbd54c345c4f70371304de0b2890bfec9f5bab7a21005a08d2"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "df998e9554286fb7dd5b37583b1ef5cea2db4e77b7a34e460e5d9d6a03408d17",
+      "input_sha256": "fdc6dee820228b3bd4f3efc48cc360cba5df8ce92439df53ef071fcd8e053f37",
+      "response_id": "resp_08dc87b686cf563c016b0406ffaa8c87d29fac6a598ca7fe75",
+      "usage": {
+        "input_tokens": 2622,
+        "input_tokens_details": {
+          "cache_write_tokens": 1904,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1904
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 670,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3292
+      },
+      "ids": [
+        "point-taken-L117",
+        "point-taken-L118",
+        "point-taken-L119",
+        "point-taken-L120",
+        "point-taken-L121",
+        "point-taken-L128",
+        "point-taken-L129",
+        "point-taken-L132"
+      ],
+      "labels_sha256": "afd91c3047cac1bbd54c345c4f70371304de0b2890bfec9f5bab7a21005a08d2"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "08c8c0d3c1383304b9b8f7a15799613fc51e6a69d0171434aab193a9a0059f79",
+      "input_sha256": "fdc6dee820228b3bd4f3efc48cc360cba5df8ce92439df53ef071fcd8e053f37",
+      "response_id": "resp_0049105056fff522016b04070007f487d29c4e087d6f537472",
+      "usage": {
+        "input_tokens": 2589,
+        "input_tokens_details": {
+          "cache_write_tokens": 2586,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2586
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 442,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3031
+      },
+      "ids": [
+        "point-taken-L117",
+        "point-taken-L118",
+        "point-taken-L119",
+        "point-taken-L120",
+        "point-taken-L121",
+        "point-taken-L128",
+        "point-taken-L129",
+        "point-taken-L132"
+      ],
+      "labels_sha256": "87709e1ca03298406fb9d7d688c56e629a9abb685819b34ab75d5d7ad2d6a473"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "abeafa1c4ebb97f47b49799fe3681fb218ad5e3753deeaf3a16a24ad29c76ce7",
+      "input_sha256": "66bc51e62b579e1fa829a9201cd4e0ccb46a99cfbf28bb50b0097f64db38875c",
+      "response_id": "resp_09790037bba2f61f016b040701344487d29056523eba60e99e",
+      "usage": {
+        "input_tokens": 3797,
+        "input_tokens_details": {
+          "cache_write_tokens": 3794,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3794
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1070,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4867
+      },
+      "ids": [
+        "point-taken-L136",
+        "point-taken-L146",
+        "point-taken-L153",
+        "point-taken-L154",
+        "point-taken-L155",
+        "point-taken-L162",
+        "point-taken-L163",
+        "point-taken-L170"
+      ],
+      "labels_sha256": "d991a172d21aaef1f2dc17dfc8cd6146b7ff642da7d2e50eb6858451e5e97d2b"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "c4daae08a6b466d3a1b82b88e57aa69d88a22c7468cee27237bfaa94e39908cd",
+      "input_sha256": "66bc51e62b579e1fa829a9201cd4e0ccb46a99cfbf28bb50b0097f64db38875c",
+      "response_id": "resp_049b5f44ff1a1627016b0407026fb087d2b89fe3631779d1fe",
+      "usage": {
+        "input_tokens": 3830,
+        "input_tokens_details": {
+          "cache_write_tokens": 3112,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3112
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1337,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5167
+      },
+      "ids": [
+        "point-taken-L136",
+        "point-taken-L146",
+        "point-taken-L153",
+        "point-taken-L154",
+        "point-taken-L155",
+        "point-taken-L162",
+        "point-taken-L163",
+        "point-taken-L170"
+      ],
+      "labels_sha256": "d991a172d21aaef1f2dc17dfc8cd6146b7ff642da7d2e50eb6858451e5e97d2b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "fe741db9184fcdf6d4d3a396312125ba18d258187a1ef2b6204c8ccf2988cfd8",
+      "input_sha256": "66bc51e62b579e1fa829a9201cd4e0ccb46a99cfbf28bb50b0097f64db38875c",
+      "response_id": "resp_01f3531a1355de21016b040703574487d29833f87cd3e75fea",
+      "usage": {
+        "input_tokens": 3797,
+        "input_tokens_details": {
+          "cache_write_tokens": 3794,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3794
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 868,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4665
+      },
+      "ids": [
+        "point-taken-L136",
+        "point-taken-L146",
+        "point-taken-L153",
+        "point-taken-L154",
+        "point-taken-L155",
+        "point-taken-L162",
+        "point-taken-L163",
+        "point-taken-L170"
+      ],
+      "labels_sha256": "b11d029260aa33b1c6a63bdeccacd59900dddc0a3784596263f19882b6496044"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "f164e517cc56dc7c6e56888495fe0c1207be5e9ea3838ef26421440ecf695e4c",
+      "input_sha256": "b9667b59f9d98c84f1b07a78dc5123bcc933c801b8f21127192feb255799809b",
+      "response_id": "resp_0b5b5d89d6301839016b040704002487d29780965a1d4223ad",
+      "usage": {
+        "input_tokens": 2314,
+        "input_tokens_details": {
+          "cache_write_tokens": 2311,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2311
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 369,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2683
+      },
+      "ids": [
+        "point-taken-L193",
+        "point-taken-L196",
+        "point-taken-L197",
+        "point-taken-L198"
+      ],
+      "labels_sha256": "7aaed732e824f0142e1a21fa6b3a86f7082840d02eee4c913bb45293422ba24a"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "369289e4a00e760cda3120844ee275159cf88bf11eb715ac5a6375568bb8f864",
+      "input_sha256": "b9667b59f9d98c84f1b07a78dc5123bcc933c801b8f21127192feb255799809b",
+      "response_id": "resp_0417650ea562229e016b0407049b0887d2a8e237eeca7f59b9",
+      "usage": {
+        "input_tokens": 2347,
+        "input_tokens_details": {
+          "cache_write_tokens": 1629,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1629
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 585,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2932
+      },
+      "ids": [
+        "point-taken-L193",
+        "point-taken-L196",
+        "point-taken-L197",
+        "point-taken-L198"
+      ],
+      "labels_sha256": "10c2da3586da8e92ecbb324e693aa38f194ef5c910d9507c715af19ab5d5d4b6"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "01ab59f5f5b23e99b1a7bdf4a841e83649ee336a34ff6df58c4798df063f0a86",
+      "input_sha256": "b9667b59f9d98c84f1b07a78dc5123bcc933c801b8f21127192feb255799809b",
+      "response_id": "resp_05b564493a154f94016b040704b38887d2b240d7dc990a9cc2",
+      "usage": {
+        "input_tokens": 2314,
+        "input_tokens_details": {
+          "cache_write_tokens": 2311,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2311
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 239,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2553
+      },
+      "ids": [
+        "point-taken-L193",
+        "point-taken-L196",
+        "point-taken-L197",
+        "point-taken-L198"
+      ],
+      "labels_sha256": "ccf128e21dd247abb062552a9c1309ea5b2d8e12b671e35cebe8bee8331037cf"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "f2883eeba7222edaa4d9067f680ba329013d5de7eba7e651e333c83de039a8a3",
+      "input_sha256": "119409e4795da8856692a42fe6ec389b98eb093fda3605d4b9c0dca3d599af74",
+      "response_id": "resp_09b5057b114f474d016b040706f5b487d29e83c82addbcbeb6",
+      "usage": {
+        "input_tokens": 5365,
+        "input_tokens_details": {
+          "cache_write_tokens": 5362,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5362
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 907,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6272
+      },
+      "ids": [
+        "klava-sorting-L21",
+        "klava-sorting-L26",
+        "klava-sorting-L27",
+        "klava-sorting-L32",
+        "klava-sorting-L33",
+        "klava-sorting-L34",
+        "klava-sorting-L41",
+        "klava-sorting-L42"
+      ],
+      "labels_sha256": "7049d242fe37a4e99a84f60c7e038e3f9a257366cfeb9161780d4d02b1874f31"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "b18bdf0744e45e43d08a84f97a0530b6ec1eb6f72e4b3090a7c97568d03b40c8",
+      "input_sha256": "119409e4795da8856692a42fe6ec389b98eb093fda3605d4b9c0dca3d599af74",
+      "response_id": "resp_0d2df5cd7ee34f88016b0407080fb887d28a8893161edd4fa0",
+      "usage": {
+        "input_tokens": 5398,
+        "input_tokens_details": {
+          "cache_write_tokens": 4680,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4680
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1238,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6636
+      },
+      "ids": [
+        "klava-sorting-L21",
+        "klava-sorting-L26",
+        "klava-sorting-L27",
+        "klava-sorting-L32",
+        "klava-sorting-L33",
+        "klava-sorting-L34",
+        "klava-sorting-L41",
+        "klava-sorting-L42"
+      ],
+      "labels_sha256": "7049d242fe37a4e99a84f60c7e038e3f9a257366cfeb9161780d4d02b1874f31"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0921b8d409f4f58de27015a95769cacd8ca2b8bdbcacafd8ea781b3297169588",
+      "input_sha256": "119409e4795da8856692a42fe6ec389b98eb093fda3605d4b9c0dca3d599af74",
+      "response_id": "resp_075ab9f3d2301808016b0407090c6887d2a0b37893ccea61b2",
+      "usage": {
+        "input_tokens": 5365,
+        "input_tokens_details": {
+          "cache_write_tokens": 5362,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 5362
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 830,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 6195
+      },
+      "ids": [
+        "klava-sorting-L21",
+        "klava-sorting-L26",
+        "klava-sorting-L27",
+        "klava-sorting-L32",
+        "klava-sorting-L33",
+        "klava-sorting-L34",
+        "klava-sorting-L41",
+        "klava-sorting-L42"
+      ],
+      "labels_sha256": "b8bcd2dbf3d37b864f389e711ed53c3b14bb39d82fbe984d399c3358f8534165"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "f56252cb17ebb762edbeb9f4df4e621e1a7366e6251f9a23c1708e960f7a53a4",
+      "input_sha256": "4ccc22fa9a0ab65542d2f608a54bf8fac3147082e2bd746e04f0c365c42e1d3d",
+      "response_id": "resp_0da68b40cf0cacc6016b040709a45487d29413d43f5eeebd3c",
+      "usage": {
+        "input_tokens": 3040,
+        "input_tokens_details": {
+          "cache_write_tokens": 3037,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3037
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 431,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3471
+      },
+      "ids": [
+        "klava-sorting-L51",
+        "klava-sorting-L60",
+        "klava-sorting-L67",
+        "klava-sorting-L68",
+        "klava-sorting-L77",
+        "klava-sorting-L78",
+        "klava-sorting-L85",
+        "klava-sorting-L88"
+      ],
+      "labels_sha256": "b5bd04b8e3742302ce036d48d419375afd659926c309f469a1c2814a7e33713b"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "eb0bca046a76823630500e5cc7d91726c883305de15fac289cf898d25f429b7b",
+      "input_sha256": "4ccc22fa9a0ab65542d2f608a54bf8fac3147082e2bd746e04f0c365c42e1d3d",
+      "response_id": "resp_0846b91d29cf246c016b04070c4e4c87d2b1d7860a2cddf279",
+      "usage": {
+        "input_tokens": 3073,
+        "input_tokens_details": {
+          "cache_write_tokens": 2355,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2355
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 612,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3685
+      },
+      "ids": [
+        "klava-sorting-L51",
+        "klava-sorting-L60",
+        "klava-sorting-L67",
+        "klava-sorting-L68",
+        "klava-sorting-L77",
+        "klava-sorting-L78",
+        "klava-sorting-L85",
+        "klava-sorting-L88"
+      ],
+      "labels_sha256": "b5bd04b8e3742302ce036d48d419375afd659926c309f469a1c2814a7e33713b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "551c26b7c2943966f156ad6443aea83103f1d74ae19f36c9a85175331ba05d4e",
+      "input_sha256": "4ccc22fa9a0ab65542d2f608a54bf8fac3147082e2bd746e04f0c365c42e1d3d",
+      "response_id": "resp_0c1201caff0d8864016b04070e104c87d28dfe73067d5f95e2",
+      "usage": {
+        "input_tokens": 3040,
+        "input_tokens_details": {
+          "cache_write_tokens": 3037,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3037
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 431,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3471
+      },
+      "ids": [
+        "klava-sorting-L51",
+        "klava-sorting-L60",
+        "klava-sorting-L67",
+        "klava-sorting-L68",
+        "klava-sorting-L77",
+        "klava-sorting-L78",
+        "klava-sorting-L85",
+        "klava-sorting-L88"
+      ],
+      "labels_sha256": "b5bd04b8e3742302ce036d48d419375afd659926c309f469a1c2814a7e33713b"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "ca20e049b84d4f7c244e5fd8e0798af8715a686747747139417e58d4665ed074",
+      "input_sha256": "04d36728a3ba15796b31cf26cb33b20bcd0f06ba145d4ae2ee50919224d62338",
+      "response_id": "resp_003b882490727f1c016b04070f10f087d290aab289648e064c",
+      "usage": {
+        "input_tokens": 3653,
+        "input_tokens_details": {
+          "cache_write_tokens": 3650,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3650
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 407,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4060
+      },
+      "ids": [
+        "klava-sorting-L93",
+        "klava-sorting-L100",
+        "klava-sorting-L107",
+        "klava-sorting-L110",
+        "klava-sorting-L116",
+        "klava-sorting-L117",
+        "klava-sorting-L125",
+        "klava-sorting-L138"
+      ],
+      "labels_sha256": "862272e181275b4149813f0cabbc7ecc9ebf66e27a3132ce4fc5e863a19e24ee"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "d64d958edb9e92740781fdb434fdd1d6f0cbc40dbf886b8e307b8a8336c1ca5c",
+      "input_sha256": "04d36728a3ba15796b31cf26cb33b20bcd0f06ba145d4ae2ee50919224d62338",
+      "response_id": "resp_0fb66d6e9e4121c8016b04070f6a9c87d28850a355d0e54fd4",
+      "usage": {
+        "input_tokens": 3686,
+        "input_tokens_details": {
+          "cache_write_tokens": 2968,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2968
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 407,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4093
+      },
+      "ids": [
+        "klava-sorting-L93",
+        "klava-sorting-L100",
+        "klava-sorting-L107",
+        "klava-sorting-L110",
+        "klava-sorting-L116",
+        "klava-sorting-L117",
+        "klava-sorting-L125",
+        "klava-sorting-L138"
+      ],
+      "labels_sha256": "862272e181275b4149813f0cabbc7ecc9ebf66e27a3132ce4fc5e863a19e24ee"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "db2c57a4d9de65a323c5e839c971a8246d8088dcde86acbb1ad3eac5f7e52443",
+      "input_sha256": "04d36728a3ba15796b31cf26cb33b20bcd0f06ba145d4ae2ee50919224d62338",
+      "response_id": "resp_02704494165d9ea6016b040711de6887d2a8b30929da851167",
+      "usage": {
+        "input_tokens": 3653,
+        "input_tokens_details": {
+          "cache_write_tokens": 3650,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3650
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 435,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4088
+      },
+      "ids": [
+        "klava-sorting-L93",
+        "klava-sorting-L100",
+        "klava-sorting-L107",
+        "klava-sorting-L110",
+        "klava-sorting-L116",
+        "klava-sorting-L117",
+        "klava-sorting-L125",
+        "klava-sorting-L138"
+      ],
+      "labels_sha256": "a7371d38c2f2d0067dc330f22c531267a5c9f6e61e6d9d20dcc9e13cf04a73bd"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "e62a0ad4a90927ab715728e617626fd69a4bf63a3037b5354c017c4178f29479",
+      "input_sha256": "308902852e48a45fed7a068c09ee0c334650cf54f8a14085ecf68186f716358d",
+      "response_id": "resp_00375d112cbb12de016b0407120dc087d2a0ce07c1e67ed7f8",
+      "usage": {
+        "input_tokens": 4352,
+        "input_tokens_details": {
+          "cache_write_tokens": 4349,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4349
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 761,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5113
+      },
+      "ids": [
+        "klava-sorting-L139",
+        "klava-sorting-L148",
+        "klava-sorting-L165",
+        "klava-sorting-L166",
+        "klava-sorting-L177",
+        "klava-sorting-L184",
+        "klava-sorting-L191",
+        "klava-sorting-L192"
+      ],
+      "labels_sha256": "0c869d3ff8819548d37601ba03a43dbe84477c5f3cca508657d8db967b8c07a5"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "99ead25767cbe9fe2f539262bd4f0d4da50f608d5f74d23258bc78e99c2895a2",
+      "input_sha256": "308902852e48a45fed7a068c09ee0c334650cf54f8a14085ecf68186f716358d",
+      "response_id": "resp_0462070dd6c4ef9d016b04071218c887d29be4d132b4fd8b3a",
+      "usage": {
+        "input_tokens": 4385,
+        "input_tokens_details": {
+          "cache_write_tokens": 3667,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3667
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1068,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5453
+      },
+      "ids": [
+        "klava-sorting-L139",
+        "klava-sorting-L148",
+        "klava-sorting-L165",
+        "klava-sorting-L166",
+        "klava-sorting-L177",
+        "klava-sorting-L184",
+        "klava-sorting-L191",
+        "klava-sorting-L192"
+      ],
+      "labels_sha256": "0c869d3ff8819548d37601ba03a43dbe84477c5f3cca508657d8db967b8c07a5"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "c9bf814f3a1e45390ac394ce675afcecd1b0941e21a0b6e2b52d746e8ba5ca3f",
+      "input_sha256": "308902852e48a45fed7a068c09ee0c334650cf54f8a14085ecf68186f716358d",
+      "response_id": "resp_003eff075412a67c016b04072c15e487d288cf3f0b221596f7",
+      "usage": {
+        "input_tokens": 4352,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 4349
+        },
+        "output_tokens": 515,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4867
+      },
+      "ids": [
+        "klava-sorting-L139",
+        "klava-sorting-L148",
+        "klava-sorting-L165",
+        "klava-sorting-L166",
+        "klava-sorting-L177",
+        "klava-sorting-L184",
+        "klava-sorting-L191",
+        "klava-sorting-L192"
+      ],
+      "labels_sha256": "e314dab86f5b21121e612cc4336e565476bdae49569ceca2e494b7af9981f7d8"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "2957b28566ce179519e00bfd6c14e799e5b24b846ab731eecc7630e17efbd131",
+      "input_sha256": "6d3255d8330c4f4538314c4ef33a7a687cb9005b655ef62ef76cb08ce5a14798",
+      "response_id": "resp_049a060e833b76fa016b040715054487d2854e94e8e8a8313b",
+      "usage": {
+        "input_tokens": 3825,
+        "input_tokens_details": {
+          "cache_write_tokens": 3822,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3822
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 331,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4156
+      },
+      "ids": [
+        "klava-sorting-L199",
+        "klava-sorting-L208",
+        "klava-sorting-L209",
+        "klava-sorting-L229",
+        "klava-sorting-L236",
+        "klava-sorting-L245",
+        "klava-sorting-L246",
+        "klava-sorting-L251"
+      ],
+      "labels_sha256": "89b859f5d166c95f60021327576a5b97336bd50232cdd8ef0c3c72f8337fb4b4"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "1e60bf3a2934a7b25dd8eb37b2728ffa932e83fad19fa383168cff96f2c3effa",
+      "input_sha256": "6d3255d8330c4f4538314c4ef33a7a687cb9005b655ef62ef76cb08ce5a14798",
+      "response_id": "resp_005416d06fc439a8016b04071505f887d2b94edb6358b31e23",
+      "usage": {
+        "input_tokens": 3858,
+        "input_tokens_details": {
+          "cache_write_tokens": 3140,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3140
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 537,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4395
+      },
+      "ids": [
+        "klava-sorting-L199",
+        "klava-sorting-L208",
+        "klava-sorting-L209",
+        "klava-sorting-L229",
+        "klava-sorting-L236",
+        "klava-sorting-L245",
+        "klava-sorting-L246",
+        "klava-sorting-L251"
+      ],
+      "labels_sha256": "d5303706cebb6d45c9ae4a5abd03630577874c96ac048675f1f74fca85a5d420"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "1fec817e66f33109c3558819ec478e1d5048cd99e8a6f73f1aa619faa4a4dedf",
+      "input_sha256": "6d3255d8330c4f4538314c4ef33a7a687cb9005b655ef62ef76cb08ce5a14798",
+      "response_id": "resp_0aa65d65d2f268c5016b0407153ed487d295ac3e0705f0d6f2",
+      "usage": {
+        "input_tokens": 3825,
+        "input_tokens_details": {
+          "cache_write_tokens": 3822,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3822
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 338,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4163
+      },
+      "ids": [
+        "klava-sorting-L199",
+        "klava-sorting-L208",
+        "klava-sorting-L209",
+        "klava-sorting-L229",
+        "klava-sorting-L236",
+        "klava-sorting-L245",
+        "klava-sorting-L246",
+        "klava-sorting-L251"
+      ],
+      "labels_sha256": "9288292f5be575cc43979bfb438b8c4f768fb779b1af054736d18bb58ee8c176"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "9f183462945e443f0bef0c522c039c066d5073f908f14c795b4f23ac6dab5aff",
+      "input_sha256": "5ab8a5e802a2229073e30d38e5b4f5d6a5b57518948e6381856d9716fe83d69c",
+      "response_id": "resp_04074be015268802016b040716beac87d2ad2f9045a724d067",
+      "usage": {
+        "input_tokens": 954,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 58,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1012
+      },
+      "ids": [
+        "klava-sorting-L256",
+        "klava-sorting-L261"
+      ],
+      "labels_sha256": "f211f77cba903833b2b46c9a3cc25f1e5b26b0ad600a18db6dca383bcc67e9b9"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "e718a5c7709f4cc5640c1791a2ac7d725789ed39a6432bafed7c23722890ce8d",
+      "input_sha256": "5ab8a5e802a2229073e30d38e5b4f5d6a5b57518948e6381856d9716fe83d69c",
+      "response_id": "resp_0a62d8fb67adae60016b0407183da087d298d0cae935ba96a5",
+      "usage": {
+        "input_tokens": 987,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 96,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1083
+      },
+      "ids": [
+        "klava-sorting-L256",
+        "klava-sorting-L261"
+      ],
+      "labels_sha256": "3795057e9a55b4744add8f234b277046a56f4e298ef89d753b53a3aca798c77d"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0c1873ff795b930d81768e1bae8aa5e6b4b2e593cb64e2f7e63a70b341304b3a",
+      "input_sha256": "5ab8a5e802a2229073e30d38e5b4f5d6a5b57518948e6381856d9716fe83d69c",
+      "response_id": "resp_0229b4dd61a224b7016b0407185ad487d2bb14daf68b068476",
+      "usage": {
+        "input_tokens": 954,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 77,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1031
+      },
+      "ids": [
+        "klava-sorting-L256",
+        "klava-sorting-L261"
+      ],
+      "labels_sha256": "cfa4794d491b3111b5054e46123673030416852dfe88820f03fde97cf76d35e9"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "16016975b9e8c9b4cb8c1f4cdbee55da07567c598f289a616754a3c052020837",
+      "input_sha256": "83a355bda0a3f48ac585f18972bbe362c160d3eeb54d206812277e178e421b6e",
+      "response_id": "resp_027c928e0d2861aa016b040719bc4887d282b2e5f27890727c",
+      "usage": {
+        "input_tokens": 4826,
+        "input_tokens_details": {
+          "cache_write_tokens": 4823,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4823
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 663,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5489
+      },
+      "ids": [
+        "digester-recovery-L21",
+        "digester-recovery-L26",
+        "digester-recovery-L27",
+        "digester-recovery-L32",
+        "digester-recovery-L33",
+        "digester-recovery-L34",
+        "digester-recovery-L41",
+        "digester-recovery-L48"
+      ],
+      "labels_sha256": "39994f9075425758014cce8c432a1463615518755c8b3942e055ff816c0acaac"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "c108a9bbcb61bc0f51b28f3b4db560184d57bac84f9dbbb371598bb5471de466",
+      "input_sha256": "83a355bda0a3f48ac585f18972bbe362c160d3eeb54d206812277e178e421b6e",
+      "response_id": "resp_027fc7150d0ec36b016b040719c6fc87d2affbb7534aa6206d",
+      "usage": {
+        "input_tokens": 4859,
+        "input_tokens_details": {
+          "cache_write_tokens": 4141,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4141
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 927,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5786
+      },
+      "ids": [
+        "digester-recovery-L21",
+        "digester-recovery-L26",
+        "digester-recovery-L27",
+        "digester-recovery-L32",
+        "digester-recovery-L33",
+        "digester-recovery-L34",
+        "digester-recovery-L41",
+        "digester-recovery-L48"
+      ],
+      "labels_sha256": "926e9c2feaafe0fc767023537b9b09b175e2899e9549efbf3871bfd19db41bd5"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "28dfa9ec0e57c4dc0fa9fca4ede9c64b7fdcebe1dc71bfe8836386b92cc24e75",
+      "input_sha256": "83a355bda0a3f48ac585f18972bbe362c160d3eeb54d206812277e178e421b6e",
+      "response_id": "resp_01704fed13047f14016b04071a442c87d2ab6b07b7eb516cbe",
+      "usage": {
+        "input_tokens": 4826,
+        "input_tokens_details": {
+          "cache_write_tokens": 4823,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4823
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 649,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5475
+      },
+      "ids": [
+        "digester-recovery-L21",
+        "digester-recovery-L26",
+        "digester-recovery-L27",
+        "digester-recovery-L32",
+        "digester-recovery-L33",
+        "digester-recovery-L34",
+        "digester-recovery-L41",
+        "digester-recovery-L48"
+      ],
+      "labels_sha256": "cd6b0e27bb9cf0fb42d90c8222c70d2fd18f85576982a5019992607e43116c92"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "4d057fa28ea4ddc3a4cd6b60e805f3af12bf1ea683fd0c0b364c31e4b50d4a48",
+      "input_sha256": "d1bb9424ea6b014633f3a34645d48138729146a78c608f3ea2124488e0073f2c",
+      "response_id": "resp_063f44ec90c46da2016b04071b63c487d2887375860d782adc",
+      "usage": {
+        "input_tokens": 4814,
+        "input_tokens_details": {
+          "cache_write_tokens": 4811,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4811
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 529,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5343
+      },
+      "ids": [
+        "digester-recovery-L49",
+        "digester-recovery-L58",
+        "digester-recovery-L65",
+        "digester-recovery-L72",
+        "digester-recovery-L73",
+        "digester-recovery-L74",
+        "digester-recovery-L81",
+        "digester-recovery-L82"
+      ],
+      "labels_sha256": "3fd4093049e4897e555fe42f4f82afeabc7cffbd0e949ed3c0563b92f321c2ec"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "44fb39c124d6d1c49bf41fba3c1d91ffd988b89bc34a900a99faecba6703b86c",
+      "input_sha256": "d1bb9424ea6b014633f3a34645d48138729146a78c608f3ea2124488e0073f2c",
+      "response_id": "resp_0fa3a5eca76d4aa5016b04071bf77c87d28bd93aee5effcb9b",
+      "usage": {
+        "input_tokens": 4847,
+        "input_tokens_details": {
+          "cache_write_tokens": 4129,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4129
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 747,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5594
+      },
+      "ids": [
+        "digester-recovery-L49",
+        "digester-recovery-L58",
+        "digester-recovery-L65",
+        "digester-recovery-L72",
+        "digester-recovery-L73",
+        "digester-recovery-L74",
+        "digester-recovery-L81",
+        "digester-recovery-L82"
+      ],
+      "labels_sha256": "3fd4093049e4897e555fe42f4f82afeabc7cffbd0e949ed3c0563b92f321c2ec"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "7385626d964c2c9160b7a2c2ac859dbb3a2ae2e16f756ca8856c2f12f1a7d014",
+      "input_sha256": "d1bb9424ea6b014633f3a34645d48138729146a78c608f3ea2124488e0073f2c",
+      "response_id": "resp_0b71692ac99eba30016b04071ec67487d2997c002783ce43c5",
+      "usage": {
+        "input_tokens": 4814,
+        "input_tokens_details": {
+          "cache_write_tokens": 4811,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4811
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 470,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5284
+      },
+      "ids": [
+        "digester-recovery-L49",
+        "digester-recovery-L58",
+        "digester-recovery-L65",
+        "digester-recovery-L72",
+        "digester-recovery-L73",
+        "digester-recovery-L74",
+        "digester-recovery-L81",
+        "digester-recovery-L82"
+      ],
+      "labels_sha256": "29ba8d38e3b737686c025c31cc6f768c6e5bb1d77385995794acd107ed93e220"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "0e0e87df64b23ac1f7f6cf241077c245df4ac57bfdcd0f85f8215efc39cc49fc",
+      "input_sha256": "512834e947d2490300133a1e56cd0bbf0ed7c92acc21f4a220c03867287e65e0",
+      "response_id": "resp_067db0dd94281382016b04071f03d087d288bd021698421dc0",
+      "usage": {
+        "input_tokens": 4396,
+        "input_tokens_details": {
+          "cache_write_tokens": 4393,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4393
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 862,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5258
+      },
+      "ids": [
+        "digester-recovery-L91",
+        "digester-recovery-L92",
+        "digester-recovery-L99",
+        "digester-recovery-L106",
+        "digester-recovery-L129",
+        "digester-recovery-L136",
+        "digester-recovery-L137",
+        "digester-recovery-L144"
+      ],
+      "labels_sha256": "6b9326c4f9109dfb60b3141839ef4de776aef8904eed78314bc2c4ed74e9a2d5"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "3baef7ef3ff34875efe61d3bd54ccb82df570af90ac1a864fcbef6f7bf1fd5b0",
+      "input_sha256": "512834e947d2490300133a1e56cd0bbf0ed7c92acc21f4a220c03867287e65e0",
+      "response_id": "resp_02b6911144aea153016b040722344487d2991c183c33cfb978",
+      "usage": {
+        "input_tokens": 4429,
+        "input_tokens_details": {
+          "cache_write_tokens": 3711,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3711
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 1031,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5460
+      },
+      "ids": [
+        "digester-recovery-L91",
+        "digester-recovery-L92",
+        "digester-recovery-L99",
+        "digester-recovery-L106",
+        "digester-recovery-L129",
+        "digester-recovery-L136",
+        "digester-recovery-L137",
+        "digester-recovery-L144"
+      ],
+      "labels_sha256": "6b9326c4f9109dfb60b3141839ef4de776aef8904eed78314bc2c4ed74e9a2d5"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "1edc8497a426e4f5f2f6e7beb85f99992785fac517ea88b4e749d3ac5f0a7937",
+      "input_sha256": "512834e947d2490300133a1e56cd0bbf0ed7c92acc21f4a220c03867287e65e0",
+      "response_id": "resp_008e101ff0ee5b22016b040722351c87d28f0854603dfc00f4",
+      "usage": {
+        "input_tokens": 4396,
+        "input_tokens_details": {
+          "cache_write_tokens": 4393,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4393
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 830,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5226
+      },
+      "ids": [
+        "digester-recovery-L91",
+        "digester-recovery-L92",
+        "digester-recovery-L99",
+        "digester-recovery-L106",
+        "digester-recovery-L129",
+        "digester-recovery-L136",
+        "digester-recovery-L137",
+        "digester-recovery-L144"
+      ],
+      "labels_sha256": "17adf508f254ac60027a670968d2b1ce56233ec846b54c32be4d2db61070696d"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "1199d51f40c9bfdd05974b586e64224cab1d2eaa995e311cbdf4439f1a356731",
+      "input_sha256": "e2bf6956589ed3f02788bc004f7bf9c65e34f24b8b871e73854b89d6d05889e0",
+      "response_id": "resp_071e363bdd5c770b016b04072317c487d2a50bc78e74074dfe",
+      "usage": {
+        "input_tokens": 3066,
+        "input_tokens_details": {
+          "cache_write_tokens": 3063,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3063
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 504,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3570
+      },
+      "ids": [
+        "digester-recovery-L151",
+        "digester-recovery-L158",
+        "digester-recovery-L167",
+        "digester-recovery-L174",
+        "digester-recovery-L181",
+        "digester-recovery-L188",
+        "digester-recovery-L195",
+        "digester-recovery-L202"
+      ],
+      "labels_sha256": "bf7d4a72207766e6888442f5627c83788805f756916fc9808ff21c7a892b3ee8"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "8e7a3b8e003c4261f0d277e240f0b48dda056face0df4b0845994cc871fbb6f8",
+      "input_sha256": "e2bf6956589ed3f02788bc004f7bf9c65e34f24b8b871e73854b89d6d05889e0",
+      "response_id": "resp_0a6d43da471ab4dd016b040725077487d2aba454e81b624ea5",
+      "usage": {
+        "input_tokens": 3099,
+        "input_tokens_details": {
+          "cache_write_tokens": 2381,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2381
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 711,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3810
+      },
+      "ids": [
+        "digester-recovery-L151",
+        "digester-recovery-L158",
+        "digester-recovery-L167",
+        "digester-recovery-L174",
+        "digester-recovery-L181",
+        "digester-recovery-L188",
+        "digester-recovery-L195",
+        "digester-recovery-L202"
+      ],
+      "labels_sha256": "bf7d4a72207766e6888442f5627c83788805f756916fc9808ff21c7a892b3ee8"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "14d321b87f5d414aa83d188c9746eec8b1a890fd36b7ac1004682c8fd8dabf40",
+      "input_sha256": "e2bf6956589ed3f02788bc004f7bf9c65e34f24b8b871e73854b89d6d05889e0",
+      "response_id": "resp_0d17beea1c02a5d2016b0407253e1887d2b5bb038f0b968d91",
+      "usage": {
+        "input_tokens": 3066,
+        "input_tokens_details": {
+          "cache_write_tokens": 3063,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3063
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 560,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3626
+      },
+      "ids": [
+        "digester-recovery-L151",
+        "digester-recovery-L158",
+        "digester-recovery-L167",
+        "digester-recovery-L174",
+        "digester-recovery-L181",
+        "digester-recovery-L188",
+        "digester-recovery-L195",
+        "digester-recovery-L202"
+      ],
+      "labels_sha256": "8e492c61304c7f68e677dd82acdf4203826b79f7bdb363df84af8209fffc494a"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "8399a9c60d95c8ea303dbff1791a5ef81f5944fdab893527a122a2e4528974f2",
+      "input_sha256": "b12211923f4367d7f8ea16e7575f84229252dff5e09fa8c39f736bddf353258d",
+      "response_id": "resp_031fc729c353ebe5016b04072865d087d283ec05a8299d196d",
+      "usage": {
+        "input_tokens": 2934,
+        "input_tokens_details": {
+          "cache_write_tokens": 2931,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2931
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 674,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3608
+      },
+      "ids": [
+        "digester-recovery-L209",
+        "digester-recovery-L210",
+        "digester-recovery-L217",
+        "digester-recovery-L222",
+        "digester-recovery-L237",
+        "digester-recovery-L244",
+        "digester-recovery-L251",
+        "digester-recovery-L258"
+      ],
+      "labels_sha256": "44109ddd6e09e2e6628d7b2b54337c3869a94ad2ba8769b67c7f427c51a836c0"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "41f9e900d60db1904c1e6829fe2a4a6ebfbc1ac49f78f9cec9b84796d24b9cbd",
+      "input_sha256": "b12211923f4367d7f8ea16e7575f84229252dff5e09fa8c39f736bddf353258d",
+      "response_id": "resp_03d997f2e15cb9bd016b040729b4f487d29d2bcf03371e54e6",
+      "usage": {
+        "input_tokens": 2967,
+        "input_tokens_details": {
+          "cache_write_tokens": 2249,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2249
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 926,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3893
+      },
+      "ids": [
+        "digester-recovery-L209",
+        "digester-recovery-L210",
+        "digester-recovery-L217",
+        "digester-recovery-L222",
+        "digester-recovery-L237",
+        "digester-recovery-L244",
+        "digester-recovery-L251",
+        "digester-recovery-L258"
+      ],
+      "labels_sha256": "44109ddd6e09e2e6628d7b2b54337c3869a94ad2ba8769b67c7f427c51a836c0"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "d968ae14c20df0be1ea04e77bbefd92b6d96b37d0b3c45fb3f7e06c611ca9d90",
+      "input_sha256": "b12211923f4367d7f8ea16e7575f84229252dff5e09fa8c39f736bddf353258d",
+      "response_id": "resp_01b68a00c045d03b016b040735e2d887d2a930bdf743a16699",
+      "usage": {
+        "input_tokens": 2934,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 0
+          },
+          "cached_tokens": 2931
+        },
+        "output_tokens": 688,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3622
+      },
+      "ids": [
+        "digester-recovery-L209",
+        "digester-recovery-L210",
+        "digester-recovery-L217",
+        "digester-recovery-L222",
+        "digester-recovery-L237",
+        "digester-recovery-L244",
+        "digester-recovery-L251",
+        "digester-recovery-L258"
+      ],
+      "labels_sha256": "b289796cbee38221b7c925b8ed38fcaf5efce428b667a85711dc5487ba6649c7"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "2b48dd64ccbfa75b84d38b2946f18eb2deb84f0263a0f36b2c611add5d9ea37f",
+      "input_sha256": "d1c599367fc7c6341afe7b50793595338734260c59407461a4bf0c93dfe27bcf",
+      "response_id": "resp_095ded6813a6bdda016b04072a6bb887d28fea67f359a58bcb",
+      "usage": {
+        "input_tokens": 1854,
+        "input_tokens_details": {
+          "cache_write_tokens": 1851,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1851
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 312,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2166
+      },
+      "ids": [
+        "digester-recovery-L271",
+        "digester-recovery-L276",
+        "digester-recovery-L283",
+        "digester-recovery-L292",
+        "digester-recovery-L297",
+        "digester-recovery-L300",
+        "digester-recovery-L307",
+        "digester-recovery-L314"
+      ],
+      "labels_sha256": "439ff23d88703ff923041eda5c9d9e9bb24a529945c076c75dbd60f8b7b6de89"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "9586ccc6533cb07419495a03fcafc48a22e6a787bf0bb3971e15b5a7141cd73a",
+      "input_sha256": "d1c599367fc7c6341afe7b50793595338734260c59407461a4bf0c93dfe27bcf",
+      "response_id": "resp_0d473d65c056c1d3016b04072df43087d2b2b8114e152e5af4",
+      "usage": {
+        "input_tokens": 1887,
+        "input_tokens_details": {
+          "cache_write_tokens": 1169,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1169
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 449,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2336
+      },
+      "ids": [
+        "digester-recovery-L271",
+        "digester-recovery-L276",
+        "digester-recovery-L283",
+        "digester-recovery-L292",
+        "digester-recovery-L297",
+        "digester-recovery-L300",
+        "digester-recovery-L307",
+        "digester-recovery-L314"
+      ],
+      "labels_sha256": "439ff23d88703ff923041eda5c9d9e9bb24a529945c076c75dbd60f8b7b6de89"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "0283c76dbf032e1142c84a86e0019804e4b7df94ecf572bebaa10c619fa83c0e",
+      "input_sha256": "d1c599367fc7c6341afe7b50793595338734260c59407461a4bf0c93dfe27bcf",
+      "response_id": "resp_00f91d063af2a2cc016b04072e8d6887d28d8918e126505efb",
+      "usage": {
+        "input_tokens": 1854,
+        "input_tokens_details": {
+          "cache_write_tokens": 1851,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1851
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 304,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2158
+      },
+      "ids": [
+        "digester-recovery-L271",
+        "digester-recovery-L276",
+        "digester-recovery-L283",
+        "digester-recovery-L292",
+        "digester-recovery-L297",
+        "digester-recovery-L300",
+        "digester-recovery-L307",
+        "digester-recovery-L314"
+      ],
+      "labels_sha256": "7a7c47d6a98c49fc20bff609dff90a932c7dc65c7425361c8f7e4e516e1eb1e3"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "f4ce3b05a42755e6b9643b1dc39997ffcb947c3c1ce28e7ebb5c7b36f71a7900",
+      "input_sha256": "70b0f254069ce371a838a8477f439c809f758e0ea8d65b04bbdb8b32063da85e",
+      "response_id": "resp_097e03bda03fc7cf016b04072ecf4087d2a896362f2f1e335d",
+      "usage": {
+        "input_tokens": 3997,
+        "input_tokens_details": {
+          "cache_write_tokens": 3994,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3994
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 604,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4601
+      },
+      "ids": [
+        "digester-recovery-L315",
+        "digester-recovery-L318",
+        "digester-recovery-L323",
+        "digester-recovery-L330",
+        "digester-recovery-L337",
+        "digester-recovery-L348",
+        "digester-recovery-L355",
+        "digester-recovery-L362"
+      ],
+      "labels_sha256": "15f6a649e7886b9e30e93f959ebd0cb1769625ab40467aafe36292550858759b"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "5a4ae658cdce71ee53e51d3808c7335fd0ebe22e6b1fe616b2d0332b60217655",
+      "input_sha256": "70b0f254069ce371a838a8477f439c809f758e0ea8d65b04bbdb8b32063da85e",
+      "response_id": "resp_08d76a54585914e7016b04073015c487d28639ac2b14f77316",
+      "usage": {
+        "input_tokens": 4030,
+        "input_tokens_details": {
+          "cache_write_tokens": 3312,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3312
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 734,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4764
+      },
+      "ids": [
+        "digester-recovery-L315",
+        "digester-recovery-L318",
+        "digester-recovery-L323",
+        "digester-recovery-L330",
+        "digester-recovery-L337",
+        "digester-recovery-L348",
+        "digester-recovery-L355",
+        "digester-recovery-L362"
+      ],
+      "labels_sha256": "15f6a649e7886b9e30e93f959ebd0cb1769625ab40467aafe36292550858759b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "cc1cfccebf6c59dbff2e98069d6a594b084e99a2bbead4343defec2fe38486e5",
+      "input_sha256": "70b0f254069ce371a838a8477f439c809f758e0ea8d65b04bbdb8b32063da85e",
+      "response_id": "resp_096518937e887cf1016b0407314cf087d2bc5384f24685005a",
+      "usage": {
+        "input_tokens": 3997,
+        "input_tokens_details": {
+          "cache_write_tokens": 3994,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3994
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 369,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4366
+      },
+      "ids": [
+        "digester-recovery-L315",
+        "digester-recovery-L318",
+        "digester-recovery-L323",
+        "digester-recovery-L330",
+        "digester-recovery-L337",
+        "digester-recovery-L348",
+        "digester-recovery-L355",
+        "digester-recovery-L362"
+      ],
+      "labels_sha256": "20f3b68b2c50ac887054bf775e68348422f879139b89f71a32251c045d05249c"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "88388f6cfe67a6e10fcaeb280c8e4497cea28ea4188e03b0ed0db342e037c92d",
+      "input_sha256": "6c6a1176e9768c87320ccfce117848c27be33f5ca74ce954469313de6f1b4736",
+      "response_id": "resp_0242943d72cd47c9016b040731828487d281c2701a43424642",
+      "usage": {
+        "input_tokens": 2347,
+        "input_tokens_details": {
+          "cache_write_tokens": 2344,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2344
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 482,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2829
+      },
+      "ids": [
+        "digester-recovery-L369",
+        "digester-recovery-L376",
+        "digester-recovery-L381",
+        "digester-recovery-L386",
+        "digester-recovery-L393",
+        "digester-recovery-L404",
+        "digester-recovery-L411",
+        "digester-recovery-L418"
+      ],
+      "labels_sha256": "051f75723460a84c25c3833f1a0c2e8780b87399a6904d0917b7ec75a8a8b29b"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "e39a64a25dee4f20181faa5354d4a66e4f55f34f4b1819392f942bfabb19b324",
+      "input_sha256": "6c6a1176e9768c87320ccfce117848c27be33f5ca74ce954469313de6f1b4736",
+      "response_id": "resp_052f879e45280e48016b040733fbc087d29eb4c5b5f81ff7dd",
+      "usage": {
+        "input_tokens": 2380,
+        "input_tokens_details": {
+          "cache_write_tokens": 1662,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 1662
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 673,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3053
+      },
+      "ids": [
+        "digester-recovery-L369",
+        "digester-recovery-L376",
+        "digester-recovery-L381",
+        "digester-recovery-L386",
+        "digester-recovery-L393",
+        "digester-recovery-L404",
+        "digester-recovery-L411",
+        "digester-recovery-L418"
+      ],
+      "labels_sha256": "051f75723460a84c25c3833f1a0c2e8780b87399a6904d0917b7ec75a8a8b29b"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "533d60307881b09b45b16464296ddcc74b4492451c704103ab8438d0b74386e7",
+      "input_sha256": "6c6a1176e9768c87320ccfce117848c27be33f5ca74ce954469313de6f1b4736",
+      "response_id": "resp_0afbbfac62d2e155016b0407349e2887d29a34163f87e19353",
+      "usage": {
+        "input_tokens": 2347,
+        "input_tokens_details": {
+          "cache_write_tokens": 2344,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 2344
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 464,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2811
+      },
+      "ids": [
+        "digester-recovery-L369",
+        "digester-recovery-L376",
+        "digester-recovery-L381",
+        "digester-recovery-L386",
+        "digester-recovery-L393",
+        "digester-recovery-L404",
+        "digester-recovery-L411",
+        "digester-recovery-L418"
+      ],
+      "labels_sha256": "5e4fab8cdb56a70be970d39f91e42af8a9d72cb482c550705df10f7348e5993a"
+    },
+    {
+      "reviewer": "terra",
+      "model": "gpt-6.1-terra",
+      "effort": "none",
+      "request_sha256": "68e34c8e334b604526f19666d2b6338d58497d859c43d340c43679286ce5c8e2",
+      "input_sha256": "79205b2f6807739c02c3b9d5c85803367aec3abf8ae6901dfeeebdd719a8a1a9",
+      "response_id": "resp_0c820d691ae7e1ae016b040735506c87d2b1d5c3a7de113596",
+      "usage": {
+        "input_tokens": 4185,
+        "input_tokens_details": {
+          "cache_write_tokens": 4182,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4182
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 657,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4842
+      },
+      "ids": [
+        "digester-recovery-L425",
+        "digester-recovery-L432",
+        "digester-recovery-L433",
+        "digester-recovery-L442",
+        "digester-recovery-L447",
+        "digester-recovery-L468",
+        "digester-recovery-L469"
+      ],
+      "labels_sha256": "d238e5caf05b1ffed156cc734597048de47ddc4fceab00f9e90c8955349cc3df"
+    },
+    {
+      "reviewer": "sol",
+      "model": "gpt-6.2-sol",
+      "effort": "low",
+      "request_sha256": "7b77b2336b7859dad85bb5bc830bcf5bfa60030dfc0ae8e804be843fbf8cdd2d",
+      "input_sha256": "79205b2f6807739c02c3b9d5c85803367aec3abf8ae6901dfeeebdd719a8a1a9",
+      "response_id": "resp_0f9b4e6a41c15bb2016b040736f81087d2ac4a5727329af5a7",
+      "usage": {
+        "input_tokens": 4218,
+        "input_tokens_details": {
+          "cache_write_tokens": 3500,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 3500
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 909,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 5127
+      },
+      "ids": [
+        "digester-recovery-L425",
+        "digester-recovery-L432",
+        "digester-recovery-L433",
+        "digester-recovery-L442",
+        "digester-recovery-L447",
+        "digester-recovery-L468",
+        "digester-recovery-L469"
+      ],
+      "labels_sha256": "d238e5caf05b1ffed156cc734597048de47ddc4fceab00f9e90c8955349cc3df"
+    },
+    {
+      "reviewer": "luna",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "request_sha256": "ddbb23cd0f9d8a5e5a9916c935042cc866616c031c12beecf5e7e27eca2e437a",
+      "input_sha256": "79205b2f6807739c02c3b9d5c85803367aec3abf8ae6901dfeeebdd719a8a1a9",
+      "response_id": "resp_00350fc2f42f02c4016b040737cc4087d2819db9d2205cf3bb",
+      "usage": {
+        "input_tokens": 4185,
+        "input_tokens_details": {
+          "cache_write_tokens": 4182,
+          "cache_write_tokens_details": {
+            "ttl_12h_tokens": 0,
+            "ttl_30m_tokens": 4182
+          },
+          "cached_tokens": 0
+        },
+        "output_tokens": 594,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 4779
+      },
+      "ids": [
+        "digester-recovery-L425",
+        "digester-recovery-L432",
+        "digester-recovery-L433",
+        "digester-recovery-L442",
+        "digester-recovery-L447",
+        "digester-recovery-L468",
+        "digester-recovery-L469"
+      ],
+      "labels_sha256": "7b5da73792357dacae2fdf8f845337874cec7b5aa90cba68687a864317d21233"
+    }
+  ]
+}

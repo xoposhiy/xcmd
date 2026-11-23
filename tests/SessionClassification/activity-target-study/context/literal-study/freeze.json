@@ -1,0 +1,22 @@
+{
+  "code": {
+    "parent": "480ed63636e9298a3eb11908d8809457e0d14655a4b6327436c9ba6bbda847da",
+    "files": {
+      "literal.py": "35631ddba187f802a4100c159cba1ea4efe54a9bc1e2869b634b9c11c8244714",
+      "literal_trial.py": "be85e5b0ba021a75b43b55a07be57d1dbe1efb3afbefc9b8eb9a13d565471c9e",
+      "trial.py": "c84106cad7c917ca07f7d48af63c9d0784f4c453e69949fbd563bef367b66076",
+      "method.py": "2383e7327d28e9d0b8201f12dbc191ac055f1dd5a607ebb6d667fa20a5de6529",
+      "evidence.py": "e9345f4a9ca36534c911a7e54b8af6ccbf9630f88b647417e302fc85f82d5fd4",
+      "syntax.ps1": "1953fb336ccedc1575083e14dab75c4a57912d4c623ede3608eac8d16e03cb58",
+      "prepare.py": "a7015714ca1635597fa185301dac35af7e69d595f4ca0e813e67192ba52fa878"
+    }
+  },
+  "input_hashes": {
+    "development": "7e7d0bf61817aced3aebd79ae6f2a3826a29cc1939d49b5f36f74236ba58eb56",
+    "extra": "bee379fe9ed9733be25bd2f9d67ca23812689c5a48ae35bbbf169bd1c11839b2",
+    "previous": "dc626ffd8b4693df0cd81b9e592c4c7f375a8b8d5a0fb2e3014caf922be2beed",
+    "fresh": "0a4ef3b0569f07a85236271539e778dd5518d8fd94637ee5dfd04746bd5104aa",
+    "reserve": "35e83b4736217d2ac5a8dd0159ec338656d8ce1e5c821640919ed7b62a7ce1b9"
+  },
+  "primary": "Exact target and action on the new reserve session; report all secondary samples."
+}

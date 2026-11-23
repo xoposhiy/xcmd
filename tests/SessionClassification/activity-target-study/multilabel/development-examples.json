@@ -1,0 +1,49 @@
+{
+  "point-taken-L31": {
+    "command": "Get-Content -Raw -LiteralPath 'tests/check_xcmd_adapter.py','src/Desktop/ReportedControl.cs'",
+    "a1": "mixed/read",
+    "b1": "mixed/read",
+    "a2": [
+      "source/read",
+      "tests/read"
+    ],
+    "b2": [
+      "source/read",
+      "tests/read"
+    ]
+  },
+  "point-taken-L64": {
+    "command": "git status --short --branch; git log -4 --oneline; git worktree list",
+    "a1": "git/read",
+    "b1": "git/read",
+    "a2": [
+      "git/read"
+    ],
+    "b2": [
+      "git/read"
+    ]
+  },
+  "point-taken-L146": {
+    "command": "@'\nfrom pathlib import Path\nimport shutil\nimport subprocess\nimport tempfile\n\nroot = Path.cwd()\nwith tempfile.TemporaryDirectory(prefix=\"pt-skill-\", ignore_cleanup_errors=True) as staging:\n    checkout = Path(staging) / \"point-taken\"\n    subprocess.run([\"git\", \"clone\", \"--quiet\", \"--local\", str(root), str(checkout)], check=True)\n    for name in (\"scripts/Deploy-PointTaken.ps1\", \"scripts/Register-PointTakenUser.ps1\"):\n        shutil.copyfile(root / name, checkout / name)\n    shutil.copytree(root / \"skill/point-taken\", checkout / \"skill/point-taken\", dirs_exist_ok=True)\n    subprocess.run([\"pwsh\", \"-NoProfile\", \"-File\", \"./scripts/Deploy-PointTaken.ps1\"], cwd=checkout, check=True)\n'@ | python -",
+    "a1": "mixed/write",
+    "b1": "tooling/other",
+    "a2": [
+      "git/read",
+      "git/write",
+      "source/read",
+      "source/write",
+      "tooling/other",
+      "tooling/read",
+      "tooling/write"
+    ],
+    "b2": [
+      "docs/read",
+      "docs/write",
+      "git/read",
+      "git/write",
+      "tooling/other",
+      "tooling/read",
+      "tooling/write"
+    ]
+  }
+}

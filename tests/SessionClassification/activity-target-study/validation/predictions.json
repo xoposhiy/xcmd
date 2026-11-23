@@ -1,0 +1,1437 @@
+{
+  "v1-L117": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads the installed skill instructions and two HTML files; no changes are reported."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads the installed skill instructions and two HTML files; no changes are reported."
+    }
+  },
+  "v1-L124": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command reads Othello neural code and a training.json file under games/othello."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command reads Othello neural code and a training.json file under games/othello."
+    }
+  },
+  "v1-L138": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "write",
+      "cue": "The completed FileChange reports adding /repo/.blog/update_othello_neural.py; its role is unknown."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "write",
+      "cue": "The completed FileChange reports adding /repo/.blog/update_othello_neural.py; its role is unknown."
+    }
+  },
+  "v1-L139": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "other",
+      "cue": "The Python command completed successfully; the script’s target is not established by the evidence."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "other",
+      "cue": "The Python command completed successfully; the script’s target is not established by the evidence."
+    }
+  },
+  "v1-L148": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command attempted to read the Othello HTML and a JSON file under games/othello/evidence; it failed."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command attempted to read the Othello HTML and a JSON file under games/othello/evidence; it failed."
+    }
+  },
+  "v1-L161": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "write",
+      "cue": "The completed FileChange reports adding one file and updating another, but their target roles are not established."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "write",
+      "cue": "The completed FileChange reports adding one file and updating another, but their target roles are not established."
+    }
+  },
+  "v1-L162": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L187": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read training data, an evidence JSON file, and searched a shipped HTML page."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read training data, an evidence JSON file, and searched a shipped HTML page."
+    }
+  },
+  "v1-L192": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L193": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L216": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read a file, but the empty excerpt does not establish its project role."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read a file, but the empty excerpt does not establish its project role."
+    }
+  },
+  "v1-L217": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L218": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L236": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read the JSON evidence file and a session Markdown note."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read the JSON evidence file and a session Markdown note."
+    }
+  },
+  "v1-L237": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L238": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L256": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "Read contents from a neural training JSON, a session note, and the Othello README."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "Read contents from a neural training JSON, a session note, and the Othello README."
+    }
+  },
+  "v1-L262": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "The completed FileChange added and updated Python scripts under /repo/.blog."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "The completed FileChange added and updated Python scripts under /repo/.blog."
+    }
+  },
+  "v1-L264": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Two Python scripts ran; no file changes are reported."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Two Python scripts ran; no file changes are reported."
+    }
+  },
+  "v1-L282": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read the JSON file, but the excerpt is empty and its role is unknown."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read the JSON file, but the excerpt is empty and its role is unknown."
+    }
+  },
+  "v1-L283": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L284": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L300": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command reads an HTML page and C++ source, then searches source and HTML files."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command reads an HTML page and C++ source, then searches source and HTML files."
+    }
+  },
+  "v1-L307": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L308": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v1-L324": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read the named JSON file, but no file role or content is provided."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content attempted to read the named JSON file, but no file role or content is provided."
+    }
+  },
+  "v1-L325": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L326": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "other",
+      "cue": "Two Python scripts were executed, followed by a search of an Othello HTML page; no file changes are reported."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "other",
+      "cue": "Two Python scripts were executed, followed by a search of an Othello HTML page; no file changes are reported."
+    }
+  },
+  "v1-L333": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange completed an update to /repo/.blog/update_othello_neural.py"
+    }
+  },
+  "v1-L334": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "Executed two Python scripts under .blog; both commands completed with exit status 0."
+    }
+  },
+  "v2-L18": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "read",
+      "cue": "Git query: status"
+    },
+    "memory": {
+      "target": "git",
+      "action": "read",
+      "cue": "Git query: status"
+    }
+  },
+  "v2-L19": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Query scope: rg"
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Query scope: rg"
+    }
+  },
+  "v2-L20": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "Get-Content reads docs/processes/delivery.md."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "Get-Content reads docs/processes/delivery.md."
+    }
+  },
+  "v2-L21": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Query scope: get-childitem"
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Query scope: get-childitem"
+    }
+  },
+  "v2-L29": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content completed with 599 output lines, but the file targets are insufficiently identified."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "Get-Content completed with 599 output lines, but the file targets are insufficiently identified."
+    }
+  },
+  "v2-L26": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads CLAUDE.md, a project instruction document."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads CLAUDE.md, a project instruction document."
+    }
+  },
+  "v2-L31": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command queried Windows process metadata, but the empty result identifies no project target."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command queried Windows process metadata, but the empty result identifies no project target."
+    }
+  },
+  "v2-L28": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads README.md; the other path operand is not identified as a file."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The command reads README.md; the other path operand is not identified as a file."
+    }
+  },
+  "v2-L30": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command queries directory entries for AGENTS.md, but the result is empty and identifies no substantive target."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command queries directory entries for AGENTS.md, but the result is empty and identifies no substantive target."
+    }
+  },
+  "v2-L27": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Search queried README.md, specs, src, and .claude; results include matches in documentation and source code."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Search queried README.md, specs, src, and .claude; results include matches in documentation and source code."
+    }
+  },
+  "v2-L36": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command searched source code and two PowerShell scripts."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command searched source code and two PowerShell scripts."
+    }
+  },
+  "v2-L38": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Reads project files and lists src entries, then queries Git history."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Reads project files and lists src entries, then queries Git history."
+    }
+  },
+  "v2-L39": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queries executable command locations and inspects file and registry metadata."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queries executable command locations and inspects file and registry metadata."
+    }
+  },
+  "v2-L37": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "rg searched application files under src/internal for viewer, config, and watcher symbols."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "rg searched application files under src/internal for viewer, config, and watcher symbols."
+    }
+  },
+  "v2-L46": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Get-Content reads src\\internal\\viewer\\viewer.go."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Get-Content reads src\\internal\\viewer\\viewer.go."
+    }
+  },
+  "v2-L49": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command searched a delivery.md path and queried process metadata, but returned no output identifying the file or its project role."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command searched a delivery.md path and queried process metadata, but returned no output identifying the file or its project role."
+    }
+  },
+  "v2-L48": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Searched source files and queried executable metadata; no changes were reported."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Searched source files and queried executable metadata; no changes were reported."
+    }
+  },
+  "v2-L47": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tests",
+      "action": "read",
+      "cue": "rg searched test files for test-related patterns and returned matches."
+    },
+    "memory": {
+      "target": "tests",
+      "action": "read",
+      "cue": "rg searched test files for test-related patterns and returned matches."
+    }
+  },
+  "v2-L58": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Reads src/internal/watcher/fsnotify_watcher.go and searches source files; also checks executable hashes."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Reads src/internal/watcher/fsnotify_watcher.go and searches source files; also checks executable hashes."
+    }
+  },
+  "v2-L62": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tests",
+      "action": "other",
+      "cue": "Ran `go test ./...` from `src`; the test command completed with exit code 0."
+    },
+    "memory": {
+      "target": "tests",
+      "action": "other",
+      "cue": "Ran `go test ./...` from `src`; the test command completed with exit code 0."
+    }
+  },
+  "v2-L61": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "The command ran `go build` to produce an executable."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "The command ran `go build` to produce an executable."
+    }
+  },
+  "v2-L81": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command attempted to run mdview.exe against generated documents; it failed with exit code 1."
+    },
+    "memory": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command attempted to run mdview.exe against generated documents; it failed with exit code 1."
+    }
+  },
+  "v2-L92": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The search returned matches in CLAUDE.md, a project instruction document."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "read",
+      "cue": "The search returned matches in CLAUDE.md, a project instruction document."
+    }
+  },
+  "v2-L93": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command reads and prints selected line ranges from `template.html`, but its project role is not established."
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "read",
+      "cue": "The command reads and prints selected line ranges from `template.html`, but its project role is not established."
+    }
+  },
+  "v2-L94": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "unknown",
+      "action": "unknown",
+      "cue": "Unusable model response"
+    },
+    "memory": {
+      "target": "unknown",
+      "action": "unknown",
+      "cue": "Unusable model response"
+    }
+  },
+  "v2-L109": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command runs the copied `mdview.exe` and verifies viewer navigation behavior."
+    },
+    "memory": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command runs the copied `mdview.exe` and verifies viewer navigation behavior."
+    }
+  },
+  "v2-L130": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "The command copies `mdview.exe` and attempts to overwrite the running executable; it also creates temporary test documents."
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "The command copies `mdview.exe` and attempts to overwrite the running executable; it also creates temporary test documents."
+    }
+  },
+  "v2-L139": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Searched the Go toolchain's internal build code and queried the Go version."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Searched the Go toolchain's internal build code and queried the Go version."
+    }
+  },
+  "v2-L140": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "read",
+      "cue": "The command queried Git working-tree status; it reported `## main...origin/main`."
+    },
+    "memory": {
+      "target": "git",
+      "action": "read",
+      "cue": "The command queried Git working-tree status; it reported `## main...origin/main`."
+    }
+  },
+  "v2-L145": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "The command reads Go toolchain source at GOROOT/src/cmd/go/internal/work/shell.go."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "The command reads Go toolchain source at GOROOT/src/cmd/go/internal/work/shell.go."
+    }
+  },
+  "v2-L154": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command runs mdview.exe instances and checks whether an overwrite affects the running viewer."
+    },
+    "memory": {
+      "target": "source",
+      "action": "other",
+      "cue": "The command runs mdview.exe instances and checks whether an overwrite affects the running viewer."
+    }
+  },
+  "v2-L171": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "Removed the temporary test fixtures; `git status --short --branch` also queried the working tree."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "Removed the temporary test fixtures; `git status --short --branch` also queried the working tree."
+    }
+  },
+  "v2-L209": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command queried Git status and diff statistics, and searched the repository for instruction files and scripts."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command queried Git status and diff statistics, and searched the repository for instruction files and scripts."
+    }
+  },
+  "v2-L211": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queried executable locations, a process command line, and AGENTS.md filenames."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queried executable locations, a process command line, and AGENTS.md filenames."
+    }
+  },
+  "v2-L208": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Query scope: rg"
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Query scope: rg"
+    }
+  },
+  "v2-L210": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read source and build/release scripts, then searched project documentation files."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read source and build/release scripts, then searched project documentation files."
+    }
+  },
+  "v2-L224": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read source code from viewer.go and project instructions from renderer/AGENTS.md."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "Read source code from viewer.go and project instructions from renderer/AGENTS.md."
+    }
+  },
+  "v2-L225": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Read application files and searched viewer code for Windows file-replacement symbols."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Read application files and searched viewer code for Windows file-replacement symbols."
+    }
+  },
+  "v2-L226": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queries process details, Go build-cache location, and environment variables."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "Queries process details, Go build-cache location, and environment variables."
+    }
+  },
+  "v2-L227": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "Read sections of src/vendor/github.com/jchv/go-webview2/webview.go using Get-Content."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "Read sections of src/vendor/github.com/jchv/go-webview2/webview.go using Get-Content."
+    }
+  },
+  "v2-L242": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L251": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L260": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L261": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L270": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L271": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L280": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "The command parses a release script and queries executable and instruction-file metadata."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "read",
+      "cue": "The command parses a release script and queries executable and instruction-file metadata."
+    }
+  },
+  "v2-L282": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tests",
+      "action": "other",
+      "cue": "The command ran `go -C src test ./...`; no file changes were reported."
+    },
+    "memory": {
+      "target": "tests",
+      "action": "other",
+      "cue": "The command ran `go -C src test ./...`; no file changes were reported."
+    }
+  },
+  "v2-L281": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command searched code under src; the process query failed."
+    },
+    "memory": {
+      "target": "source",
+      "action": "read",
+      "cue": "The command searched code under src; the process query failed."
+    }
+  },
+  "v2-L295": {
+    "local": true,
+    "prior": [
+      {
+        "path": "/repo/scripts/release.ps1",
+        "target": "tooling",
+        "observed_in": "v2-L271",
+        "evidence": "confirmed change and path rule"
+      }
+    ],
+    "baseline": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L296": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L297": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange updated /repo/CLAUDE.md."
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "FileChange updated /repo/CLAUDE.md."
+    }
+  },
+  "v2-L298": {
+    "local": true,
+    "prior": [],
+    "baseline": {
+      "target": "docs",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "docs",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L307": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "The release script execution failed with exit code 1; no confirmed file change is reported."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "The release script execution failed with exit code 1; no confirmed file change is reported."
+    }
+  },
+  "v2-L322": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "The release script built an executable at the target path and the command then queried its metadata and version file."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "The release script built an executable at the target path and the command then queried its metadata and version file."
+    }
+  },
+  "v2-L362": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "The completed release end-to-end command runs `release.ps1` and creates temporary Markdown test files and directories."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "write",
+      "cue": "The completed release end-to-end command runs `release.ps1` and creates temporary Markdown test files and directories."
+    }
+  },
+  "v2-L367": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command queries Git diff/status and reads src/internal/applog/applog.go."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The command queries Git diff/status and reads src/internal/applog/applog.go."
+    }
+  },
+  "v2-L366": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "PowerShell parser checked scripts\\release.ps1 and exited successfully."
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "other",
+      "cue": "PowerShell parser checked scripts\\release.ps1 and exited successfully."
+    }
+  },
+  "v2-L390": {
+    "local": true,
+    "prior": [
+      {
+        "path": "/repo/scripts/release.ps1",
+        "target": "tooling",
+        "observed_in": "v2-L295",
+        "evidence": "confirmed change and path rule"
+      }
+    ],
+    "baseline": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "tooling",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L391": {
+    "local": true,
+    "prior": [
+      {
+        "path": "/repo/src/main.go",
+        "target": "source",
+        "observed_in": "v2-L260",
+        "evidence": "confirmed change and path rule"
+      }
+    ],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L392": {
+    "local": true,
+    "prior": [
+      {
+        "path": "/repo/src/internal/viewer/viewer.go",
+        "target": "source",
+        "observed_in": "v2-L242",
+        "evidence": "confirmed change and path rule"
+      }
+    ],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L393": {
+    "local": true,
+    "prior": [
+      {
+        "path": "/repo/src/internal/viewer/window_state.go",
+        "target": "source",
+        "observed_in": "v2-L251",
+        "evidence": "confirmed change and path rule"
+      }
+    ],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "Recorded file change"
+    }
+  },
+  "v2-L404": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "write",
+      "cue": "`gofmt -w` formats Go application files; the subsequent `git diff --check` succeeded."
+    },
+    "memory": {
+      "target": "source",
+      "action": "write",
+      "cue": "`gofmt -w` formats Go application files; the subsequent `git diff --check` succeeded."
+    }
+  },
+  "v2-L419": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "other",
+      "cue": "The command runs the release script and a release end-to-end verification, but failed with exit code 1."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "other",
+      "cue": "The command runs the release script and a release end-to-end verification, but failed with exit code 1."
+    }
+  },
+  "v2-L438": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "source",
+      "action": "other",
+      "cue": "Launched `mdview.exe` and verified its startup response for an installed release."
+    },
+    "memory": {
+      "target": "source",
+      "action": "other",
+      "cue": "Launched `mdview.exe` and verified its startup response for an installed release."
+    }
+  },
+  "v2-L463": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "read",
+      "cue": "Queried working-tree status, staged diff statistics, and recent Git history."
+    },
+    "memory": {
+      "target": "git",
+      "action": "read",
+      "cue": "Queried working-tree status, staged diff statistics, and recent Git history."
+    }
+  },
+  "v2-L464": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "read",
+      "cue": "The command ran git diff checks/statistics and listed untracked files."
+    },
+    "memory": {
+      "target": "git",
+      "action": "read",
+      "cue": "The command ran git diff checks/statistics and listed untracked files."
+    }
+  },
+  "v2-L465": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The search queried project documentation, source code, and a release script; Get-Content also attempted to read a version file."
+    },
+    "memory": {
+      "target": "mixed",
+      "action": "read",
+      "cue": "The search queried project documentation, source code, and a release script; Get-Content also attempted to read a version file."
+    }
+  },
+  "v2-L490": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "write",
+      "cue": "The command stages the listed files and runs `git commit --only`; completion confirms the Git write."
+    },
+    "memory": {
+      "target": "git",
+      "action": "write",
+      "cue": "The command stages the listed files and runs `git commit --only`; completion confirms the Git write."
+    }
+  },
+  "v2-L503": {
+    "local": false,
+    "prior": [],
+    "baseline": {
+      "target": "git",
+      "action": "write",
+      "cue": "`git push` completed successfully, updating remote Git refs."
+    },
+    "memory": {
+      "target": "git",
+      "action": "write",
+      "cue": "`git push` completed successfully, updating remote Git refs."
+    }
+  }
+}

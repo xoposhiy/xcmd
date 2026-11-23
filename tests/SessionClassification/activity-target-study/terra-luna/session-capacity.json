@@ -1,0 +1,601 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "tools": [],
+  "method": "Send chronological runtime calls and user and assistant messages to the Responses API. Shorten long commands, results and patches. Reject duplicate and unexpected IDs. Merge duplicate pairs within a row. Missing predictions score zero against the mdview references.",
+  "scope": "Locally indexed root threads with an Astra model in Xcmd, Point Taken, Klava, Digester and mdview. Exclude the active study thread and sessions with no tool calls. One included thread also has a Sol turn.",
+  "size_estimate": "Count o200k_base tokens in uncompressed JSONL or in the projected input with instructions. API usage in the runs gives actual billed token counts.",
+  "source_model_spec": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+  "experiment_settings": "The initial requests included context compaction markers. The canonical tool inventory and all scores exclude them. The long Xcmd input contained 877 tool calls and three such markers. The one-call and retry prompts also added the words 'Return JSON' to the user content for API JSON mode.",
+  "sizes": [
+    {
+      "id": "01a18975-af6a-7163-987d-01618ebc72df",
+      "project": "digester",
+      "model": "gpt-6-astra",
+      "calls": 59,
+      "raw": 443413,
+      "request": 17463
+    },
+    {
+      "id": "01a1a7c8-34cf-7161-9a29-dfcbc44d3c9c",
+      "project": "klava",
+      "model": "gpt-6-astra",
+      "calls": 51,
+      "raw": 366809,
+      "request": 16250
+    },
+    {
+      "id": "01a1b818-99c6-7701-a461-1eff8f17d418",
+      "project": "klava",
+      "model": "gpt-6-astra",
+      "calls": 69,
+      "raw": 399302,
+      "request": 21081
+    },
+    {
+      "id": "01a1da6b-7ba6-70f2-9ed5-363f862fab59",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 187,
+      "raw": 1691121,
+      "request": 56192
+    },
+    {
+      "id": "01a1e010-e1ad-7291-8f35-6502613da725",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 153,
+      "raw": 1412194,
+      "request": 43417
+    },
+    {
+      "id": "01a1e0e7-6a7f-7412-a459-a2b907ba6881",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 76,
+      "raw": 1470639,
+      "request": 21874
+    },
+    {
+      "id": "01a1e390-7589-7560-87d3-1720ccec7f13",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 408,
+      "raw": 5474460,
+      "request": 124135
+    },
+    {
+      "id": "01a1e917-525a-7c12-b895-6a749ace604b",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 28,
+      "raw": 345898,
+      "request": 8670
+    },
+    {
+      "id": "01a1ea5e-3e16-7541-a79e-cf1f44a6ebc4",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 101,
+      "raw": 967009,
+      "request": 30315
+    },
+    {
+      "id": "01a1eb08-2f67-7ae0-a7bb-5dbfa98f5c49",
+      "project": "xcmd",
+      "model": "gpt-6-astra",
+      "calls": 311,
+      "raw": 3187701,
+      "request": 71717
+    },
+    {
+      "id": "01a1f0d7-1113-78a1-8415-b7f3d6ec14a7",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 28,
+      "raw": 188734,
+      "request": 7786
+    },
+    {
+      "id": "01a1f101-c467-7ae3-9de5-9761d16b1998",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 188,
+      "raw": 1184602,
+      "request": 53359
+    },
+    {
+      "id": "01a1f10a-0f15-7f33-9999-48c9dec02db2",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 138,
+      "raw": 748574,
+      "request": 42536
+    },
+    {
+      "id": "01a1f10b-5bd3-7130-8237-db29ace45268",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 418,
+      "raw": 1851393,
+      "request": 111649
+    },
+    {
+      "id": "01a1f11e-28b6-7323-b84c-48aa12cfed90",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 71,
+      "raw": 520152,
+      "request": 26647
+    },
+    {
+      "id": "01a1f28d-c98f-77c1-aeea-7a954ef09674",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 139,
+      "raw": 715581,
+      "request": 39332
+    },
+    {
+      "id": "01a1faca-cd39-7b63-9d9e-7d4fb8e2b36a",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 721,
+      "raw": 5650023,
+      "request": 181678
+    },
+    {
+      "id": "01a1fda9-5a08-7ce1-af63-98bf8672bdea",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 95,
+      "raw": 668214,
+      "request": 27914
+    },
+    {
+      "id": "01a1fe06-ec37-78d1-a71c-ef8aa1137e46",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 448,
+      "raw": 2709778,
+      "request": 103832
+    },
+    {
+      "id": "01a1ff87-944f-7732-a1a7-d22762c3e564",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 137,
+      "raw": 1209801,
+      "request": 40919
+    },
+    {
+      "id": "01a1ffde-3dd6-79f1-a781-e2f8cffd8d7a",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 145,
+      "raw": 707946,
+      "request": 30070
+    },
+    {
+      "id": "01a1ffed-f8f7-7d60-9325-ff1c688e9ffe",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 151,
+      "raw": 1146903,
+      "request": 47178
+    },
+    {
+      "id": "01a20004-69df-7a31-bebc-899585d6f706",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 32,
+      "raw": 136087,
+      "request": 7360
+    },
+    {
+      "id": "01a20024-3466-7680-b829-784bc0a74a0a",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 263,
+      "raw": 1778801,
+      "request": 80539
+    },
+    {
+      "id": "01a20026-4962-74c2-9f85-3bbee429a41b",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 69,
+      "raw": 1098324,
+      "request": 13017
+    },
+    {
+      "id": "01a20095-5806-7a52-a074-26eb287f2ab3",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 54,
+      "raw": 259105,
+      "request": 12370
+    },
+    {
+      "id": "01a20095-f346-7aa1-bffe-b63fc3b3d258",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 877,
+      "raw": 7478702,
+      "request": 205970
+    },
+    {
+      "id": "01a200ae-3e25-7c70-a4f5-6a6ff884db91",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 68,
+      "raw": 303010,
+      "request": 14242
+    },
+    {
+      "id": "01a200ae-994b-7f12-8a6d-ae3bc6fc6066",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 60,
+      "raw": 290399,
+      "request": 15689
+    },
+    {
+      "id": "01a200b8-2ada-7f61-8661-d15858359800",
+      "project": "xcmd",
+      "model": "gpt-6.2-astra",
+      "calls": 168,
+      "raw": 756964,
+      "request": 40475
+    },
+    {
+      "id": "01a20312-7969-7fb0-b017-84df25c41521",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 44,
+      "raw": 235684,
+      "request": 10200
+    },
+    {
+      "id": "01a203e8-a9c9-7200-87ab-8f92e4532d92",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 2,
+      "raw": 69797,
+      "request": 1701
+    },
+    {
+      "id": "01a203ed-ef91-7592-9c98-32b93e36f098",
+      "project": "point-taken",
+      "model": "gpt-6.2-astra",
+      "calls": 116,
+      "raw": 1070334,
+      "request": 25659
+    }
+  ],
+  "runs": {
+    "mdview_single": {
+      "requests": 1,
+      "input_context_markers": [],
+      "calls": 70,
+      "valid": 67,
+      "missing_ids": [
+        463,
+        464,
+        465
+      ],
+      "unresolved_ids": [
+        463,
+        464,
+        465
+      ],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 22099,
+        "output_tokens": 5534,
+        "total_tokens": 27633,
+        "reasoning_tokens": 1724,
+        "cache_write_tokens": 22096,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 37.5,
+      "max_identical_summary_count": 1,
+      "mean_jaccard_against": {
+        "terra": 0.8573809523809524,
+        "luna": 0.8242857142857143
+      },
+      "estimated_usd": 0.005529
+    },
+    "mdview_single_repaired": {
+      "requests": 2,
+      "input_context_markers": [],
+      "calls": 70,
+      "valid": 70,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 23733,
+        "output_tokens": 6064,
+        "total_tokens": 29797,
+        "reasoning_tokens": 2020,
+        "cache_write_tokens": 23727,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 41.8,
+      "max_identical_summary_count": 1,
+      "mean_jaccard_against": {
+        "terra": 0.893095238095238,
+        "luna": 0.8528571428571429
+      },
+      "estimated_usd": 0.005998
+    },
+    "mdview_twenty": {
+      "requests": 4,
+      "input_context_markers": [],
+      "calls": 70,
+      "valid": 70,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 25188,
+        "output_tokens": 8515,
+        "total_tokens": 33703,
+        "reasoning_tokens": 3650,
+        "cache_write_tokens": 25176,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 62.0,
+      "max_identical_summary_count": 1,
+      "mean_jaccard_against": {
+        "terra": 0.9083333333333333,
+        "luna": 0.8897619047619048
+      },
+      "estimated_usd": 0.007406
+    },
+    "mdview_individual": {
+      "requests": 70,
+      "input_context_markers": [],
+      "calls": 70,
+      "valid": 70,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [
+        438
+      ],
+      "errors": [],
+      "usage": {
+        "input_tokens": 93983,
+        "output_tokens": 15044,
+        "total_tokens": 109027,
+        "reasoning_tokens": 9198,
+        "cache_write_tokens": 93773,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 171.9,
+      "max_identical_summary_count": 1,
+      "mean_jaccard_against": {
+        "terra": 0.9142857142857143,
+        "luna": 0.85
+      },
+      "estimated_usd": 0.019265
+    },
+    "xcmd_feedback_single": {
+      "requests": 1,
+      "input_context_markers": [],
+      "calls": 188,
+      "valid": 188,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 53356,
+        "output_tokens": 16908,
+        "total_tokens": 70264,
+        "reasoning_tokens": 4059,
+        "cache_write_tokens": 53353,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 105.6,
+      "max_identical_summary_count": 8,
+      "estimated_usd": 0.015123
+    },
+    "xcmd_inspector_single": {
+      "requests": 1,
+      "input_context_markers": [
+        1124,
+        2383,
+        3556
+      ],
+      "calls": 877,
+      "valid": 868,
+      "missing_ids": [
+        3459,
+        3861,
+        4353,
+        4354,
+        4752,
+        4789,
+        4999
+      ],
+      "unresolved_ids": [
+        2435,
+        3459,
+        3861,
+        3875,
+        4353,
+        4354,
+        4752,
+        4789,
+        4999
+      ],
+      "unexpected_ids": [],
+      "duplicate_ids": [
+        2435,
+        3875
+      ],
+      "merged_repeated_pairs": [
+        1682
+      ],
+      "errors": [],
+      "usage": {
+        "input_tokens": 205963,
+        "output_tokens": 46908,
+        "total_tokens": 252871,
+        "reasoning_tokens": 2209,
+        "cache_write_tokens": 205960,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 261.8,
+      "max_identical_summary_count": 3,
+      "estimated_usd": 0.049199
+    },
+    "xcmd_inspector_single_repaired": {
+      "requests": 2,
+      "input_context_markers": [
+        1124,
+        2383,
+        3556
+      ],
+      "calls": 877,
+      "valid": 877,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [
+        2435,
+        3875
+      ],
+      "merged_repeated_pairs": [
+        1682
+      ],
+      "errors": [],
+      "usage": {
+        "input_tokens": 209938,
+        "output_tokens": 48555,
+        "total_tokens": 258493,
+        "reasoning_tokens": 3243,
+        "cache_write_tokens": 209932,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 276.0,
+      "max_identical_summary_count": 3,
+      "estimated_usd": 0.05052
+    },
+    "xcmd_inspector_twenty": {
+      "requests": 44,
+      "input_context_markers": [
+        1124,
+        2383,
+        3556
+      ],
+      "calls": 877,
+      "valid": 874,
+      "missing_ids": [
+        2218,
+        3297,
+        3298
+      ],
+      "unresolved_ids": [
+        2218,
+        3297,
+        3298
+      ],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 255917,
+        "output_tokens": 103882,
+        "total_tokens": 359799,
+        "reasoning_tokens": 46751,
+        "cache_write_tokens": 255785,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 748.8,
+      "max_identical_summary_count": 3,
+      "estimated_usd": 0.083927
+    },
+    "xcmd_inspector_twenty_repaired": {
+      "requests": 45,
+      "input_context_markers": [
+        1124,
+        2383,
+        3556
+      ],
+      "calls": 877,
+      "valid": 877,
+      "missing_ids": [],
+      "unresolved_ids": [],
+      "unexpected_ids": [],
+      "duplicate_ids": [],
+      "merged_repeated_pairs": [],
+      "errors": [],
+      "usage": {
+        "input_tokens": 261097,
+        "output_tokens": 104357,
+        "total_tokens": 365454,
+        "reasoning_tokens": 46955,
+        "cache_write_tokens": 260962,
+        "cached_tokens": 0
+      },
+      "summed_request_seconds": 752.8,
+      "max_identical_summary_count": 3,
+      "estimated_usd": 0.084812
+    }
+  },
+  "long_trace_agreement_between_modes_after_id_repairs": 0.7820410490307868,
+  "reviewed_patch": {
+    "id": 2929,
+    "single": [
+      {
+        "target": "tests",
+        "action": "write",
+        "objects": [
+          "artifacts/luna-docs/format.ps1"
+        ]
+      },
+      {
+        "target": "tests",
+        "action": "exec",
+        "objects": [
+          "dotnet format whitespace"
+        ]
+      }
+    ],
+    "batch": [
+      {
+        "target": "tests",
+        "action": "write",
+        "objects": [
+          "artifacts/luna-docs/format.ps1"
+        ]
+      }
+    ],
+    "expanded_retry": [
+      {
+        "target": "tests",
+        "action": "write",
+        "objects": [
+          "artifacts/luna-docs/format.ps1"
+        ]
+      }
+    ]
+  }
+}

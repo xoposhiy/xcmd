@@ -1,0 +1,12 @@
+{
+  "sha256": "480ed63636e9298a3eb11908d8809457e0d14655a4b6327436c9ba6bbda847da",
+  "files": {
+    "prompt.txt": "db990e4d5d8dbf60f2a76437cab84afb82bf6bfe275f880d4dcbb72390497356",
+    "classifier.py": "f1e6a329f82f2b7dd168f971d364d74bca3ec07379e2e1f3bdec208447fa72fb",
+    "inputs.py": "21c07ef01756d0ed77fad4dda910c1a9177dcfbfa817b2c4f97a76d3fe64fc3a",
+    "predict.py": "88e6e4a360464753361b1a0c8798c564533f7d2faa820d6182a49367a8ed9162",
+    "evaluate.py": "8576d0ae0658d6f6aceae1cd460e767e5b0f2871300590e99263b20f3e440a69",
+    "freeze.py": "68591205b8cdd322da48ddc3b0233fc0d508cd1afc13656eff7ebf9733cd7a29",
+    "validation/inputs.json": "3d009ccf08faf122311867d9ba312d1129e176d272fe0603c72f7f0b6677b09d"
+  }
+}

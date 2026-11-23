@@ -1,4 +1,4 @@
-// @implements DiscoverShortcuts, ReportControl, KeepFeedback, TryLocalRelease, ViewRecentAgentSessions, ResumeAgentSession
+// @implements DiscoverShortcuts, ReportControl, KeepFeedback, TryLocalRelease, ViewRecentAgentSessions, ResumeAgentSession, InspectAgentSession
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -114,7 +114,7 @@ internal sealed class CommanderFrame
         void Update()
         {
             string[] hints = window?.ActivePanel.ShowsAgentSessions == true
-                ? ["Enter  Resume session", "Ctrl+←/→  Open project in other panel", "Alt+F1 / F2  Choose panel source"]
+                ? ["F3  Inspect session", "Enter  Resume session", "Ctrl+←/→  Open project in other panel", "Alt+F1 / F2  Choose panel source"]
                 : window?.ActivePanel.HasHistory == true
                 ? GitPath.IsLog(window.ActivePanel.Session.DirectoryPath)
                     ? ["Enter  Full repository snapshot", "F3  Commit details", "Ctrl+R  Refresh", "Backspace  Back", "Esc  Return", "Tab  Other panel"]

@@ -68,6 +68,7 @@ public static class LifecycleProcessHost
                             nativeApplicationWindows = 0,
                             state = window.CaptureWorkspace(),
                             viewers = ViewerHandoffProbe.Describe(window),
+                            inspectors = window.SessionInspectors.Select(w => new { w.Title, w.Width, w.WindowState, w.ShowActivated }).ToArray(),
                             window.UpdateMessage
                         };
                         await WriteReportAsync(Path.Combine(reports, id + ".json"), report);

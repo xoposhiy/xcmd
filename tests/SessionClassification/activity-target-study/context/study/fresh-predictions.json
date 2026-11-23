@@ -1,0 +1,326 @@
+{
+  "previous": {
+    "fresh-L19": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L18": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L24": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L25": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L35": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L34": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L44": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L43": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L45": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L53": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L60": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L70": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L71": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L79": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L87": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L95": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L104": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L115": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L114": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L113": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L123": {
+      "target": "tooling",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L122": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L130": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L137": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L144": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L153": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L163": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L170": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L179": {
+      "target": "unknown",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L180": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L190": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L197": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    }
+  },
+  "candidate": {
+    "fresh-L19": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "fresh-L18": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "fresh-L24": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "fresh-L25": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L35": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L34": {
+      "target": "mixed",
+      "action": "read",
+      "local": true
+    },
+    "fresh-L44": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L43": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L45": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L53": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L60": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L70": {
+      "target": "unknown",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L71": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L79": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L87": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L95": {
+      "target": "docs",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L104": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L115": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L114": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L113": {
+      "target": "tooling",
+      "action": "read",
+      "local": true
+    },
+    "fresh-L123": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L122": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L130": {
+      "target": "unknown",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L137": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L144": {
+      "target": "unknown",
+      "action": "unknown",
+      "local": false
+    },
+    "fresh-L153": {
+      "target": "source",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L163": {
+      "target": "git",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L170": {
+      "target": "source",
+      "action": "other",
+      "local": false
+    },
+    "fresh-L179": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L180": {
+      "target": "source",
+      "action": "write",
+      "local": false
+    },
+    "fresh-L190": {
+      "target": "mixed",
+      "action": "read",
+      "local": false
+    },
+    "fresh-L197": {
+      "target": "mixed",
+      "action": "write",
+      "local": false
+    }
+  }
+}

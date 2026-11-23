@@ -1,4 +1,4 @@
-// @implements RecentLocations, RestoreWorkspace, KeepFeedback
+// @implements RecentLocations, RestoreWorkspace, KeepFeedback, InspectAgentSession
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Workspace;
@@ -20,6 +20,11 @@ public sealed partial class CommanderWindow
     internal ViewerHandoff[] CaptureViewers() => viewing.CaptureViewers();
     internal Task PrepareViewersAsync(ViewerHandoff[] viewers) => viewing.PrepareViewersAsync(viewers);
     internal void ShowRestoredViewers() => viewing.ShowRestoredViewers();
+    internal InspectorHandoff[] CaptureInspectors() => panelSources.CaptureInspectors();
+    public void RestoreInspectors(InspectorHandoff[] inspectors)
+    {
+        foreach (var saved in inspectors) panelSources.OpenInspector(saved.Session, saved);
+    }
 
     public async Task RestoreWorkspaceAsync(WorkspaceState state)
     {

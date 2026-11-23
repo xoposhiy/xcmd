@@ -8,6 +8,21 @@ public sealed class ViewerHandoffStore(string directory)
 {
     private string SnapshotPath => Path.Combine(directory, "viewers.json");
     private string DocumentsPath => Path.Combine(directory, "viewer-documents");
+    private string InspectorsPath => Path.Combine(directory, "inspectors.json");
+
+    public async Task SaveInspectorsAsync(InspectorHandoff[] inspectors, CancellationToken token)
+    {
+        Directory.CreateDirectory(directory);
+        await using var stream = File.Create(InspectorsPath);
+        await JsonSerializer.SerializeAsync(stream, inspectors, SessionJsonContext.Default.InspectorHandoffArray, token);
+    }
+
+    public async Task<InspectorHandoff[]> ReadInspectorsAsync()
+    {
+        if (!File.Exists(InspectorsPath)) return [];
+        await using var stream = File.OpenRead(InspectorsPath);
+        return await JsonSerializer.DeserializeAsync(stream, SessionJsonContext.Default.InspectorHandoffArray) ?? [];
+    }
 
     public static ViewerHandoffStore? ForRestart(string directory, string sessionPath)
     {
@@ -54,6 +69,7 @@ public sealed class ViewerHandoffStore(string directory)
                 Directory.Delete(DocumentsPath);
             }
             File.Delete(SnapshotPath);
+            File.Delete(InspectorsPath);
             File.Delete(Path.Combine(directory, "ready"));
             Directory.Delete(directory);
         }

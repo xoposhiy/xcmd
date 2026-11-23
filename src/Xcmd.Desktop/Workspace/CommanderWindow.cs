@@ -58,6 +58,8 @@ public sealed partial class CommanderWindow : Window
     public PanelView OppositePanel => ActivePanel == Left ? Right : Left;
     public NameDialog? ActiveDialog { get; private set; }
     public DirectoryNavigationDialog? ActiveNavigationDialog { get; private set; }
+    public IReadOnlyList<Window> SessionInspectors => panelSources?.Inspectors ?? [];
+    public Window? SessionInspector => SessionInspectors.LastOrDefault();
     public bool HasOpenDialog => ActiveDialog != null || ActiveNavigationDialog != null || OperationDialog != null;
     public FavoriteDirectories Favorites { get; } = new();
     public event Func<Task>? FavoritesChanged;
@@ -70,7 +72,7 @@ public sealed partial class CommanderWindow : Window
     private bool restoringVisits;
     public RestartReadiness Readiness => new(IsBusy, nameJump.Active || pointerHeld || IsActive && CommandLine.HasFocusedDraft || Left.EditingRow != null || Right.EditingRow != null,
         HasOpenDialog || FileSearch.IsOpen || IsMenuOpen, Feedback.IsActive, Stopwatch.GetElapsedTime(lastInput),
-        MainWindowActive: IsActive, ViewerActive: viewing.HasActiveViewer);
+        MainWindowActive: IsActive, ViewerActive: viewing.HasActiveViewer || SessionInspectors.Any(w => w.IsActive));
 
     private string updateText = "";
     private bool updateReady;

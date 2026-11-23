@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Activity breakdown · Xcmd Session Inspector</title>
+<style>
+:root{color-scheme:dark;--bg:#101419;--surface:#181e25;--soft:#1d252e;--line:#34404b;--sub:#b3bfc9;--muted:#a0adb8;--text:#edf2f5;--accent:#b8e5d2;--purple:#ccbef5;--mono:"Cascadia Mono",Consolas,monospace;--sans:Inter,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}button{font:inherit;cursor:pointer;color:inherit}a:focus-visible,button:focus-visible,summary:focus-visible,h2:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+h1,h2,h3,p{margin:0}h1,h2,h3{line-height:1.16}h1{font-size:clamp(34px,4vw,56px);font-weight:630;letter-spacing:-.047em}h2{font-size:20px;font-weight:640;letter-spacing:-.025em}h3{font-size:15px}
+main,.top-inner{max-width:1192px;margin:auto;padding-inline:clamp(16px,4.6vw,64px)}main{padding-bottom:56px}.top{border-bottom:1px solid var(--line);background:#14191f}.top-inner{height:48px;display:flex;align-items:center;gap:14px;font-size:13px}.product{font-weight:730;letter-spacing:.015em;color:#e5f0e9}.top-slash{color:#6b7884}.top-end{margin-left:auto;color:var(--muted);font-size:12px}
+.intro{padding:33px 0 20px}.intro p{font-size:16px;color:var(--sub);margin-top:8px}.views{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px}
+.view{text-decoration:none;color:var(--text);display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px 17px 13px;border:1px solid var(--line);border-radius:4px;background:#151b21;position:relative}.view strong{font-size:16px;font-weight:620}.view small{color:var(--muted);font-size:12px}
+.view:hover{background:#202931}.view[aria-current=page]{border-color:#789e91;background:#21312e;box-shadow:inset 0 -2px 0 var(--accent)}.view[aria-current=page] strong{color:#d6f5e8}.view[aria-current=page] small{color:#c0d3ca}
+.sample{border-top:1px solid var(--line);display:flex;gap:16px;align-items:center;justify-content:space-between;padding:13px 0}.sample h2{font-size:16px;letter-spacing:0}.sample .source{font:11px var(--mono);color:var(--muted);margin-top:4px}.numbers{display:flex;gap:18px;flex-wrap:wrap}.numbers span{color:var(--muted);font-size:12px;white-space:nowrap}.numbers b{color:var(--text);font-size:15px;font-weight:620;margin-right:4px}
+.workspace{display:grid;grid-template-columns:minmax(225px,.8fr) minmax(0,1.8fr);gap:14px;align-items:start}
+.panel{min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:5px;overflow:hidden}.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:17px 19px 6px}.panel-head span,.panel-note,.muted{color:var(--sub)}.panel-head span{font-size:12px;white-space:nowrap}.panel-note{font-size:13px;padding:0 19px 15px}.left h2{font-size:17px}.left .panel-head{padding:17px 15px 6px}.left .panel-note{padding:0 15px 12px}
+.file-head,.file-link{display:grid;grid-template-columns:minmax(0,1fr) 34px 35px;column-gap:6px;padding:8px 14px;align-items:center}.file-head{background:var(--soft);font-size:11px;color:var(--sub)}.file-head span:not(:first-child),.file-link>span:not(:first-child){text-align:right}
+.file-link{color:var(--text);text-decoration:none;border-top:1px solid #2c3640;font-size:12px}.file-link:hover,.file-link.current{background:#26332f}.file-name{display:block;overflow-wrap:anywhere;font-weight:580}.dir{display:block;color:var(--muted);font-size:10.5px;overflow-wrap:anywhere;margin-top:1px}.count-zero{color:var(--muted)}.left-foot{border-top:1px solid var(--line);padding:10px 14px}.plain,.back{background:transparent;border:0;color:var(--accent);font:inherit;text-decoration:underline;text-underline-offset:3px;padding:0}.plain{font-size:12px}
+.rows{border-collapse:collapse;width:100%;font-size:14px}.rows th{background:var(--soft);color:var(--sub);font-weight:500;text-align:right;font-size:11px;letter-spacing:.02em;padding:6px 12px}.rows th:first-child{text-align:left;padding-left:19px}.rows td{border-top:1px solid #2d3742;text-align:right;padding:8px 12px;white-space:nowrap}.rows td:first-child{text-align:left;padding-left:19px;width:100%;white-space:normal}.rows td:last-child,.rows th:last-child{padding-right:19px}.rows tbody tr:hover{background:#212b34}.rows a{color:var(--text);text-decoration:none}.rows a:hover{text-decoration:underline;text-underline-offset:3px}.row-link{display:flex;align-items:center;gap:10px}.mark{width:4px;border-radius:2px;align-self:stretch;min-height:15px;flex:none;background:var(--ink)}.time-cell{display:flex;gap:8px;align-items:center;justify-content:flex-end;font:12px var(--mono)}.track{width:42px;height:4px;background:#313e48;border-radius:3px;overflow:hidden}.track i{display:block;height:100%;background:var(--ink);min-width:1px}.chev{color:var(--muted);margin-left:8px;pointer-events:none}.table-end{font-size:12px;color:var(--sub);padding:10px 19px;border-top:1px solid var(--line)}.rows .metric{font:12px var(--mono)}
+.reading{margin-top:14px;padding:15px 18px 16px;border-left:3px solid var(--purple);background:#21212c}.reading h3{color:#e6dfff;font-size:14px;margin-bottom:6px}.reading p{color:#d5d5e1;font-size:14px;max-width:78ch}.reading a{display:inline-block;margin-top:7px;color:var(--purple);text-underline-offset:3px;font-size:13px}
+.history-strip{margin:2px 19px 14px}.history-strip .label{font-size:12px;color:var(--sub);margin-bottom:6px}.ribbon{display:flex;gap:3px}.ribbon a{flex:1;height:15px;background:var(--ink);border-radius:2px}.ribbon a:hover{outline:1px solid white}
+@media(min-width:541px){.time-cell{display:grid;grid-template-columns:42px 53px;justify-content:end;gap:7px}}
+.detail-top{padding:12px 19px 2px}.back{font-size:13px}.evidence{list-style:none;margin:0;padding:0}.evidence li{border-top:1px solid var(--line)}.call{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:baseline;text-decoration:none;color:var(--text);padding:9px 19px}.call:hover,.call[aria-current=true]{background:#26312f}.call-ref,.status{font:11px var(--mono);color:var(--sub)}.call-label{font-size:13px;overflow-wrap:anywhere}.call-detail{padding:2px 19px 15px}.call-detail p{color:var(--sub);font-size:12px;margin-top:5px}.call-detail pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#10161b;color:#daebdf;font:12px/1.6 var(--mono);padding:10px 12px;border-left:2px solid #78aa97;margin:7px 0}.trace-meta{font:11px/1.6 var(--mono);overflow-wrap:anywhere;color:var(--sub)}
+.notes{margin-top:20px;border-top:1px solid var(--line);color:var(--sub)}.notes summary{cursor:pointer;padding:12px 0;color:var(--text);font-weight:580}.notes p{max-width:86ch;margin:4px 0 8px;font-size:13px}.source-link{color:var(--purple);text-underline-offset:3px}.narrow-label{display:none}
+@media(max-width:780px){.workspace{grid-template-columns:minmax(0,1fr)}.left{grid-row:2}.left .files-grid{display:grid;grid-template-columns:1fr 1fr}.left .file-head{display:none}.file-link{grid-template-columns:1fr auto;column-gap:9px}.file-link>span:not(:first-child){grid-column:2;grid-row:auto;text-align:left}.file-link>span:first-child{grid-row:span 2}.narrow-label{display:inline}.view{padding:10px}.numbers{gap:10px}.sample{align-items:flex-start}.intro{padding-top:24px}}
+@media(max-width:540px){main,.top-inner{padding-inline:14px}.views{gap:4px;margin-bottom:18px}.view{padding:8px 7px}.view strong{font-size:14px}.view small{font-size:11px}.intro p{font-size:14px}.sample{flex-direction:column;gap:8px}.panel-head{padding:14px 12px 6px}.panel-note,.table-end{padding-inline:12px}.rows th,.rows td{padding-inline:7px}.rows td:first-child,.rows th:first-child{padding-left:12px}.rows td:last-child,.rows th:last-child{padding-right:10px}.track{display:none}.row-link{gap:6px}.chev{margin-left:2px}.call{grid-template-columns:35px minmax(0,1fr) auto;gap:5px;padding-inline:12px}.call-detail,.detail-top{padding-inline:12px}.left .files-grid{grid-template-columns:1fr}.reading{padding:12px 14px}.history-strip{margin-inline:12px}.ribbon{gap:2px}}
+@media(prefers-reduced-motion:no-preference){.view,.file-link{transition:background .12s}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-inner"><span class="product">Xcmd</span><span class="top-slash">/</span><span>Session inspector</span><span class="top-end">Design review</span></div></div>
+<main>
+<header class="intro"><h1>Activity breakdown</h1><p>Three ways to inspect the same tool calls from a Point Taken session.</p></header>
+<nav class="views" aria-label="Compare groupings">
+<a class="view" href="#operation" data-view="operation" data-review="operation view"><strong>By operation</strong><small>What did the agent do?</small></a>
+<a class="view" href="#target" data-view="target" data-review="target view"><strong>By target</strong><small>Where was the action directed?</small></a>
+<a class="view" href="#history" data-view="history" data-review="history view"><strong>By file history</strong><small>What had the agent read before?</small></a>
+</nav>
+<section id="sample" class="sample" aria-label="Session sample"><div><h2>Point Taken · Issue 49</h2><p class="source">Codex / session …25c41521 / reviewed calls</p></div><div class="numbers" id="metrics"></div></section>
+<div class="workspace">
+<aside class="panel left" aria-labelledby="files-title"><div class="panel-head"><h2 id="files-title">File coverage</h2><span id="file-total"></span></div><p class="panel-note">Direct reads and recorded changes.</p><div class="file-head"><span>Path</span><span>Reads</span><span>Edits</span></div><div id="files" class="files-grid"></div><div class="left-foot"><button id="file-toggle" class="plain" aria-controls="files" type="button"></button></div></aside>
+<div class="right"><section id="breakdown" class="panel" aria-labelledby="panel-title"></section><section id="interpretation" class="reading" aria-labelledby="reading-title"><h3 id="reading-title">What this view shows</h3><p id="reading-text"></p><a id="reading-example"></a></section></div>
+</div>
+<details class="notes" id="method"><summary>Counting rules and sample source</summary><p id="view-rule"></p><p>One row counts a completed tool call once. A search target, a Git diff and a script invocation each have their own evidence. Only a confirmed file read contributes to the Reads column. Command exit codes and patch completion are shown as recorded.</p><p>Tool time adds recorded call durations, including overlapping calls. Elapsed time runs from the first start to the last completion in this sample. No time or token share is assigned to individual commands inside a single call.</p><p>The anonymized commands, path actions and line ranges come from the reviewed Point Taken corpus. Durations come from the matching local transcript records. This sample uses local evidence. A production view should mark any Luna inference beside the corresponding action. <a class="source-link" href="../../tests/Xcmd.Probe/Fixtures/SessionCoverage/README.md">Corpus notes</a></p></details>
+<noscript><p>Enable JavaScript to compare the recorded calls.</p></noscript>
+</main>
+<script type="application/json" id="records">
+[{"n":18,"op":"read","target":"external","start":32,"end":470,"path":"C:/Users/reader/.agents/skills/point-taken/SKILL.md","first":1,"lines":33,"cmd":"Get-Content -Raw -Encoding UTF8 -LiteralPath 'C:/Users/reader/.agents/skills/point-taken/SKILL.md'","result":"Exit 0"},
+{"n":19,"op":"read","target":"docs","start":16,"end":501,"path":"AGENTS.md","first":1,"lines":25,"cmd":"Get-Content -Raw -Encoding UTF8 -LiteralPath 'AGENTS.md'","result":"Exit 0"},
+{"n":20,"op":"git","target":"repo","start":47,"end":539,"title":"Inspect Git status","cmd":"git status --short --branch","result":"Exit 0"},
+{"n":21,"op":"read","target":"docs","start":0,"end":1079,"path":"docs/development/deployment.md","first":1,"lines":66,"cmd":"Get-Content -Raw -Encoding UTF8 -LiteralPath 'docs/development/deployment.md'","result":"Exit 0"},
+{"n":26,"op":"list","target":"scope","start":7369,"end":7630,"title":"List instruction files","cmd":"rg --files -g AGENTS.md -g \"!artifacts\"","result":"Exit 0"},
+{"n":27,"op":"tracker-read","target":"issues","start":7354,"end":7840,"title":"List tracker issues","cmd":"point-taken list --json","result":"Exit 0"},
+{"n":32,"op":"tracker-read","target":"issues","start":12597,"end":13041,"title":"Show issue 49","cmd":"point-taken show 49 --json","result":"Exit 0"},
+{"n":37,"op":"tracker-write","target":"issues","start":16574,"end":16981,"title":"Start issue 49","cmd":"point-taken start 49","result":"Exit 0"},
+{"n":44,"op":"search","target":"scope","start":23917,"end":24354,"title":"Search source, tests and the specification","cmd":"rg -n -i \"project filter|active issues|issues window|all projects|ProjectFilter\" src tests docs/spec-in-progress/shared-feedback-utility.md","result":"Exit 0"},
+{"n":45,"op":"read","target":"source","start":23948,"end":24371,"path":"src/Desktop/IssuesWindow.cs","first":1,"lines":495,"cmd":"Get-Content -Raw -Encoding UTF8 src/Desktop/IssuesWindow.cs","result":"Exit 0"},
+{"n":46,"op":"git","target":"repo","start":23932,"end":24392,"title":"Inspect the Git diff for two files","cmd":"git diff -- src/Desktop/IssuesWindow.cs tests/DesktopChecks/IssueViewChecks.cs","result":"Exit 0"},
+{"n":47,"op":"read","target":"tests","start":23963,"end":24443,"path":"tests/DesktopChecks/IssueViewChecks.cs","first":1,"lines":454,"cmd":"Get-Content -Raw -Encoding UTF8 tests/DesktopChecks/IssueViewChecks.cs","result":"Exit 0"},
+{"n":52,"op":"list","target":"source","start":33449,"end":33801,"title":"List paths in src/Tracker","cmd":"rg --files src/Tracker","result":"Exit 0"},
+{"n":53,"op":"search","target":"scope","start":33543,"end":33990,"title":"Search source and tests","cmd":"rg -n \"ProjectId =|\\.ProjectId\\b|Items\\.Contains\\(|SelectedItem =\" src/Desktop tests/DesktopChecks | rg \"Issues|[pP]roject|window\"","result":"Exit 0"},
+{"n":54,"op":"read","target":"tests","start":33449,"end":34016,"path":"tests/DesktopChecks/IssueViewChecks.cs","first":1,"lines":125,"cmd":"Get-Content -Encoding UTF8 tests/DesktopChecks/IssueViewChecks.cs | Select-Object -First 125","result":"Exit 0"},
+{"n":55,"op":"read","target":"source","start":33433,"end":34016,"path":"src/Desktop/IssuesWindow.cs","first":419,"lines":77,"cmd":"Get-Content -Encoding UTF8 src/Desktop/IssuesWindow.cs | Select-Object -Skip 418","result":"Exit 0"},
+{"n":56,"op":"read","target":"tests","start":33497,"end":34016,"path":"tests/DesktopChecks/IssueViewChecks.cs","first":231,"lines":224,"cmd":"Get-Content -Encoding UTF8 tests/DesktopChecks/IssueViewChecks.cs | Select-Object -Skip 230","result":"Exit 0"},
+{"n":61,"op":"read","target":"tests","start":41408,"end":41852,"path":"tests/DesktopChecks/Program.cs","first":63,"lines":94,"cmd":"Get-Content -Encoding UTF8 tests/DesktopChecks/Program.cs | Select-Object -Skip 62 -First 94","result":"Exit 0"},
+{"n":62,"op":"read","target":"tooling","start":41424,"end":41865,"path":"tools/FeedbackIds/FeedbackIdAnalyzer.cs","first":1,"lines":78,"cmd":"Get-Content -Encoding UTF8 tools/FeedbackIds/FeedbackIdAnalyzer.cs | Select-Object -First 220","result":"Exit 0"},
+{"n":63,"op":"read","target":"source","start":41439,"end":41878,"path":"src/Tracker/Issues.cs","first":1,"lines":85,"cmd":"Get-Content -Encoding UTF8 src/Tracker/Issues.cs | Select-Object -First 125","result":"Exit 0"},
+{"n":64,"op":"search","target":"source","start":41487,"end":41882,"title":"Search desktop source","cmd":"rg -n \"ComboBoxItem|SelectionBoxItem|ItemsSource =|Tag = \" src/Desktop","result":"Exit 0"},
+{"n":65,"op":"read","target":"tooling","start":41454,"end":41924,"path":"scripts/Deploy-PointTaken.ps1","first":1,"lines":96,"cmd":"Get-Content -Encoding UTF8 scripts/Deploy-PointTaken.ps1 | Select-Object -First 96","result":"Exit 0"},
+{"n":66,"op":"read","target":"tests","start":41471,"end":42139,"path":"tests/DesktopChecks/IssueViewChecks.cs","first":321,"lines":37,"cmd":"Get-Content -Encoding UTF8 tests/DesktopChecks/IssueViewChecks.cs | Select-Object -Skip 320 -First 37","result":"Exit 0"},
+{"n":73,"op":"list","target":"source","start":65419,"end":65734,"title":"Filter the desktop path list","cmd":"rg --files src/Desktop | rg \"Pick|Adapter|TrackerWindow\"","result":"Exit 0"},
+{"n":74,"op":"search","target":"source","start":65435,"end":65759,"title":"Search picker and adapter paths","cmd":"rg -n \"Name\\b|origin|Issue\\b|DataContext\" src/Desktop/*Picker* src/Desktop/SelfAdapter.cs","result":"Exit 1"},
+{"n":75,"op":"read","target":"source","start":65450,"end":66171,"path":"src/Desktop/DesktopPicker.cs","first":63,"lines":26,"cmd":"Get-Content -Encoding UTF8 src/Desktop/DesktopPicker.cs | Select-Object -Skip 62 -First 26","result":"Exit 0"},
+{"n":78,"op":"read","target":"tests","start":65435,"end":66401,"path":"tests/DesktopChecks/WorkerChecks.cs","first":1,"lines":120,"cmd":"Get-Content -Encoding UTF8 tests/DesktopChecks/WorkerChecks.cs | Select-Object -First 120","result":"Exit 0"},
+{"n":83,"op":"read","target":"source","start":77190,"end":77509,"path":"src/Desktop/WindowPicker.cs","first":1,"lines":224,"cmd":"Get-Content -Encoding UTF8 src/Desktop/WindowPicker.cs | Select-Object -First 260","result":"Exit 0"},
+{"n":90,"op":"search","target":"scope","start":94430,"end":94685,"title":"Search project files for build settings","cmd":"rg -n 'Avalonia|TargetFramework' Directory* src/Desktop/Desktop.csproj","result":"Exit 1"},
+{"n":91,"op":"search","target":"external","start":94446,"end":94732,"title":"Search the local package directory","cmd":"rg -n 'PreparingContainerEventArgs|ItemsControl.PreparingContainer|ContainerPreparedEventArgs\\.(Item|Container)' --glob 'Avalonia.Controls.xml' $env:USERPROFILE/.nuget/packages/avalonia | Select-Object -First 25","result":"Exit 0"},
+{"n":99,"op":"edit","target":"source","start":124705,"end":124706,"path":"src/Desktop/IssuesWindow.cs","result":"Completed"},
+{"n":106,"op":"edit","target":"tests","start":144243,"end":144244,"path":"tests/DesktopChecks/IssueViewChecks.cs","result":"Completed"},
+{"n":111,"op":"edit","target":"docs","start":152482,"end":152483,"path":"docs/spec-in-progress/shared-feedback-utility.md","result":"Completed"},
+{"n":117,"op":"git","target":"repo","start":156682,"end":157044,"title":"Check the Git diff","cmd":"git diff --check","result":"Exit 0"},
+{"n":138,"op":"script","target":"tooling","start":156695,"end":197768,"title":"Run the deployment script","cmd":"pwsh -NoProfile -File ./scripts/Deploy-PointTaken.ps1","result":"Exit 0"},
+{"n":145,"op":"tracker-write","target":"issues","start":207702,"end":208364,"title":"Close issue 49","cmd":"point-taken close 49 --note 'See docs/example.md'","result":"Exit 0"}]
+</script>
+<script>
+const byId = id => document.getElementById(id);
+const calls = JSON.parse(byId('records').textContent).sort((a,b) => a.end-b.end || a.n-b.n);
+const paths = new Map();
+for (const call of calls) {
+  if (!call.path) { call.history='other'; continue; }
+  const visits=paths.get(call.path) || [];
+  const seen=visits.some(old=>old.op==='read' && old.end<=call.start);
+  call.history=call.op==='read' ? (seen?'repeat':'first') : (seen?'edit-seen':'edit-unseen');
+  visits.push(call);
+  paths.set(call.path,visits);
+}
+const fileRows=[...paths.entries()].map(([path,visits])=>({
+  path,visits,id:'file-'+visits[0].n,reads:visits.filter(c=>c.op==='read').length,
+  edits:visits.filter(c=>c.op==='edit').length
+})).sort((a,b)=>b.visits.length-a.visits.length || a.path.localeCompare(b.path));
+
+const colors=['#91c5e6','#a8d9c7','#bec4ec','#cbaff0','#e5bf89','#9dc4c2','#dfacbb','#aab4bf'];
+const definitions={
+  operation:[
+    ['read','Read file','Read file contents from a resolved path.'],
+    ['search','Search text','Run a content search. A path in the arguments describes the search scope.'],
+    ['list','List paths','Enumerate or filter file names.'],
+    ['edit','Change file','The provider recorded a change to a file.'],
+    ['git','Inspect Git','Query status, inspect a diff or check a diff.'],
+    ['tracker-read','Query issue tracker','List issues or open an issue record.'],
+    ['tracker-write','Update issue tracker','Start or close an issue.'],
+    ['script','Run script','Invoke a script. Its invocation alone identifies no individual file reads.']
+  ],
+  target:[
+    ['source','Application source','The recorded operation targets src/.'],
+    ['tests','Test files','The named path or search scope is under tests/.'],
+    ['docs','Docs & instructions','Project instructions at the root and files under docs/.'],
+    ['tooling','Project tooling','Project-owned scripts and tools.'],
+    ['external','User tools & packages','An installed skill or a search under the user package directory.'],
+    ['repo','Git repository','The Git command queries repository state, including a path-limited diff.'],
+    ['issues','Issue tracker','A query or update to the Point Taken tracker.'],
+    ['scope','Mixed or project-wide','A call targets several areas or searches from the project root.']
+  ],
+  history:[
+    ['first','First recorded read','The first confirmed read of this path in the sample.'],
+    ['repeat','Read again','A confirmed read of the same path had already finished.'],
+    ['edit-seen','Edit after a read','A direct read of the path finished before the edit began.'],
+    ['edit-unseen','Edit with no recorded read','The sample contains no confirmed direct read of the path before the edit.'],
+    ['other','Other calls','These calls have no confirmed direct file read or recorded file change in the sample.']
+  ]
+};
+const views={
+  operation:{title:'Activity by operation',description:'Each call counts once under its recorded operation.',
+    reading:'Sixteen calls read files. One invocation of the deployment script accounted for 41.1 s of the 56.5 s of recorded tool time. Counting calls and summing their durations answer different questions.',
+    example:'Inspect the script invocation',link:'operation/script/L138',
+    rule:'Classify the visible operation from the tool and command. A filter applied to the output stays with the producing operation. Use explicit groups for test runs, builds and agent calls when present. Use Mixed for independently identifiable operations in one call and Unclassified when the operation is unclear.'},
+  target:{title:'Activity by target',description:'Group the object addressed by each call, then distinguish reads, edits and other operations.',
+    reading:'The agent read test files six times and edited one. The user tools group contains one direct read of SKILL.md and one package search. Only the skill file appears in File coverage.',
+    example:'Compare the skill read and package search',link:'target/external',
+    rule:'Use a resolved file path, an explicit search scope, or a named service such as Git. Each call belongs to one target group. Multiple areas share the Mixed or project-wide row. Use Unknown when the target is unavailable. A command argument names the intended scope, including on a nonzero exit.'},
+  history:{title:'Activity by file history',description:'Compare each direct read or edit with earlier completed reads of the same path.',
+    reading:'IssueViewChecks.cs was read in full, then in three slices. Two of the three edited paths had earlier direct reads. The specification appeared in a search command before its edit. No direct read of that path was recorded.',
+    example:'Inspect the specification edit',link:'history/edit-unseen/L111',
+    rule:'Compare normalized paths for the same agent. In a selected interval, look back to earlier completed reads across the available session. Reads still running at the start of an edit give an unknown order. An action with missing history stays unknown. A compound call with several history types belongs to Mixed. Repeated access describes chronology only.'}
+};
+const palette={first:'#91c5e6',repeat:'#a8d9c7','edit-seen':'#cbaff0','edit-unseen':'#e5bf89',other:'#aab4bf'};
+const elapsed=c=>c.end-c.start;
+const sum=(rows,fn)=>rows.reduce((n,c)=>n+fn(c),0);
+const basename=p=>p.split('/').pop();
+const directory=p=>p.slice(0,p.lastIndexOf('/')+1) || './';
+const escape=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const plural=(n,s)=>n+' '+s+(n===1?'':'s');
+function duration(ms) {
+  if(ms<100) return ms+' ms';
+  return (ms/1000).toFixed(1)+' s';
+}
+function walltime(ms) {const sec=Math.round(ms/1000);return Math.floor(sec/60)+'m '+(sec%60)+'s';}
+function title(c){return c.title || (c.op==='read'?'Read ':'Edit ')+basename(c.path);}
+function key(c,view){return view==='operation'?c.op:c[view];}
+function groupDefinition(view,id){return definitions[view].find(([k])=>k===id);}
+function groupRows(view,id){return calls.filter(c=>key(c,view)===id);}
+function statCell(n){return '<td class="metric'+(n?'':' count-zero')+'">'+n+'</td>';}
+const totalTool=sum(calls,elapsed);
+byId('metrics').innerHTML='<span><b>'+calls.length+'</b>calls</span><span><b>'+duration(totalTool)+'</b>tool time</span><span><b>'+walltime(Math.max(...calls.map(c=>c.end))-Math.min(...calls.map(c=>c.start)))+'</b>elapsed</span>';
+
+let allFiles=false, state={view:'operation',group:'',call:null};
+function readState(){
+  const [view,group='',record='']=location.hash.slice(1).split('/');
+  if(!Object.hasOwn(views,view)) return {view:'operation',group:'',call:null};
+  const file=fileRows.find(f=>f.id===group), def=groupDefinition(view,group);
+  if(!file && !def) return {view,group:'',call:null};
+  const members=file?.visits || groupRows(view,group);
+  return {view,group,call:members.find(c=>'L'+c.n===record) || null};
+}
+function hashOf(s){return [s.view,s.group,s.call?'L'+s.call.n:''].filter(Boolean).join('/');}
+window.reviewState=()=>({where:[views[state.view].title,fileRows.find(f=>f.id===state.group)?.path ||
+  groupDefinition(state.view,state.group)?.[1],state.call?'L'+state.call.n:''].filter(Boolean).join(' · '),hash:hashOf(state)});
+
+function renderFiles(){
+  const selected=fileRows.find(f=>f.id===state.group);
+  byId('file-total').textContent=plural(paths.size,'file');
+  byId('files').innerHTML=(allFiles?fileRows:fileRows.slice(0,5)).map(f=>
+    '<a class="file-link'+(f===selected?' current':'')+'" href="#'+state.view+'/'+f.id+'" data-review="file path" aria-label="'+escape(f.path+', '+plural(f.reads,'read')+', '+plural(f.edits,'edit'))+'">'+
+    '<span><span class="file-name">'+escape(basename(f.path))+'</span><span class="dir">'+escape(directory(f.path))+'</span></span>'+
+    '<span class="'+(f.reads?'':'count-zero')+'">'+f.reads+'<span class="narrow-label"> reads</span></span><span class="'+(f.edits?'':'count-zero')+'">'+f.edits+'<span class="narrow-label"> edits</span></span></a>').join('');
+  const b=byId('file-toggle'); b.textContent=allFiles?'Show fewer files':'Show all '+paths.size+' files';b.setAttribute('aria-expanded',allFiles);
+}
+byId('file-toggle').addEventListener('click',()=>{allFiles=!allFiles;renderFiles();});
+function heading(title,count,note){
+  return '<div class="panel-head"><h2 id="panel-title" tabindex="-1">'+escape(title)+'</h2><span>'+plural(count,'call')+'</span></div><p class="panel-note">'+escape(note)+'</p>';
+}
+function ribbon(){
+  return '<div class="history-strip"><p class="label">File actions in completion order · 16 reads and 3 edits</p><div class="ribbon">'+calls.filter(c=>c.path).map(c=>{
+    const label='L'+c.n+' · '+title(c)+' · '+groupDefinition('history',c.history)[1];
+    return '<a href="#history/'+c.history+'/L'+c.n+'" style="--ink:'+palette[c.history]+'" data-review="file action" aria-label="'+escape(label)+'" title="'+escape(label)+'"></a>';
+  }).join('')+'</div></div>';
+}
+function showGroups(view){
+  const meta=views[view],matrix=view==='target';
+  const head=matrix?'<th>Read</th><th>Edit</th><th>Other</th><th>Calls</th>':'<th>Calls</th><th>Tool time</th>';
+  const rows=definitions[view].map(([id,label],i)=>{
+    const members=groupRows(view,id),time=sum(members,elapsed),ink=view==='history'?palette[id]:colors[i];
+    const link='<a class="row-link" href="#'+view+'/'+id+'"><i class="mark" style="--ink:'+ink+'"></i><span>'+label+'</span><span class="chev" aria-hidden="true">›</span></a>';
+    const reads=members.filter(c=>c.op==='read').length,edits=members.filter(c=>c.op==='edit').length;
+    const timeCell='<td><span class="time-cell"><span class="track" aria-hidden="true"><i style="--ink:'+ink+';width:'+100*time/totalTool+'%"></i></span>'+duration(time)+'</span></td>';
+    return '<tr data-review="group '+id+'"><td>'+link+'</td>'+(matrix?
+      statCell(reads)+statCell(edits)+statCell(members.length-reads-edits)+statCell(members.length):statCell(members.length)+timeCell)+'</tr>';
+  }).join('');
+  const note=matrix?'Other includes searches, path lists, scripts and repository or tracker commands.':
+    view==='history'?'History starts at the first observed call in this sample. All 36 calls are accounted for.':'Tool time is the sum of call durations. Several calls can run at once.';
+  byId('breakdown').innerHTML=heading(meta.title,calls.length,meta.description)+(view==='history'?ribbon():'')+
+    '<table class="rows" aria-label="'+meta.title+'"><thead><tr><th scope="col">'+({operation:'Operation',target:'Target',history:'File history'}[view])+'</th>'+head+
+    '</tr></thead><tbody>'+rows+'</tbody></table><p class="table-end">'+note+'</p>';
+}
+function evidence(c){
+  const facts=[];
+  let related='';
+  if(c.op==='read') facts.push('Direct read · '+c.path+' · lines '+c.first+'–'+(c.first+c.lines-1)+'.');
+  if(c.op==='edit') facts.push('The provider recorded an update to '+c.path+'.');
+  if(c.history==='repeat'||c.history==='edit-seen'){
+    const prev=paths.get(c.path).filter(old=>old.op==='read' && old.end<=c.start).at(-1);
+    facts.push('The previous direct read at L'+prev.n+' returned lines '+prev.first+'–'+(prev.first+prev.lines-1)+'.');
+    related='<a href="#history/'+prev.history+'/L'+prev.n+'">Open the previous read at L'+prev.n+'</a>';
+  }
+  if(c.n===111) {
+    facts.push('L44 named this file in the search scope. The sample contains no earlier direct read of this path.');
+    related='<a href="#operation/search/L44">Open the search command at L44</a>';
+  }
+  if(c.n===91) facts.push('The command searched a package directory. The historical value of USERPROFILE is absent from the reviewed command.');
+  if(c.op==='script') facts.push('The log identifies the script invocation and its exit code. Child operations have no separate duration here.');
+  if(c.op==='search' && c.result==='Exit 1') facts.push('The recorded outer command exited with code 1.');
+  const cmd=c.cmd || 'FileChange · update\n'+c.path;
+  return '<div class="call-detail" data-review="call evidence"><div class="trace-meta">Transcript L'+c.n+' · '+(c.cmd?'CommandExecution':'FileChange')+' · '+escape(c.result)+' · '+duration(elapsed(c))+'</div>'+
+    '<pre><code>'+escape(cmd)+'</code></pre>'+facts.map(f=>'<p>'+escape(f)+'</p>').join('')+(related?'<p>'+related+'</p>':'')+'</div>';
+}
+function showDetail(){
+  const {view,group,call}=state;
+  const file=fileRows.find(f=>f.id===group);
+  const def=groupDefinition(view,group);
+  const members=file?.visits || groupRows(view,group);
+  const name=file?basename(file.path):def[1],note=file?file.path:def[2];
+  const list=members.map(c=>{
+    const selected=call===c,ref='#'+view+'/'+group+(selected?'':'/L'+c.n);
+    return '<li data-review="call L'+c.n+'"><a class="call" href="'+ref+'" aria-expanded="'+selected+'"'+(selected?' aria-current="true"':'')+'><span class="call-ref">L'+c.n+'</span><span class="call-label">'+escape(title(c))+'</span><span class="status">'+escape(c.result)+'</span></a>'+
+      (selected?evidence(c):'')+'</li>';
+  }).join('');
+  byId('breakdown').innerHTML='<div class="detail-top"><a class="back" href="#'+view+'">‹ All groups</a></div>'+heading(name,members.length,note)+'<ol class="evidence">'+list+'</ol>';
+}
+function render(moveFocus=false){
+  const old=state; state=readState();
+  if(old.group!==state.group && fileRows.findIndex(f=>f.id===state.group)>=5) allFiles=true;
+  renderFiles();
+  document.querySelectorAll('[data-view]').forEach(a=>{if(a.dataset.view===state.view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  if(state.group)showDetail();else showGroups(state.view);
+  const meta=views[state.view];
+  byId('reading-text').textContent=meta.reading;byId('reading-example').textContent=meta.example;byId('reading-example').href='#'+meta.link;
+  byId('view-rule').textContent=meta.rule;
+  if(moveFocus){
+    const wasCall=old.view===state.view && old.group===state.group && old.call;
+    const anchor=state.call?document.querySelector('.call[aria-current="true"]'):wasCall?document.querySelector('a.call[href$="/L'+old.call.n+'"]'):null;
+    const back=!state.group && old.view===state.view && old.group?document.querySelector('a.row-link[href="#'+state.view+'/'+old.group+'"]'):null;
+    const focus=anchor || back || byId('panel-title');
+    focus.focus({preventScroll:true});
+    if(focus.getBoundingClientRect().bottom>innerHeight || focus.getBoundingClientRect().top<0)focus.scrollIntoView({block:'nearest'});
+  }
+}
+window.addEventListener('hashchange',()=>render(true));
+render();
+</script>
+</body></html>

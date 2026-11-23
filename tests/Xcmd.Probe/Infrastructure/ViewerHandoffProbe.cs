@@ -1,8 +1,9 @@
-// @tests OpenViewers, ReleaseHandoff, RestoreWorkspace, ReadWorkingFileDiff
+// @tests OpenViewers, ReleaseHandoff, RestoreWorkspace, ReadWorkingFileDiff, InspectAgentSession
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Xcmd.Core;
 using Xcmd.Desktop.Features.Viewer;
 using Xcmd.Desktop.Workspace;
 
@@ -46,9 +47,23 @@ internal static class ViewerHandoffProbe
         await OpenAsync(window, MissingFile);
         await OpenAsync(window, LockedFile);
         await OpenDiffAsync(window);
+        OpenInspectors(window);
         foreach (var viewer in window.Viewers) InputDriver.Deactivate(viewer);
         InputDriver.Deactivate(window);
         ProbeContext.Check(window.Readiness.CanRestart, "The background fixture allows updates with its viewers open.");
+    }
+
+    private static void OpenInspectors(CommanderWindow window)
+    {
+        var directory = window.Left.Session.DirectoryPath;
+        var transcript = Path.Combine(directory, "inspection.jsonl");
+        File.WriteAllText(transcript, """{"timestamp":"2026-01-01T00:00:00Z","type":"event_msg","payload":{"type":"user_message","message":"Inspect the sample"}}""");
+        var session = new AgentSession(SessionAgent.Codex, Guid.NewGuid(), "First inspection", directory, DateTimeOffset.UtcNow) { TranscriptPath = transcript };
+        window.RestoreInspectors([
+            new(session, new(40, 60, 720, 530, false), null),
+            new(session with { Id = Guid.NewGuid(), Topic = "Second inspection" }, new(100, 120, 680, 480, false, Minimized: true), null)
+        ]);
+        foreach (var inspector in window.SessionInspectors) InputDriver.Deactivate(inspector);
     }
 
     public static object Describe(CommanderWindow window) => window.Viewers.Select(viewer => new

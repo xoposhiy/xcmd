@@ -1,0 +1,9 @@
+{
+  "freeze": "eb7b97e55aa75601ff486fed270e9e6d0b14efc7b923e2301c2c145f33b3cdec",
+  "predictions": {
+    "development": "cc0d83682f7131d41ed5de30ba805eb64727ca79c6ed3fa28ad08c6fd072731e",
+    "extra": "b81f0d88e9f1ee878a4bc2b13f8032484f880c5288118f17d626fa9bdc6cdb31",
+    "previous": "518bbb9c62777668e945e33a48b8fdd4b7dbcb86e43696cb481a9b0ef7ee768b",
+    "fresh": "31aae6ca0077fb7e67d0e25cc02ca71022f3a235dab3e9dea6fe8e9b44876a0b"
+  }
+}

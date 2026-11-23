@@ -1,0 +1,900 @@
+{
+  "overall": {
+    "calls": 335,
+    "exact": 243,
+    "active": 335,
+    "exact_active": 243,
+    "jaccard_active": 0.85659,
+    "shared": 999,
+    "union": 1324,
+    "pooled_jaccard": 0.754532,
+    "votes": {
+      "1": 148,
+      "2": 177,
+      "3": 999
+    }
+  },
+  "pairs": {
+    "terra/sol": {
+      "calls": 335,
+      "exact": 316,
+      "active": 335,
+      "exact_active": 316,
+      "jaccard_active": 0.973989,
+      "shared": 1163,
+      "union": 1246,
+      "pooled_jaccard": 0.933387,
+      "votes": {
+        "1": 83,
+        "2": 1163
+      },
+      "left_only": 27,
+      "right_only": 56
+    },
+    "terra/luna": {
+      "calls": 335,
+      "exact": 246,
+      "active": 335,
+      "exact_active": 246,
+      "jaccard_active": 0.86801,
+      "shared": 1002,
+      "union": 1278,
+      "pooled_jaccard": 0.784038,
+      "votes": {
+        "1": 276,
+        "2": 1002
+      },
+      "left_only": 188,
+      "right_only": 88
+    },
+    "sol/luna": {
+      "calls": 335,
+      "exact": 244,
+      "active": 335,
+      "exact_active": 244,
+      "jaccard_active": 0.864273,
+      "shared": 1009,
+      "union": 1300,
+      "pooled_jaccard": 0.776154,
+      "votes": {
+        "1": 291,
+        "2": 1009
+      },
+      "left_only": 210,
+      "right_only": 81
+    }
+  },
+  "by_kind": {
+    "file": {
+      "calls": 335,
+      "exact": 290,
+      "active": 282,
+      "exact_active": 237,
+      "jaccard_active": 0.910581,
+      "shared": 831,
+      "union": 937,
+      "pooled_jaccard": 0.886873,
+      "votes": {
+        "1": 22,
+        "2": 84,
+        "3": 831
+      }
+    },
+    "directory": {
+      "calls": 335,
+      "exact": 280,
+      "active": 105,
+      "exact_active": 50,
+      "jaccard_active": 0.51661,
+      "shared": 100,
+      "union": 243,
+      "pooled_jaccard": 0.411523,
+      "votes": {
+        "1": 68,
+        "2": 75,
+        "3": 100
+      }
+    },
+    "url": {
+      "calls": 335,
+      "exact": 328,
+      "active": 7,
+      "exact_active": 0,
+      "jaccard_active": 0.0,
+      "shared": 0,
+      "union": 30,
+      "pooled_jaccard": 0.0,
+      "votes": {
+        "1": 30
+      }
+    },
+    "issue": {
+      "calls": 335,
+      "exact": 335,
+      "active": 3,
+      "exact_active": 3,
+      "jaccard_active": 1.0,
+      "shared": 3,
+      "union": 3,
+      "pooled_jaccard": 1.0,
+      "votes": {
+        "3": 3
+      }
+    },
+    "repository": {
+      "calls": 335,
+      "exact": 312,
+      "active": 69,
+      "exact_active": 46,
+      "jaccard_active": 0.673913,
+      "shared": 47,
+      "union": 71,
+      "pooled_jaccard": 0.661972,
+      "votes": {
+        "1": 19,
+        "2": 5,
+        "3": 47
+      }
+    },
+    "other": {
+      "calls": 335,
+      "exact": 320,
+      "active": 30,
+      "exact_active": 15,
+      "jaccard_active": 0.525,
+      "shared": 18,
+      "union": 40,
+      "pooled_jaccard": 0.45,
+      "votes": {
+        "1": 9,
+        "2": 13,
+        "3": 18
+      }
+    },
+    "non-file/non-URL": {
+      "calls": 335,
+      "exact": 257,
+      "active": 165,
+      "exact_active": 87,
+      "jaccard_active": 0.583485,
+      "shared": 168,
+      "union": 357,
+      "pooled_jaccard": 0.470588,
+      "votes": {
+        "1": 96,
+        "2": 93,
+        "3": 168
+      }
+    }
+  },
+  "kind_matrices": {
+    "terra/sol": {
+      "file": {
+        "file": 909,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 2
+      },
+      "directory": {
+        "file": 0,
+        "directory": 173,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 18
+      },
+      "url": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 3
+      },
+      "issue": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 3,
+        "repository": 0,
+        "other": 0,
+        "absent": 0
+      },
+      "repository": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 50,
+        "other": 0,
+        "absent": 2
+      },
+      "other": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 28,
+        "absent": 2
+      },
+      "absent": {
+        "file": 10,
+        "directory": 22,
+        "url": 16,
+        "issue": 0,
+        "repository": 2,
+        "other": 6,
+        "absent": null
+      }
+    },
+    "terra/luna": {
+      "file": {
+        "file": 831,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 80
+      },
+      "directory": {
+        "file": 4,
+        "directory": 100,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 87
+      },
+      "url": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 3
+      },
+      "issue": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 3,
+        "repository": 0,
+        "other": 0,
+        "absent": 0
+      },
+      "repository": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 49,
+        "other": 0,
+        "absent": 3
+      },
+      "other": {
+        "file": 1,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 19,
+        "absent": 10
+      },
+      "absent": {
+        "file": 17,
+        "directory": 32,
+        "url": 11,
+        "issue": 0,
+        "repository": 17,
+        "other": 6,
+        "absent": null
+      }
+    },
+    "sol/luna": {
+      "file": {
+        "file": 837,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 82
+      },
+      "directory": {
+        "file": 4,
+        "directory": 102,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 89
+      },
+      "url": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 0,
+        "absent": 16
+      },
+      "issue": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 3,
+        "repository": 0,
+        "other": 0,
+        "absent": 0
+      },
+      "repository": {
+        "file": 0,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 47,
+        "other": 0,
+        "absent": 5
+      },
+      "other": {
+        "file": 1,
+        "directory": 0,
+        "url": 0,
+        "issue": 0,
+        "repository": 0,
+        "other": 20,
+        "absent": 13
+      },
+      "absent": {
+        "file": 11,
+        "directory": 30,
+        "url": 11,
+        "issue": 0,
+        "repository": 19,
+        "other": 5,
+        "absent": null
+      }
+    }
+  },
+  "against_working_reference": {
+    "all": {
+      "terra": {
+        "calls": 335,
+        "exact": 305,
+        "tp": 1179,
+        "fp": 11,
+        "fn": 258,
+        "precision": 0.990756,
+        "recall": 0.820459,
+        "f1": 0.897602
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 310,
+        "tp": 1211,
+        "fp": 8,
+        "fn": 226,
+        "precision": 0.993437,
+        "recall": 0.842728,
+        "f1": 0.911898
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 240,
+        "tp": 1007,
+        "fp": 83,
+        "fn": 430,
+        "precision": 0.923853,
+        "recall": 0.700765,
+        "f1": 0.796992
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 304,
+        "tp": 1168,
+        "fp": 8,
+        "fn": 269,
+        "precision": 0.993197,
+        "recall": 0.812804,
+        "f1": 0.893992
+      }
+    },
+    "file": {
+      "terra": {
+        "calls": 335,
+        "exact": 319,
+        "tp": 910,
+        "fp": 1,
+        "fn": 179,
+        "precision": 0.998902,
+        "recall": 0.835629,
+        "f1": 0.91
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 319,
+        "tp": 915,
+        "fp": 4,
+        "fn": 174,
+        "precision": 0.995647,
+        "recall": 0.84022,
+        "f1": 0.911355
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 287,
+        "tp": 835,
+        "fp": 18,
+        "fn": 254,
+        "precision": 0.978898,
+        "recall": 0.766758,
+        "f1": 0.859938
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 317,
+        "tp": 911,
+        "fp": 4,
+        "fn": 178,
+        "precision": 0.995628,
+        "recall": 0.836547,
+        "f1": 0.909182
+      }
+    },
+    "directory": {
+      "terra": {
+        "calls": 335,
+        "exact": 331,
+        "tp": 187,
+        "fp": 4,
+        "fn": 34,
+        "precision": 0.979058,
+        "recall": 0.846154,
+        "f1": 0.907767
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 331,
+        "tp": 193,
+        "fp": 2,
+        "fn": 28,
+        "precision": 0.989744,
+        "recall": 0.873303,
+        "f1": 0.927885
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 280,
+        "tp": 100,
+        "fp": 32,
+        "fn": 121,
+        "precision": 0.757576,
+        "recall": 0.452489,
+        "f1": 0.566572
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 329,
+        "tp": 173,
+        "fp": 2,
+        "fn": 48,
+        "precision": 0.988571,
+        "recall": 0.782805,
+        "f1": 0.873737
+      }
+    },
+    "url": {
+      "terra": {
+        "calls": 335,
+        "exact": 332,
+        "tp": 0,
+        "fp": 3,
+        "fn": 32,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 333,
+        "tp": 16,
+        "fp": 0,
+        "fn": 16,
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.666667
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 329,
+        "tp": 0,
+        "fp": 11,
+        "fn": 32,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 333,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32,
+        "precision": null,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "issue": {
+      "terra": {
+        "calls": 335,
+        "exact": 335,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 335,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 335,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 335,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "repository": {
+      "terra": {
+        "calls": 335,
+        "exact": 332,
+        "tp": 51,
+        "fp": 1,
+        "fn": 2,
+        "precision": 0.980769,
+        "recall": 0.962264,
+        "f1": 0.971429
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 334,
+        "tp": 52,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1.0,
+        "recall": 0.981132,
+        "f1": 0.990476
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 312,
+        "tp": 48,
+        "fp": 18,
+        "fn": 5,
+        "precision": 0.727273,
+        "recall": 0.90566,
+        "f1": 0.806723
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 332,
+        "tp": 51,
+        "fp": 1,
+        "fn": 2,
+        "precision": 0.980769,
+        "recall": 0.962264,
+        "f1": 0.971429
+      }
+    },
+    "other": {
+      "terra": {
+        "calls": 335,
+        "exact": 326,
+        "tp": 28,
+        "fp": 2,
+        "fn": 11,
+        "precision": 0.933333,
+        "recall": 0.717949,
+        "f1": 0.811594
+      },
+      "sol": {
+        "calls": 335,
+        "exact": 330,
+        "tp": 32,
+        "fp": 2,
+        "fn": 7,
+        "precision": 0.941176,
+        "recall": 0.820513,
+        "f1": 0.876712
+      },
+      "luna": {
+        "calls": 335,
+        "exact": 320,
+        "tp": 21,
+        "fp": 4,
+        "fn": 18,
+        "precision": 0.84,
+        "recall": 0.538462,
+        "f1": 0.65625
+      },
+      "majority": {
+        "calls": 335,
+        "exact": 328,
+        "tp": 30,
+        "fp": 1,
+        "fn": 9,
+        "precision": 0.967742,
+        "recall": 0.769231,
+        "f1": 0.857143
+      }
+    }
+  },
+  "by_trace": {
+    "point": {
+      "calls": 44,
+      "exact": 35,
+      "active": 44,
+      "exact_active": 35,
+      "jaccard_active": 0.893939,
+      "shared": 62,
+      "union": 74,
+      "pooled_jaccard": 0.837838,
+      "votes": {
+        "1": 6,
+        "2": 6,
+        "3": 62
+      }
+    },
+    "xcmd": {
+      "calls": 48,
+      "exact": 34,
+      "active": 48,
+      "exact_active": 34,
+      "jaccard_active": 0.846659,
+      "shared": 113,
+      "union": 179,
+      "pooled_jaccard": 0.631285,
+      "votes": {
+        "1": 41,
+        "2": 25,
+        "3": 113
+      }
+    },
+    "v2": {
+      "calls": 70,
+      "exact": 46,
+      "active": 70,
+      "exact_active": 46,
+      "jaccard_active": 0.833716,
+      "shared": 268,
+      "union": 380,
+      "pooled_jaccard": 0.705263,
+      "votes": {
+        "1": 60,
+        "2": 52,
+        "3": 268
+      }
+    },
+    "point-taken": {
+      "calls": 60,
+      "exact": 46,
+      "active": 60,
+      "exact_active": 46,
+      "jaccard_active": 0.879223,
+      "shared": 180,
+      "union": 229,
+      "pooled_jaccard": 0.786026,
+      "votes": {
+        "1": 15,
+        "2": 34,
+        "3": 180
+      }
+    },
+    "klava-sorting": {
+      "calls": 42,
+      "exact": 34,
+      "active": 42,
+      "exact_active": 34,
+      "jaccard_active": 0.894517,
+      "shared": 135,
+      "union": 168,
+      "pooled_jaccard": 0.803571,
+      "votes": {
+        "1": 9,
+        "2": 24,
+        "3": 135
+      }
+    },
+    "digester-recovery": {
+      "calls": 71,
+      "exact": 48,
+      "active": 71,
+      "exact_active": 48,
+      "jaccard_active": 0.821149,
+      "shared": 241,
+      "union": 294,
+      "pooled_jaccard": 0.819728,
+      "votes": {
+        "1": 17,
+        "2": 36,
+        "3": 241
+      }
+    }
+  },
+  "trace_reference": {
+    "all": {
+      "terra": {
+        "calls": 128,
+        "exact": 128,
+        "tp": 267,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sol": {
+        "calls": 128,
+        "exact": 128,
+        "tp": 267,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "luna": {
+        "calls": 128,
+        "exact": 127,
+        "tp": 266,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.996255,
+        "recall": 0.996255,
+        "f1": 0.996255
+      }
+    },
+    "patch": {
+      "terra": {
+        "calls": 51,
+        "exact": 51,
+        "tp": 102,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sol": {
+        "calls": 51,
+        "exact": 51,
+        "tp": 102,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "luna": {
+        "calls": 51,
+        "exact": 51,
+        "tp": 102,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "image": {
+      "terra": {
+        "calls": 4,
+        "exact": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sol": {
+        "calls": 4,
+        "exact": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "luna": {
+        "calls": 4,
+        "exact": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "literal read": {
+      "terra": {
+        "calls": 73,
+        "exact": 73,
+        "tp": 161,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sol": {
+        "calls": 73,
+        "exact": 73,
+        "tp": 161,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "luna": {
+        "calls": 73,
+        "exact": 72,
+        "tp": 160,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.993789,
+        "recall": 0.993789,
+        "f1": 0.993789
+      }
+    }
+  },
+  "reference_sources": {
+    "literal read": 73,
+    "unanimous": 113,
+    "trace review": 94,
+    "patch": 51,
+    "image": 4
+  },
+  "reference_resources": {
+    "file": 1089,
+    "repository": 53,
+    "directory": 221,
+    "other": 39,
+    "issue": 3,
+    "url": 32
+  }
+}

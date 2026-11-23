@@ -1,0 +1,26 @@
+{
+  "reviewer": "Independent Codex subagent (GPT-6 family), manual record-by-record review",
+  "method": "Independent full-trace annotation in an isolated local agent context",
+  "sessions": 2,
+  "calls": 100,
+  "reference_sha256": "e156f4d5509703f363b2dcdb3569bb5ce3959e0afde6dee69a8dca08d313a467",
+  "external_opus_cost_usd": 0,
+  "rationale_sha256": "c84f42bc96c5f1f039a0ca7847e549bdac6ef6bd54c78d7ee190f11c0e773bd3",
+  "traces": [
+    {
+      "key": "v1",
+      "trace_session": "rollout-2026-11-15T16-34-39-01a1dfd8-a48d-7603-a087-a208651845e7",
+      "trace_sha256": "2d61dd73acab4f76c6bf5bcdd3d51a979885ecb7197fe81a267603205db4f34f",
+      "calls": 30,
+      "repo_revision": "ae37590d747131f260b730194fac13728819693d"
+    },
+    {
+      "key": "v2",
+      "trace_session": "rollout-2026-11-20T18-35-55-01a1fa07-7626-7dd3-aebe-c2c172361cc0",
+      "trace_sha256": "bd1d6e79acdd59c5115c47f0806076de2af0812ef8b7a3b5fc589ccce255004d",
+      "calls": 70,
+      "repo_revision": "5a81eeb0fd7f983af2204e1f3f801c49e655d9a9"
+    }
+  ],
+  "selection": "Two sessions from other repositories, 30 and 70 completed commands and file changes."
+}

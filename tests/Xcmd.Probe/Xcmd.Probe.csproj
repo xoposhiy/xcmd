@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Fixtures/Archives/*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Fixtures/SessionCoverage/*.jsonl;Fixtures/SessionCoverage/luna-replies.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../../src/Xcmd.Desktop/Xcmd.Desktop.csproj" />
     <ProjectReference Include="../Xcmd.LaunchProbe/Xcmd.LaunchProbe.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />

@@ -25,6 +25,7 @@ public sealed class WorkspaceLifecycle : IDisposable
     private bool disposed;
     private string? failedRelease;
     private ViewerHandoffStore? restoredViewers;
+    private InspectorHandoff[] restoredInspectors = [];
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public string? UpdateError { get; private set; }
     public event Action? Initialized;
@@ -79,7 +80,10 @@ public sealed class WorkspaceLifecycle : IDisposable
         window.Closed += OnClosed;
         await SaveAsync();
         if (handoffPath != null && ViewerHandoffStore.ForRestart(handoffPath, store.Path) is { } snapshot)
+        {
             await window.PrepareViewersAsync(await snapshot.ReadAsync());
+            restoredInspectors = await snapshot.ReadInspectorsAsync();
+        }
         if (requireSavedSession && window.UpdateMessage.Length == 0) window.ShowUpdatedMessage();
         if (!requireSavedSession) StartMonitoring();
         Initialized?.Invoke();
@@ -95,6 +99,8 @@ public sealed class WorkspaceLifecycle : IDisposable
     {
         restoredViewers = ViewerHandoffStore.ForRestart(handoffPath, store.Path);
         window.ShowRestoredViewers();
+        window.RestoreInspectors(restoredInspectors);
+        restoredInspectors = [];
         StartMonitoring();
     }
 
@@ -172,6 +178,7 @@ public sealed class WorkspaceLifecycle : IDisposable
     {
         var state = window.CaptureWorkspace();
         var viewers = window.CaptureViewers();
+        var inspectors = window.CaptureInspectors();
         window.SetRestarting(true);
         window.SetUpdateMessage("Updating and restoring your session…");
         var handoff = Path.Combine(Path.GetDirectoryName(store.Path)!, "handoff", Guid.NewGuid().ToString("N"));
@@ -180,6 +187,7 @@ public sealed class WorkspaceLifecycle : IDisposable
         {
             await SaveAsync(state);
             if (viewers.Length > 0) await snapshot.SaveAsync(viewers, lifetime.Token);
+            if (inspectors.Length > 0) await snapshot.SaveInspectorsAsync(inspectors, lifetime.Token);
             await restart.PrepareAsync(release, store.Path, handoff, lifetime.Token);
         }
         catch

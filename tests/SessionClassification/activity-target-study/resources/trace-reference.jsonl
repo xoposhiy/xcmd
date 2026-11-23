@@ -1,0 +1,128 @@
+{"id":"point-L18","source":"literal read","resources":[{"kind":"file","value":"~/.agents/skills/point-taken/SKILL.md"}]}
+{"id":"point-L19","source":"literal read","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"point-L21","source":"literal read","resources":[{"kind":"file","value":"docs/development/deployment.md"}]}
+{"id":"point-L45","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/IssuesWindow.cs"}]}
+{"id":"point-L47","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/IssueViewChecks.cs"}]}
+{"id":"point-L54","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/IssueViewChecks.cs"}]}
+{"id":"point-L55","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/IssuesWindow.cs"}]}
+{"id":"point-L56","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/IssueViewChecks.cs"}]}
+{"id":"point-L61","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/Program.cs"}]}
+{"id":"point-L62","source":"literal read","resources":[{"kind":"file","value":"tools/FeedbackIds/FeedbackIdAnalyzer.cs"}]}
+{"id":"point-L63","source":"literal read","resources":[{"kind":"file","value":"src/Tracker/Issues.cs"}]}
+{"id":"point-L65","source":"literal read","resources":[{"kind":"file","value":"scripts/Deploy-PointTaken.ps1"}]}
+{"id":"point-L66","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/IssueViewChecks.cs"}]}
+{"id":"point-L75","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/DesktopPicker.cs"}]}
+{"id":"point-L78","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/WorkerChecks.cs"}]}
+{"id":"point-L83","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/WindowPicker.cs"}]}
+{"id":"point-L99","source":"patch","resources":[{"kind":"file","value":"src/Desktop/IssuesWindow.cs"}]}
+{"id":"point-L106","source":"patch","resources":[{"kind":"file","value":"tests/DesktopChecks/IssueViewChecks.cs"}]}
+{"id":"point-L111","source":"patch","resources":[{"kind":"file","value":"docs/spec-in-progress/shared-feedback-utility.md"}]}
+{"id":"point-L186","source":"literal read","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"point-L194","source":"patch","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"point-L201","source":"patch","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"point-L208","source":"literal read","resources":[{"kind":"file","value":"docs/development/deployment.md"}]}
+{"id":"xcmd-L19","source":"literal read","resources":[{"kind":"file","value":"docs/stories/README.md"}]}
+{"id":"xcmd-L24","source":"literal read","resources":[{"kind":"file","value":"docs/processes/verification.md"}]}
+{"id":"xcmd-L27","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.LaunchProbe/Program.cs"}]}
+{"id":"xcmd-L28","source":"literal read","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"xcmd-L29","source":"literal read","resources":[{"kind":"file","value":"docs/stories/reusable-boundaries.md"}]}
+{"id":"xcmd-L36","source":"literal read","resources":[{"kind":"file","value":"src/Xcmd.Core/Xcmd.Core.csproj"},{"kind":"file","value":"src/Xcmd.Desktop/Xcmd.Desktop.csproj"},{"kind":"file","value":"src/Xcmd.Infrastructure/Xcmd.Infrastructure.csproj"}]}
+{"id":"xcmd-L37","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.Architecture/Program.cs"}]}
+{"id":"xcmd-L38","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.Probe/Program.cs"}]}
+{"id":"xcmd-L46","source":"patch","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L71","source":"literal read","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L75","source":"patch","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L100","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.Architecture/Program.cs"},{"kind":"file","value":"tests/Xcmd.LaunchProbe/Program.cs"}]}
+{"id":"xcmd-L101","source":"literal read","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L109","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.Architecture/Samples/Violations.cs"}]}
+{"id":"xcmd-L114","source":"patch","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L120","source":"patch","resources":[{"kind":"file","value":"src/README.md"}]}
+{"id":"xcmd-L144","source":"literal read","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L153","source":"literal read","resources":[{"kind":"file","value":"src/Xcmd.Core/FileSearch.cs"},{"kind":"file","value":"src/Xcmd.Core/FileTransferPlanner.cs"}]}
+{"id":"xcmd-L154","source":"literal read","resources":[{"kind":"file","value":"tests/Xcmd.Probe/Scenarios/FileLockScenarios.cs"},{"kind":"file","value":"tests/Xcmd.Probe/Scenarios/FileOperationScenarios.cs"}]}
+{"id":"xcmd-L160","source":"patch","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L187","source":"literal read","resources":[{"kind":"file","value":"src/README.md"},{"kind":"file","value":"tests/README.md"}]}
+{"id":"xcmd-L188","source":"literal read","resources":[{"kind":"file","value":"docs/processes/delivery.md"},{"kind":"file","value":"docs/processes/stories.md"}]}
+{"id":"v2-L20","source":"literal read","resources":[{"kind":"file","value":"../xcmd/docs/processes/delivery.md"}]}
+{"id":"v2-L26","source":"literal read","resources":[{"kind":"file","value":".gitignore"},{"kind":"file","value":"build.bat"},{"kind":"file","value":"build.ps1"},{"kind":"file","value":"CLAUDE.md"},{"kind":"file","value":"scripts/release.ps1"}]}
+{"id":"v2-L28","source":"literal read","resources":[{"kind":"file","value":"README.md"},{"kind":"file","value":"src/main.go"}]}
+{"id":"v2-L29","source":"literal read","resources":[{"kind":"file","value":"scripts/mdctl.sh"},{"kind":"file","value":"src/internal/control/control.go"},{"kind":"file","value":"src/internal/viewer/control_api.go"}]}
+{"id":"v2-L242","source":"patch","resources":[{"kind":"file","value":"src/internal/viewer/viewer.go"}]}
+{"id":"v2-L251","source":"patch","resources":[{"kind":"file","value":"src/internal/viewer/window_state.go"}]}
+{"id":"v2-L260","source":"patch","resources":[{"kind":"file","value":"src/main.go"}]}
+{"id":"v2-L261","source":"patch","resources":[{"kind":"file","value":"src/restart.go"}]}
+{"id":"v2-L270","source":"patch","resources":[{"kind":"file","value":"scripts/release.ps1"}]}
+{"id":"v2-L271","source":"patch","resources":[{"kind":"file","value":"scripts/release.ps1"}]}
+{"id":"v2-L295","source":"patch","resources":[{"kind":"file","value":"scripts/release.ps1"}]}
+{"id":"v2-L296","source":"patch","resources":[{"kind":"file","value":"AGENTS.md"}]}
+{"id":"v2-L297","source":"patch","resources":[{"kind":"file","value":"CLAUDE.md"}]}
+{"id":"v2-L298","source":"patch","resources":[{"kind":"file","value":"README.md"}]}
+{"id":"v2-L390","source":"patch","resources":[{"kind":"file","value":"scripts/release.ps1"}]}
+{"id":"v2-L391","source":"patch","resources":[{"kind":"file","value":"src/main.go"}]}
+{"id":"v2-L392","source":"patch","resources":[{"kind":"file","value":"src/internal/viewer/viewer.go"}]}
+{"id":"v2-L393","source":"patch","resources":[{"kind":"file","value":"src/internal/viewer/window_state.go"}]}
+{"id":"point-taken-L18","source":"literal read","resources":[{"kind":"file","value":"~/.codex/skills/.system/skill-creator/SKILL.md"}]}
+{"id":"point-taken-L19","source":"literal read","resources":[{"kind":"file","value":"~/.agents/skills/point-taken/SKILL.md"}]}
+{"id":"point-taken-L24","source":"literal read","resources":[{"kind":"file","value":"docs/development/deployment.md"}]}
+{"id":"point-taken-L28","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/PipeMessages.cs"},{"kind":"file","value":"src/Desktop/ReportSession.cs"},{"kind":"file","value":"src/Desktop/WindowPicker.cs"}]}
+{"id":"point-taken-L30","source":"literal read","resources":[{"kind":"file","value":"skill/point-taken/SKILL.md"}]}
+{"id":"point-taken-L31","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/ReportedControl.cs"},{"kind":"file","value":"tests/check_xcmd_adapter.py"}]}
+{"id":"point-taken-L44","source":"literal read","resources":[{"kind":"file","value":"README.md"},{"kind":"file","value":"skill/point-taken/SKILL.md"}]}
+{"id":"point-taken-L48","source":"literal read","resources":[{"kind":"file","value":".point-taken.json"},{"kind":"file","value":"docs/spec-in-progress/shared-feedback-utility.md"},{"kind":"file","value":"src/Desktop/ProjectWorker.cs"}]}
+{"id":"point-taken-L50","source":"literal read","resources":[{"kind":"file","value":"src/Desktop/ReportedControl.cs"},{"kind":"file","value":"src/Tracker/CapturedState.cs"}]}
+{"id":"point-taken-L52","source":"literal read","resources":[{"kind":"file","value":"scripts/Deploy-PointTaken.ps1"},{"kind":"file","value":"scripts/Install-PointTaken.ps1"},{"kind":"file","value":"scripts/Register-PointTakenUser.ps1"}]}
+{"id":"point-taken-L62","source":"literal read","resources":[{"kind":"file","value":"tests/check_xcmd_adapter.py"}]}
+{"id":"point-taken-L77","source":"literal read","resources":[{"kind":"file","value":"src/Cli/Program.cs"},{"kind":"file","value":"tests/DesktopChecks/WorkerChecks.cs"}]}
+{"id":"point-taken-L88","source":"literal read","resources":[{"kind":"file","value":"~/.codex/skills/.system/skill-creator/scripts/quick_validate.py"}]}
+{"id":"point-taken-L96","source":"patch","resources":[{"kind":"file","value":"skill/point-taken/SKILL.md"}]}
+{"id":"point-taken-L102","source":"patch","resources":[{"kind":"file","value":"skill/point-taken/references/ui-integration.md"}]}
+{"id":"point-taken-L110","source":"patch","resources":[{"kind":"file","value":"scripts/Deploy-PointTaken.ps1"},{"kind":"file","value":"scripts/Register-PointTakenUser.ps1"},{"kind":"file","value":"skill/point-taken/references/ui-integration.md"},{"kind":"file","value":"skill/point-taken/SKILL.md"}]}
+{"id":"point-taken-L136","source":"patch","resources":[{"kind":"file","value":"skill/point-taken/references/ui-integration.md"}]}
+{"id":"point-taken-L153","source":"literal read","resources":[{"kind":"file","value":"tests/DesktopChecks/InstalledTray.cs"}]}
+{"id":"klava-sorting-L26","source":"literal read","resources":[{"kind":"file","value":"src/Klava.App/ChatterHistoryForm.cs"},{"kind":"file","value":"src/Klava.App/TypingEpisodesForm.cs"},{"kind":"file","value":"tests/Klava.App.Tests/ChatterHistoryFormTests.cs"},{"kind":"file","value":"tests/Klava.App.Tests/FormTestKit.cs"}]}
+{"id":"klava-sorting-L32","source":"literal read","resources":[{"kind":"file","value":"src/Klava.App/Klava.App.csproj"},{"kind":"file","value":"tests/Klava.App.Tests/ChatterHistoryFormTests.cs"},{"kind":"file","value":"tests/Klava.App.Tests/FormTestKit.cs"},{"kind":"file","value":"tests/Klava.App.Tests/Klava.App.Tests.csproj"},{"kind":"file","value":"tests/Klava.App.Tests/TypingEpisodeStoreTests.cs"}]}
+{"id":"klava-sorting-L33","source":"literal read","resources":[{"kind":"file","value":"src/Klava.App/TranslationController.cs"},{"kind":"file","value":"src/Klava.App/TranslationForm.cs"},{"kind":"file","value":"src/Klava.App/TrayContext.cs"}]}
+{"id":"klava-sorting-L41","source":"literal read","resources":[{"kind":"file","value":"docs/spec.md"},{"kind":"file","value":"tests/Klava.App.Tests/ChatterHistoryFormTests.cs"},{"kind":"file","value":"tests/Klava.App.Tests/FormTestKit.cs"}]}
+{"id":"klava-sorting-L42","source":"literal read","resources":[{"kind":"file","value":"src/Klava.App/TranslationController.cs"},{"kind":"file","value":"src/Klava.App/TrayContext.cs"},{"kind":"file","value":"src/Klava.App/TypingEpisodeStore.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TypingEpisodeStoreTests.cs"}]}
+{"id":"klava-sorting-L51","source":"literal read","resources":[{"kind":"file","value":"CHANGELOG.md"},{"kind":"file","value":"docs/manual-tests.md"},{"kind":"file","value":"src/Klava.App/ChatterHistoryStore.cs"},{"kind":"file","value":"src/Klava.App/TranslationControls.cs"},{"kind":"file","value":"src/Klava.App/TranslationForm.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TranslationFormTests.cs"}]}
+{"id":"klava-sorting-L60","source":"patch","resources":[{"kind":"file","value":"src/Klava.App/ChatterHistoryForm.cs"},{"kind":"file","value":"src/Klava.App/TableViewState.cs"},{"kind":"file","value":"src/Klava.App/TypingEpisodesForm.cs"},{"kind":"file","value":"src/Klava.App/TypingEpisodeStore.cs"}]}
+{"id":"klava-sorting-L67","source":"patch","resources":[{"kind":"file","value":"tests/Klava.App.Tests/ChatterHistoryFormTests.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TypingEpisodesFormTests.cs"}]}
+{"id":"klava-sorting-L85","source":"patch","resources":[{"kind":"file","value":"CHANGELOG.md"},{"kind":"file","value":"docs/manual-tests.md"},{"kind":"file","value":"docs/spec.md"},{"kind":"file","value":"tests/Klava.App.Tests/TypingEpisodesFormTests.cs"}]}
+{"id":"klava-sorting-L100","source":"patch","resources":[{"kind":"file","value":"src/Klava.App/TypingEpisodesForm.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TypingEpisodesFormTests.cs"}]}
+{"id":"klava-sorting-L116","source":"image","resources":[{"kind":"file","value":"artifacts/ui-review/typing-dictionary-minimum-2,0.png"}]}
+{"id":"klava-sorting-L117","source":"image","resources":[{"kind":"file","value":"artifacts/ui-review/typing-episodes-small.png"}]}
+{"id":"klava-sorting-L166","source":"literal read","resources":[{"kind":"file","value":"scripts/publish.ps1"},{"kind":"file","value":"src/Klava.App/Program.cs"},{"kind":"file","value":"tests/Klava.App.Tests/FormTestKit.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TranslationDpiTests.cs"}]}
+{"id":"klava-sorting-L177","source":"literal read","resources":[{"kind":"file","value":"docs/manual-tests.md"},{"kind":"file","value":"docs/spec.md"},{"kind":"file","value":"tests/Klava.App.Tests/InputReplayTests.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TypingInputReplayTests.cs"},{"kind":"file","value":"tests/Klava.UiProbe/Klava.UiProbe.csproj"},{"kind":"file","value":"tests/Klava.UiProbe/Program.cs"}]}
+{"id":"klava-sorting-L184","source":"patch","resources":[{"kind":"file","value":"CHANGELOG.md"},{"kind":"file","value":"docs/manual-tests.md"},{"kind":"file","value":"docs/spec.md"},{"kind":"file","value":"tests/Klava.App.Tests/FormTestKit.cs"},{"kind":"file","value":"tests/Klava.App.Tests/TranslationDpiTests.cs"},{"kind":"file","value":"tests/Klava.UiProbe/Program.cs"}]}
+{"id":"klava-sorting-L199","source":"image","resources":[{"kind":"file","value":"artifacts/ui-review-hidden/translation-native-144-resized.png"}]}
+{"id":"digester-recovery-L27","source":"literal read","resources":[{"kind":"file","value":"AGENTS.md"},{"kind":"file","value":"README.md"},{"kind":"file","value":"setup.ps1"}]}
+{"id":"digester-recovery-L32","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/InboxProcessor.cs"}]}
+{"id":"digester-recovery-L33","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Windows/StatusWindow.cs"},{"kind":"file","value":"src/Digester.Windows/TrayApplication.cs"}]}
+{"id":"digester-recovery-L48","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/AgentTools/TranscriptActivity.cs"},{"kind":"file","value":"src/Digester.Core/AgentTools/VideoTools.cs"},{"kind":"file","value":"src/Digester.Core/DigesterService.cs"}]}
+{"id":"digester-recovery-L72","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"},{"kind":"file","value":"src/Digester.Core/YouTubeClient.cs"}]}
+{"id":"digester-recovery-L73","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/AgentDelivery.cs"},{"kind":"file","value":"src/Digester.Core/CodexRunner.cs"},{"kind":"file","value":"src/Digester.Windows/StatusWindow.cs"}]}
+{"id":"digester-recovery-L91","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/AppConfig.cs"},{"kind":"file","value":"src/Digester.Core/ContentExtractor.cs"},{"kind":"file","value":"src/Digester.Core/Store.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"},{"kind":"file","value":"tests/Digester.Tests/HttpTests.cs"}]}
+{"id":"digester-recovery-L136","source":"literal read","resources":[{"kind":"file","value":"Directory.Build.props"},{"kind":"file","value":"setup.ps1"},{"kind":"file","value":"skills/digester-summary/SKILL.md"},{"kind":"file","value":"src/Digester.Core/AppRuntime.cs"},{"kind":"file","value":"src/Digester.Core/CodexSummarizer.cs"},{"kind":"file","value":"src/Digester.Core/Store.Agent.cs"},{"kind":"file","value":"tests/Digester.Tests/Digester.Tests.csproj"},{"kind":"file","value":"tests/Digester.Windows.Tests/DashboardTests.cs"}]}
+{"id":"digester-recovery-L137","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/BotReplies.cs"},{"kind":"file","value":"src/Digester.Core/ExtractionLog.cs"},{"kind":"file","value":"src/Digester.Core/InboxProcessor.cs"},{"kind":"file","value":"src/Digester.Core/Store.Inbox.cs"},{"kind":"file","value":"src/Digester.Core/Store.TelegramDialogue.cs"},{"kind":"file","value":"tests/Digester.Tests/InboxTests.cs"}]}
+{"id":"digester-recovery-L144","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/RuntimeJournal.cs"},{"kind":"file","value":"src/Digester.Core/Store.cs"},{"kind":"file","value":"src/Digester.Core/Store.Recovery.cs"},{"kind":"file","value":"src/Digester.Core/YouTubeClient.cs"}]}
+{"id":"digester-recovery-L158","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"}]}
+{"id":"digester-recovery-L167","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/Store.Agent.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"}]}
+{"id":"digester-recovery-L174","source":"patch","resources":[{"kind":"file","value":"tests/Digester.Tests/RecoveryTests.cs"}]}
+{"id":"digester-recovery-L244","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/ConnectionHealth.cs"},{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/ExtractionLog.cs"},{"kind":"file","value":"src/Digester.Core/ExtractionProgress.cs"},{"kind":"file","value":"src/Digester.Core/Store.Recovery.cs"}]}
+{"id":"digester-recovery-L251","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/InboxProcessor.cs"},{"kind":"file","value":"src/Digester.Core/Store.cs"},{"kind":"file","value":"src/Digester.Core/Store.Inbox.cs"},{"kind":"file","value":"src/Digester.Windows/TrayApplication.cs"}]}
+{"id":"digester-recovery-L258","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"},{"kind":"file","value":"src/Digester.Windows/StatusWindow.cs"},{"kind":"file","value":"src/Digester.Windows/TrayApplication.cs"}]}
+{"id":"digester-recovery-L271","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/Store.Recovery.cs"},{"kind":"file","value":"src/Digester.Windows/DeliveryReviewWindow.cs"}]}
+{"id":"digester-recovery-L276","source":"patch","resources":[{"kind":"file","value":"src/Digester.Windows/StatusWindow.cs"}]}
+{"id":"digester-recovery-L292","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"}]}
+{"id":"digester-recovery-L300","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"tests/Digester.Tests/RecoveryTests.cs"},{"kind":"file","value":"tests/Digester.Windows.Tests/DashboardTests.cs"}]}
+{"id":"digester-recovery-L307","source":"patch","resources":[{"kind":"file","value":"src/Digester.Windows/StatusWindow.cs"},{"kind":"file","value":"src/Digester.Windows/TrayApplication.cs"}]}
+{"id":"digester-recovery-L314","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/Store.Recovery.cs"}]}
+{"id":"digester-recovery-L315","source":"image","resources":[{"kind":"file","value":"data/ui-preview/dashboard-840.png"}]}
+{"id":"digester-recovery-L348","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/CodexSummarizer.cs"},{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/MaterialContext.cs"},{"kind":"file","value":"src/Digester.Core/Store.Context.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"}]}
+{"id":"digester-recovery-L369","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/MaterialContext.cs"},{"kind":"file","value":"src/Digester.Core/Store.Agent.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"},{"kind":"file","value":"tests/Digester.Tests/LikeButtonTests.cs"}]}
+{"id":"digester-recovery-L376","source":"patch","resources":[{"kind":"file","value":"tests/Digester.Tests/ContextualRequestTests.cs"},{"kind":"file","value":"tests/Digester.Tests/TestSupport/ContextFixture.cs"}]}
+{"id":"digester-recovery-L386","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"}]}
+{"id":"digester-recovery-L404","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/Store.Context.cs"},{"kind":"file","value":"tests/Digester.Tests/LikeButtonTests.cs"}]}
+{"id":"digester-recovery-L411","source":"patch","resources":[{"kind":"file","value":"docs/USABILITY.md"},{"kind":"file","value":"src/Digester.Core/BotReplies.cs"},{"kind":"file","value":"src/Digester.Core/DigesterService.cs"},{"kind":"file","value":"src/Digester.Core/Store.cs"},{"kind":"file","value":"src/Digester.Core/TelegramClient.cs"},{"kind":"file","value":"tests/Digester.Tests/LikeButtonTests.cs"}]}
+{"id":"digester-recovery-L418","source":"patch","resources":[{"kind":"file","value":"src/Digester.Core/DigesterService.cs"}]}
+{"id":"digester-recovery-L468","source":"literal read","resources":[{"kind":"file","value":"src/Digester.Core/CodexRunner.cs"},{"kind":"file","value":"src/Digester.Core/ExtractionLog.cs"},{"kind":"file","value":"src/Digester.Core/Models.cs"},{"kind":"file","value":"src/Digester.Core/Processes.cs"},{"kind":"file","value":"src/Digester.Windows/StartupLog.cs"},{"kind":"file","value":"src/Digester.Windows/TrayApplication.cs"}]}

@@ -1,0 +1,5 @@
+# Compact and full context follow-up
+
+Use the same 32 recorded calls and multi-pair guide. Two additional independent Codex reviewers first see only compact current-call inputs, with any earlier role labels removed. Seal both outputs before giving either reviewer access to the original trace and project files. Review the same calls again with the same multi-pair guide and full local context. Keep the two reviewers and their inputs independent; do not give them previous reviewers' answers or scores.
+
+Measure inter-reviewer exact set agreement and mean per-call Jaccard in each pass. Also report the number of answer sets each reviewer changes and mean Jaccard against both already frozen full-context reviewers (equal weight per reviewer and per call). The reference is a comparison with reviewers, not a ground truth. Fixed pass order confounds extra context with a second look. An agreement increase alone does not prove correctness. This follow-up does not change the historical audit or the primary experiment.

@@ -1,0 +1,102 @@
+{
+  "development": {
+    "previous": {
+      "n": 92,
+      "target": 91,
+      "action": 92,
+      "pair": 91,
+      "local": 80,
+      "local_correct": 80
+    },
+    "candidate": {
+      "n": 92,
+      "target": 91,
+      "action": 92,
+      "pair": 91,
+      "local": 80,
+      "local_correct": 80
+    },
+    "fixed": 0,
+    "lost": 0
+  },
+  "extra": {
+    "previous": {
+      "n": 30,
+      "target": 12,
+      "action": 29,
+      "pair": 12,
+      "local": 5,
+      "local_correct": 5
+    },
+    "candidate": {
+      "n": 30,
+      "target": 23,
+      "action": 29,
+      "pair": 23,
+      "local": 18,
+      "local_correct": 18
+    },
+    "fixed": 11,
+    "lost": 0
+  },
+  "previous": {
+    "previous": {
+      "n": 100,
+      "target": 51,
+      "action": 84,
+      "pair": 50,
+      "local": 17,
+      "local_correct": 17
+    },
+    "candidate": {
+      "n": 100,
+      "target": 53,
+      "action": 84,
+      "pair": 52,
+      "local": 25,
+      "local_correct": 25
+    },
+    "fixed": 2,
+    "lost": 0
+  },
+  "fresh": {
+    "previous": {
+      "n": 32,
+      "target": 8,
+      "action": 29,
+      "pair": 8,
+      "local": 0,
+      "local_correct": 0
+    },
+    "candidate": {
+      "n": 32,
+      "target": 7,
+      "action": 29,
+      "pair": 7,
+      "local": 4,
+      "local_correct": 1
+    },
+    "fixed": 1,
+    "lost": 2
+  },
+  "reserve": {
+    "previous": {
+      "n": 57,
+      "target": 26,
+      "action": 49,
+      "pair": 22,
+      "local": 2,
+      "local_correct": 2
+    },
+    "candidate": {
+      "n": 57,
+      "target": 26,
+      "action": 49,
+      "pair": 22,
+      "local": 4,
+      "local_correct": 3
+    },
+    "fixed": 0,
+    "lost": 0
+  }
+}

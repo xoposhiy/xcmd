@@ -1,10 +1,12 @@
-// @implements NavigatePanels, ViewRecentAgentSessions, ResumeAgentSession
+// @implements NavigatePanels, ViewRecentAgentSessions, ResumeAgentSession, InspectAgentSession
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Xcmd.Core;
 using Xcmd.Desktop.Features.Panels;
+using Xcmd.Desktop.Features.Viewer;
+using Xcmd.Desktop.Shared.Platform;
 using Xcmd.Infrastructure;
 
 namespace Xcmd.Desktop.Workspace;
@@ -14,6 +16,7 @@ internal sealed class PanelSourceController
     private readonly CommanderWindow window;
     private readonly IAgentSessions agentSessions;
     private ContextMenu? sourceMenu;
+    private readonly List<SessionInspectorWindow> inspectors = [];
 
     internal PanelSourceController(CommanderWindow window, IAgentSessions? source)
     {
@@ -25,6 +28,10 @@ internal sealed class PanelSourceController
             source = readers;
         }
         agentSessions = source;
+        window.Closed += (_, _) =>
+        {
+            foreach (var viewer in inspectors.ToArray()) viewer.Close();
+        };
         window.Activated += (_, _) => SetWindowActive(true);
         window.Deactivated += (_, _) => SetWindowActive(false);
     }
@@ -36,6 +43,8 @@ internal sealed class PanelSourceController
     }
 
     internal bool IsOpen => sourceMenu?.IsOpen == true;
+    internal IReadOnlyList<Window> Inspectors => inspectors;
+    internal InspectorHandoff[] CaptureInspectors() => inspectors.Select(v => v.Capture()).ToArray();
 
     internal void ChoosePanelSource(PanelView panel)
     {
@@ -106,7 +115,12 @@ internal sealed class PanelSourceController
             e.Handled = true;
             return true;
         }
-        if (e.KeyModifiers == KeyModifiers.None && e.Key == Key.Enter)
+        if (e.KeyModifiers == KeyModifiers.None && e.Key == Key.F3)
+        {
+            Inspect(panel);
+            e.Handled = true;
+        }
+        else if (e.KeyModifiers == KeyModifiers.None && e.Key == Key.Enter)
         {
             if (window.BeginLaunchKey(e.Key)) window.Execute(() => ResumeAsync(panel));
             e.Handled = true;
@@ -120,6 +134,27 @@ internal sealed class PanelSourceController
         if (!Path.IsPathFullyQualified(session.ProjectDirectory)) { window.SetError("The session has no local project folder."); return; }
         if (await target.LoadAsync(session.ProjectDirectory)) target.LeaveAgentSessions();
         else window.SetError(target.Session.Error);
+    }
+
+    internal void Inspect(PanelView panel)
+    {
+        if (panel.SelectedSession is not { } session) { window.SetError("Select a session to inspect."); return; }
+        OpenInspector(session);
+    }
+
+    internal void OpenInspector(AgentSession session, InspectorHandoff? saved = null)
+    {
+        var viewer = new SessionInspectorWindow(session, agentSessions).WithFeedbackId("PanelSource.inspector");
+        inspectors.Add(viewer);
+        viewer.Opened += (_, _) => TaskbarIdentity.Configure(viewer, window.Trace.Add);
+        window.Feedback.Attach(viewer);
+        viewer.Closed += (_, _) =>
+        {
+            inspectors.Remove(viewer);
+            window.RecordActivity();
+            if (window.IsActive) window.ActivePanel.FocusCurrent();
+        };
+        viewer.OpenFor(window, saved);
     }
 
     internal Task ResumeAsync(PanelView panel) => panel.SelectedSession is { } session

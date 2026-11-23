@@ -1,0 +1,278 @@
+{
+  "models": {
+    "terra": "gpt-6.1-terra",
+    "luna": "gpt-6-luna"
+  },
+  "reasoning_effort": "medium",
+  "context": "Separate fresh contexts per reviewer and trace; both could read the same original local rollout.",
+  "results": {
+    "guide_sha256": "31be22e875a13eb5bc1cde7f380b64b4a19b8d6075a8a3ba6ee312cf92d17c6d",
+    "archive_sha256": "ea8111e49f42138bf80a281fc54af541273c67bb82abdd5065af42a0fb944a13",
+    "agreement": {
+      "total": {
+        "calls": 412,
+        "exact": 212,
+        "disjoint": 140,
+        "mean_jaccard": 0.5736303744798891
+      },
+      "sessions": {
+        "point": {
+          "calls": 44,
+          "exact": 42,
+          "disjoint": 2,
+          "mean_jaccard": 0.9545454545454546
+        },
+        "xcmd": {
+          "calls": 48,
+          "exact": 48,
+          "disjoint": 0,
+          "mean_jaccard": 1.0
+        },
+        "v1": {
+          "calls": 33,
+          "exact": 12,
+          "disjoint": 6,
+          "mean_jaccard": 0.5505050505050505
+        },
+        "v2": {
+          "calls": 70,
+          "exact": 49,
+          "disjoint": 8,
+          "mean_jaccard": 0.7788095238095238
+        },
+        "point-taken": {
+          "calls": 60,
+          "exact": 32,
+          "disjoint": 17,
+          "mean_jaccard": 0.6080555555555556
+        },
+        "reviewer": {
+          "calls": 6,
+          "exact": 2,
+          "disjoint": 0,
+          "mean_jaccard": 0.655952380952381
+        },
+        "fresh": {
+          "calls": 46,
+          "exact": 19,
+          "disjoint": 22,
+          "mean_jaccard": 0.45
+        },
+        "reserve": {
+          "calls": 105,
+          "exact": 8,
+          "disjoint": 85,
+          "mean_jaccard": 0.11936507936507937
+        }
+      }
+    },
+    "confusion": {
+      "target": {
+        "labels": [
+          "tooling",
+          "docs",
+          "unknown",
+          "source",
+          "tests",
+          "git",
+          "project",
+          "tracker",
+          "Unpaired"
+        ],
+        "rows_terra_columns_luna": [
+          [
+            69,
+            13,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            16
+          ],
+          [
+            10,
+            88,
+            0,
+            3,
+            0,
+            0,
+            2,
+            0,
+            20
+          ],
+          [
+            3,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            3
+          ],
+          [
+            26,
+            0,
+            46,
+            80,
+            0,
+            0,
+            0,
+            0,
+            33
+          ],
+          [
+            9,
+            0,
+            0,
+            0,
+            55,
+            0,
+            1,
+            0,
+            6
+          ],
+          [
+            0,
+            0,
+            1,
+            0,
+            0,
+            47,
+            0,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            11,
+            0,
+            7
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0
+          ],
+          [
+            19,
+            5,
+            0,
+            6,
+            1,
+            2,
+            10,
+            0,
+            0
+          ]
+        ],
+        "calls_by_set_relation": {
+          "substitution": 121,
+          "equal": 231,
+          "one_sided": 33,
+          "ambiguous": 27
+        }
+      },
+      "action": {
+        "labels": [
+          "read",
+          "write",
+          "exec",
+          "other",
+          "Unpaired"
+        ],
+        "rows_terra_columns_luna": [
+          [
+            246,
+            1,
+            10,
+            56,
+            10
+          ],
+          [
+            0,
+            71,
+            0,
+            0,
+            14
+          ],
+          [
+            0,
+            0,
+            44,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            3,
+            1
+          ],
+          [
+            3,
+            0,
+            8,
+            0,
+            0
+          ]
+        ],
+        "calls_by_set_relation": {
+          "equal": 316,
+          "one_sided": 25,
+          "substitution": 68,
+          "ambiguous": 3
+        }
+      }
+    }
+  },
+  "review_threads": {
+    "point": {
+      "terra": "01a20568-a3c5-7b70-933f-b2aa0c01a0e7",
+      "luna": "01a20568-810b-7273-9b87-7869643ce9da"
+    },
+    "xcmd": {
+      "terra": "01a20566-b287-7aa1-a455-dd35b5c37724",
+      "luna": "01a20565-522a-7f73-926f-5fff8656c994"
+    },
+    "v1": {
+      "terra": "01a20569-d92a-7fc2-9493-9d2a73a1a660",
+      "luna": "01a20569-03cd-7151-9fa1-299dd573bd28"
+    },
+    "v2": {
+      "terra": "01a20563-4f36-7d92-b3e1-0cd953fe2341",
+      "luna": "01a20561-e57c-7fe1-a05d-918769da4fea"
+    },
+    "point-taken": {
+      "terra": "01a20565-2b6e-7a80-925c-5e6b770722ce",
+      "luna": "01a20564-bd1d-7b71-82a2-bf07d83b6b6c"
+    },
+    "reviewer": {
+      "terra": "01a2056a-5e12-7fa3-b4bb-3ed3753e56f0",
+      "luna": "01a2056a-041f-7c03-8ce9-cf9988d34bbe"
+    },
+    "fresh": {
+      "terra": "01a20567-3369-7012-9577-de35bd96fdf5",
+      "luna": "01a20566-d45a-7d41-aca7-3421e79eb9c6"
+    },
+    "reserve": {
+      "terra": "01a20561-a2af-7563-b4ab-7d2c8c13f4a4",
+      "luna": "01a20561-c59f-7051-8e12-4ea38164d787"
+    }
+  }
+}

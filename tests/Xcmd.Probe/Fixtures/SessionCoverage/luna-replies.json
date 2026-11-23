@@ -1,0 +1,442 @@
+[
+  {
+    "id": "blind-joined",
+    "answer": {
+      "reads": [
+        {
+          "path": "notes/design.txt",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "notes/design.txt"
+    ]
+  },
+  {
+    "id": "blind-offset",
+    "answer": {
+      "reads": [
+        {
+          "path": "docs/timing.txt",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "docs/timing.txt"
+    ]
+  },
+  {
+    "id": "blind-nested",
+    "answer": {
+      "reads": [
+        {
+          "path": "docs/menu.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "docs/menu.md"
+    ]
+  },
+  {
+    "id": "blind-two",
+    "answer": {
+      "reads": [
+        {
+          "path": "input/a.ini",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "input/b.ini",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "input/a.ini",
+      "input/b.ini"
+    ]
+  },
+  {
+    "id": "blind-unresolved",
+    "answer": {
+      "reads": [
+        {
+          "path": "notes.txt",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "blind-partial",
+    "answer": {
+      "reads": [
+        {
+          "path": "notes.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "notes.md"
+    ]
+  },
+  {
+    "id": "blind-indirect-output",
+    "answer": {
+      "reads": [
+        {
+          "path": "plan.json",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "plan.json"
+    ]
+  },
+  {
+    "id": "blind-replace",
+    "answer": {
+      "reads": [
+        {
+          "path": "docs/items.txt",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "docs/items.txt"
+    ]
+  },
+  {
+    "id": "f884db91-L98",
+    "answer": {
+      "reads": [
+        {
+          "path": "C:/work/projects/point-taken-45-46-before/filtered-list.png",
+          "operationLine": 4,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "f884db91-L120",
+    "answer": {
+      "reads": [
+        {
+          "path": "filtered-list.png",
+          "operationLine": 4,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "c6fc6066-L198",
+    "answer": {
+      "reads": [
+        {
+          "path": "skill/point-taken",
+          "operationLine": 8,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "context-c6fc6066-L121",
+    "answer": {
+      "reads": [
+        {
+          "path": "skill/point-taken/SKILL.md",
+          "operationLine": 5,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "skill/point-taken/skill/point-taken/UI integration guide",
+          "operationLine": 6,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "skill/point-taken/SKILL.md"
+    ]
+  },
+  {
+    "id": "context-c6fc6066-L120",
+    "answer": {
+      "reads": [
+        {
+          "path": "scripts/Deploy-PointTaken.ps1",
+          "operationLine": 4,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "scripts/Register-PointTakenUser.ps1",
+          "operationLine": 4,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "scripts/Deploy-PointTaken.ps1",
+      "scripts/Register-PointTakenUser.ps1"
+    ]
+  },
+  {
+    "id": "context-c6fc6066-L196",
+    "answer": {
+      "reads": [
+        {
+          "path": "skill/point-taken/SKILL.md",
+          "operationLine": 10,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "skill/point-taken/SKILL.md",
+          "operationLine": 13,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "C:/Users/reader/AppData/Local/Programs/Point Taken/releases/20261122-014312-123-0c8645d5/skill/point-taken/SKILL.md",
+          "operationLine": 13,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "C:/Users/reader/.agents/skills/point-taken/SKILL.md",
+          "operationLine": 13,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "C:/Users/reader/.claude/skills/point-taken/SKILL.md",
+          "operationLine": 13,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "C:/Users/reader/.agents/skills/point-taken/SKILL.md",
+      "C:/Users/reader/.claude/skills/point-taken/SKILL.md",
+      "C:/Users/reader/AppData/Local/Programs/Point Taken/releases/20261122-014312-123-0c8645d5/skill/point-taken/SKILL.md",
+      "skill/point-taken/SKILL.md"
+    ]
+  },
+  {
+    "id": "context-c6fc6066-L198",
+    "answer": {
+      "reads": [
+        {
+          "path": "skill/point-taken/SKILL.md",
+          "operationLine": 17,
+          "lines": 0,
+          "lineEvidence": ""
+        },
+        {
+          "path": "skill/point-taken/references/ui-integration.md",
+          "operationLine": 17,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "skill/point-taken/SKILL.md",
+      "skill/point-taken/references/ui-integration.md"
+    ]
+  },
+  {
+    "id": "uri-cmd-quote",
+    "answer": {
+      "reads": [
+        {
+          "path": "AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "uri-redirect",
+    "answer": {
+      "reads": [
+        {
+          "path": "AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "windows-shell-type",
+    "answer": {
+      "reads": [
+        {
+          "path": "AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "uri-bash-escape",
+    "answer": {
+      "reads": [
+        {
+          "path": "docs/notes.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "uri-empty-output",
+    "answer": {
+      "reads": [
+        {
+          "path": "AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "tool-name",
+    "answer": {
+      "reads": [
+        {
+          "path": "AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "sibling-other-tool",
+    "answer": {
+      "reads": [
+        {
+          "path": "C:/work/projects/xcmd/AGENTS.md",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": []
+  },
+  {
+    "id": "byte-encoding",
+    "answer": {
+      "reads": [
+        {
+          "path": "image.bin",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "image.bin"
+    ]
+  },
+  {
+    "id": "and-list-321",
+    "answer": {
+      "reads": [
+        {
+          "path": "phantom",
+          "operationLine": 1,
+          "lines": 0,
+          "lineEvidence": ""
+        }
+      ],
+      "unresolved": false
+    },
+    "expected": [
+      "phantom"
+    ]
+  }
+]

@@ -1,0 +1,713 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning_effort": "none",
+  "batch_size": 20,
+  "workers": 5,
+  "reference_archive_sha256": "47f435cc4f13d250fba9bf93e8e673602191e16b2c8f82847095996c42e95925",
+  "instructions_sha256": "a8d87ded3939284e0e70b901d23249cc50aa50ebdeae43d5dad9e2f119d1bf35",
+  "matrix_definition": "Rows are expert labels and columns are predictions. Match shared labels first. Pair a single remaining label on each side. Send all other unmatched labels to Unpaired. Missing contains each expert label for a call with no valid prediction. Each missing call scores zero in the full-set mean Jaccard.",
+  "usage": {
+    "requests": 20,
+    "input": 112796,
+    "output": 26514,
+    "cache_write": 112736,
+    "cached": 0,
+    "reasoning": 0,
+    "estimated_usd": 0.027355
+  },
+  "seconds": {
+    "mdview": 9.744,
+    "other_sessions": 31.591,
+    "all": 41.335
+  },
+  "validation": [
+    [
+      "digester-recovery_0.json",
+      107,
+      "Line 1: 107: expected a list of pairs"
+    ],
+    [
+      "klava-sorting_1.json",
+      "klava-sorting-L184",
+      "Merged repeated pair"
+    ],
+    [
+      "point-taken_0.json",
+      "Extra data: line 2 column 1 (char 294)"
+    ],
+    [
+      "point_0.json",
+      "Incomplete response: {'reason': 'max_output_tokens'}"
+    ],
+    [
+      "xcmd_1.json",
+      "Expecting value: line 1 column 1 (char 0)"
+    ]
+  ],
+  "first_pass_missing": [
+    "point-L18",
+    "point-L19",
+    "point-L20",
+    "point-L21",
+    "point-L26",
+    "point-L27",
+    "point-L32",
+    "point-L37",
+    "point-L44",
+    "point-L45",
+    "point-L46",
+    "point-L47",
+    "point-L52",
+    "point-L53",
+    "point-L54",
+    "point-L55",
+    "point-L56",
+    "point-L61",
+    "point-L62",
+    "point-L63",
+    "xcmd-L75",
+    "xcmd-L81",
+    "xcmd-L100",
+    "xcmd-L101",
+    "xcmd-L108",
+    "xcmd-L109",
+    "xcmd-L114",
+    "xcmd-L120",
+    "xcmd-L126",
+    "xcmd-L127",
+    "xcmd-L144",
+    "xcmd-L145",
+    "xcmd-L152",
+    "xcmd-L153",
+    "xcmd-L154",
+    "xcmd-L160",
+    "xcmd-L168",
+    "xcmd-L185",
+    "xcmd-L186",
+    "xcmd-L187",
+    "point-taken-L18",
+    "point-taken-L19",
+    "point-taken-L20",
+    "point-taken-L21",
+    "point-taken-L22",
+    "point-taken-L24",
+    "point-taken-L28",
+    "point-taken-L29",
+    "point-taken-L30",
+    "point-taken-L31",
+    "point-taken-L32",
+    "point-taken-L35",
+    "point-taken-L36",
+    "point-taken-L39",
+    "point-taken-L40",
+    "point-taken-L41",
+    "point-taken-L42",
+    "point-taken-L44",
+    "point-taken-L48",
+    "point-taken-L49"
+  ],
+  "first_pass": {
+    "terra": {
+      "agreement": {
+        "total": {
+          "calls": 335,
+          "exact": 206,
+          "disjoint": 84,
+          "mean_jaccard": 0.6846766169154229
+        },
+        "sessions": {
+          "point": {
+            "calls": 44,
+            "exact": 20,
+            "disjoint": 23,
+            "mean_jaccard": 0.4659090909090909
+          },
+          "xcmd": {
+            "calls": 48,
+            "exact": 19,
+            "disjoint": 27,
+            "mean_jaccard": 0.4166666666666667
+          },
+          "v2": {
+            "calls": 70,
+            "exact": 47,
+            "disjoint": 2,
+            "mean_jaccard": 0.8173809523809524
+          },
+          "point-taken": {
+            "calls": 60,
+            "exact": 29,
+            "disjoint": 23,
+            "mean_jaccard": 0.5525
+          },
+          "klava-sorting": {
+            "calls": 42,
+            "exact": 35,
+            "disjoint": 1,
+            "mean_jaccard": 0.9285714285714286
+          },
+          "digester-recovery": {
+            "calls": 71,
+            "exact": 56,
+            "disjoint": 8,
+            "mean_jaccard": 0.8380281690140845
+          }
+        }
+      },
+      "valid_only": {
+        "calls": 275,
+        "exact": 206,
+        "disjoint": 24,
+        "mean_jaccard": 0.8340606060606061
+      },
+      "matrices": {
+        "target": {
+          "rows": [
+            "build_release",
+            "agent_instructions",
+            "tests",
+            "source",
+            "git",
+            "docs",
+            "tracker",
+            "project",
+            "unknown",
+            "Unpaired"
+          ],
+          "columns": [
+            "build_release",
+            "agent_instructions",
+            "tests",
+            "source",
+            "git",
+            "docs",
+            "tracker",
+            "project",
+            "unknown",
+            "Unpaired",
+            "Missing"
+          ],
+          "counts": [
+            [
+              51,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              1,
+              9,
+              3
+            ],
+            [
+              1,
+              33,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              9
+            ],
+            [
+              0,
+              1,
+              94,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              11,
+              19
+            ],
+            [
+              0,
+              0,
+              6,
+              102,
+              0,
+              0,
+              0,
+              1,
+              3,
+              7,
+              19
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              57,
+              0,
+              0,
+              3,
+              0,
+              2,
+              6
+            ],
+            [
+              1,
+              0,
+              0,
+              0,
+              0,
+              21,
+              0,
+              0,
+              0,
+              3,
+              12
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              6,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              4,
+              3,
+              5,
+              0,
+              0,
+              0,
+              5,
+              2,
+              0,
+              0
+            ]
+          ],
+          "valid_cases": {
+            "one_sided": 32,
+            "equal": 216,
+            "substitution": 21,
+            "ambiguous": 6
+          },
+          "missing_calls": 60
+        },
+        "action": {
+          "rows": [
+            "read",
+            "write",
+            "exec",
+            "other",
+            "Unpaired"
+          ],
+          "columns": [
+            "read",
+            "write",
+            "exec",
+            "other",
+            "Unpaired",
+            "Missing"
+          ],
+          "counts": [
+            [
+              175,
+              0,
+              0,
+              0,
+              5,
+              52
+            ],
+            [
+              0,
+              53,
+              4,
+              1,
+              5,
+              5
+            ],
+            [
+              1,
+              0,
+              47,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              1,
+              4,
+              0,
+              0
+            ]
+          ],
+          "valid_cases": {
+            "equal": 256,
+            "one_sided": 12,
+            "substitution": 6,
+            "ambiguous": 1
+          },
+          "missing_calls": 60
+        }
+      }
+    },
+    "luna": {
+      "agreement": {
+        "total": {
+          "calls": 335,
+          "exact": 208,
+          "disjoint": 82,
+          "mean_jaccard": 0.6842786069651742
+        },
+        "sessions": {
+          "point": {
+            "calls": 44,
+            "exact": 21,
+            "disjoint": 22,
+            "mean_jaccard": 0.48863636363636365
+          },
+          "xcmd": {
+            "calls": 48,
+            "exact": 22,
+            "disjoint": 26,
+            "mean_jaccard": 0.4583333333333333
+          },
+          "v2": {
+            "calls": 70,
+            "exact": 51,
+            "disjoint": 1,
+            "mean_jaccard": 0.8428571428571429
+          },
+          "point-taken": {
+            "calls": 60,
+            "exact": 28,
+            "disjoint": 22,
+            "mean_jaccard": 0.54
+          },
+          "klava-sorting": {
+            "calls": 42,
+            "exact": 32,
+            "disjoint": 3,
+            "mean_jaccard": 0.8452380952380952
+          },
+          "digester-recovery": {
+            "calls": 71,
+            "exact": 54,
+            "disjoint": 8,
+            "mean_jaccard": 0.8286384976525821
+          }
+        }
+      },
+      "valid_only": {
+        "calls": 275,
+        "exact": 208,
+        "disjoint": 22,
+        "mean_jaccard": 0.8335757575757575
+      },
+      "matrices": {
+        "target": {
+          "rows": [
+            "build_release",
+            "agent_instructions",
+            "tests",
+            "source",
+            "git",
+            "docs",
+            "tracker",
+            "project",
+            "unknown",
+            "Unpaired"
+          ],
+          "columns": [
+            "build_release",
+            "agent_instructions",
+            "tests",
+            "source",
+            "git",
+            "docs",
+            "tracker",
+            "project",
+            "unknown",
+            "Unpaired",
+            "Missing"
+          ],
+          "counts": [
+            [
+              50,
+              1,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              4
+            ],
+            [
+              0,
+              26,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              8
+            ],
+            [
+              0,
+              2,
+              89,
+              2,
+              1,
+              0,
+              0,
+              0,
+              0,
+              3,
+              19
+            ],
+            [
+              0,
+              0,
+              6,
+              98,
+              0,
+              0,
+              0,
+              0,
+              2,
+              2,
+              22
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              56,
+              0,
+              0,
+              2,
+              0,
+              2,
+              6
+            ],
+            [
+              1,
+              1,
+              0,
+              0,
+              0,
+              19,
+              0,
+              0,
+              0,
+              3,
+              15
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              3
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              11,
+              0,
+              1,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              4,
+              8,
+              8,
+              6,
+              1,
+              2,
+              0,
+              2,
+              4,
+              0,
+              0
+            ]
+          ],
+          "valid_cases": {
+            "one_sided": 33,
+            "equal": 217,
+            "substitution": 22,
+            "ambiguous": 3
+          },
+          "missing_calls": 60
+        },
+        "action": {
+          "rows": [
+            "read",
+            "write",
+            "exec",
+            "other",
+            "Unpaired"
+          ],
+          "columns": [
+            "read",
+            "write",
+            "exec",
+            "other",
+            "Unpaired",
+            "Missing"
+          ],
+          "counts": [
+            [
+              174,
+              0,
+              0,
+              0,
+              2,
+              52
+            ],
+            [
+              1,
+              52,
+              2,
+              1,
+              3,
+              5
+            ],
+            [
+              0,
+              1,
+              48,
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              1,
+              4,
+              0,
+              0
+            ]
+          ],
+          "valid_cases": {
+            "equal": 258,
+            "one_sided": 10,
+            "substitution": 6,
+            "ambiguous": 1
+          },
+          "missing_calls": 60
+        }
+      }
+    }
+  },
+  "mdview_parallel_medium": {
+    "usage": {
+      "requests": 4,
+      "input": 25200,
+      "output": 9165,
+      "cache_write": 25188,
+      "cached": 0,
+      "reasoning": 4627,
+      "estimated_usd": 0.0077322
+    },
+    "seconds": 19.2,
+    "agreement": {
+      "terra": {
+        "calls": 70,
+        "exact": 54,
+        "disjoint": 1,
+        "mean_jaccard": 0.8919047619047619
+      },
+      "luna": {
+        "calls": 70,
+        "exact": 53,
+        "disjoint": 0,
+        "mean_jaccard": 0.8761904761904762
+      }
+    }
+  }
+}

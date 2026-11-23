@@ -1,0 +1,9 @@
+{
+  "n": 32,
+  "target": 18,
+  "action": 29,
+  "both": 17,
+  "earlier_pairs_on_agreed": 6,
+  "context_pairs_on_agreed": 7,
+  "literal_pairs_on_agreed": 7
+}

@@ -1,0 +1,97 @@
+{
+  "study": "480ed63636e9298a3eb11908d8809457e0d14655a4b6327436c9ba6bbda847da",
+  "predictions": "b0df9d64b652756ed65fc5956c07514a1ba0218b9bf2f86e90f739a8d7f71c04",
+  "sealed_archive": "edf34484ee733120abc0505dcb1618127bf421242e644eae41d3d988ee48f72f",
+  "scores": {
+    "all": {
+      "n": 100,
+      "local": 17,
+      "model": 83,
+      "supplied": 0,
+      "available": 5,
+      "changed": 0,
+      "baseline": {
+        "target": 51,
+        "action": 84,
+        "both": 50
+      },
+      "memory": {
+        "target": 51,
+        "action": 84,
+        "both": 50
+      }
+    },
+    "local": {
+      "n": 17,
+      "local": 17,
+      "model": 0,
+      "supplied": 0,
+      "available": 5,
+      "changed": 0,
+      "baseline": {
+        "target": 17,
+        "action": 17,
+        "both": 17
+      },
+      "memory": {
+        "target": 17,
+        "action": 17,
+        "both": 17
+      }
+    },
+    "model": {
+      "n": 83,
+      "local": 0,
+      "model": 83,
+      "supplied": 0,
+      "available": 0,
+      "changed": 0,
+      "baseline": {
+        "target": 34,
+        "action": 67,
+        "both": 33
+      },
+      "memory": {
+        "target": 34,
+        "action": 67,
+        "both": 33
+      }
+    },
+    "v1": {
+      "n": 30,
+      "local": 0,
+      "model": 30,
+      "supplied": 0,
+      "available": 0,
+      "changed": 0,
+      "baseline": {
+        "target": 8,
+        "action": 20,
+        "both": 8
+      },
+      "memory": {
+        "target": 8,
+        "action": 20,
+        "both": 8
+      }
+    },
+    "v2": {
+      "n": 70,
+      "local": 17,
+      "model": 53,
+      "supplied": 0,
+      "available": 5,
+      "changed": 0,
+      "baseline": {
+        "target": 43,
+        "action": 64,
+        "both": 42
+      },
+      "memory": {
+        "target": 43,
+        "action": 64,
+        "both": 42
+      }
+    }
+  }
+}

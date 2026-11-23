@@ -1,0 +1,31 @@
+{
+  "n": 32,
+  "short": {
+    "exact": 24,
+    "mean_jaccard": 0.9036458333333334,
+    "mean_jaccard_vs_frozen_full_reviews": 0.5656808035714286,
+    "cross_comparisons": [
+      0.5696428571428571,
+      0.5665178571428572,
+      0.56484375,
+      0.56171875
+    ],
+    "unknown_calls_c": 11,
+    "unknown_calls_d": 9
+  },
+  "full": {
+    "exact": 29,
+    "mean_jaccard": 0.9583333333333334,
+    "mean_jaccard_vs_frozen_full_reviews": 0.7651041666666667,
+    "cross_comparisons": [
+      0.7861979166666667,
+      0.7830729166666667,
+      0.7471354166666667,
+      0.7440104166666667
+    ],
+    "unknown_calls_c": 0,
+    "unknown_calls_d": 0
+  },
+  "changed_c": 14,
+  "changed_d": 11
+}

@@ -1,4 +1,4 @@
-// @implements ViewRecentAgentSessions, ResumeAgentSession
+// @implements ViewRecentAgentSessions, ResumeAgentSession, InspectAgentSession
 namespace Xcmd.Core;
 
 public enum SessionAgent { ClaudeCode, Codex }
@@ -30,6 +30,7 @@ public sealed record AgentSession(SessionAgent Agent, Guid Id, string Topic, str
 public interface IAgentSessions
 {
     Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token);
+    Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null);
     Task ListAsync(SessionAgent agent, SessionListScope scope, Func<IReadOnlyList<AgentSession>, Task> showPage, CancellationToken token);
     ExternalLaunch Resume(AgentSession session);
 }

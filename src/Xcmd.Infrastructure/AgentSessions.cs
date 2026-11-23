@@ -1,4 +1,4 @@
-// @implements ViewRecentAgentSessions, ResumeAgentSession, ExternalLaunch
+// @implements ViewRecentAgentSessions, ResumeAgentSession, ExternalLaunch, InspectAgentSession
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
@@ -31,6 +31,9 @@ public sealed class AgentSessions : IAgentSessions, IAsyncDisposable
 
     public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) =>
         SessionStatisticsReader.ReadAsync(session, token);
+
+    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
+        SessionTranscriptReader.Local().ReadAsync(session, token, progress);
 
     public ExternalLaunch Resume(AgentSession session)
     {

@@ -1,0 +1,1938 @@
+[
+  {
+    "id": "v1-L117",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content .agents/skills/codingame-blog/SKILL.md; Get-Content blog-site/public/games/othello.html; Get-Content blog-site/public/index.html -TotalCount 180",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794756886016,
+    "end": 1794756887870,
+    "output_lines": 187,
+    "excerpt": [
+      "## Explain from the whole to the parts"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L124",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/neural/patterns.hpp; Get-Content games/othello/neural/evaluation.hpp; Get-Content games/othello/neural/train.py; Get-Content games/othello/search.hpp; Get-Content games/othello/neural/v1/training.json",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794756913266,
+    "end": 1794756914710,
+    "output_lines": 482,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L138",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "add /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794757075816,
+    "end": 1794757075819,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L139",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757076469,
+    "end": 1794757077469,
+    "output_lines": 1,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L148",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python -c \"from pathlib import Path; import re,json; p=Path('blog-site/public/games/othello.html');s=p.read_text(encoding='utf-8'); ids=re.findall(r'id=\\\"([^\\\"]+)\\\"',s); print('duplicate ids:',sorted({x for x in ids if ids.count(x)>1})); print('missing anchors:',[x for x in re.findall(r'href=\\\"#([^\\\"]+)\\\"',s) if x not in ids]); print('characters:',len(s)); print('holdout:',json.load(open('games/othello/evidence/neural-v1-holdout.json'))['summary'])\"",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1794757101488,
+    "end": 1794757102072,
+    "output_lines": 5,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L161",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "add /repo/.blog/check_othello_article.py\nupdate /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/.blog/check_othello_article.py"
+      },
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794757155365,
+    "end": 1794757155368,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L162",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757155768,
+    "end": 1794757159448,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L187",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/neural/v2/training.json -TotalCount 12; Get-Content games/othello/evidence/neural-v2-linear-depth5.json -TotalCount 25; rg -n 'Neural patterns|first model|First neural|115 ms each|first dataset|52,000|0.653|Source versions' blog-site/public/games/othello.html",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757619394,
+    "end": 1794757619830,
+    "output_lines": 47,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L192",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794757694245,
+    "end": 1794757694247,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L193",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757694825,
+    "end": 1794757699754,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L216",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/evidence/neural-v1-final.json -TotalCount 65",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757931478,
+    "end": 1794757931899,
+    "output_lines": 65,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L217",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794757932033,
+    "end": 1794757932035,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L218",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794757932454,
+    "end": 1794757936028,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L236",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/evidence/neural-v2-final.json -TotalCount 23; Get-Content .mem/sessions/2026-11-15-neural-othello.md -Tail 28",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794759288103,
+    "end": 1794759288382,
+    "output_lines": 41,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L237",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794759288400,
+    "end": 1794759288402,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L238",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794759288737,
+    "end": 1794759289252,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L256",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/neural/v5-win/training.json -TotalCount 22; Get-Content .mem/sessions/2026-11-15-neural-othello.md -TotalCount 52; Get-Content games/othello/neural/README.md -TotalCount 100",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794760075842,
+    "end": 1794760076091,
+    "output_lines": 79,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L262",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "add /repo/.blog/build_othello_win_draft.py\nupdate /repo/.blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/.blog/build_othello_win_draft.py"
+      },
+      {
+        "kind": "update",
+        "path": "/repo/.blog/check_othello_article.py"
+      }
+    ],
+    "start": 1794760148873,
+    "end": 1794760148875,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L264",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/build_othello_win_draft.py; python .blog/check_othello_article.py .blog/othello-win-draft.html",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794760149152,
+    "end": 1794760149653,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L282",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/evidence/neural-v5-final.json -TotalCount 20",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794760651712,
+    "end": 1794760651953,
+    "output_lines": 20,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L283",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794760652046,
+    "end": 1794760652047,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L284",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794760652430,
+    "end": 1794760652903,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L300",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content blog-site/public/games/othello.html -TotalCount 139; Get-Content games/othello/neural/selfplay.cpp; rg -n 'HIDDEN|Search search|firstTurn|globalWeights|inline int evaluate|PHASES' games/othello/versions/v5-neural-round2.cpp; Get-Content games/othello/neural/v2/training.json -Tail 35; rg -n 'Othello|othello-result' blog-site/public/index.html",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794761174919,
+    "end": 1794761175449,
+    "output_lines": 258,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L307",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794761204705,
+    "end": 1794761204706,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L308",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794761205077,
+    "end": 1794761205768,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L324",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "Get-Content games/othello/evidence/neural-v2-restore-final.json -TotalCount 17",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794761932408,
+    "end": 1794761932727,
+    "output_lines": 17,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L325",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794761932912,
+    "end": 1794761932914,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L326",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py; rg -n 'pending|under evaluation|unfinished repeat|rank 51|31 places|restore-final' blog-site/public/games/othello.html",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794761933435,
+    "end": 1794761934178,
+    "output_lines": 8,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L333",
+    "session": "v1",
+    "tool": "FileChange",
+    "command": "update /repo/.blog/update_othello_neural.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/.blog/update_othello_neural.py"
+      }
+    ],
+    "start": 1794761946948,
+    "end": 1794761946949,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v1-L334",
+    "session": "v1",
+    "tool": "CommandExecution",
+    "command": "python .blog/update_othello_neural.py; python .blog/check_othello_article.py",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1794761947315,
+    "end": 1794761947924,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L18",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git status --short --branch",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196321962,
+    "end": 1795196322350,
+    "output_lines": 4,
+    "excerpt": [
+      "## main...origin/main"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L19",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg --files --hidden -g '!\\.git' -g '!node_modules' -g '!target' -g '!bin' -g '!obj'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196321978,
+    "end": 1795196322359,
+    "output_lines": 96,
+    "excerpt": [
+      "tests\\tables.spec.js",
+      "tests\\report.md",
+      "tests\\playwright.config.js",
+      "tests\\package.json"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L20",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'C:\\work\\projects\\xcmd\\docs\\processes\\delivery.md'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196321994,
+    "end": 1795196322399,
+    "output_lines": 131,
+    "excerpt": [
+      "## Feedback builds"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L21",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-ChildItem -Force | Select-Object Mode,Name",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196322010,
+    "end": 1795196323275,
+    "output_lines": 20,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L26",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'CLAUDE.md','build.ps1','build.bat','scripts\\release.ps1','.gitignore'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331658,
+    "end": 1795196332304,
+    "output_lines": 180,
+    "excerpt": [
+      "## Setup & build"
+    ],
+    "path_facts": [
+      {
+        "operand": "CLAUDE.md",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "",
+        "kind": "directory at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L27",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n --hidden -g '!.git' -g '!mathjax.js' -g '!package-lock.json' -e 'restart|handoff|windowPlacement|WindowPlacement|scroll|go:embed|os\\.Executable|ProcessId' src README.md specs .claude",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331798,
+    "end": 1795196332304,
+    "output_lines": 69,
+    "excerpt": [
+      "README.md:26: [match]",
+      "README.md:45: [match]",
+      "specs\\spec-v2-images.md:53: [match]",
+      "src\\internal\\viewer\\control_api.go:50: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L28",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'README.md','src\\main.go'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331767,
+    "end": 1795196332320,
+    "output_lines": 190,
+    "excerpt": [
+      "## Features"
+    ],
+    "path_facts": [
+      {
+        "operand": "README.md",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "",
+        "kind": "directory at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L29",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'src\\internal\\control\\control.go','src\\internal\\viewer\\control_api.go','scripts\\mdctl.sh'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331643,
+    "end": 1795196332320,
+    "output_lines": 599,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "src\\internal\\control\\control.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "",
+        "kind": "directory at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L30",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-ChildItem -LiteralPath '/repo','C:\\work\\projects','C:\\work' -Force -Filter AGENTS.md | Select-Object -ExpandProperty FullName",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331782,
+    "end": 1795196332363,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo",
+        "kind": "directory at session start"
+      },
+      {
+        "operand": "",
+        "kind": "directory at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L31",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-CimInstance Win32_Process -Filter \"Name = 'mdview.exe'\" | Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine | Format-List",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196331674,
+    "end": 1795196332721,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L36",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n '^' src/main.go scripts/release.ps1 build.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196342586,
+    "end": 1795196343045,
+    "output_lines": 197,
+    "excerpt": [
+      "build.ps1:1: [match]",
+      "build.ps1:2: [match]",
+      "build.ps1:3: [match]",
+      "build.ps1:4: [match]"
+    ],
+    "path_facts": [
+      {
+        "operand": "src/main.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "scripts/release.ps1",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "build.ps1",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L37",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n -e 'func New|func .*Run|SetSize|goSaveScroll|func .*reload|func .*show|func .*present|filepath.Abs|func .*open|func .*back|func .*save|func .*load|func .*watch|proc(Get|Set).*Window|func .*close|SetTitle' src/internal/viewer/viewer.go src/internal/viewer/titlebar.go src/internal/config/config.go src/internal/watcher",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196342632,
+    "end": 1795196343235,
+    "output_lines": 18,
+    "excerpt": [
+      "src/internal/viewer/viewer.go:53: [match]",
+      "src/internal/viewer/viewer.go:70: [match]",
+      "src/internal/viewer/viewer.go:188: [match]",
+      "src/internal/viewer/viewer.go:201: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L38",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'src\\go.mod','test.bat','tests\\package.json','tests\\playwright.config.js'; Get-ChildItem -LiteralPath 'src' -Name; git log -6 --oneline",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196342601,
+    "end": 1795196343390,
+    "output_lines": 48,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L39",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$commands = Get-Command mdview.exe,go -ErrorAction SilentlyContinue; $commands | Select-Object Name,Source; Get-Item -LiteralPath '.\\mdview.exe','C:\\path\\mdview.exe' -ErrorAction SilentlyContinue | Select-Object FullName,Length,LastWriteTime; Get-ChildItem -LiteralPath 'HKCU:\\Software\\Classes' -Name -ErrorAction SilentlyContinue | Where-Object { $_ -match 'mdview|^\\.md$' }",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196342617,
+    "end": 1795196343636,
+    "output_lines": 5,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L46",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$v = Get-Content -LiteralPath 'src\\internal\\viewer\\viewer.go'; $v[160..325]; $v[395..555]",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196366030,
+    "end": 1795196366401,
+    "output_lines": 286,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L47",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n -e 'func Test|temp|TestData|Mdview|execFile|mdview.exe' src/internal/viewer/viewer_test.go src/internal/viewer/control_api_test.go tests/tables.spec.js scripts/check-images.sh tests/links/verify.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196366076,
+    "end": 1795196366420,
+    "output_lines": 17,
+    "excerpt": [
+      "src/internal/viewer/viewer_test.go:5: [match]",
+      "src/internal/viewer/control_api_test.go:10: [match]",
+      "src/internal/viewer/control_api_test.go:37: [match]",
+      "src/internal/viewer/control_api_test.go:50: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L48",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n -e 'func .*|WM_CLOSE|SW_SHOW|ShowWindow|DataPath|UserDataFolder' src/vendor/github.com/jchv/go-webview2/webview.go src/internal/watcher/fsnotify_watcher.go src/internal/config/config.go; Get-ChildItem -LiteralPath 'C:\\path\\mdview.exe','.\\mdview.exe' -ErrorAction SilentlyContinue | Format-List FullName,Length,LastWriteTime",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196366061,
+    "end": 1795196366472,
+    "output_lines": 42,
+    "excerpt": [
+      "src/internal/config/config.go:29: [match]",
+      "src/internal/config/config.go:42: [match]",
+      "src/internal/config/config.go:53: [match]",
+      "src/internal/config/config.go:73: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L49",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n '^#{1,3} |handoff|idle|launcher' 'C:\\work\\projects\\xcmd\\docs\\processes\\delivery.md'; Get-Process -Name '*mdview*' -ErrorAction SilentlyContinue | Select-Object Id,Path,MainWindowTitle,SessionId | Format-List",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196366045,
+    "end": 1795196366479,
+    "output_lines": 12,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L58",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'src\\internal\\watcher\\fsnotify_watcher.go'; rg -n 'func TitleFromPath|func PortFile|func Serve|func .*State|func Load|func Save' src/internal/viewer/viewer.go src/internal/viewer/control_api.go src/internal/control/control.go src/internal/config/config.go; Get-FileHash -LiteralPath 'C:\\path\\mdview.exe','.\\mdview.exe' | Format-List Path,Hash",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196389471,
+    "end": 1795196390022,
+    "output_lines": 89,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L61",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\nNew-Item -ItemType Directory -Path $checkRoot -ErrorAction Stop | Out-Null\n$built = Join-Path $checkRoot 'mdview.exe'\n$timer = [Diagnostics.Stopwatch]::StartNew()\n& go -C src build -trimpath -ldflags=\"-s -w -H windowsgui\" -o $built .\nif ($LASTEXITCODE -ne 0) { throw \"Build failed: $LASTEXITCODE\" }\n[pscustomobject]@{ Path = $built; BuildMs = $timer.ElapsedMilliseconds } | Format-List",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196389503,
+    "end": 1795196403970,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L62",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$timer = [Diagnostics.Stopwatch]::StartNew()\n& go -C src test ./...\n$result = $LASTEXITCODE\nWrite-Output \"TestsMs=$($timer.ElapsedMilliseconds)\"\nexit $result",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196389486,
+    "end": 1795196405085,
+    "output_lines": 12,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L81",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\n\n$ErrorActionPreference = 'Stop'\n$bin = Join-Path $checkRoot 'mdview.exe'\n$repoSrc = (Resolve-Path -LiteralPath 'src').Path\n$env:LOCALAPPDATA = Join-Path $checkRoot 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $checkRoot 'config'\n$windows = [Collections.Generic.List[object]]::new()\nfunction Start-Viewer([string]$exe, [string]$name) {\n    $folder = Join-Path $checkRoot $name\n    New-Item -ItemType Directory -Path $folder | Out-Null\n    $doc = Join-Path $folder \"$name document.md\"\n    $nl = [Environment]::NewLine\n    $body = \"# Original $name\" + $nl + $nl + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($nl + $nl))\n    [IO.File]::WriteAllText($doc, $body)\n    $env:TEMP = $folder\n    $env:TMP = $folder\n    $p = Start-Process -FilePath $exe -ArgumentList @('-control-port=0', ('\"{0}\"' -f $doc)) -WindowStyle Hidden -RedirectStandardOutput (Join-Path $folder 'stdout.txt') -RedirectStandardError (Join-Path $folder 'stderr.txt') -PassThru\n    $window = [pscustomobject]@{ Process = $p; Folder = $folder; Doc = $doc; Body = $body; Base = $null }\n    $windows.Add($window)\n    return $window\n}\nfunction Get-State($window) {\n    $portFile = Join-Path $window.Folder 'mdview-control.port'\n    $until = [DateTime]::UtcNow.AddSeconds(15)\n    while ([DateTime]::UtcNow -lt $until) {\n        if ($window.Process.HasExited) {\n            $log = Get-Content -LiteralPath (Join-Path $window.Folder 'stderr.txt') -Raw\n            throw \"Viewer $($window.Process.Id) exited: $log\"\n        }\n        if (Test-Path -LiteralPath $portFile) {\n            $port = Get-Content -LiteralPath $portFile\n            $wi\n[command shortened]\n        if ($window.Process.HasExited) { throw \"Original viewer $($window.Process.Id) exited\" }\n        [void](Get-State $window)\n    }\n    Write-Output \"Second executable opened $($newState.file) with all 3 original viewers still responding\"\n} finally {\n    foreach ($window in $windows) {\n        if ($window.Base -and -not $window.Process.HasExited) {\n            try { Invoke-RestMethod -Uri \"$($window.Base)/quit\" -Method Post -TimeoutSec 2 -ErrorAction Stop | Out-Null } catch {}\n        }\n    }\n    foreach ($window in $windows) {\n        if (-not $window.Process.WaitForExit(1500)) {\n            Stop-Process -InputObject $window.Process -Force -ErrorAction SilentlyContinue\n        }\n    }\n}",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1795196493086,
+    "end": 1795196498394,
+    "output_lines": 8,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L92",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n -e '(mdview\\.exe|\\.syso|go build)' -g '!mathjax.js' -g '!package-lock.json' README.md build.ps1 CLAUDE.md scripts tests specs .claude",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196516383,
+    "end": 1795196516792,
+    "output_lines": 23,
+    "excerpt": [
+      "CLAUDE.md:9: [match]",
+      "CLAUDE.md:31: [match]",
+      "CLAUDE.md:45: [match]",
+      "CLAUDE.md:46: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L93",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$lines = Get-Content -LiteralPath 'src\\internal\\renderer\\assets\\template.html'; $lines[775..825]; $lines[1125..([Math]::Min(1170,$lines.Length-1))]",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196516399,
+    "end": 1795196516864,
+    "output_lines": 76,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L94",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$lines = Get-Content -LiteralPath 'src\\vendor\\github.com\\jchv\\go-webview2\\webview.go'; $lines[275..345]; Get-Process -Name mdview -ErrorAction SilentlyContinue | Select-Object Id,Path,MainWindowTitle,SessionId | Format-List",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1795196516414,
+    "end": 1795196516946,
+    "output_lines": 63,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L109",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\n\n$ErrorActionPreference = 'Stop'\n$baseBin = Join-Path $checkRoot 'mdview.exe'\n$checkRoot = Join-Path $checkRoot 'second-run'\nNew-Item -ItemType Directory -Path $checkRoot | Out-Null\n$bin = Join-Path $checkRoot 'mdview.exe'\nCopy-Item -LiteralPath $baseBin -Destination $bin\n$repoSrc = (Resolve-Path -LiteralPath 'src').Path\n$env:LOCALAPPDATA = Join-Path $checkRoot 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $checkRoot 'config'\n$windows = [Collections.Generic.List[object]]::new()\nfunction Start-Viewer([string]$exe, [string]$name) {\n    $folder = Join-Path $checkRoot $name\n    New-Item -ItemType Directory -Path $folder | Out-Null\n    $doc = Join-Path $folder \"$name document.md\"\n    $nl = [Environment]::NewLine\n    $body = \"# Original $name\" + $nl + $nl + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($nl + $nl))\n    [IO.File]::WriteAllText($doc, $body)\n    $env:TEMP = $folder\n    $env:TMP = $folder\n    $p = Start-Process -FilePath $exe -ArgumentList @('-control-port=0', ('\"{0}\"' -f $doc)) -WindowStyle Hidden -RedirectStandardOutput (Join-Path $folder 'stdout.txt') -RedirectStandardError (Join-Path $folder 'stderr.txt') -PassThru\n    $window = [pscustomobject]@{ Process = $p; Folder = $folder; Doc = $doc; Body = $body; Base = $null }\n    $windows.Add($window)\n    return $window\n}\nfunction Get-State($window) {\n    $portFile = Join-Path $window.Folder 'mdview-control.port'\n    $until = [DateTime]::UtcNow.AddSeconds(15)\n    while ([DateTime]::UtcNow -lt $until) {\n        if ($window.Process.HasExited) {\n            $log = Get-Content -LiteralPath (Join-Path $window.Folder 'stderr.tx\n[command shortened]\nte = Get-State $one\n    if (-not $open.ok -or $state.file -ne $shown) { throw 'Current file did not change after navigation' }\n    Write-Output \"Navigation changes the active path while the process command line stays the same: $($state.file)\"\n} finally {\n    foreach ($window in $windows) {\n        if ($window.Base -and -not $window.Process.HasExited) {\n            try { Invoke-RestMethod -Uri \"$($window.Base)/quit\" -Method Post -TimeoutSec 2 -ErrorAction Stop | Out-Null } catch {}\n        }\n    }\n    foreach ($window in $windows) {\n        if (-not $window.Process.WaitForExit(1500)) {\n            Stop-Process -InputObject $window.Process -Force -ErrorAction SilentlyContinue\n        }\n    }\n}",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196532079,
+    "end": 1795196552934,
+    "output_lines": 9,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L130",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\n\n$ErrorActionPreference = 'Stop'\n$baseBin = Join-Path $checkRoot 'mdview.exe'\n$checkRoot = Join-Path $checkRoot 'version-overwrite'\nNew-Item -ItemType Directory -Path $checkRoot | Out-Null\n$bin = Join-Path $checkRoot 'mdview.exe'\nCopy-Item -LiteralPath $baseBin -Destination $bin\n$repoSrc = (Resolve-Path -LiteralPath 'src').Path\n$env:LOCALAPPDATA = Join-Path $checkRoot 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $checkRoot 'config'\n$windows = [Collections.Generic.List[object]]::new()\nfunction Start-Viewer([string]$exe, [string]$name) {\n    $folder = Join-Path $checkRoot $name\n    New-Item -ItemType Directory -Path $folder | Out-Null\n    $doc = Join-Path $folder \"$name document.md\"\n    $nl = [Environment]::NewLine\n    $body = \"# Original $name\" + $nl + $nl + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($nl + $nl))\n    [IO.File]::WriteAllText($doc, $body)\n    $env:TEMP = $folder\n    $env:TMP = $folder\n    $p = Start-Process -FilePath $exe -ArgumentList @('-control-port=0', ('\"{0}\"' -f $doc)) -WindowStyle Hidden -RedirectStandardOutput (Join-Path $folder 'stdout.txt') -RedirectStandardError (Join-Path $folder 'stderr.txt') -PassThru\n    $window = [pscustomobject]@{ Process = $p; Folder = $folder; Doc = $doc; Body = $body; Base = $null }\n    $windows.Add($window)\n    return $window\n}\nfunction Get-State($window) {\n    $portFile = Join-Path $window.Folder 'mdview-control.port'\n    $until = [DateTime]::UtcNow.AddSeconds(15)\n    while ([DateTime]::UtcNow -lt $until) {\n        if ($window.Process.HasExited) {\n            $log = Get-Content -LiteralPath (Join-Path $window.Folder 'st\n[command shortened]\nte-Output 'CopyOverRunningPath=succeeded'\n    } catch {\n        Write-Output \"CopyOverRunningPath=$($_.Exception.Message)\"\n    }\n    Write-Output \"RunningPathAfterCopyMatchesOriginal=$((Get-FileHash -LiteralPath $bin).Hash -eq $originalHash)\"\n} finally {\n    foreach ($window in $windows) {\n        if ($window.Base -and -not $window.Process.HasExited) {\n            try { Invoke-RestMethod -Uri \"$($window.Base)/quit\" -Method Post -TimeoutSec 2 -ErrorAction Stop | Out-Null } catch {}\n        }\n    }\n    foreach ($window in $windows) {\n        if (-not $window.Process.WaitForExit(1500)) {\n            Stop-Process -InputObject $window.Process -Force -ErrorAction SilentlyContinue\n        }\n    }\n}",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196583623,
+    "end": 1795196599517,
+    "output_lines": 9,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L139",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$goRoot = go env GOROOT; rg -n -e 'func .*moveOrCopyFile|func .*CopyFile|func .*rename' (Join-Path $goRoot 'src\\cmd\\go\\internal\\work'); go version",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196614775,
+    "end": 1795196615264,
+    "output_lines": 3,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L140",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-CimInstance Win32_Process -Filter \"Name = 'mdview.exe'\" | Select-Object ProcessId,ExecutablePath,CommandLine | Format-List; git status --short --branch",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196614791,
+    "end": 1795196615564,
+    "output_lines": 4,
+    "excerpt": [
+      "## main...origin/main"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L145",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$goRoot = go env GOROOT; $code = Get-Content -LiteralPath (Join-Path $goRoot 'src\\cmd\\go\\internal\\work\\shell.go'); $code[114..267]",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196619853,
+    "end": 1795196620211,
+    "output_lines": 136,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L154",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\n\n$ErrorActionPreference = 'Stop'\n$baseBin = Join-Path $checkRoot 'mdview.exe'\n$nextBin = Join-Path $checkRoot 'version-overwrite\\next\\mdview.exe'\n$checkRoot = Join-Path $checkRoot 'copy-overwrite'\nNew-Item -ItemType Directory -Path $checkRoot | Out-Null\n$bin = Join-Path $checkRoot 'mdview.exe'\nCopy-Item -LiteralPath $baseBin -Destination $bin\n$repoSrc = (Resolve-Path -LiteralPath 'src').Path\n$env:LOCALAPPDATA = Join-Path $checkRoot 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $checkRoot 'config'\n$windows = [Collections.Generic.List[object]]::new()\nfunction Start-Viewer([string]$exe, [string]$name) {\n    $folder = Join-Path $checkRoot $name\n    New-Item -ItemType Directory -Path $folder | Out-Null\n    $doc = Join-Path $folder \"$name document.md\"\n    $nl = [Environment]::NewLine\n    $body = \"# Original $name\" + $nl + $nl + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($nl + $nl))\n    [IO.File]::WriteAllText($doc, $body)\n    $env:TEMP = $folder\n    $env:TMP = $folder\n    $p = Start-Process -FilePath $exe -ArgumentList @('-control-port=0', ('\"{0}\"' -f $doc)) -WindowStyle Hidden -RedirectStandardOutput (Join-Path $folder 'stdout.txt') -RedirectStandardError (Join-Path $folder 'stderr.txt') -PassThru\n    $window = [pscustomobject]@{ Process = $p; Folder = $folder; Doc = $doc; Body = $body; Base = $null }\n    $windows.Add($window)\n    return $window\n}\nfunction Get-State($window) {\n    $portFile = Join-Path $window.Folder 'mdview-control.port'\n    $until = [DateTime]::UtcNow.AddSeconds(15)\n    while ([DateTime]::UtcNow -lt $until) {\n        if ($window.Process.HasExited) {\n        \n[command shortened]\nd=$((Get-FileHash -LiteralPath $bin).Hash -eq $originalHash)\"\n    Write-Output \"OldViewerStillResponds=$((Get-State $one).file -eq $one.Doc)\"\n    Get-ChildItem -LiteralPath $checkRoot -File | Select-Object Name,Length | Format-Table -AutoSize\n} finally {\n    foreach ($window in $windows) {\n        if ($window.Base -and -not $window.Process.HasExited) {\n            try { Invoke-RestMethod -Uri \"$($window.Base)/quit\" -Method Post -TimeoutSec 2 -ErrorAction Stop | Out-Null } catch {}\n        }\n    }\n    foreach ($window in $windows) {\n        if (-not $window.Process.WaitForExit(1500)) {\n            Stop-Process -InputObject $window.Process -Force -ErrorAction SilentlyContinue\n        }\n    }\n}",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196640092,
+    "end": 1795196656376,
+    "output_lines": 8,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L171",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$checkRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'mdview-delivery-check-1795196389155'\n\n$ErrorActionPreference = 'Stop'\n$target = Get-Item -LiteralPath $checkRoot\n$expected = [IO.Path]::GetFullPath($checkRoot)\nif ($target.FullName -ne $expected -or ($target.Attributes -band [IO.FileAttributes]::ReparsePoint)) {\n    throw \"Unexpected test output location: $($target.FullName)\"\n}\n$running = @(Get-CimInstance Win32_Process -Filter \"Name = 'mdview.exe'\" | Where-Object { $_.ExecutablePath -like \"$expected\\*\" })\nif ($running.Count -gt 0) { throw 'Temporary test viewers are still running' }\nRemove-Item -LiteralPath $target.FullName -Recurse -Force\nWrite-Output \"Temporary test fixtures removed.\"\ngit status --short --branch\n",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795196678775,
+    "end": 1795196705163,
+    "output_lines": 5,
+    "excerpt": [
+      "## main...origin/main"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L208",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n 'func |var |const |type ' src/internal/viewer/viewer.go src/internal/viewer/control_api.go src/internal/viewer/imagectl_wndproc.go src/internal/viewer/dialogs.go src/internal/control/control.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197374129,
+    "end": 1795197374403,
+    "output_lines": 107,
+    "excerpt": [
+      "src/internal/control/control.go:30: [match]",
+      "src/internal/control/control.go:58: [match]",
+      "src/internal/control/control.go:64: [match]",
+      "src/internal/control/control.go:83: [match]"
+    ],
+    "path_facts": [
+      {
+        "operand": "src/internal/viewer/viewer.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "src/internal/viewer/control_api.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "src/internal/viewer/imagectl_wndproc.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "src/internal/viewer/dialogs.go",
+        "kind": "file at session start"
+      },
+      {
+        "operand": "src/internal/control/control.go",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L209",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git status --short --branch; git diff --stat; rg --files --hidden -g '!.git' -g 'AGENTS.md' -g 'CLAUDE.md' -g '*.ps1' -g 'go.mod'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197374036,
+    "end": 1795197374504,
+    "output_lines": 19,
+    "excerpt": [
+      "warning: unable to access '/home/reader/.config/git/ignore': Permission denied",
+      "## main...origin/main",
+      "warning: in the working copy of 'src/internal/renderer/assets/template.html', LF will be replaced by CRLF the next time Git touche"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L210",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'src\\main.go','scripts\\release.ps1','build.ps1'; rg -n 'Build|Release|Control' CLAUDE.md README.md",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197374145,
+    "end": 1795197374598,
+    "output_lines": 176,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L211",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Command mdview.exe,go | Select-Object Name,Source; Get-CimInstance Win32_Process -Filter \"Name = 'mdview.exe'\" | Select-Object ProcessId,ExecutablePath,CommandLine | Format-List; Get-ChildItem -LiteralPath '/repo','C:\\work\\projects','C:\\work' -Force -Filter AGENTS.md | Select-Object -ExpandProperty FullName",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197374099,
+    "end": 1795197374835,
+    "output_lines": 9,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L224",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$l=Get-Content -LiteralPath 'src\\internal\\viewer\\viewer.go'; $l[0..51]; $l[123..165]; $l[190..350]; Get-Content -LiteralPath 'src\\internal\\renderer\\AGENTS.md'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197430787,
+    "end": 1795197431253,
+    "output_lines": 243,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L225",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Content -LiteralPath 'src\\internal\\viewer\\imagectl.go','src\\internal\\config\\config.go'; rg -n 'FileReplace|MoveFileEx|ShareDelete|SW_' src/vendor/golang.org/x/sys/windows/syscall_windows.go src/internal/viewer",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197430787,
+    "end": 1795197431340,
+    "output_lines": 635,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L226",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "Get-Process -Name mdview -ErrorAction SilentlyContinue | Select-Object Id,Path,MainWindowHandle; Go env GOCACHE; Get-ChildItem Env: | Where-Object { $_.Name -in 'TEMP','TMP','LOCALAPPDATA' }",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197430912,
+    "end": 1795197431513,
+    "output_lines": 6,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L227",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$p='src\\vendor\\github.com\\jchv\\go-webview2\\webview.go'; $l=Get-Content -LiteralPath $p; $l[46..137]; $l[218..280]; $l[330..449]",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197432067,
+    "end": 1795197432525,
+    "output_lines": 240,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L242",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/src/internal/viewer/viewer.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/src/internal/viewer/viewer.go"
+      }
+    ],
+    "start": 1795197489097,
+    "end": 1795197492733,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/src/internal/viewer/viewer.go",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L251",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "add /repo/src/internal/viewer/window_state.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/src/internal/viewer/window_state.go"
+      }
+    ],
+    "start": 1795197542367,
+    "end": 1795197543900,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L260",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/src/main.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/src/main.go"
+      }
+    ],
+    "start": 1795197611324,
+    "end": 1795197612505,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/src/main.go",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L261",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "add /repo/src/restart.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/src/restart.go"
+      }
+    ],
+    "start": 1795197612526,
+    "end": 1795197613555,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L270",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "delete /repo/scripts/release.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "delete",
+        "path": "/repo/scripts/release.ps1"
+      }
+    ],
+    "start": 1795197670744,
+    "end": 1795197671831,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/scripts/release.ps1",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L271",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "add /repo/scripts/release.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/scripts/release.ps1"
+      }
+    ],
+    "start": 1795197671997,
+    "end": 1795197673217,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/scripts/release.ps1",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L280",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$null = [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts\\release.ps1').Path, [ref]$null, [ref]$null); Get-Item -LiteralPath 'C:\\path\\mdview.exe' | Select-Object FullName,Length,LastWriteTime; Test-Path -LiteralPath 'AGENTS.md'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197688518,
+    "end": 1795197688985,
+    "output_lines": 4,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L281",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n 'viewer\\.New\\(|\\bNew\\(.*Renderers|parseFlags\\(|go build|buildID' src --glob '!vendor/**' -g '!mathjax.js'; Get-Process -Name mdview -ErrorAction SilentlyContinue | Select-Object Id,Path,MainWindowHandle",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1795197688549,
+    "end": 1795197688992,
+    "output_lines": 9,
+    "excerpt": [
+      "src\\restart.go:23: [match]",
+      "src\\restart.go:25: [match]",
+      "src\\restart.go:37: [match]",
+      "src\\restart.go:173: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L282",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "gofmt -w src/main.go src/restart.go src/internal/viewer/window_state.go src/internal/viewer/viewer.go\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\ngo -C src test ./...\nexit $LASTEXITCODE",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197688518,
+    "end": 1795197693099,
+    "output_lines": 11,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L295",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/scripts/release.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/scripts/release.ps1"
+      }
+    ],
+    "start": 1795197735536,
+    "end": 1795197736795,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/scripts/release.ps1",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L296",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "add /repo/AGENTS.md",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "add",
+        "path": "/repo/AGENTS.md"
+      }
+    ],
+    "start": 1795197736957,
+    "end": 1795197738175,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L297",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/CLAUDE.md",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/CLAUDE.md"
+      }
+    ],
+    "start": 1795197738360,
+    "end": 1795197739414,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/CLAUDE.md",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L298",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/README.md",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/README.md"
+      }
+    ],
+    "start": 1795197739605,
+    "end": 1795197740647,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/README.md",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L307",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$ErrorActionPreference = 'Stop'\n$testRoot = Join-Path ([IO.Path]::GetTempPath()) 'mdview-release-e2e-1795197747604'\n$target = Join-Path $testRoot 'install\\mdview.exe'\n& .\\scripts\\release.ps1 -Target $target\nGet-Item -LiteralPath $target | Select-Object FullName,Length\nGet-Content -LiteralPath \"$target.version\"",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1795197749048,
+    "end": 1795197750683,
+    "output_lines": 22,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L322",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$ErrorActionPreference = 'Stop'\n$testRoot = Join-Path ([IO.Path]::GetTempPath()) 'mdview-release-e2e-1795197747604'\n$target = Join-Path $testRoot 'install\\mdview.exe'\n& .\\scripts\\release.ps1 -Target $target\nGet-Item -LiteralPath $target | Select-Object FullName,Length\nGet-Content -LiteralPath \"$target.version\"",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197784952,
+    "end": 1795197797485,
+    "output_lines": 19,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L362",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$ErrorActionPreference = 'Stop'\n$root = Join-Path ([IO.Path]::GetTempPath()) 'mdview-release-e2e-1795197747604'\n\n$target = Join-Path $root 'install\\mdview.exe'\n$install = Split-Path -Parent (Get-Item -LiteralPath $target).FullName\n$slots = [Collections.Generic.List[object]]::new()\n$outerTemp = $env:TEMP\n$outerTmp = $env:TMP\n$env:LOCALAPPDATA = Join-Path $root 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $root 'config'\nfunction Wait-For([string]$description, [scriptblock]$probe) {\n    $deadline = [DateTime]::UtcNow.AddSeconds(20)\n    do {\n        $value = & $probe\n        if ($value) { return $value }\n        Start-Sleep -Milliseconds 100\n    } while ([DateTime]::UtcNow -lt $deadline)\n    throw \"Timed out: $description\"\n}\nfunction Read-Port($slot) {\n    $path = Join-Path $slot.Dir 'mdview-control.port'\n    if (Test-Path -LiteralPath $path) { Get-Content -LiteralPath $path }\n}\nfunction Request($port, [string]$path, [string]$method = 'Get', $body = $null) {\n    (Invoke-RestMethod -Uri \"[URL omitted]\" -Method $method -Body $body -TimeoutSec 3).data\n}\nfunction Start-TestViewer([string]$name) {\n    $dir = (New-Item -ItemType Directory -Path (Join-Path $root $name)).FullName\n    $file = Join-Path $dir \"$name file.md\"\n    $br = [Environment]::NewLine\n    $text = \"# $name\" + $br + $br + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($br + $br))\n    [IO.File]::WriteAllText($file, $text)\n    try {\n        $env:TEMP = $dir\n        $env:TMP = $dir\n        $p = Start-Process -FilePath $target -ArgumentList @('-control-port=0', ('\"{0}\"' -f $file)) -WindowStyle Hidden -RedirectStandardOutput (Join-Path $dir 'stdout.txt') -RedirectStandardError (Join-Path $dir 'stderr.txt') -PassThru\n\n[command shortened]\ns\\release.ps1 -Target $target\n    foreach ($slot in $slots) {\n        $slot.Port = Read-Replacement $slot $slot.Port\n        Write-Output \"Updated again $($slot.Name): port=$($slot.Port)\"\n    }\n} finally {\n    foreach ($slot in $slots) {\n        $port = Read-Port $slot\n        foreach ($p in @($port, $slot.Port) | Where-Object { $_ } | Select-Object -Unique) {\n            try { Request $p 'quit' 'Post' | Out-Null } catch {}\n        }\n    }\n    Get-Process -Name 'mdview*' -ErrorAction SilentlyContinue | Where-Object {\n        $_.Path -and $_.Path.StartsWith(\"$install\\\", [StringComparison]::OrdinalIgnoreCase)\n    } | ForEach-Object {\n        if (-not $_.WaitForExit(2000)) { $_.Kill() }\n    }\n}",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197910309,
+    "end": 1795197957506,
+    "output_lines": 56,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L366",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$errors = @(); [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'scripts\\release.ps1').Path, [ref]$null, [ref]$errors) | Out-Null; $errors; if ($errors.Count) { exit 1 }",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197958933,
+    "end": 1795197959315,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L367",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git diff --check; git status --short; git diff --stat; Get-Content -LiteralPath 'src\\internal\\applog\\applog.go'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795197958918,
+    "end": 1795197959499,
+    "output_lines": 59,
+    "excerpt": [
+      "warning: in the working copy of 'scripts/release.ps1', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/internal/renderer/assets/template.html', LF will be replaced by CRLF the next time Git touche",
+      "warning: in the working copy of 'src/internal/viewer/viewer.go', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/main.go', LF will be replaced by CRLF the next time Git touches it"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L390",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/scripts/release.ps1",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/scripts/release.ps1"
+      }
+    ],
+    "start": 1795198028552,
+    "end": 1795198029605,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/scripts/release.ps1",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L391",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/src/main.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/src/main.go"
+      }
+    ],
+    "start": 1795198029713,
+    "end": 1795198030792,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/src/main.go",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L392",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/src/internal/viewer/viewer.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/src/internal/viewer/viewer.go"
+      }
+    ],
+    "start": 1795198030893,
+    "end": 1795198032059,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": [
+      {
+        "operand": "/repo/src/internal/viewer/viewer.go",
+        "kind": "file at session start"
+      }
+    ]
+  },
+  {
+    "id": "v2-L393",
+    "session": "v2",
+    "tool": "FileChange",
+    "command": "update /repo/src/internal/viewer/window_state.go",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": null,
+    "changes": [
+      {
+        "kind": "update",
+        "path": "/repo/src/internal/viewer/window_state.go"
+      }
+    ],
+    "start": 1795198032162,
+    "end": 1795198033257,
+    "output_lines": 0,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L404",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "gofmt -w src/main.go src/restart.go src/internal/viewer/viewer.go src/internal/viewer/window_state.go\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\ngit diff --check",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198073115,
+    "end": 1795198073412,
+    "output_lines": 4,
+    "excerpt": [
+      "warning: in the working copy of 'scripts/release.ps1', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/internal/renderer/assets/template.html', LF will be replaced by CRLF the next time Git touche",
+      "warning: in the working copy of 'src/internal/viewer/viewer.go', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/main.go', LF will be replaced by CRLF the next time Git touches it"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L419",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$ErrorActionPreference = 'Stop'\n$root = Join-Path ([IO.Path]::GetTempPath()) 'mdview-release-e2e-1795197747604-final'\n\n$target = Join-Path $root 'install\\mdview.exe'\n\n$originalEnv = @{}\nforeach ($name in @('GOCACHE','LOCALAPPDATA','APPDATA','MDVIEW_CONFIG_DIR')) {\n    $originalEnv[$name] = [Environment]::GetEnvironmentVariable($name)\n}\n$env:GOCACHE = (& go env GOCACHE)\n& .\\scripts\\release.ps1 -Target $target\n$install = Split-Path -Parent (Get-Item -LiteralPath $target).FullName\n$slots = [Collections.Generic.List[object]]::new()\n$outerTemp = $env:TEMP\n$outerTmp = $env:TMP\n$env:LOCALAPPDATA = Join-Path $root 'local'\n$env:APPDATA = Join-Path $root 'roaming'\n$env:MDVIEW_CONFIG_DIR = Join-Path $root 'config'\nfunction Wait-For([string]$description, [scriptblock]$probe) {\n    $deadline = [DateTime]::UtcNow.AddSeconds(20)\n    do {\n        $value = & $probe\n        if ($value) { return $value }\n        Start-Sleep -Milliseconds 100\n    } while ([DateTime]::UtcNow -lt $deadline)\n    throw \"Timed out: $description\"\n}\nfunction Read-Port($slot) {\n    $path = Join-Path $slot.Dir 'mdview-control.port'\n    if (Test-Path -LiteralPath $path) { Get-Content -LiteralPath $path }\n}\nfunction Request($port, [string]$path, [string]$method = 'Get', $body = $null) {\n    (Invoke-RestMethod -Uri \"[URL omitted]\" -Method $method -Body $body -TimeoutSec 3).data\n}\nfunction Start-TestViewer([string]$name) {\n    $dir = (New-Item -ItemType Directory -Path (Join-Path $root $name)).FullName\n    $file = Join-Path $dir \"$name file.md\"\n    $br = [Environment]::NewLine\n    $text = \"# $name\" + $br + $br + ((1..160 | ForEach-Object { \"Paragraph $_\" }) -join ($br + $br))\n    [IO.File]::WriteAllText($file, $text)\n   \n[command shortened]\ntartsWith(\"$install\\\", [StringComparison]::OrdinalIgnoreCase)\n    } | ForEach-Object {\n        if (-not $_.WaitForExit(2000)) { $_.Kill() }\n    }\n}\nforeach ($name in $originalEnv.Keys) { [Environment]::SetEnvironmentVariable($name, $originalEnv[$name]) }\n& .\\scripts\\release.ps1\n$installed = Get-Item -LiteralPath 'C:\\path\\mdview.exe'\n$version = Get-Content -LiteralPath \"$($installed.FullName).version\" -Raw\n$buildInfo = (& go version -m $installed.FullName | Out-String)\nif ($buildInfo -notmatch \"main\\.buildID=$([regex]::Escape($version.Trim()))\") { throw 'Installed executable has the wrong release number' }\nWrite-Output \"Verified installed executable: $($installed.FullName), release $version\"\n",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "failed",
+    "exit": 1,
+    "changes": [],
+    "start": 1795198116181,
+    "end": 1795198148727,
+    "output_lines": 92,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L438",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "$testName = 'mdview-release-e2e-1795197747604'\n\n$ErrorActionPreference = 'Stop'\n$temp = [IO.Path]::GetTempPath()\n$root = Join-Path $temp \"$testName-final\"\n$verify = (New-Item -ItemType Directory -Path (Join-Path $root 'verify-installed')).FullName\n$exe = 'C:\\path\\mdview.exe'\n$id = (Get-Content -LiteralPath \"$exe.version\" -Raw).Trim()\n$doc = Join-Path $verify 'installed.md'\n$inputFile = Join-Path $verify 'input.json'\n$stdout = Join-Path $verify 'stdout.txt'\n$stderr = Join-Path $verify 'stderr.txt'\n[IO.File]::WriteAllText($doc, '# Installed mdview')\n[IO.File]::WriteAllText($inputFile, (@{File=$doc; Visible=$false} | ConvertTo-Json -Compress))\n$env:TEMP = $verify\n$env:TMP = $verify\n$env:APPDATA = Join-Path $verify 'roaming'\n$env:LOCALAPPDATA = Join-Path $verify 'local'\n$env:MDVIEW_CONFIG_DIR = Join-Path $verify 'config'\n$viewer = Start-Process -FilePath $exe -ArgumentList \"--resume=$id\" -WindowStyle Hidden -RedirectStandardInput $inputFile -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru\ntry {\n    if (-not $viewer.WaitForExit(20000)) {\n        $viewer.Kill()\n        [void]$viewer.WaitForExit(3000)\n        throw 'Installed viewer did not finish its startup check'\n    }\n    $reply = Get-Content -LiteralPath $stdout -Raw\n    if ($viewer.ExitCode -ne 0 -or -not $reply -or $reply.Trim() -ne 'ready') {\n        $details = Get-Content -LiteralPath $stderr -Raw\n        throw \"Installed viewer failed its startup check: $details\"\n    }\n    Write-Output \"Installed executable opened a document and confirmed release $id\"\n    Get-Item -LiteralPath $exe | Select-Object FullName,Length,LastWriteTime\n} finally {\n    $viewer.Dispose()\n}\n$env:TEMP = $temp\n$env:TMP = $temp\nforeach ($name in @($testName, \"$testName-final\")) {\n    $expected = [IO.Path]::GetFullPath((Join-Path $temp $name))\n    $dir = Get-Item -LiteralPath $expected -ErrorAction SilentlyContinue\n    if ($dir -and $dir.FullName -eq $expected -and -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint)) {\n        Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction SilentlyContinue\n    }\n}\n",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198195637,
+    "end": 1795198202614,
+    "output_lines": 4,
+    "excerpt": [],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L463",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git status --short --branch; git diff --cached --stat; git log -5 --oneline",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198934554,
+    "end": 1795198934954,
+    "output_lines": 20,
+    "excerpt": [
+      "warning: unable to access '/home/reader/.config/git/ignore': Permission denied",
+      "## main...origin/main"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L464",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git diff --check; git diff --stat; git ls-files --others --exclude-standard",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198934554,
+    "end": 1795198934966,
+    "output_lines": 21,
+    "excerpt": [
+      "warning: in the working copy of 'scripts/release.ps1', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/internal/renderer/assets/template.html', LF will be replaced by CRLF the next time Git touche",
+      "warning: in the working copy of 'src/internal/viewer/viewer.go', LF will be replaced by CRLF the next time Git touches it",
+      "warning: in the working copy of 'src/main.go', LF will be replaced by CRLF the next time Git touches it"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L465",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "rg -n 'Local delivery|func watchForRelease|func restartWindow|func .*CaptureWindow|Local releases|Checking startup|Published' AGENTS.md README.md src/restart.go src/internal/viewer/window_state.go scripts/release.ps1; Get-Content -LiteralPath 'C:\\path\\mdview.exe.version'",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198934585,
+    "end": 1795198935094,
+    "output_lines": 8,
+    "excerpt": [
+      "src/restart.go:29: [match]",
+      "src/restart.go:86: [match]",
+      "scripts/release.ps1:80: [match]",
+      "scripts/release.ps1:111: [match]"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L490",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "\n$ErrorActionPreference = 'Stop'\n$files = @(\n    'AGENTS.md',\n    'CLAUDE.md',\n    'README.md',\n    'scripts/release.ps1',\n    'src/internal/viewer/viewer.go',\n    'src/internal/viewer/window_state.go',\n    'src/main.go',\n    'src/restart.go'\n)\n$scratch = (New-Item -ItemType Directory -Path (Join-Path ([IO.Path]::GetTempPath()) \"mdview-commit-$([guid]::NewGuid().ToString('N'))\")).FullName\ntry {\n    $archive = Join-Path $scratch 'source.zip'\n    git archive --format=zip \"--output=$archive\" HEAD src\n    if ($LASTEXITCODE -ne 0) { throw 'Could not create the commit test snapshot.' }\n    Expand-Archive -LiteralPath $archive -DestinationPath $scratch\n    foreach ($file in $files | Where-Object { $_.StartsWith('src/') }) {\n        Copy-Item -LiteralPath $file -Destination (Join-Path $scratch $file)\n    }\n    Copy-Item -LiteralPath 'src/vendor' -Destination (Join-Path $scratch 'src/vendor') -Recurse\n    go -C (Join-Path $scratch 'src') test ./...\n    if ($LASTEXITCODE -ne 0) { throw 'Go tests failed on the commit snapshot.' }\n\n    git add -- @files\n    if ($LASTEXITCODE -ne 0) { throw 'Could not stage the release files.' }\n    git diff --cached --check -- @files\n    if ($LASTEXITCODE -ne 0) { throw 'The staged release files failed the diff check.' }\n    $body = @'\nThe local release closed every viewer and lost each reading position.\nKeep the installed executable as the direct launch target so startup\nneeds no extra process. Keep each old window open until its replacement\ncan display the document so a failed handoff preserves the session.\n\nVerified Go tests on the commit source and ran the Windows update flow\nwith three test windows, including a replacement that could not start.\n'@\n    git commit --only -m '[message omitted]' -m $body -- @files\n    if ($LASTEXITCODE -ne 0) { throw 'Could not create the release commit.' }\n    git show --format=oneline --name-only HEAD\n    git status --short --branch\n} finally {\n    $testRoot = Get-Item -LiteralPath $scratch -ErrorAction SilentlyContinue\n    if ($testRoot -and $testRoot.FullName -eq $scratch -and -not ($testRoot.Attributes -band [IO.FileAttributes]::ReparsePoint)) {\n        Remove-Item -LiteralPath $testRoot.FullName -Recurse -Force -ErrorAction SilentlyContinue\n    }\n}\n",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795198976805,
+    "end": 1795199000178,
+    "output_lines": 41,
+    "excerpt": [
+      "warning: in the working copy of 'scripts/release.ps1', LF will be replaced by CRLF the next time Git touches it"
+    ],
+    "path_facts": []
+  },
+  {
+    "id": "v2-L503",
+    "session": "v2",
+    "tool": "CommandExecution",
+    "command": "git push",
+    "cwd": "/repo",
+    "windows": true,
+    "status": "completed",
+    "exit": 0,
+    "changes": [],
+    "start": 1795202731934,
+    "end": 1795202736089,
+    "output_lines": 2,
+    "excerpt": [],
+    "path_facts": []
+  }
+]

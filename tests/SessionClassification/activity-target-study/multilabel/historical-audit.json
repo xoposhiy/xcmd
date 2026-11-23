@@ -1,0 +1,58 @@
+{
+  "calls": 32,
+  "calls_with_any_disagreement": 15,
+  "agreement": {
+    "target": 18,
+    "action": 29,
+    "exact_pair": 17
+  },
+  "disagreement": {
+    "target": 14,
+    "action": 3,
+    "target_only": 12,
+    "action_only": 1,
+    "both_axes": 2
+  },
+  "primary_cause_among_disputes": {
+    "separate substantive operations reduced to one pair": 2,
+    "resource being operated on versus the tool, execution or purpose": 6,
+    "different roles assigned to the same resource": 3,
+    "missing evidence about the outcome or its visibility": 0,
+    "one label conflicts with an explicit role rule and visible evidence": 4,
+    "undetermined or other": 0
+  },
+  "extent_to_which_recording_all_pairs_explains_the_old_disagreement": {
+    "fully": 2,
+    "partly": 2,
+    "no": 11,
+    "undetermined": 0
+  },
+  "multiple_pairs_among_the_15_disputes": {
+    "two_or_more_separately_supported_pairs": 7,
+    "an_additional_operation_was_visible_but_its_separate_target_role_was_uncertain": 1,
+    "no_second_distinct_pair_supported": 7,
+    "of_the_seven_with_separately_supported_pairs": {
+      "fully_explains_the_disagreement": 2,
+      "partly_explains_the_disagreement": 1,
+      "does_not_explain_the_disagreement": 4
+    }
+  },
+  "counting_rules": [
+    "Each disputed call has one primary cause. The audit compared both written reasons with the recorded command, result, surrounding trace and old guide.",
+    "Fully means that separate operations support both readings. An old mixed label can summarize several observed roles. A project-wide query alone does not show several roles.",
+    "Partly means that different actions are visible but keeping each action attached to its resource still leaves one pairing in dispute. No includes calls where both reasons describe the same disputed operation even though the call also did other work.",
+    "Multiple resources with the same role and action contribute one distinct pair. Incidental program loading adds no pair. Alternative roles for one resource add no pair."
+  ],
+  "context": {
+    "access": "The study record says that both independent reviewers had the full local session and access to project files. The trace includes the user request, earlier events, commands, working directories and results.",
+    "disputed_calls_with_command_working_directory_return_status_and_output": 15,
+    "disputes_with_evidence_that_one_reviewer_lacked_material_context_available_to_the_other": 0,
+    "qualification": "The record establishes access. It does not show which files, prior events or individual cues each reviewer consulted. The present working tree alone cannot establish its exact state at the time of every call."
+  },
+  "findings": [
+    "The action agreed in 29 of 32 calls. Most disagreement concerned which resource to name.",
+    "The most common primary difference was whether to label the resource being operated on or the operation used to work on it. Four further decisions had a visible cue covered by an explicit rule.",
+    "Four of the seven clearly multi-pair calls contained other work, yet both old labels still turned on how to describe the same operation."
+  ],
+  "limits": "The axis counts are direct comparisons. The explanations are retrospective judgments by one auditor who knew both labels. Short reasons can support more than one explanation. One session and two reviewers from the same model family do not establish general frequencies."
+}

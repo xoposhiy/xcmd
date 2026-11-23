@@ -1,0 +1,116 @@
+{
+  "scope": "Each original or software-set annotation with a tooling pair has one primary theme. Read its tooling objects together with its call summary. For mixed calls choose the main tooling-specific purpose. Installation and release checks belong to release, skill content and catalog integrity to skills.",
+  "source_archive_sha256": "ea8111e49f42138bf80a281fc54af541273c67bb82abdd5065af42a0fb944a13",
+  "themes": {
+    "release": "Build, deployment, registration and installed releases",
+    "skills": "Skill instructions, catalogs, sources and their validation",
+    "visual": "Page review, browser checks and screenshots",
+    "article": "Scripts that generate and check the Othello article",
+    "helpers": "Analyzers, validators and other repository helper scripts",
+    "env": "Toolchain, packages, CLI help, configuration and environment",
+    "agent": "Subagent coordination"
+  },
+  "assignments": {
+    "point": {
+      "terra": {
+        "skills": [18],
+        "helpers": [62],
+        "release": [65, 138, 223]
+      },
+      "luna": {
+        "helpers": [62],
+        "env": [91],
+        "release": [65, 138, 223]
+      }
+    },
+    "xcmd": {
+      "terra": {},
+      "luna": {}
+    },
+    "v1": {
+      "terra": {
+        "skills": [117],
+        "article": [138, 161, 192, 217, 237, 262, 283, 307, 325, 333]
+      },
+      "luna": {
+        "skills": [117],
+        "agent": [130, 168, 199],
+        "article": [138, 139, 161, 162, 192, 193, 217, 218, 237, 238, 262, 264, 283, 284, 307, 308, 325, 326, 333, 334]
+      }
+    },
+    "v2": {
+      "terra": {
+        "release": [26, 36, 61, 92, 130, 154, 210, 270, 271, 280, 295, 322, 362, 366, 390, 419, 465],
+        "helpers": [29],
+        "env": [39, 139, 145, 211, 226]
+      },
+      "luna": {
+        "release": [26, 36, 92, 210, 270, 271, 295, 307, 322, 390, 419],
+        "helpers": [29, 280, 366],
+        "env": [139, 145]
+      }
+    },
+    "point-taken": {
+      "terra": {
+        "skills": [18, 19, 30, 44, 88, 96, 102, 117, 118, 121, 136],
+        "helpers": [29, 32],
+        "release": [42, 52, 65, 80, 110, 119, 120, 132, 146, 155, 162, 163, 170, 193, 196, 198]
+      },
+      "luna": {
+        "skills": [88, 118, 121],
+        "helpers": [32, 36, 120],
+        "release": [42, 52, 110, 146, 193, 196, 198]
+      }
+    },
+    "reviewer": {
+      "terra": {
+        "helpers": [24, 55, 60]
+      },
+      "luna": {
+        "helpers": [55, 60]
+      }
+    },
+    "fresh": {
+      "terra": {
+        "skills": [18, 24, 34, 113],
+        "env": [71, 79, 87, 95, 163],
+        "helpers": [25],
+        "visual": [115, 137, 144, 145, 146, 154, 161, 162, 180, 187, 188, 189, 190, 197]
+      },
+      "luna": {
+        "env": [71, 79, 87, 95],
+        "visual": [114, 115, 122, 123, 130, 137, 144, 145, 146, 153, 154, 161, 162, 170, 180, 187, 188, 189, 190, 197]
+      }
+    },
+    "reserve": {
+      "terra": {
+        "skills": [19, 46, 93, 108, 366, 443],
+        "env": [62]
+      },
+      "luna": {
+        "skills": [18, 19, 20, 25, 26, 27, 34, 35, 44, 45, 46, 53, 54, 61, 62, 71, 78, 93, 99, 108, 137, 169, 170, 177, 184, 201, 277, 306, 313, 315, 342, 349, 350, 358, 366, 386, 402, 416, 431, 443],
+        "release": [85, 92, 119, 138, 385, 408, 444],
+        "helpers": [109, 118],
+        "visual": [130, 145, 152, 451]
+      }
+    },
+    "klava-sorting": {
+      "terra": {
+        "release": [34, 78, 138, 166, 208]
+      },
+      "luna": {
+        "release": [34, 138, 166, 208]
+      }
+    },
+    "digester-recovery": {
+      "terra": {
+        "release": [27, 136, 181, 188, 330, 442],
+        "env": [433]
+      },
+      "luna": {
+        "release": [181, 188, 330, 442]
+      }
+    }
+  },
+  "software_archive_sha256": "14cd3d24ec50c7f860268b7eead7f8531ccbbb244b675f41e1db32b651da4fc0"
+}

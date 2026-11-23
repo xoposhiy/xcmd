@@ -1,4 +1,4 @@
-// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff, OpenViewers
+// @tests NavigatePanels, SortEntries, RecentLocations, FavoriteLocations, MarkEntries, MeasureFolders, RunCommand, CommandHistory, RestoreWorkspace, ReportControl, KeepFeedback, TryLocalRelease, WorkspaceStorage, FeedbackIdentity, HeadlessVerification, IntegrationVerification, ReleaseHandoff, OpenViewers, InspectAgentSession
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -241,6 +241,13 @@ public static class WorkspaceScenarios
                 using var after = await ReadWorkspaceReportAsync(Path.Combine(reports, NewId + ".json"));
                 var opened = after.RootElement.GetProperty("viewers");
                 Equal(4, opened.GetArrayLength(), "The remaining viewers reopen");
+                var inspectors = after.RootElement.GetProperty("inspectors");
+                Equal(2, inspectors.GetArrayLength(), "Both independent session inspectors survive process replacement");
+                Check(inspectors[0].GetProperty("Title").GetString()!.Contains("First inspection") &&
+                    inspectors[1].GetProperty("Title").GetString()!.Contains("Second inspection"), "Each inspector keeps its session");
+                Equal(720d, inspectors[0].GetProperty("Width").GetDouble(), "The first inspector keeps its placement");
+                Equal((int)WindowState.Minimized, inspectors[1].GetProperty("WindowState").GetInt32(), "The second inspector stays minimized");
+                Check(inspectors.EnumerateArray().All(i => !i.GetProperty("ShowActivated").GetBoolean()), "Restored inspectors leave focus with the user");
                 var beforeViewers = before.RootElement.GetProperty("viewers");
                 var prior = beforeViewers[0];
                 Equal(prior.GetProperty("CurrentPath").GetString(), opened[0].GetProperty("CurrentPath").GetString(), "The first viewer opens the same file");
