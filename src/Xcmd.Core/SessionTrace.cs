@@ -6,9 +6,15 @@ public sealed record TraceFile(string Path, string Action, int FirstLine = 0, in
     public string? ModelEvidence { get; init; }
 }
 public sealed record TraceCall(string Agent, string Title, long Start, long End,
-    long EstimatedTokens, IReadOnlyList<TraceFile> Files, bool Failed = false, string? Evidence = null)
+    IReadOnlyList<TraceFile> Files, bool Failed = false, string? Evidence = null)
 {
     public int Id { get; init; }
+    public string? Input { get; init; }
+    public string? Output { get; init; }
+    public string? WorkingDirectory { get; init; }
+    public ResponseKey? Response { get; init; }
+    public int EmissionOrder { get; init; }
+    public bool Completed { get; init; } = true;
     public ToolClassification? Classification { get; init; }
     public IEnumerable<ToolLabel> Labels => Classification?.Pairs.Select(p => p.Label) ?? [ToolLabel.Unclassified];
     public string ActivityName => string.Join(", ", Labels);
@@ -27,9 +33,10 @@ public sealed class SessionTrace
     public IReadOnlyList<string> Agents { get; }
     public IReadOnlyList<TraceSpan> Tasks { get; }
     public IReadOnlyList<TraceSpan> Phases { get; }
-    public string? Note { get; }
+    public string? Note { get; init; }
     public string? ClassificationError { get; init; }
     public bool HasOutdatedClassifications { get; init; }
+    public string? Model { get; init; }
     private readonly bool caseSensitivePaths;
     public string FileKey(string path)
     {
@@ -38,31 +45,42 @@ public sealed class SessionTrace
         return unix || caseSensitivePaths && !windows ? path : path.ToUpperInvariant();
     }
     public bool SameFile(string first, string second) => FileKey(first) == FileKey(second);
-    private readonly long[] times;
-    private readonly long[] tokens;
-    public long TotalTokens => tokens[^1];
+    public IReadOnlyList<SessionResponse> Responses { get; }
+    public SessionCostAxis CostAxis { get; }
+    public decimal TotalCost => CostAxis.At(Responses.Count).Usd;
+    private readonly IReadOnlyDictionary<ResponseKey, SessionResponse> responsesByKey;
+    public SessionResponse? ResponseFor(TraceCall call) => call.Response is { } key ? responsesByKey.GetValueOrDefault(key) : null;
 
     public SessionTrace(long start, long end, IEnumerable<TraceCall> calls, IEnumerable<TraceMarker> tasks,
-        IEnumerable<TraceMarker> steps, string? note = null, bool caseSensitivePaths = false)
+        IEnumerable<TraceMarker> steps, bool caseSensitivePaths = false,
+        IEnumerable<ResponseRecord>? responses = null)
     {
         Start = start;
         End = Math.Max(start, end);
-        Note = note;
         this.caseSensitivePaths = caseSensitivePaths;
-        Calls = calls.OrderBy(call => call.End).ToArray();
-        Agents = Calls.Select(call => call.Agent).Prepend(MainAgent).Distinct().ToArray();
+        var allCalls = calls.Select((call, index) => call.Response == null
+            ? call with { Response = new("", index.ToString(System.Globalization.CultureInfo.InvariantCulture)) } : call)
+            .OrderBy(call => call.End).ToArray();
+        Calls = allCalls.Where(call => call.Completed).ToArray();
         Tasks = Spans(tasks);
         var planned = steps.ToArray();
         Phases = Spans(planned.Length > 0 ? planned : ActivityRuns());
-        var completions = Calls.GroupBy(call => call.End).ToArray();
-        times = new long[completions.Length + 1];
-        tokens = new long[times.Length];
-        times[0] = Start;
-        for (var i = 0; i < completions.Length; i++)
+        var byResponse = allCalls.ToLookup(call => call.Response!.Value);
+        var recorded = (responses ?? []).ToDictionary(response => response.Key);
+        foreach (var group in byResponse)
         {
-            times[i + 1] = completions[i].Key;
-            tokens[i + 1] = tokens[i] + completions[i].Sum(call => call.EstimatedTokens);
+            var first = group.MinBy(call => call.Start)!;
+            recorded.TryAdd(group.Key, new(group.Key, first.Agent, first.Start, null, ResponseCost.Missing()));
         }
+        var task = -1;
+        Responses = recorded.Values.OrderBy(response => response.At).Select((response, index) =>
+        {
+            while (task + 1 < Tasks.Count && Tasks[task + 1].Start <= response.At) task++;
+            return new SessionResponse(index, response, byResponse[response.Key].OrderBy(call => call.EmissionOrder).ThenBy(call => call.Start).ToArray(), task);
+        }).ToArray();
+        responsesByKey = Responses.ToDictionary(response => response.Record.Key);
+        CostAxis = new(Responses);
+        Agents = Calls.Select(call => call.Agent).Concat(Responses.Select(response => response.Agent)).Prepend(MainAgent).Distinct().ToArray();
     }
 
     private IEnumerable<TraceMarker> ActivityRuns()
@@ -82,30 +100,18 @@ public sealed class SessionTrace
         return rows.Select((row, i) => new TraceSpan(row.Title, row.At, i + 1 < rows.Length ? rows[i + 1].At : End)).ToArray();
     }
 
-    public long TokensAt(long at)
+    public int BoundaryAfter(long at, bool inclusive = true)
     {
-        var i = Array.BinarySearch(times, at);
-        if (i < 0) i = ~i - 1;
-        if (i == 0 && times.Length > 1 && times[1] == at) i++;
-        return tokens[Math.Max(0, i)];
+        var first = 0;
+        var last = Responses.Count;
+        while (first < last)
+        {
+            var middle = first + (last - first) / 2;
+            if (Responses[middle].At < at || inclusive && Responses[middle].At == at) first = middle + 1;
+            else last = middle;
+        }
+        return first;
     }
 
-    public long TimeAtTokens(double value)
-    {
-        if (value <= 0) return Start;
-        if (value >= TotalTokens) return End;
-        var i = Array.BinarySearch(tokens, (long)Math.Ceiling(value));
-        if (i < 0) i = ~i;
-        return value - tokens[i - 1] < tokens[i] - value ? times[i - 1] : times[i];
-    }
-
-    public long StepResult(long at, int step, long min, long max)
-    {
-        var i = Array.BinarySearch(times, at);
-        if (i < 0) i = step > 0 ? ~i - 1 : ~i;
-        if (step > 0 && i == 0 && times.Length > 1 && times[1] == at) i++;
-        var next = i + step;
-        return next < 0 ? min : next >= times.Length ? max : Math.Clamp(times[next], min, max);
-    }
-
+    public long BoundaryTime(int boundary) => boundary == 0 ? Start : boundary == Responses.Count ? End : Responses[boundary - 1].At;
 }

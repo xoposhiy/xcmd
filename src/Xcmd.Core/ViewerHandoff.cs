@@ -2,7 +2,14 @@
 namespace Xcmd.Core;
 
 public sealed record InspectorHandoff(AgentSession Session, WindowPlacement Window, InspectorRange? Range);
-public sealed record InspectorRange(long From, long To, long ZoomFrom, long ZoomTo, bool Zoomed, string? Agent, bool Tokens);
+public sealed record InspectorRange(long From, long To, long ZoomFrom, long ZoomTo, bool Zoomed, string? Agent,
+    [property: System.Text.Json.Serialization.JsonPropertyName("Tokens")] bool CostAxis)
+{
+    public int? FirstResponse { get; init; }
+    public int? LastResponse { get; init; }
+    public int? ZoomFirstResponse { get; init; }
+    public int? ZoomLastResponse { get; init; }
+}
 
 public sealed record ViewerHandoff(string[] Paths, int Index, string WorkingDirectory, ViewerDocument? Document,
     WindowPlacement Window, ViewerReadingState Reading);

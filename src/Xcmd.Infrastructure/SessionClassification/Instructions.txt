@@ -37,6 +37,10 @@ Keep the actual tracker identity. For example, "point-taken show 49" addresses i
 
 Keep the path, query and fragment of a URL. Resolve computed paths and endpoints only when the evidence supplies their values. Omit unknown ports, placeholders and credentials. Keep a file name that appears as a direct command operand or an actual result of a content search. Do not add every name in a listing or every file inside a named directory.
 
+Write every summary and all other descriptions in English, regardless of the
+transcript language. Keep the original spelling of file names, URLs, and other
+recorded identifiers.
+
 Return a JSON object with a rows array. For every call ID, in order, return
 {"id":123,"summary":"Briefly say what this particular call did.","pairs":[
 {"target":"source","action":"read","objects":["src/example.cs"]}],"resources":[{"kind":"file","value":"src/example.cs"}]}.

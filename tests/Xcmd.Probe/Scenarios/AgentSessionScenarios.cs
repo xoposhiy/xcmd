@@ -1,6 +1,7 @@
 // @tests SharedControls, NavigatePanels, ViewRecentAgentSessions, ResumeAgentSession
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using Xcmd.Core;
 using Xcmd.Desktop.Features.Panels;
 using Xcmd.Infrastructure;
@@ -306,13 +307,23 @@ public static class AgentSessionScenarios
         {
             var left = c.Window.Left;
             var right = c.Window.Right;
+            c.AgentSessions.AddCodexSession("Large transcript", c.LeftPath, DateTimeOffset.UnixEpoch, transcriptBytes: 12_416L * 1024);
+            c.AgentSessions.AddCodexSession("Small transcript", c.LeftPath, DateTimeOffset.UnixEpoch.AddSeconds(-1), transcriptBytes: 37);
             await ChooseAsync(c, Key.F2, "All Agent Sessions");
             Check(right.ShowsAgentSessions && !left.ShowsAgentSessions, "Alt+F2 opens sessions on the right.");
             var table = Table(right);
             Equal(5, table.Columns.Count, "Session metadata columns");
-            Equal($"Main transcript: {1536:N0} bytes", ToolTip.GetTip(Cell(table, 0, FileSizeText.Format(1536))), "Exact transcript size on hover");
+            var size = Cell(table, 0, "2 K");
+            var largeSize = Cell(table, 2, $"{12_416:N0} K");
+            var smallSize = Cell(table, 3, "0 K");
+            var sizeHeading = table.Columns.Select(column => (TextBlock)column.Header!).Single(header => header.Text == "Size");
+            Equal(TextAlignment.Right, sizeHeading.TextAlignment, "The size heading is right aligned");
+            Check(new[] { size, largeSize, smallSize }.All(cell => cell.TextAlignment == TextAlignment.Right), "Transcript sizes are right aligned");
+            Equal($"Main transcript: {1536:N0} bytes", ToolTip.GetTip(size), "Exact transcript size on hover");
             Equal("Transcript size unavailable", ToolTip.GetTip(Cell(table, 1, "—")), "An unknown transcript size stays distinct from zero");
             Check(Cell(table, 0, "Codex").IsVisible, "An unclassified session has no check mark");
+            Equal("Press F3 to inspect the session. Choose Analyze with Luna to classify calls.", ToolTip.GetTip(Cell(table, 0, "Codex")),
+                "The session list explains how to start analysis");
             c.AgentSessions.ClassificationReady = row => row.Id == c.AgentSessions.Codex.Id;
             InputDriver.Deactivate(c.Window);
             await c.UpdateLayoutAsync();

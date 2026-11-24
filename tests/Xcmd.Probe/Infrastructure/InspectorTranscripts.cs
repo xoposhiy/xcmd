@@ -5,7 +5,7 @@ using Xcmd.Infrastructure;
 
 namespace Xcmd.Probe.Infrastructure;
 
-internal sealed class InspectorTranscripts
+internal sealed partial class InspectorTranscripts
 {
     private static readonly DateTimeOffset Epoch = new(2026, 11, 20, 10, 12, 0, TimeSpan.Zero);
     private readonly List<string> lines = [];
@@ -24,6 +24,7 @@ internal sealed class InspectorTranscripts
     internal void Codex()
     {
         var child = Guid.Parse("33333333-1111-4111-8111-333333333333");
+        Event(0, "turn_context", new { model = "codex-fixture" });
         User(0, "Trace the refresh handler");
         Event(1, "event_msg", new { type = "user_message", message = "Trace the refresh handler" });
         Item(2, 3, new { type = "AgentMessage", phase = "commentary", content = new[] { new { text = "Locate the refresh handler" } } });
@@ -66,7 +67,7 @@ internal sealed class InspectorTranscripts
         }
         void Read(string id, int start, int end, int first, int count)
         {
-            Record(start, new { type = "assistant", message = new { content = new[] { new { type = "tool_use", id, name = "Read", input = new { file_path = "src/Panel.cs" } } } } });
+            Record(start, new { type = "assistant", message = new { model = "claude-fixture", content = new[] { new { type = "tool_use", id, name = "Read", input = new { file_path = "src/Panel.cs" } } } } });
             Record(end, new
             {
                 type = "user",

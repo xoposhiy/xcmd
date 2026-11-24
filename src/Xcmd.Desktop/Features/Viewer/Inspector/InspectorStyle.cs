@@ -14,21 +14,26 @@ internal static class InspectorStyle
     internal static readonly IBrush AccentEdge = Brush.Parse("#8774B6");
     internal static readonly IBrush GridLine = Brush.Parse("#303546");
     internal static readonly IBrush Subtle = Brush.Parse("#202433");
-    private static readonly IBrush[] Colors = [Brush.Parse("#87BCE5"), Brush.Parse("#E8B277"), Brush.Parse("#BCA4EF"),
-        Brush.Parse("#84CFB5"), Brush.Parse("#C6D28F"), Brush.Parse("#A5B2C4"), Brush.Parse("#CFA7C2"), Brush.Parse("#BAC0CF"), Brush.Parse("#E797A6")];
-
-    internal static IBrush Color(string target) => target switch
+    internal static readonly IBrush MessageFill = Brush.Parse("#68528E");
+    private static readonly Dictionary<string, (IBrush Base, IBrush Vivid)> TargetColors = new()
     {
-        "source" => Colors[0],
-        "build_release" => Colors[1],
-        "agent_instructions" => Colors[2],
-        "tests" => Colors[3],
-        "docs" => Colors[4],
-        "git" => Colors[5],
-        "tracker" => Colors[6],
-        "project" => Colors[8],
-        _ => Colors[7]
+        ["source"] = (Brush.Parse("#87BCE5"), Brush.Parse("#39C5FF")),
+        ["tests"] = (Brush.Parse("#84CFB5"), Brush.Parse("#23E1A0")),
+        ["docs"] = (Brush.Parse("#C6D28F"), Brush.Parse("#BDDF2D")),
+        ["build_release"] = (Brush.Parse("#E8B277"), Brush.Parse("#FFAD43")),
+        ["agent_instructions"] = (Brush.Parse("#BCA4EF"), Brush.Parse("#CE9BFF")),
+        ["git"] = (Brush.Parse("#C5B587"), Brush.Parse("#E6C76C")),
+        ["tracker"] = (Brush.Parse("#CFA7C2"), Brush.Parse("#FF90DB")),
+        ["project"] = (Brush.Parse("#E797A6"), Brush.Parse("#FF8AA3")),
+        ["unknown"] = (Brush.Parse("#BAC0CF"), Brush.Parse("#DDDDDD"))
     };
+
+    internal static IBrush Color(string target, bool vivid = false)
+    {
+        var pair = TargetColors.TryGetValue(target, out var colors) ? colors : TargetColors["unknown"];
+        return vivid ? pair.Vivid : pair.Base;
+    }
+
     internal static TextBlock Text(string value, double size = 14, IBrush? color = null, bool strong = false) =>
         new TextBlock
         {
@@ -87,4 +92,17 @@ internal static class InspectorStyle
 
     internal static string Time(SessionTrace trace, long ms) => Duration(ms - trace.Start);
     internal static string Number(long n) => n.ToString("N0");
+    internal static string Usd(decimal amount) => "$" + amount.ToString(amount is > 0 and < 0.01m ? "0.00######" : "0.00",
+        System.Globalization.CultureInfo.InvariantCulture);
+
+    internal static string CostDetails(SessionResponse response)
+    {
+        var cost = response.Cost;
+        var rows = new List<string> { response.Title, cost.Usd is { } total ? Usd(total) + " API cost" : cost.Unavailable! };
+        if (!string.IsNullOrEmpty(cost.Model)) rows.Add(cost.Model);
+        rows.AddRange(cost.Parts.Select(part => $"{part.Name} · {Number(part.Tokens)} tokens · {Usd(part.Usd)}"));
+        if (cost.Usage?.Reasoning is { } reasoning) rows.Add($"Reasoning · {Number(reasoning)} tokens included in output");
+        if (cost.Snapshot != null) rows.Add($"Standard global API rates · {cost.Snapshot}");
+        return string.Join("\n", rows);
+    }
 }

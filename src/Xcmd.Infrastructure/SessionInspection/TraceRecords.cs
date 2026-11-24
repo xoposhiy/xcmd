@@ -4,13 +4,19 @@ using Xcmd.Core;
 
 namespace Xcmd.Infrastructure;
 
-internal sealed record PendingTool(string Name, string Input, long Start, string Directory);
+internal sealed record PendingTool(string Name, string Input, long Start, string Directory)
+{
+    internal ResponseKey? Response { get; init; }
+    internal int Order { get; init; }
+}
 
 internal sealed class TraceRecords(string project, bool fileCoverageStudy)
 {
     internal long First { get; private set; } = long.MaxValue;
     internal long Last { get; private set; } = long.MinValue;
     internal List<TraceCall> Calls { get; } = [];
+    internal List<TraceCall> PendingCalls { get; } = [];
+    internal Dictionary<ResponseKey, ResponseRecord> Responses { get; } = [];
     internal List<TraceMarker> Tasks { get; } = [];
     internal List<TraceMarker> Steps { get; } = [];
     internal List<TraceMarker> Progress { get; } = [];
@@ -24,6 +30,7 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
     internal Dictionary<string, ClassificationEvidence> Evidence { get; } = [];
     internal string? ClassificationError { get; set; }
     internal bool HasOutdatedClassifications { get; set; }
+    internal string? Model { get; set; }
 
     internal ClassificationEvidence ForAgent(string name, string stream) => Evidence[name] = new(Project, stream);
 
@@ -35,11 +42,14 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
         if (Skipped > 0) notes.Add($"Skipped {Skipped:N0} unreadable records.");
         if (Unfinished > 0) notes.Add($"Awaiting results for {Unfinished:N0} tool calls.");
         if (MissingAgents > 0) notes.Add($"Local transcripts unavailable for {MissingAgents:N0} linked agents.");
-        return new(First == long.MaxValue ? session.Updated.ToUnixTimeMilliseconds() : First, Last, Calls, Tasks, Steps.Count > 0 ? Steps : Progress,
-            notes.Count == 0 ? null : string.Join(" ", notes), TranscriptPath.IsUnixRoot(Project))
+        return new(First == long.MaxValue ? session.Updated.ToUnixTimeMilliseconds() : First, Last,
+            Calls.Concat(PendingCalls), Tasks, Steps.Count > 0 ? Steps : Progress,
+            TranscriptPath.IsUnixRoot(Project), Responses.Values)
         {
+            Note = notes.Count == 0 ? null : string.Join(" ", notes),
             ClassificationError = ClassificationError,
-            HasOutdatedClassifications = HasOutdatedClassifications
+            HasOutdatedClassifications = HasOutdatedClassifications,
+            Model = Model
         };
     }
 
@@ -50,13 +60,25 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
         if (Progress.LastOrDefault()?.Title != title) Progress.Add(new(title, at));
     }
 
-    internal static TraceCall Call(string agent, PendingTool tool, long end, string command, long characters,
+    internal static TraceCall Call(string agent, PendingTool tool, long end, string command, string output,
         TraceFile[] files, bool failed)
     {
         var title = TraceJson.Caption(command.Length == 0 ? tool.Name : command);
-        return new(agent, title, Math.Min(tool.Start, end), end,
-            Math.Max(1, (tool.Input.Length + characters + 3) / 4), failed ? [] : files, failed,
-            FileEvidence(tool, command));
+        return new(agent, title, Math.Min(tool.Start, end), end, failed ? [] : files, failed,
+            FileEvidence(tool, command))
+        {
+            Input = tool.Input,
+            Output = output,
+            WorkingDirectory = tool.Directory,
+            Response = tool.Response,
+            EmissionOrder = tool.Order
+        };
+    }
+
+    internal void AddPending(string agent, PendingTool tool)
+    {
+        PendingCalls.Add(Call(agent, tool, tool.Start, "", "", [], false) with { Completed = false, Id = tool.Order });
+        Unfinished++;
     }
 
     private static string FileEvidence(PendingTool tool, string command)

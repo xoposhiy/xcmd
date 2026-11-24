@@ -15,31 +15,44 @@ internal sealed partial class SessionTimeline
     private Grip grip;
     private Point pressed;
     private long anchor;
+    private double gripOffset;
     private Bar? keyboardBar;
     private bool dragged;
     internal event Action<string>? EventSelected;
-    internal event Action? RangeMoving;
+    internal event Action<SessionCallBlock>? BlockSelected;
+    internal event Action<ResponseHit>? ResponseSelected;
 
-    private long TimeFor(double x)
+    private long PositionFor(double x)
     {
+        if (CostAxis) return Projection.Nearest(x - Rail);
         var f = Math.Clamp((x - Rail) / PlotWidth, 0, 1);
-        if (f <= 0) return selection.ZoomFrom;
-        if (f >= 1) return selection.ZoomTo;
-        var value = AxisFrom + f * (AxisTo - AxisFrom);
-        return Tokens ? Math.Clamp(Trace.TimeAtTokens(value), selection.ZoomFrom, selection.ZoomTo) : (long)Math.Round(value);
+        return selection.ZoomFrom + (long)Math.Round(f * (selection.ZoomTo - selection.ZoomFrom));
+    }
+
+    private (long From, long To) Range => CostAxis ? (selection.FirstResponse, selection.LastResponse) : (selection.From, selection.To);
+    private long ZoomStart => CostAxis ? selection.ZoomFirstResponse : selection.ZoomFrom;
+    private long ZoomEnd => CostAxis ? selection.ZoomLastResponse : selection.ZoomTo;
+    private void SelectRange(long from, long to)
+    {
+        if (CostAxis) selection.SelectResponses((int)from, (int)to);
+        else selection.Select(from, to);
     }
 
     private Bar? Hit(Point p)
     {
-        var lane = (int)(p.Y / Row);
+        var lane = LaneAt(p.Y);
         if (p.X < Rail) return null;
+        Bar? nearby = null;
         for (var i = bars.Count - 1; i >= 0; i--)
         {
             var bar = bars[i];
             if (bar.Lane != lane || !VisibleBar(bar)) continue;
-            if (BarBounds(bar).Inflate(new Thickness(1, 5)).Contains(p)) return bar;
+            var rect = BarBounds(bar);
+            if (rect.Contains(p)) return bar;
+            if (nearby == null && p.X >= rect.Left - 1 && p.X <= rect.Right + 1 && p.Y >= rect.Top && p.Y <= rect.Bottom)
+                nearby = bar;
         }
-        return null;
+        return nearby;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -47,18 +60,20 @@ internal sealed partial class SessionTimeline
         base.OnPointerPressed(e);
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.KeyModifiers.HasFlag(KeyModifiers.Alt)) return;
         var p = e.GetPosition(this);
-        if (p.X < Rail)
+        var handle = startHandle.Bounds.Contains(p) ? startHandle : endHandle.Bounds.Contains(p) ? endHandle : null;
+        if (handle == null && p.X < Rail)
         {
-            var index = (int)(p.Y / Row) - 3;
-            if (index >= 0 && index < Trace.Agents.Count) filter(selection.Agent == Trace.Agents[index] ? null : Trace.Agents[index]);
+            if (TrackAt(LaneAt(p.Y)) is { } track) filter(selection.Agent == track.Agent ? null : track.Agent);
             return;
         }
-        Focus();
+        if (handle != null) handle.Focus(); else Focus();
         e.Pointer.Capture(this);
         pressed = p;
         dragged = false;
-        anchor = TimeFor(p.X);
-        grip = Math.Abs(p.X - At(selection.From)) <= 5 ? Grip.Start : Math.Abs(p.X - At(selection.To)) <= 5 ? Grip.End : Grip.New;
+        anchor = PositionFor(p.X);
+        grip = handle == startHandle ? Grip.Start : handle == endHandle ? Grip.End :
+            Math.Abs(p.X - RangeX(true)) <= 5 ? Grip.Start : Math.Abs(p.X - RangeX(false)) <= 5 ? Grip.End : Grip.New;
+        gripOffset = handle == null ? 0 : p.X - RangeX(grip == Grip.Start);
         e.Handled = true;
     }
 
@@ -69,30 +84,37 @@ internal sealed partial class SessionTimeline
         if (grip == Grip.None)
         {
             var hit = Hit(p);
-            var tip = hit is { } b ? $"{b.Title}\n{Time(Trace, b.Start)} – {Time(Trace, b.End)}" : null;
+            focus.Hover(hit?.Response);
+            var tip = hit is { } b ? BarTip(b) : null;
             if (!Equals(ToolTip.GetTip(this), tip)) ToolTip.SetTip(this, tip);
             return;
         }
         dragged |= Math.Abs(p.X - pressed.X) > 3;
-        if (dragged) MoveGrip(TimeFor(p.X));
+        if (dragged) MoveGrip(PositionFor(p.X - gripOffset));
     }
 
-    private void MoveGrip(long time)
+    protected override void OnPointerExited(PointerEventArgs e)
     {
-        if (grip == Grip.Start) selection.Select(Math.Min(time, selection.To), selection.To);
-        else if (grip == Grip.End) selection.Select(selection.From, Math.Max(time, selection.From));
-        else selection.Select(anchor, time);
-        RangeMoving?.Invoke();
-        InvalidateVisual();
+        base.OnPointerExited(e);
+        if (focus.Hovered != null) focus.Hover(null);
+    }
+
+    private void MoveGrip(long position)
+    {
+        var range = Range;
+        if (grip == Grip.Start) SelectRange(Math.Min(position, range.To), range.To);
+        else if (grip == Grip.End) SelectRange(range.From, Math.Max(position, range.From));
+        else SelectRange(anchor, position);
+        if (range != Range) changed();
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
         if (grip == Grip.None) return;
-        if (dragged) { MoveGrip(TimeFor(e.GetPosition(this).X)); changed(); }
+        if (dragged) MoveGrip(PositionFor(e.GetPosition(this).X - gripOffset));
         else if (Hit(pressed) is { } hit) Choose(hit);
-        else if (grip == Grip.New) { selection.Select(selection.ZoomFrom, anchor); changed(); }
+        else if (grip == Grip.New) { SelectRange(ZoomStart, anchor); changed(); }
         grip = Grip.None;
         e.Pointer.Capture(null);
         e.Handled = true;
@@ -101,7 +123,6 @@ internal sealed partial class SessionTimeline
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
-        if (grip != Grip.None && dragged) changed();
         grip = Grip.None;
     }
 
@@ -109,11 +130,18 @@ internal sealed partial class SessionTimeline
     {
         keyboardBar = bar;
         Announce(bar);
-        var from = Tokens && bar.Agent != null ? Trace.TimeAtTokens(bar.TokenStart) : bar.Start;
-        if (from == bar.End && from > Trace.Start) from--;
-        selection.Select(from, bar.End);
+        if (bar.Response != null)
+        {
+            ResponseSelected?.Invoke(FocusFor(bar));
+            EventSelected?.Invoke(bar.Title);
+            return;
+        }
+        var from = bar.Start;
+        if (!CostAxis && from == bar.End && from > Trace.Start) from--;
+        SelectRange(Math.Max(ZoomStart, from), Math.Min(ZoomEnd, bar.End));
         changed();
         EventSelected?.Invoke(bar.Title);
+        if (bar.Block != null) BlockSelected?.Invoke(bar.Block);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -129,12 +157,12 @@ internal sealed partial class SessionTimeline
             var i = Math.Max(0, Array.FindIndex(lanes, g => g.Key == keyboardBar?.Lane));
             if (e.Key == Key.Up) i = Math.Max(0, i - 1);
             if (e.Key == Key.Down) i = Math.Min(lanes.Length - 1, i + 1);
-            var row = lanes[i].ToArray();
+            var row = lanes[i].OrderBy(bar => bar.Start).ThenBy(bar => bar.Offset).ToArray();
             var index = Array.FindIndex(row, b => b == keyboardBar);
             index = e.Key switch { Key.End => row.Length - 1, Key.Home => 0, Key.Left => index - 1, Key.Right => index + 1, _ => index };
             keyboardBar = row[Math.Clamp(index, 0, row.Length - 1)];
-            Announce(keyboardBar.Value);
-            EventSelected?.Invoke(keyboardBar.Value.Title + "  ·  Enter to select");
+            Announce(keyboardBar);
+            EventSelected?.Invoke(keyboardBar.Title + "  ·  Enter to select");
             InvalidateVisual();
         }
         else return;
@@ -144,6 +172,17 @@ internal sealed partial class SessionTimeline
     private void Announce(Bar bar)
     {
         var label = bar.Agent ?? (bar.Lane == 1 ? "Task" : "Work phase");
-        AutomationProperties.SetName(this, $"{label}: {bar.Title}. {Time(Trace, bar.Start)} to {Time(Trace, bar.End)}.");
+        AutomationProperties.SetName(this, $"{label}: {BarTip(bar)}");
     }
+
+    private string BarTip(Bar bar)
+    {
+        var details = bar.Response is { } response ? CostDetails(response) : $"{bar.Title}\n{BarRange(bar)}";
+        if (bar.Categories is not { Length: > 0 } categories) return bar.Block == null ? details : "Unclassified\n" + details;
+        return string.Join("\n", categories.Select(category => $"{TimelineCaption.Describe(category)}\n{string.Join(", ", category.Actions)}"))
+            + "\n" + details;
+    }
+
+    private string BarRange(Bar bar) => CostAxis ? $"{Usd(Trace.CostAxis.At((int)bar.Start).Usd)} – {Usd(Trace.CostAxis.At((int)bar.End).Usd)}" :
+        $"{Time(Trace, bar.Start)} – {Time(Trace, bar.End)}";
 }

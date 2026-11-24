@@ -148,7 +148,9 @@ public static class SessionInspectorScenarios
             var probe = new InspectorProbe(c);
             await probe.Ready("Session timeline");
             await probe.Screenshot("classified-overview");
-            await probe.Click("View tool calls  ›");
+            Check(!probe.HasText("View tool calls") && !probe.HasText("Analyze with Luna"), "A fully cached session opens with the analyzed overview");
+            await probe.Click("Time");
+            await probe.OpenTimelineCall(0.15);
             Check(probe.HasText("Read and updated component 3.") && probe.HasText("settings.cs, defaults.cs"), "The call shows its summary and merged concrete objects");
             probe.Window.Width = 650;
             probe.Window.Height = 650;
@@ -179,6 +181,8 @@ public static class SessionInspectorScenarios
             await c.KeyAsync(Key.F3);
             var probe = new InspectorProbe(c);
             await probe.Ready("Touched resources");
+            Check(!probe.HasText("tracker#49"), "Issue rows start hidden");
+            await probe.ToggleKind("Issues");
             await probe.ChooseResource("tracker#49");
             await probe.Ready("Resource details");
             Check(probe.HasText("Read and updated component 3."), "Open an issue to see the calls that touched it");
@@ -187,33 +191,68 @@ public static class SessionInspectorScenarios
             await probe.Key(Key.Escape);
             await probe.Key(Key.Escape);
         }),
-        new("session-inspector-manual-analysis", "Open the local timeline and explicitly classify missing results", async c =>
+        new("session-inspector-manual-analysis", "Inspect recorded calls locally and explicitly analyze only missing results", async c =>
         {
             using var fixture = new ClassificationFixture(c);
             fixture.Write(3);
             await ChooseAsync(c, Key.F2, "Codex");
-            await c.KeyAsync(Key.F3);
             var probe = new InspectorProbe(c);
+            await c.KeyAsync(Key.F3);
             await probe.Ready("Analyze with Luna");
-            Check(probe.HasText("Session timeline") && fixture.Packets.Length == 0,
-                "An uncached session opens without a Luna request");
+            Equal(0, fixture.Packets.Length, "Opening an uncached session sends no Luna requests");
+            Check(!probe.HasText("Touched resources") && probe.HasText("Started"), "The session information appears before analysis");
+            await probe.Screenshot("local-overview");
+            await probe.Click("Time");
+            await probe.OpenTimelineCall(0.15);
+            Check(probe.HasText("read component-1.cs") && probe.HasText("Output") && probe.HasText("done"), "An unclassified call opens its recorded input and output");
+            await probe.CheckCallCopy();
+            await probe.Key(Key.Escape);
+            fixture.Offline = true;
             await probe.Click("Analyze with Luna");
-            await WorkspaceProbe.WaitAsync(() => !probe.HasText("Analyze with Luna"));
-            Equal("3,4,5", string.Join(',', fixture.Packets.Single()), "The action classifies the missing calls");
+            await probe.Ready("Retry analysis");
+            Check(probe.HasText("Session timeline"), "A failed analysis leaves the local timeline available");
+            fixture.Offline = false;
+            await probe.Click("Retry analysis");
+            await probe.Ready("Touched resources");
+            Equal(1, fixture.Packets.Length, "Only an explicit request analyzes the three calls");
+            probe.CheckRangeCalls(1);
+            Check(probe.AxisSelected("Time"), "The analyzed overview keeps the selected axis");
+            await probe.Key(Key.Escape);
+            fixture.Append(4);
+            fixture.Reset();
+            await c.KeyAsync(Key.F3);
+            await probe.Ready("Analyze with Luna");
+            Check(probe.HasText("Component03.cs") && !probe.HasText("Component06.cs"), "A partial cache opens with its saved resources");
+            Equal(0, fixture.Packets.Length, "The appended call waits for the user to start analysis");
+            await probe.Click("Analyze with Luna");
+            await probe.Ready("Component06.cs");
+            Equal(6, fixture.Packets.Single().Single(), "The refresh sends only the appended call");
             await probe.Key(Key.Escape);
         }),
-        new("session-inspector-activity-order", "Rank activities by estimated tokens in the selected range", async c =>
+        new("session-inspector-activity-order", "Rank activities by API cost in the selected range", async c =>
         {
             c.AgentSessions.UseActivityBreakdownTrace();
             await ChooseAsync(c, Key.F2, "Codex");
             await c.KeyAsync(Key.F3);
             var probe = new InspectorProbe(c);
             await probe.Ready("Activity breakdown");
-            Check(probe.ActivityRowTop("source/read") < probe.ActivityRowTop("tests/exec"), "Two reads with 950 tokens rank above three longer test runs with 900 tokens");
+            Check(probe.CombineActionsOption.IsChecked == true, "The inspector combines actions by target by default");
+            Check(probe.ActivityRowTop("source") < probe.ActivityRowTop("tests"), "Source ranks first by API cost");
+            probe.CheckActivityNumbers("source", "$107.85", "2");
             await probe.Click("Time");
-            Check(probe.ActivityRowTop("source/read") < probe.ActivityRowTop("tests/exec"), "The time axis keeps the token order");
+            Check(probe.ActivityRowTop("source") < probe.ActivityRowTop("tests"), "The time axis keeps the cost order");
+            await probe.SortActivities("Tool time");
+            Check(probe.ActivityRowTop("tests") < probe.ActivityRowTop("source"), "Nine seconds of test time rank first");
+            await probe.SortActivities("Tool calls");
+            Check(probe.ActivityRowTop("tests") < probe.ActivityRowTop("source"), "Three test calls rank above two source calls");
+            await probe.SortActivities("Tool calls");
+            Check(probe.ActivityRowTop("source") < probe.ActivityRowTop("tests"), "Selecting Calls again puts the smallest count first");
+            await probe.Screenshot("activity-by-target");
+            await probe.SortActivities("API cost");
+            await probe.CombineActions();
+            Check(probe.ActivityRowTop("source/read") < probe.ActivityRowTop("tests/exec"), "Clearing the checkbox shows actions separately");
             await probe.DragRange(0.05, 0.80);
-            Check(probe.ActivityRowTop("tests/exec") < probe.ActivityRowTop("source/read"), "Test runs lead with 600 tokens over 450 in the selected range");
+            Check(probe.ActivityRowTop("tests/exec") < probe.ActivityRowTop("source/read"), "Test runs lead with $0.60 over $0.225 in the selected range");
             await probe.Key(Key.Escape);
         }),
         new("session-inspector-codex", "Archived child calls and nested commands contribute once to the selected range", async c =>
@@ -222,6 +261,8 @@ public static class SessionInspectorScenarios
             fixture.Codex();
             var trace = await fixture.Reader.ReadAsync(fixture.Session, default);
             Equal(10, trace.Calls.Count, "The outer execution request does not duplicate the command");
+            var nested = trace.Calls.Single(call => call.Title == "dotnet test");
+            Equal("Run the panel scenarios", trace.ResponseFor(nested)?.Record.Message, "The inner command uses the enclosing response");
             Equal(3, trace.Tasks.Count, "User requests appear as tasks");
             Equal("Locate the refresh handler", trace.Phases[0].Title, "The agent's progress explains its work");
             Equal(2, trace.Agents.Count, "Linked child in archived sessions");
@@ -235,7 +276,7 @@ public static class SessionInspectorScenarios
             Equal(2, selection.Summarize().Results.Count, "Filter limits results to the chosen agent");
             selection.ToggleZoom();
             Check(selection.Zoomed, "Zoom to the selected time span");
-            Equal(trace.TotalTokens, trace.TokensAt(trace.End), "The token axis ends at the sum of tool tokens");
+            Equal(0m, trace.TotalCost, "A transcript without usage adds no cost");
         }),
         new("session-inspector-claude", "Claude records retain agent scope and completion boundaries", async c =>
         {
@@ -243,6 +284,7 @@ public static class SessionInspectorScenarios
             fixture.Claude(c.AgentSessions.Claude);
             var trace = await fixture.Reader.ReadAsync(c.AgentSessions.Claude, default);
             Equal(3, trace.Calls.Count, "Two main calls and one child call completed");
+            Equal("claude-fixture", trace.Model, "The trace contains the recorded model");
             Check(trace.Note?.Contains("unreadable") == true && trace.Note.Contains("Awaiting"), "Partial records are reported");
             var selection = new SessionSelection(trace) { Agent = SessionTrace.MainAgent };
             Equal(0, selection.Summarize().Resources.Count, "A literal Read call cannot supply resources without a classification");
@@ -258,11 +300,19 @@ public static class SessionInspectorScenarios
             await c.KeyAsync(Key.F3);
             await probe.Ready("Session timeline");
             Check(probe.HasText(fixture.Session.DisplayTopic), "The selected session's topic is visible");
-            Check(probe.Find<Button>(b => Equals(b.Content, "Est. tokens")).Classes.Contains("primary"), "The timeline opens on estimated tokens");
+            Check(probe.HasText("codex-fixture") && !probe.HasText("outside tools"), "The top information panel shows the recorded model");
+            Check(probe.AxisSelected("API cost"), "The timeline opens on API cost even without usage");
             await probe.Screenshot("session-overview");
+            var sessionCalls = probe.MetricValue("Tool calls");
+            var sessionCost = probe.MetricValue("API cost");
+            var sessionDuration = probe.MetricValue("Duration");
             await probe.Click("Time");
+            Check(probe.AxisSelected("Time") && !probe.AxisSelected("API cost"), "The Time link selects the time axis");
             await probe.DragRange(0.05, 0.07);
-            Check(probe.HasText("No tool calls finished"), "An interval inside a running tool explains the empty call list");
+            probe.CheckRangeCalls(0);
+            Equal(sessionCalls, probe.MetricValue("Tool calls"), "Selecting a range keeps the session's call count");
+            Equal(sessionCost, probe.MetricValue("API cost"), "Selecting a range keeps the session's API cost total");
+            Equal(sessionDuration, probe.MetricValue("Duration"), "Selecting a range keeps the session's duration");
             probe.FocusTimeline();
             await probe.Key(Key.Home);
             await probe.DragRange(0.45, 0.78);
@@ -270,19 +320,21 @@ public static class SessionInspectorScenarios
             probe.FocusTimeline();
             await probe.Key(Key.Enter);
             Check(probe.Find<Button>(b => Equals(b.Content, "Reset zoom")).IsEnabled, "Enter keeps the zoom when the keyboard event is outside the range");
-            await probe.Click("Est. tokens");
+            await probe.Click("API cost");
             await probe.Screenshot("session-range");
             await probe.Click("Reset zoom");
             await probe.Click("Full session");
-            await probe.CheckTokenSteps();
+            await probe.CheckCostSteps();
             await probe.Click("Full session");
-            Check(probe.HasText("Resource lists unavailable"), "An unclassified trace keeps the resource state explicit");
+            Check(probe.HasText("Analyze with Luna") && !probe.HasText("Touched resources"), "The inspector offers analysis below the local timeline");
             var scope = probe.Find<ComboBox>(_ => true);
             scope.Focus();
             await probe.Key(Key.Down);
             await probe.Key(Key.Down);
             Check(Equals(scope.SelectedItem, "Test runner"), "The agent filter works from the keyboard");
-            await probe.Click("View tool calls  ›");
+            Equal(sessionCalls, probe.MetricValue("Tool calls"), "Filtering an agent keeps the session's call count");
+            await probe.Click("Time");
+            await probe.OpenTimelineCall(0.60, track: 1);
             Check(probe.HasText("dotnet test"), "Calls include the agent's actual command");
             await probe.Key(Key.Escape);
             probe.Window.Width = 650;
@@ -296,6 +348,153 @@ public static class SessionInspectorScenarios
             await probe.Key(Key.Escape);
             Check(c.Window.SessionInspector == null && Equals(fixture.Session, Table(c.Window.Right).SelectedItem), "Escape returns to the selected session");
             Equal(0, c.Launcher.Requests.Count, "Inspecting never resumes the agent");
+        }),
+        new("session-inspector-api-cost-codex", "Price each Codex response once at its model's snapshot rate", async c =>
+        {
+            var fixture = new InspectorTranscripts(c);
+            fixture.CodexCost();
+            var trace = await fixture.Reader.ReadAsync(fixture.Session, default);
+            Equal(5, trace.Responses.Count, "Each thread has its own response IDs and repeated usage adds no interval");
+            Equal(1.045m, trace.TotalCost, "The session counts the long-context response, child response and final answer");
+            var first = trace.Responses[0];
+            Equal(0.955m, first.Cost.Usd, "Long context applies to uncached input, cache reads and writes, and output");
+            Equal(800L, first.Cost.Usage?.Reasoning, "Reasoning is included in output");
+            Equal("Get-Content src/Main.cs,dotnet test", string.Join(',', first.Calls.Select(call => call.Title)),
+                "The response uses emission order even when results arrive in reverse order");
+            Check(first.Calls[0].Start < first.Calls[1].Start && first.Calls[0].End > first.Calls[1].End,
+                "The tool calls retain their recorded parallel intervals");
+            Equal("Usage unavailable", trace.Responses[2].Cost.Unavailable, "A missing response stays between priced responses");
+            Check(!trace.Responses[^1].Calls.Single().Completed, "A response shows a tool call while it waits for a result");
+        }),
+        new("session-inspector-api-cost-legacy", "Use per-response Codex totals from older transcripts", async c =>
+        {
+            var fixture = new InspectorTranscripts(c);
+            fixture.LegacyCodexCost();
+            var trace = await fixture.Reader.ReadAsync(fixture.Session, default);
+            Equal(2, trace.Responses.Count, "Repeated token count events do not add responses");
+            Equal(0.08m, trace.TotalCost, "Older usage uses the dated model alias and one charge for each answer");
+            Equal(1, trace.Responses[0].Calls.Count, "Usage written after a result is associated with its call");
+            Equal(0, trace.Responses[1].Calls.Count, "The final message has its own charge");
+        }),
+        new("session-inspector-api-cost-claude", "Price Claude messages once with cache duration and context rates", async c =>
+        {
+            var fixture = new InspectorTranscripts(c);
+            fixture.ClaudeCost(c.AgentSessions.Claude);
+            var trace = await fixture.Reader.ReadAsync(c.AgentSessions.Claude, default);
+            Equal(4, trace.Responses.Count, "Content records for the same message share one charge");
+            Equal(0.03575m, trace.TotalCost, "Only the priced message contributes and Fast mode uses standard rates");
+            Equal(2, trace.Responses[0].Calls.Count, "Both Claude tool calls belong to the same message");
+            Equal(1000L, trace.Responses[0].Cost.Usage?.Reasoning, "Thinking is part of the recorded output");
+            Equal("No API rates for claude-unknown", trace.Responses[1].Cost.Unavailable, "The tooltip can explain an unknown model");
+            Equal("Usage unavailable", trace.Responses[2].Cost.Unavailable, "The tooltip can explain a missing usage record");
+            Equal("Cache write duration unavailable", trace.Responses[3].Cost.Unavailable, "An unknown cache rate leaves the charge unavailable");
+        }),
+        new("session-inspector-api-cost", "Use one whole response interval across tracks and resource rows", async c =>
+        {
+            var trace = SessionTimelineFixture.Use(c.AgentSessions);
+            var selection = new SessionSelection(trace);
+            selection.SetAxis(true);
+            Equal(0.16m, trace.TotalCost, "The whole session counts every priced response once, including two messages");
+            Equal(0.16m, selection.Summarize().Cost, "The full range matches the session total");
+            selection.SelectResponses(0, 2);
+            var grouped = selection.Summarize(true);
+            Equal(0.10m, grouped.Cost, "Two adjacent responses count once each");
+            Equal(0.05m, grouped.Activities.Single(row => row.Target == "source").Cost, "Source includes two equal call shares and half of the mixed call");
+            Equal(0.05m, grouped.Activities.Single(row => row.Target == "tests").Cost, "Tests includes the matching shares only");
+            Equal(grouped.Activities.Sum(row => row.Cost), selection.Summarize().Activities.Sum(row => row.Cost),
+                "Grouping actions preserves the sum");
+            Equal("1,2,3", string.Join(',', trace.Responses[0].Calls.Select(call => call.Id)), "Calls retain emission order");
+
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Session timeline");
+            probe.CheckTimelineHeader();
+            await probe.CheckAxisLinkFeedback();
+            Equal("$0.16", probe.MetricValue("API cost"), "Messages contribute to the whole-session total");
+            var first = await probe.TimelineTip(0.08, 0);
+            var second = await probe.TimelineTip(0.28, 0);
+            var tests = await probe.TimelineTip(0.28, 1);
+            Check(first?.Contains("src/main.cs") == true && second?.Contains("src/other.cs") == true &&
+                new[] { first, second, tests }.All(tip => tip?.Contains("$0.06 API cost") == true),
+                "Both equal-width Source segments and the Tests segment select the first response");
+            Check(first?.Contains("2026-11-24") == true && first.Contains("Reasoning"), "The tooltip shows the rate date and reasoning tokens");
+            await SessionTimelineFixture.CheckJoinedHoverAsync(c, probe);
+            await probe.OpenTimelineCall(0.28, 0);
+            Check(probe.HasText("Model response") && probe.HasText("Edit the other file") && probe.HasText("Run the tests"),
+                "Selecting Source shows calls from all tracks");
+            await probe.Key(Key.Escape);
+
+            var resource = await probe.ResourceInterval("src/other.cs", 0.30, click: true);
+            Check(resource?.Contains("$0.06 API cost") == true && probe.HasText("Model response") &&
+                probe.HasText("src/other.cs") && probe.HasText("Run the tests"), "Selecting a resource interval opens the same response");
+            await probe.Key(Key.Escape);
+
+            await probe.DragHandle("Range end", 0.38, () => probe.CheckRangeCalls(3));
+            probe.CheckActivityNumbers("source", "$0.04", "2");
+            await probe.Click("Full session");
+            await probe.OpenTimelineCall(0.81, 2);
+            Check(probe.HasText("Results are ready"), "A response without calls opens its message and cost");
+            await probe.Key(Key.Escape);
+
+            Check((await probe.TimelineTip(0.997, 0))?.Contains("Usage unavailable") == true, "An unknown cost has its own interval and reason");
+            probe.Window.Width = 580;
+            probe.Window.SetScaleForTest(1.5);
+            await probe.Screenshot("session-api-cost-narrow");
+            await probe.Click("Time");
+            Check((await probe.TimelineTip(0.14, 0, 3))?.Contains("Read the main file") == true &&
+                (await probe.TimelineTip(0.14, 0, 13))?.Contains("Edit the other file") == true,
+                "Overlapping calls on one Time track keep both recorded intervals");
+        }),
+        new("session-inspector-release-activity", "Distinguish Git writes, builds and tests in one release call", async c =>
+        {
+            SessionTimelineFixture.UseReleaseTrace(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Session timeline");
+            await CheckReleaseAsync("release-activity-cost");
+            probe.Window.Width = 580;
+            probe.Window.SetScaleForTest(1.5);
+            await probe.Click("Time");
+            await CheckReleaseAsync("release-activity-time");
+            await probe.OpenTimelineCall(0.37, track: 0);
+            Check(probe.HasText("Committed changes and ran release checks."), "The build block opens the compound call");
+
+            async Task CheckReleaseAsync(string screenshot)
+            {
+                Check((await probe.TimelineTip(0.25, 0))?.StartsWith("Git:\nRepository: mdview\nwrite, read", StringComparison.Ordinal) == true,
+                    "The Git write names its repository");
+                Check((await probe.TimelineTip(0.37, 0))?.Contains("Build:\nscripts/release.ps1\nexec", StringComparison.Ordinal) == true
+                    && (await probe.TimelineTip(0.25, 1))?.StartsWith("Tests:\nscripts/release.ps1\nexec", StringComparison.Ordinal) == true,
+                    "The same script is shown under both of its observed operations");
+                await SessionTimelineFixture.CheckReleaseColorsAsync(c, probe, screenshot);
+            }
+        }),
+        new("session-inspector-range-handles", "Refresh the range panels while either timeline handle is held", async c =>
+        {
+            using var fixture = new ClassificationFixture(c);
+            fixture.Write(3);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Analyze with Luna");
+            await probe.Click("Analyze with Luna");
+            await probe.Ready("Component05.cs");
+            await probe.Click("Time");
+            await probe.DragHandle("Range end", 0.67, () =>
+            {
+                probe.CheckRangeCalls(2);
+                Equal("2", probe.ActivityCalls("source"), "The activity table counts the first two reads");
+                Check(probe.HasText("Component04.cs") && !probe.HasText("Component05.cs"), "The resource list omits the last call's file");
+            });
+            await probe.DragHandle("Range start", 0.55, () =>
+            {
+                probe.CheckRangeCalls(1);
+                Equal("1", probe.ActivityCalls("source"), "The activity table counts the remaining read");
+                Check(probe.HasText("Component04.cs") && !probe.HasText("Component03.cs"), "The remaining file belongs to the middle call");
+            });
+            await probe.Key(Key.Escape);
         }),
         new("session-inspector-modeless", "Browse sessions and open independent inspectors while another session stays open", async c =>
         {
@@ -331,8 +530,8 @@ public static class SessionInspectorScenarios
             await probe.Ready("Cannot read this session");
             fixture.EmptyClaude(c.AgentSessions.Claude);
             await probe.Click("Read again");
-            await probe.Ready("No completed tool calls");
-            Check(probe.Find<Button>(b => Equals(b.Content, "Time")).Classes.Contains("primary"), "A session without token estimates opens on time");
+            await probe.Ready("No model responses");
+            Check(probe.AxisSelected("API cost"), "An empty session opens on API cost");
             await probe.Key(Key.Escape);
             Check(c.Window.SessionInspector == null, "A session without events can close normally");
         }),
@@ -348,27 +547,132 @@ public static class SessionInspectorScenarios
             await c.KeyAsync(Key.Down);
             Equal(c.AgentSessions.Claude, Table(c.Window.Left).SelectedItem, "Keyboard navigation resumes in the source panel");
         }),
-        new("session-inspector-resource-navigation", "Open a resource from a long list and return to the same catalogue", async c =>
+        new("session-inspector-resource-navigation", "Filter and collapse the inline tree and open a file beyond the first screen", async c =>
         {
             using var fixture = new ClassificationFixture(c);
             fixture.Write(35);
             await ChooseAsync(c, Key.F2, "Codex");
             await c.KeyAsync(Key.F3);
             var probe = new InspectorProbe(c);
-            await probe.Ready("Touched resources");
             await probe.Ready("Analyze with Luna");
             await probe.Click("Analyze with Luna");
-            await probe.Ready("Browse all 40 resources");
+            await probe.Ready("Touched resources");
+            Check(probe.HasText("35 of 40") && !probe.HasText("tracker#49"), "Only the 35 files appear by default");
+            await probe.CheckTableLayout(1120, sideBySide: true);
+            await probe.ToggleGroup("Collapse src");
+            Check(!probe.VisibleText("Component37.cs"), "Collapsing the directory hides its files");
+            await probe.ToggleKind("URLs");
+            Check(probe.HasText("example.test") && !probe.VisibleText("Component37.cs"), "Adding URLs keeps the directory collapsed");
+            await probe.ToggleKind("Directories");
+            await probe.ChooseResource("src");
+            Check(probe.HasText("Resource details") && probe.HasText("directory"), "A collapsed directory opens its own calls");
+            await probe.Key(Key.Escape);
+            await probe.ToggleKind("Directories");
+            await probe.ToggleGroup("Expand src");
             await probe.Screenshot("touched-resources");
+            probe.Window.Height = 650;
+            probe.Window.SetScaleForTest(1.5);
+            await probe.CheckTableLayout(650, sideBySide: false);
+            await probe.ChooseResource("src/Component37.cs");
+            Check(probe.HasText("Resource details") && probe.HasText("Read and updated component 37."), "The last file opens its recorded call");
+            await probe.Key(Key.Escape);
+            Check(probe.HasText("36 of 40") && probe.VisibleText("Component37.cs"), "Escape returns to the filtered overview");
+            await probe.ToggleKind("Files");
+            Check(!probe.HasText("Component37.cs") && probe.HasText("example.test"), "Files can be hidden independently");
+            await probe.ToggleKind("URLs");
+            Check(probe.HasText("No resources match the selected filters"), "An empty filter has a visible explanation");
+            await probe.CheckTableLayout(1120, sideBySide: true);
+            await probe.Key(Key.Escape);
+        }),
+        new("session-inspector-resource-order", "Order files and folders by their first matching file access", async c =>
+        {
+            ResourceTimelineProbe.UseOrderingTrace(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("z-last.cs");
+            await probe.ToggleKind("Directories");
+            double First() => probe.ResourceRowTop("zeta/nested/z-last.cs");
+            double Next() => probe.ResourceRowTop("zeta/nested/a-next.cs");
+            double Other() => probe.ResourceRowTop("alpha/middle.cs");
+            Check(First() < Next(), "A file whose access started first appears before a file that finished first");
+            Check(Next() < Other(), "A folder follows its earliest nested file access even if another folder itself was accessed earlier");
+            await probe.Click("Time");
+            Check(First() < Next() && Next() < Other(), "Changing the timeline axis preserves access order");
+            await probe.FilterResources("action", "Write");
+            Check(Other() < Next() && Next() < First(), "The action filter reorders both folders and files by their first matching access");
+            await probe.Key(Key.Escape);
+        }),
+        new("session-inspector-resource-timeline", "Show each resource's classified target and the time of each action", async c =>
+        {
+            ResourceTimelineProbe.UseTrace(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("project-guide.md");
+            await probe.ToggleGroup("Collapse docs/d/e");
+            Check(!probe.HasText("project-guide.md") && probe.HasText("main.cs"), "The compact directory chain collapses as one branch");
+            await probe.ToggleGroup("Expand docs/d/e");
+            await probe.ToggleKind("Directories");
+            ResourceTimelineProbe.CheckRowSpacing(probe);
+            await probe.ChooseResource("docs/d");
+            Check(probe.HasText("Resource details") && probe.HasText("docs/d"), "A touched directory inside the chain opens its own details");
+            await probe.Key(Key.Escape);
+            await probe.ToggleKind("Directories");
+            await ResourceTimelineProbe.CheckColumnWidthsAsync(c, probe);
+            await ResourceTimelineProbe.CheckColorsAsync(c, probe);
+            await probe.FilterResources("target", "Source");
+            await probe.FilterResources("action", "Read");
+            Check(probe.VisibleText("main.cs") && !probe.HasText("project-guide.md"), "Only source reads appear in the file tree");
+            await probe.FilterResources("action", "Write");
+            Check(probe.HasText("No resources match the selected filters"), "A document edit in a compound call does not count as a source edit");
+            await probe.FilterResources("target");
+            await probe.ChooseResource("src/main.cs");
+            Check(probe.HasText("file   ·   1"), "The source file shows only its matching Other call with the Write filter");
+            await probe.Key(Key.Escape);
+            await probe.FilterResources("action", "Execute");
+            await probe.ChooseResource("src/main.cs");
+            Check(probe.HasText("file   ·   3"), "The Execute filter includes both runs and the Other call");
+            await probe.Key(Key.Escape);
+            await probe.Key(Key.Escape);
+        }),
+        new("session-inspector-resource-filters", "Select multiple types, targets and actions without reopening their menus", async c =>
+        {
+            ResourceTimelineProbe.UseTrace(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("main.cs");
+            await probe.OpenResourceFilter("type");
+            Check(probe.ResourceFilterChoice("Files").IsChecked == true, "The type filter starts with Files selected");
+            await probe.ToggleResourceOption("Directories");
+            await probe.ToggleResourceOption("URLs");
+            Check(probe.HasText("example.test") && probe.ResourceFilterChoice("Directories").IsChecked == true,
+                "Two type changes take effect without closing the menu");
+            await probe.CloseResourceFilter();
+            Check(probe.ResourceFilterButton("type").IsFocused, "Closing the menu restores focus to the filter button");
+            await probe.FilterResources("target", "Source", "Docs");
+            await probe.FilterResources("action", "Read", "Write");
+            Check(probe.HasText("main.cs") && probe.HasText("project-guide.md") && !probe.HasText("example.test"),
+                "Both targets and both actions match while the execute-only URL is hidden");
             probe.Window.Width = 650;
             probe.Window.Height = 650;
             probe.Window.SetScaleForTest(1.5);
-            await probe.OpenAllResources("Browse all 40 resources  ›");
-            await probe.ChooseResource("src/Component12.cs");
-            Check(probe.HasText("Resource details") && probe.HasText("Read and updated component 12."), "The selected file opens its recorded call");
-            await probe.Key(Key.Escape);
-            Check(probe.HasText("Resources in the selected range"), "Escape returns to the full list");
-            await probe.Key(Key.Escape);
+            await c.SettleAsync();
+            await probe.OpenResourceFilter("action");
+            await probe.Screenshot("resource-filters-150");
+            Check(probe.ResourceFilterChoice("Read").IsChecked == true && probe.ResourceFilterChoice("Write").IsChecked == true,
+                "Reopening the action menu shows the current selections");
+            var write = probe.ResourceFilterChoice("Write");
+            write.Focus();
+            await probe.Key(Key.Space);
+            Check(write.IsChecked == false, "Space changes a checkbox without closing the menu");
+            await probe.ToggleResourceOption("Read");
+            Check(probe.HasText("No resources match the selected filters"), "Clearing the last action shows the empty state");
+            await probe.ToggleResourceOption("All");
+            Check(probe.HasText("example.test"), "Selecting all actions restores the execute-only URL");
+            await probe.CloseResourceFilter();
+            await probe.CheckResourceFilterFeedback();
             await probe.Key(Key.Escape);
         })
     ];

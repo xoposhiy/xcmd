@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Token timeline · Xcmd session inspector</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #10131a;
+      --panel: #191d27;
+      --line: #353b4b;
+      --text: #f1f2f7;
+      --muted: #b2bbcc;
+      --accent: #c6b5ff;
+      --rail: 99px;
+      --mono: "Cascadia Mono", Consolas, monospace;
+      background: var(--page);
+      color: var(--text);
+      font: 14px/1.45 Inter, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box }
+    body, h1, h2, p { margin: 0 }
+    .shell { max-width: 1330px; padding-inline: clamp(12px, 3.5vw, 54px); margin: auto }
+    header { border-bottom: 1px solid var(--line) }
+    header .shell { display: flex; align-items: center; gap: 12px; min-height: 42px }
+    .brand { font-size: 16px; letter-spacing: -.05em }
+    .product { border-left: 1px solid var(--line); padding-left: 12px; color: var(--muted) }
+    .issue { margin-left: auto; font: 12px var(--mono); color: var(--muted) }
+    main { padding-block: 18px 28px }
+    h1 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -.045em; line-height: 1.16; font-weight: 630 }
+    .intro { color: var(--muted); margin: 5px 0 14px }
+    .tools { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; flex-wrap: wrap;
+      gap: 4px 14px; padding: 6px 0; border-block: 1px solid var(--line); background: var(--page) }
+    #range { font: 12px/24px var(--mono); color: var(--text) }
+    button { font: inherit; color: inherit }
+    label { display: inline-flex; gap: 7px; align-items: center; margin-left: auto; font-size: 12px; cursor: pointer }
+    input { accent-color: var(--accent) }
+    :focus-visible { outline: 2px solid white; outline-offset: 2px }
+    .option { margin-top: 11px; background: var(--panel); border: 1px solid var(--line); scroll-margin-top: 48px }
+    .option-head { display: flex; gap: 4px 22px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 9px 14px 0 }
+    h2 { font-size: 19px; line-height: 1.3; letter-spacing: -.025em; font-weight: 650 }
+    .explanation { margin: 3px 14px 5px; color: var(--muted); font-size: 13px }
+    .key { display: flex; align-items: center; gap: 14px; font-size: 12px }
+    .example { display: inline-flex; align-items: center; gap: 5px }
+    .key .icon { color: var(--accent) }
+    .scroll { overflow-x: auto; scrollbar-color: #626a7b var(--panel) }
+    .scroll:focus-visible { outline-offset: -2px }
+    .plot { min-width: 645px; padding: 0 14px 6px }
+    .ruler, .lane { display: grid; grid-template-columns: var(--rail) minmax(0,1fr) }
+    .rail { position: sticky; left: 0; z-index: 1; background: var(--panel); line-height: 31px; font-size: 13px; font-weight: 600 }
+    .ruler .rail, .ticks { height: 22px; line-height: 22px; color: var(--muted); font: 11px/22px var(--mono) }
+    .ticks, .track { position: relative }
+    .ticks span { position: absolute; transform: translateX(-50%) }
+    .ticks span:first-child { transform: none }
+    .ticks span:last-child { transform: translateX(-100%) }
+    .lane { border-top: 1px solid var(--line) }
+    .track { height: 31px; background: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 25%) }
+    .context .track { display: flex; align-items: center }
+    .span { position: absolute; min-width: 0; padding: 2px 8px; border-left: 2px solid #a18cd5; border-right: 1px solid var(--panel);
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #ede7ff; background: #3b344e;
+      font-size: 12px; line-height: 20px }
+    .phase { padding-block: 0; color: #d5dbe5; background: #303641; border-left-color: #778399 }
+    .span:focus-visible { outline-offset: -2px }
+    .bar { position: relative; display: block; height: 23px; min-width: 0; padding: 0; margin: 0;
+      border: 0; color: #101723; background: var(--ink); container-type: inline-size }
+    .call { position: absolute; top: 4px; height: 23px; display: flex; min-width: 0;
+      margin: 0; padding: 0; border: 0; background: #252b37; color: var(--text); text-align: center }
+    .call > .bar { height: 100%; flex: 1 1 0px }
+    .call.compound::after { content: ""; position: absolute; inset: 0 1px 0 0; border: 1px solid #666f82; pointer-events: none }
+    #sequential .bar + .bar { box-shadow: inset 1px 0 #454c59 }
+    #sequential .compound::before { content: ""; position: absolute; top: -3px; left: 0; right: 2px; height: 3px;
+      border: 1px solid #b2bbcc; border-bottom: 0; pointer-events: none }
+    #sequential .compound::after { box-shadow: 2px 0 var(--panel) }
+    .lane > .rail { display: flex; align-items: center }
+    details { border-top: 1px solid var(--line) }
+    summary { cursor: pointer; padding: 6px 14px; color: var(--muted); font-size: 13px }
+    select { font: inherit; max-width: 100%; color: var(--text); background: var(--panel); border: 1px solid var(--line) }
+    .tools .key { margin-left: auto }
+    .tools label { margin-left: 0 }
+    .face { position: absolute; inset: 0; overflow: hidden }
+    @container (min-width: 8px) {
+      .call > .bar:last-child .face { border-right: 1px solid var(--panel) }
+    }
+    .caption { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      display: inline-flex; width: max-content; align-items: center; gap: 4px; visibility: hidden;
+      white-space: nowrap; font-size: 12px; line-height: 1; font-weight: 600 }
+    .caption.visible { visibility: visible }
+    .target-guide { --ink: #bca4ef } .target-source { --ink: #87bce5 }
+    .target-tests { --ink: #84cfb5 } .target-docs { --ink: #c6d28f }
+    .target-git { --ink: #a5b2c4 } .target-build { --ink: #e8b277 }
+    body.mono .bar { --ink: #c1c7d3 }
+    button.call { cursor: pointer }
+    .call[aria-pressed="true"] { outline: 2px solid white; outline-offset: 0; z-index: 2 }
+    .call:focus-visible, button.call:hover { outline: 2px solid white; outline-offset: -1px; z-index: 2 }
+    .icon { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7;
+      stroke-linecap: round; stroke-linejoin: round; vertical-align: middle }
+    .try-width { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 14px; border-top: 1px solid var(--line) }
+    .try-width label { margin: 0; font-size: 13px }
+    #width { width: min(180px, 40vw); margin: 0; accent-color: var(--accent) }
+    #pixels { min-width: 6ch; color: var(--muted); font: 12px var(--mono) }
+    .preview { width: 184px; min-width: 0; border-inline: 1px solid var(--line); padding-block: 2px }
+    #selection { margin: 6px 14px 16px; border-top: 1px solid var(--line); padding-top: 14px }
+    .selection-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 16px }
+    #selection-title { font: 600 17px/1.4 var(--mono) }
+    #selection-meta, .call-number { color: var(--muted); font: 12px/1.5 var(--mono) }
+    .summary-label { color: var(--accent); font-size: 12px; margin-top: 10px }
+    #luna-summary { margin: 2px 0 14px; font-size: 16px }
+    #calls-title { margin: 0 0 4px; font-size: 14px; font-weight: 600 }
+    #call-list { list-style: none; margin: 0; padding: 0 }
+    .call-row { display: grid; grid-template-columns: 3ch minmax(130px, .8fr) minmax(0, 3fr); gap: 0 12px;
+      padding: 7px 0; border-top: 1px solid var(--line); align-items: baseline }
+    .call-row code { font: 12px/1.5 var(--mono); overflow-wrap: anywhere }
+    .call-input { color: var(--muted); display: block; margin-top: 1px }
+    .call-row p { font-size: 14px }
+    @media (max-width: 650px) {
+      :root { --rail: 79px }
+      .option-head { align-items: start }
+      .key { gap: 9px }
+      .option-head, .plot { padding-inline: 9px }
+      .explanation { margin-inline: 9px }
+      .tools { gap: 4px 7px }
+      #selection { margin-inline: 9px }
+      .call-row { grid-template-columns: 3ch minmax(0, 1fr); gap: 2px 6px }
+      .call-row > div { grid-column: 2 }
+    }
+  </style>
+</head>
+<body>
+  <header><div class="shell"><b class="brand">Xcmd</b><span class="product">Session inspector</span><span class="issue">Point Taken #70</span></div></header>
+  <main class="shell">
+    <h1>Token timeline</h1>
+    <p class="intro">Bar width shows estimated tokens. Select a block to see its tool calls below.</p>
+    <div class="tools" aria-label="Timeline settings">
+      <span id="range" aria-live="polite"></span>
+      <div class="key" id="icon-key" aria-label="Action icons"></div>
+      <label><input id="mono" type="checkbox">Monochrome</label>
+    </div>
+    <section id="sequential" class="option" aria-labelledby="sequential-title">
+      <div class="option-head"><h2 id="sequential-title">Pairs in one block</h2></div>
+      <p class="explanation">Each task starts with a user message. Icons show actions within each file category.</p>
+      <div class="scroll" tabindex="0" role="region" aria-label="Token timeline by category and action"></div>
+      <section id="selection" aria-labelledby="selection-title">
+        <div class="selection-head" aria-live="polite"><h2 id="selection-title"></h2><span id="selection-meta"></span></div>
+        <p class="summary-label">Luna summary · sample</p>
+        <p id="luna-summary"></p>
+        <h3 id="calls-title"></h3>
+        <ol id="call-list" aria-labelledby="calls-title"></ol>
+      </section>
+      <details id="sizing">
+        <summary>Try a narrower section</summary>
+        <div class="try-width">
+          <label for="example">Sample</label>
+          <select id="example"><option value="edit">Read and write Source</option><option value="repeat">Eight source-file reads</option></select>
+          <label for="width">Width</label><input id="width" type="range" min="1" max="180" value="165">
+          <output id="pixels" for="width"></output><div class="preview" id="preview"></div>
+        </div>
+      </details>
+    </section>
+  </main>
+  <script>
+    const byId = id => document.getElementById(id);
+    const agents = ['Main', 'Reviewer'];
+    const targets = {
+      guide: 'Instructions', source: 'Source',
+      tests: 'Tests', docs: 'Docs',
+      git: 'Git', build: 'Build'
+    };
+    const actions = { read: 'Read', write: 'Write', exec: 'Execute' };
+    const paths = {
+      read: '<path d="M2 10s3.5-6 8-6 8 6 8 6-3.5 6-8 6-8-6-8-6Z"/><circle cx="10" cy="10" r="2.4"/>',
+      write: '<path d="m3 13-.8 4.8L7 17l9.6-9.6-4-4L3 13Z"/><path d="m10.8 5.2 4 4"/>',
+      exec: '<path d="m5 3 11 7-11 7Z" fill="currentColor" stroke="none"/>'
+    };
+    const icon = action => '<svg aria-hidden="true" class="icon" viewBox="0 0 20 20">' + paths[action] + '</svg>';
+    byId('icon-key').innerHTML = Object.entries(actions).map(([key, name]) =>
+      '<span class="example">' + icon(key) + '<span>' + name + '</span></span>').join('');
+
+    // A call has one token estimate. Each pair describes a target and an action within that call.
+    const read = (target, ...files) => ({ target, action: 'read', files });
+    const write = (target, ...files) => ({ target, action: 'write', files });
+    const execute = (target, ...files) => ({ target, action: 'exec', files });
+    const shell = (input, summary, ...pairs) => ({ tool: 'exec_command', input, summary, pairs });
+    const patch = (file, summary, target) => ({ tool: 'apply_patch', input: file, summary, pairs: [write(target, file)] });
+    const batch = (summary, children) => ({ tool: 'functions.exec', summary, children, pairs: children.flatMap(call => call.pairs) });
+    const inspect = shell('Get-Content SessionTrace.cs, SessionInspectorScenarios.cs, coding-agents.md',
+      'Read the session model, inspector tests, and story to check the expected timeline behavior.',
+      read('source', 'SessionTrace.cs'), read('tests', 'SessionInspectorScenarios.cs'), read('docs', 'coding-agents.md'));
+    const checkTimeline = shell('./scripts/Test-Xcmd.ps1 -CheckOnly -Filter SessionInspector',
+      'Ran the session inspector checks.', execute('tests', 'SessionInspectorScenarios.cs'));
+    const sample = [
+      ['Main', 3000, inspect],
+      ['Reviewer', 1000, shell('Get-Content AGENTS.md', 'Read the project instructions for UI changes.', read('guide', 'AGENTS.md'))],
+      ['Main', 3200, batch('Checked how token ranges are calculated, ran the inspector checks, then updated the range calculation and its documentation.', [
+        shell('Get-Content SessionTrace.cs, SessionSelection.cs', 'Read the token range and selection code.',
+          read('source', 'SessionTrace.cs', 'SessionSelection.cs')),
+        checkTimeline,
+        patch('SessionTrace.cs', 'Updated the token range calculation.', 'source'),
+        patch('coding-agents.md', 'Documented how the inspector maps calls to the token axis.', 'docs')
+      ])],
+      ...[
+        [190, 'InspectorStyle.cs', 'Checked the category colors.'],
+        [320, 'SessionTimeline.cs', 'Reviewed how the timeline draws token ranges.'],
+        [250, 'SessionTimeline.Input.cs', 'Checked how the timeline handles block selection.'],
+        [410, 'InspectorOverview.cs', 'Reviewed the inspector layout.'],
+        [210, 'InspectorOverview.Summary.cs', 'Checked how the inspector lists tool calls.'],
+        [340, 'InspectorOverview.Resources.cs', 'Reviewed how the inspector shows touched files.'],
+        [280, 'SessionInspectorWindow.cs', 'Checked how the window connects the timeline and details.'],
+        [400, 'SessionTrace.cs', 'Verified how the trace assigns tokens to each call.']
+      ].map(([tokens, file, summary]) => ['Main', tokens, shell('Get-Content ' + file, summary, read('source', file))]),
+      ['Reviewer', 1000, batch('Added a token range check and ran the inspector checks.', [
+        patch('SessionInspectorScenarios.cs', 'Added a check for the selected token range.', 'tests'), checkTimeline
+      ])],
+      ['Main', 380, inspect],
+      ['Reviewer', 240, patch('coding-agents.md', 'Updated the inspector review notes.', 'docs')],
+      ['Main', 580, shell('git diff --stat', 'Reviewed the list of changed files.', read('git'))],
+      ['Reviewer', 200, shell('dotnet build -c Release', 'Built the project in Release mode.', execute('build'))]
+    ];
+    let total = 0;
+    const calls = sample.map(([agent, tokens, call]) => {
+      const start = total;
+      total += tokens;
+      return { ...call, agent, start, end: total, tokens };
+    });
+    const tasks = [[0, 'Fix the token timeline.'], [7200, 'Review the inspector and verify the fix.']];
+    const phases = [[0, 'Inspect the session'], [4000, 'Update the timeline'], [7200, 'Review source'], [9600, 'Verify changes']];
+
+    function singleTarget(call) {
+      const target = call.pairs[0].target;
+      return call.pairs.every(pair => pair.target === target) ? target : null;
+    }
+
+    const groups = [];
+    for (const call of calls) {
+      const previous = groups.at(-1)?.at(-1);
+      const target = singleTarget(call);
+      const startsContext = tasks.some(([at]) => at === call.start) || phases.some(([at]) => at === call.start);
+      if (target && previous?.agent === call.agent && singleTarget(previous) === target && !startsContext) {
+        groups.at(-1).push(call);
+      } else {
+        groups.push([call]);
+      }
+    }
+
+    function sectionsFor(group) {
+      const byTarget = new Map();
+      for (const call of group) {
+        // Only the call total is known. Each distinct classification gets one share.
+        const pairs = new Map();
+        for (const { target, action, files = [] } of call.pairs) {
+          pairs.set(target + '/' + action, target);
+          if (!byTarget.has(target)) byTarget.set(target, { target, actions: new Set(), files: new Set(), tokens: 0 });
+          const section = byTarget.get(target);
+          section.actions.add(action);
+          for (const file of files) section.files.add(file);
+        }
+        for (const target of pairs.values()) {
+          byTarget.get(target).tokens += call.tokens / pairs.size;
+        }
+      }
+      return [...byTarget.values()];
+    }
+
+    const scroll = document.querySelector('.scroll');
+    const number = n => n.toLocaleString('en-US');
+    const tick = n => n >= 1000 && n % 1000 === 0 ? n / 1000 + 'k' : number(n);
+    const bounds = group => group[0].start + '-' + group.at(-1).end;
+    const groupsByRange = new Map(groups.map(group => [bounds(group), group]));
+    const mixedExample = '4000-7200';
+    const groupSummaries = new Map([['7200-9600', 'Read eight source files to trace how the inspector draws token ranges and shows the selected calls.']]);
+    let selected;
+
+    function fit(bar) {
+      const available = bar.getBoundingClientRect().width - 4;
+      const captions = [...bar.querySelectorAll('.caption')];
+      const best = captions.find(caption => caption.getBoundingClientRect().width <= available);
+      for (const caption of captions) caption.classList.toggle('visible', caption === best);
+    }
+    const observer = new ResizeObserver(entries => entries.forEach(entry => fit(entry.target)));
+    function makeCell(section) {
+      const glyphs = [...section.actions].map(icon).join('');
+      const name = targets[section.target];
+      const labels = [glyphs + '<span>' + name + '</span>', glyphs + '<span>' + name[0] + '</span>', glyphs];
+      const cell = document.createElement('span');
+      cell.className = 'bar target-' + section.target;
+      cell.innerHTML = '<span class="face" aria-hidden="true">' + labels.map(label =>
+        '<span class="caption">' + label + '</span>').join('') + '</span>';
+      observer.observe(cell);
+      return cell;
+    }
+
+    function position(element, start, end) {
+      element.style.left = start * 100 / total + '%';
+      element.style.width = (end - start) * 100 / total + '%';
+    }
+
+    function makeCall(group) {
+      const first = group[0], last = group.at(-1);
+      const sections = sectionsFor(group);
+      const block = document.createElement('button');
+      block.type = 'button';
+      block.className = 'call' + (group.length > 1 || first.pairs.length > 1 ? ' compound' : '');
+      position(block, first.start, last.end);
+      const describe = section => [...section.actions].map(action => actions[action]).join(' and ') + ' ' + targets[section.target];
+      const meaning = sections.map(describe).join(', ');
+      block.title = first.agent + ' · ' + (group.length === 1 ? first.tool : group.length + ' calls') + ' · ' +
+        meaning + ' · ' + number(first.start) + '–' + number(last.end) + ' estimated tokens';
+      block.setAttribute('aria-label', block.title);
+      block.setAttribute('aria-controls', 'selection');
+      block.dataset.block = bounds(group);
+      block.dataset.review = first.agent + ' ' + bounds(group);
+      for (const section of sections) {
+        const cell = makeCell(section);
+        cell.style.flexGrow = section.tokens;
+        cell.title = [describe(section), ...section.files].join('\n');
+        block.append(cell);
+      }
+      return block;
+    }
+
+    function makeLane(name) {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.dataset.review = name + ' lane';
+      lane.innerHTML = '<span class="rail"></span><div class="track"></div>';
+      lane.firstChild.textContent = name === 'Reviewer' ? '↳ Reviewer' : name;
+      return lane;
+    }
+
+    function contextLane(name, markers, isTask) {
+      const lane = makeLane(name);
+      lane.classList.add('context');
+      markers.forEach(([start, text], index) => {
+        const end = markers[index + 1]?.[0] ?? total;
+        const span = document.createElement('span');
+        span.className = 'span ' + (isTask ? 'task' : 'phase');
+        span.textContent = isTask ? '“' + text + '”' : text;
+        span.dataset.review = (isTask ? 'User message ' : 'Work phase ') + (index + 1);
+        span.title = span.dataset.review + ' · ' + text + ' · ' + number(start) + '–' + number(end) + ' estimated tokens';
+        span.tabIndex = 0;
+        span.setAttribute('role', 'img');
+        span.setAttribute('aria-label', span.title);
+        position(span, start, end);
+        lane.lastChild.append(span);
+      });
+      return lane;
+    }
+
+    function draw() {
+      const ticks = [0, 1, 2, 3, 4].map(i =>
+        '<span style="left:' + i * 25 + '%">' + tick(total * i / 4) + '</span>').join('');
+      const plot = document.createElement('div');
+      plot.className = 'plot';
+      plot.innerHTML = '<div class="ruler"><span class="rail">Est. tokens</span><div class="ticks">' + ticks + '</div></div>';
+      plot.append(contextLane('Tasks', tasks, true), contextLane('Work Phases', phases, false));
+      for (const agent of agents) {
+        const lane = makeLane(agent);
+        const track = lane.querySelector('.track');
+        for (const group of groups) {
+          if (group[0].agent === agent) track.append(makeCall(group));
+        }
+        plot.append(lane);
+      }
+      scroll.replaceChildren(plot);
+    }
+
+    function selectBlock(key) {
+      const group = groupsByRange.get(key);
+      selected = key;
+      for (const bar of scroll.querySelectorAll('[data-block]')) {
+        bar.setAttribute('aria-pressed', String(bar.dataset.block === key));
+      }
+      const first = group[0];
+      byId('selection-title').textContent = group.length === 1 ? first.tool : targets[singleTarget(first)] + ' · grouped calls';
+      byId('selection-meta').textContent = first.agent + ' · ' + number(first.start) + '–' + number(group.at(-1).end) + ' estimated tokens';
+      byId('luna-summary').textContent = groupSummaries.get(key) ?? first.summary;
+      const entries = group.length === 1 && first.children ? first.children : group;
+      byId('calls-title').textContent = entries.length + (entries.length === 1 ? ' tool call' : ' tool calls');
+      const list = byId('call-list');
+      list.replaceChildren();
+      function addCall(call, index) {
+        const item = document.createElement('li');
+        item.className = 'call-row';
+        item.dataset.review = 'Call ' + index + ' · ' + call.tool;
+        item.innerHTML = '<span class="call-number"></span><code></code><div><p></p><code class="call-input"></code></div>';
+        item.querySelector('.call-number').textContent = index;
+        item.querySelector('code').textContent = call.tool;
+        if (group.length === 1 && call === first) item.querySelector('p').remove();
+        else item.querySelector('p').textContent = call.summary;
+        item.querySelector('.call-input').textContent = call.input ?? '';
+        list.append(item);
+        call.children?.forEach((child, i) => addCall(child, index + '.' + (i + 1)));
+      }
+      entries.forEach((call, i) => addCall(call, String(i + 1)));
+    }
+
+    const width = byId('width'), sampleType = byId('example');
+    function preview() {
+      const host = byId('preview');
+      if (host.firstChild) observer.unobserve(host.firstChild);
+      const cell = makeCell({ target: 'source', actions: sampleType.value === 'repeat' ? ['read'] : ['read', 'write'] });
+      cell.style.width = width.value + 'px';
+      cell.setAttribute('role', 'img');
+      cell.setAttribute('aria-label', sampleType.value === 'repeat' ? 'Eight reads of Source' : 'Read and write Source');
+      host.replaceChildren(cell);
+      byId('pixels').textContent = width.value + ' px';
+      width.setAttribute('aria-valuetext', width.value + ' pixels');
+    }
+    function openState(scrollIntoPlace) {
+      const [id, requested, mode, px, example] = location.hash.slice(1).split('/');
+      selectBlock(groupsByRange.has(requested) ? requested : mixedExample);
+      byId('mono').checked = mode === 'mono';
+      document.body.classList.toggle('mono', byId('mono').checked);
+      width.value = Number.isInteger(+px) && +px >= 1 && +px <= 180 ? px : 165;
+      sampleType.value = example === 'repeat' ? 'repeat' : 'edit';
+      byId('sizing').open = id === 'sizing';
+      preview();
+      if (scrollIntoPlace && id) byId(id === 'sizing' ? 'sizing' : 'sequential').scrollIntoView({ block: 'start' });
+    }
+    const hashFor = (id, bounds) => [id, bounds, byId('mono').checked ? 'mono' : 'color', width.value, sampleType.value].join('/');
+    function currentSection() {
+      return byId('sizing').open ? byId('sizing') : byId('sequential');
+    }
+    window.reviewState = () => {
+      const section = currentSection();
+      return { where: section.querySelector('h2,summary').textContent + ' · ' + byId('selection-meta').textContent,
+        hash: hashFor(section.id, selected) };
+    };
+    function saveState() {
+      history.replaceState(null, '', '#' + hashFor(currentSection().id, selected));
+    }
+    scroll.addEventListener('click', event => {
+      const bar = event.target.closest('button[data-block]');
+      if (!bar || event.altKey) return;
+      selectBlock(bar.dataset.block);
+      saveState();
+    });
+    byId('mono').addEventListener('change', () => {
+      document.body.classList.toggle('mono', byId('mono').checked);
+      saveState();
+    });
+    function updatePreview() {
+      preview();
+      saveState();
+    }
+    width.addEventListener('input', updatePreview);
+    sampleType.addEventListener('change', updatePreview);
+    byId('sizing').addEventListener('toggle', saveState);
+    window.addEventListener('hashchange', () => openState(true));
+    byId('range').textContent = '0–' + number(total) + ' estimated tokens';
+    draw();
+    openState(true);
+  </script>
+</body>
+</html>

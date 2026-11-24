@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Xcmd.Core;
 
@@ -18,53 +17,39 @@ internal sealed partial class InspectorOverview : UserControl
     private readonly SessionSelection selection;
     private readonly Action<string, Control> detail;
     private readonly SessionTimeline timeline;
+    private readonly StackPanel selectedCalls = Stack(3);
     private readonly ComboBox scope = new ComboBox { MinWidth = 116, MaxWidth = 200, FontSize = 13 }.WithFeedbackId("SessionInspector.scope");
-    private readonly Button timeAxis, tokenAxis, zoom, full, fromStart;
+    private readonly Button timeAxis, costAxis, zoom, full, fromStart;
     private readonly TextBlock stamp = Text("", 14, Accent, true);
     private readonly TextBlock hint = Text("", 12, UiPalette.Secondary);
-    private readonly Grid metrics = Grid("*,*,*,*");
-    private readonly Grid tables = Grid("*,12,*", "Auto,Auto");
-    private readonly Grid ranges = Grid("Auto,*,Auto,*");
-    private readonly Slider startSlider, endSlider;
+    private readonly TextBlock rangeTotals = Text("", 12, UiPalette.Secondary);
     private readonly Button analyze;
     private readonly TextBlock analysisStatus = SessionInspectorWindow.Paragraph("");
     private readonly StackPanel resources = Stack(), activities = Stack();
-    private bool updating;
-    private bool narrow;
+    private readonly string projectName;
+    private readonly bool hasClassifications;
+    private readonly bool hasCalls;
+    private readonly ResponseFocus responseFocus = new();
     private SessionSummary summary;
 
     internal InspectorOverview(AgentSession session, SessionTrace trace, Action<string, Control> detail, Action startAnalysis)
     {
         this.detail = detail;
+        projectName = session.ProjectName;
         selection = new(trace);
+        selection.SetAxis(true);
         summary = selection.Summarize();
-        timeline = new SessionTimeline(selection, Refresh, Filter).WithFeedbackId("SessionInspector.timeline");
+        timeline = new SessionTimeline(selection, responseFocus, Refresh, Filter).WithFeedbackId("SessionInspector.timeline");
         timeline.EventSelected += value => { hint.Text = value; ToolTip.SetTip(hint, value); };
-        timeline.RangeMoving += UpdateStamp;
-        timeAxis = Action("Time", () => Axis(false));
-        tokenAxis = Action("Est. tokens", () => Axis(true), "Estimate tool input and output tokens");
+        timeline.BlockSelected += ShowBlock;
+        timeline.ResponseSelected += ShowResponse;
+        timeAxis = AxisLink("Time", false);
+        costAxis = AxisLink("API cost", true, "Compare model responses at standard global API rates");
         zoom = Action("Zoom to range", () => { selection.ToggleZoom(); Refresh(); });
         full = Action("Full session", () => Select(trace.Start, trace.End));
-        fromStart = Action("From start", () => Select(trace.Start, selection.To));
-        startSlider = Slider("Range start", true);
-        endSlider = Slider("Range end", false);
+        fromStart = Action("From start", SelectFromStart);
         var content = Stack(12); content.Margin = new Thickness(18, 12, 18, 16);
-        var heading = Text(session.DisplayTopic, 25, strong: true); ToolTip.SetTip(heading, session.DisplayTopic);
-        var intro = Stack(3); intro.Children.Add(heading);
-        var started = DateTimeOffset.FromUnixTimeMilliseconds(trace.Start).ToLocalTime();
-        var meta = $"{AgentSession.AgentName(session.Agent)}   ·   {session.ProjectName}   ·   {started:dd MMM yyyy, HH:mm}";
-        var metadata = Text(meta, 13, UiPalette.Secondary); ToolTip.SetTip(metadata, session.ProjectDirectory + "\n" + session.Id);
-        intro.Children.Add(metadata);
-        var totals = Text($"Full session   {Duration(trace.End - trace.Start)}   ·   {Number(trace.TotalTokens)} est. tokens   ·   {Number(trace.Calls.Count)} calls", 13, UiPalette.Secondary);
-        var identity = Grid("*,Auto", "Auto,Auto"); identity.ColumnSpacing = 12;
-        Put(identity, intro); Put(identity, totals, 1); content.Children.Add(identity);
-        identity.SizeChanged += (_, e) =>
-        {
-            var small = e.NewSize.Width < 800;
-            Avalonia.Controls.Grid.SetColumn(totals, small ? 0 : 1);
-            Avalonia.Controls.Grid.SetRow(totals, small ? 1 : 0);
-            totals.Margin = new Thickness(0, small ? 4 : 0, 0, 0);
-        };
+        content.Children.Add(BuildInfo(session, trace));
         if (trace.Note != null) content.Children.Add(SessionInspectorWindow.Paragraph(trace.Note));
         var analysisAction = trace.ClassificationError != null ? "Retry analysis" :
             trace.HasOutdatedClassifications ? "Update with Luna" : "Analyze with Luna";
@@ -77,11 +62,21 @@ internal sealed partial class InspectorOverview : UserControl
             SetAnalysisStatus(trace.ClassificationError);
         }
         content.Children.Add(BuildTimeline());
+        content.Children.Add(selectedCalls);
         content.Children.Add(BuildRange());
-        content.Children.Add(metrics); content.Children.Add(tables);
-        Put(tables, Box(resources)); Put(tables, Box(activities), 2);
+        hasClassifications = trace.Calls.Any(c => c.Classification != null);
+        hasCalls = trace.Responses.Any(response => response.Calls.Count > 0);
+        if (hasCalls)
+        {
+            BuildActivityPanel();
+            if (hasClassifications)
+            {
+                BuildResourcePanel();
+                content.Children.Add(BuildTables());
+            }
+            else content.Children.Add(Box(activities));
+        }
         Content = new ScrollViewer { Content = content, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }.WithFeedbackId("SessionInspector.scroll");
-        SizeChanged += (_, e) => { var compact = e.NewSize.Width < 820; if (compact != narrow) { narrow = compact; ArrangeTables(); } };
         scope.ItemsSource = new[] { "All agents" }.Concat(trace.Agents).ToArray();
         scope.SelectedIndex = 0;
         AutomationProperties.SetName(scope, "Agent scope");
@@ -92,40 +87,64 @@ internal sealed partial class InspectorOverview : UserControl
     private Control BuildTimeline()
     {
         var panel = Stack();
-        var header = Grid("*,Auto,Auto");
-        header.Margin = new Thickness(12, 8); header.ColumnSpacing = 4;
-        Put(header, Text("Session timeline", 17, strong: true)); Put(header, timeAxis, 1); Put(header, tokenAxis, 2);
+        var header = Stack(10);
+        header.Orientation = Orientation.Horizontal;
+        header.Margin = new Thickness(12, 8);
+        header.Children.Add(Text("Session timeline", 17, strong: true));
+        header.Children.Add(timeAxis);
+        header.Children.Add(costAxis);
         panel.Children.Add(header); panel.Children.Add(timeline);
-        var legend = new WrapPanel { Margin = new Thickness(10, 4) }.WithFeedbackId("SessionInspector.legend");
-        foreach (var cat in selection.Trace.Calls.Select(c => c.Labels.First().Target).Distinct().Order())
-        {
-            var chip = Text("■  " + (cat.Length == 0 ? "Unclassified" : cat), 12, Color(cat));
-            chip.Margin = new Thickness(0, 1, 14, 1); legend.Children.Add(chip);
-        }
-        panel.Children.Add(legend);
-        ranges.Margin = new Thickness(12, 2); ranges.ColumnSpacing = 7;
-        Put(ranges, Text("Start", 12, UiPalette.Secondary)); Put(ranges, startSlider, 1);
-        Put(ranges, Text("End", 12, UiPalette.Secondary), 2); Put(ranges, endSlider, 3);
-        panel.Children.Add(ranges);
         var footer = Grid("*,Auto"); footer.Margin = new Thickness(12, 3, 10, 7);
         Put(footer, hint); Put(footer, zoom, 1); panel.Children.Add(footer);
         return Box(panel);
     }
 
+    private HyperlinkButton AxisLink(string title, bool cost, string? tip = null)
+    {
+        var link = new HyperlinkButton { Content = title, FontSize = 12, MinHeight = 22, Padding = new Thickness(2, 0) }
+            .WithFeedbackId("SessionInspector.axisLink");
+        link.Click += (_, _) => Axis(cost);
+        if (tip != null) ToolTip.SetTip(link, tip);
+        return link;
+    }
+
+    private static void SetAxisLink(Button link, bool active)
+    {
+        link.Foreground = active ? Accent : UiPalette.Secondary;
+        link.FontWeight = active ? FontWeight.SemiBold : FontWeight.Normal;
+        AutomationProperties.SetItemStatus(link, active ? "Selected" : "");
+    }
+
     private Control BuildRange()
     {
         var row = new WrapPanel { VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("SessionInspector.rangeHeader");
-        foreach (var control in new Control[] { Text("Selected range", 18, strong: true), stamp, fromStart, full, scope })
+        AutomationProperties.SetAutomationId(rangeTotals, "session-inspector.range-totals");
+        foreach (var control in new Control[] { Text("Selected range", 18, strong: true), stamp, rangeTotals, fromStart, full, scope })
         { control.Margin = new Thickness(0, 2, 10, 2); row.Children.Add(control); }
         return row;
     }
 
-    private void ArrangeTables()
+    private Grid BuildTables()
     {
-        tables.ColumnDefinitions = new ColumnDefinitions(narrow ? "*" : "*,12,*");
-        Avalonia.Controls.Grid.SetColumn(tables.Children[1], narrow ? 0 : 2);
-        Avalonia.Controls.Grid.SetRow(tables.Children[1], narrow ? 1 : 0);
-        tables.RowSpacing = narrow ? 10 : 0;
+        var tables = Grid("Auto,*", "Auto,Auto");
+        tables.ColumnSpacing = 12;
+        Avalonia.Controls.Grid.SetIsSharedSizeScope(activities, true);
+        var activityPanel = Box(activities);
+        activityPanel.HorizontalAlignment = HorizontalAlignment.Left;
+        var resourcePanel = Box(resources);
+        resourcePanel.VerticalAlignment = activityPanel.VerticalAlignment = VerticalAlignment.Top;
+        Put(tables, activityPanel);
+        Put(tables, resourcePanel, 1);
+        SizeChanged += (_, e) =>
+        {
+            var narrow = e.NewSize.Width < 820;
+            if (narrow == (Avalonia.Controls.Grid.GetRow(resourcePanel) == 1)) return;
+            tables.ColumnDefinitions = new ColumnDefinitions(narrow ? "*" : "Auto,*");
+            tables.RowSpacing = narrow ? 10 : 0;
+            Avalonia.Controls.Grid.SetColumn(resourcePanel, narrow ? 0 : 1);
+            Avalonia.Controls.Grid.SetRow(resourcePanel, narrow ? 1 : 0);
+        };
+        return tables;
     }
 
     private void Filter(string? agent) => scope.SelectedItem = agent ?? "All agents";
@@ -138,85 +157,82 @@ internal sealed partial class InspectorOverview : UserControl
         analysisStatus.IsVisible = !string.IsNullOrEmpty(message);
     }
 
+    internal void RestoreView(InspectorOverview prior)
+    {
+        resourceType.CopySelection(prior.resourceType);
+        resourceTarget.CopySelection(prior.resourceTarget);
+        resourceAction.CopySelection(prior.resourceAction);
+        collapsedGroups.UnionWith(prior.collapsedGroups);
+        sortActivityBy = prior.sortActivityBy;
+        descendingActivities = prior.descendingActivities;
+        groupActions.IsChecked = prior.groupActions.IsChecked;
+        var saved = prior.Capture();
+        if (prior.selection.FullRange)
+            saved = saved with { From = selection.Trace.Start, To = selection.Trace.End, LastResponse = selection.Trace.Responses.Count };
+        Restore(saved);
+    }
     internal void FocusTimeline() => timeline.Focus(NavigationMethod.Directional);
-    internal InspectorRange Capture() => new(selection.From, selection.To, selection.ZoomFrom, selection.ZoomTo, selection.Zoomed, selection.Agent, timeline.Tokens);
+    internal InspectorRange Capture() => new(selection.From, selection.To, selection.ZoomFrom, selection.ZoomTo, selection.Zoomed, selection.Agent, selection.CostAxis)
+    {
+        FirstResponse = selection.CostAxis ? selection.FirstResponse : null,
+        LastResponse = selection.CostAxis ? selection.LastResponse : null,
+        ZoomFirstResponse = selection.CostAxis ? selection.ZoomFirstResponse : null,
+        ZoomLastResponse = selection.CostAxis ? selection.ZoomLastResponse : null
+    };
+
     internal void Restore(InspectorRange saved)
     {
+        selection.SetAxis(saved.CostAxis);
         if (saved.Zoomed)
         {
-            selection.Select(saved.ZoomFrom, saved.ZoomTo);
+            RestoreRange(saved.ZoomFrom, saved.ZoomTo, saved.ZoomFirstResponse, saved.ZoomLastResponse);
             selection.ToggleZoom();
         }
         if (saved.Agent != null && selection.Trace.Agents.Contains(saved.Agent)) Filter(saved.Agent);
-        timeline.Tokens = saved.Tokens;
-        Select(saved.From, saved.To);
+        RestoreRange(saved.From, saved.To, saved.FirstResponse, saved.LastResponse);
+        Refresh();
     }
-    private void Axis(bool tokens) { timeline.Tokens = tokens; Refresh(); }
+
+    private void RestoreRange(long from, long to, int? first, int? last)
+    {
+        if (selection.CostAxis && first.HasValue && last.HasValue) selection.SelectResponses(first.Value, last.Value);
+        else selection.Select(from, to);
+    }
+
+    private void Axis(bool cost) { selection.SetAxis(cost); Refresh(); }
     private void Select(long start, long end) { selection.Select(start, end); Refresh(); }
 
-    private void UpdateStamp() => stamp.Text = $"{Time(selection.Trace, selection.From)} – {Time(selection.Trace, selection.To)}";
-
-    private Slider Slider(string name, bool first)
+    private void SelectFromStart()
     {
-        var slider = new Slider { MinHeight = 22, Minimum = 0, Maximum = 1 }.WithFeedbackId("SessionInspector.rangeSlider");
-        AutomationProperties.SetName(slider, name); ToolTip.SetTip(slider, name);
-        slider.AddHandler(KeyDownEvent, (_, e) => StepSlider(first, e), RoutingStrategies.Tunnel);
-        slider.ValueChanged += (_, _) =>
-        {
-            if (updating) return;
-            var t = timeline.Tokens ? selection.Trace.TimeAtTokens(slider.Value) : selection.ZoomFrom + (long)Math.Round(slider.Value);
-            if (first) Select(Math.Min(t, selection.To), selection.To);
-            else Select(selection.From, Math.Max(t, selection.From));
-        };
-        return slider;
+        if (selection.CostAxis) selection.SelectResponses(0, selection.LastResponse);
+        else selection.Select(selection.Trace.Start, selection.To);
+        Refresh();
     }
 
-    private void StepSlider(bool first, KeyEventArgs e)
+    private string RangeLabel(bool start)
     {
-        if (!timeline.Tokens) return;
-        var min = first ? selection.ZoomFrom : selection.From;
-        var max = first ? selection.To : selection.ZoomTo;
-        var step = e.Key switch { Key.Left or Key.Down => -1, Key.Right or Key.Up => 1, Key.PageUp => 5, Key.PageDown => -5, _ => 0 };
-        if (step == 0 && e.Key is not (Key.Home or Key.End)) return;
-        var at = first ? selection.From : selection.To;
-        if (e.KeyModifiers == KeyModifiers.Shift) step *= 5;
-        var next = e.Key switch { Key.Home => min, Key.End => max, _ => selection.Trace.StepResult(at, step, min, max) };
-        e.Handled = true;
-        if (first) Select(next, selection.To); else Select(selection.From, next);
-    }
-
-    private void UpdateSliders()
-    {
-        var t = selection.Trace;
-        updating = true;
-        var token = timeline.Tokens;
-        foreach (var (slider, at) in new[] { (startSlider, selection.From), (endSlider, selection.To) })
-        {
-            slider.Minimum = token ? t.TokensAt(selection.ZoomFrom) : 0;
-            slider.Maximum = Math.Max(slider.Minimum + 1, token ? t.TokensAt(selection.ZoomTo) : selection.ZoomTo - selection.ZoomFrom);
-            slider.SmallChange = token ? Math.Max(1, (slider.Maximum - slider.Minimum) / 100) : 1000;
-            slider.LargeChange = slider.SmallChange * 10;
-            slider.Value = token ? t.TokensAt(at) : at - selection.ZoomFrom;
-        }
-        updating = false;
+        var trace = selection.Trace;
+        if (selection.CostAxis) return Usd(trace.CostAxis.At(start ? selection.FirstResponse : selection.LastResponse).Usd);
+        return Time(trace, start ? selection.From : selection.To);
     }
 
     private void Refresh()
     {
-        UpdateSliders();
+        ClearSelectedCalls();
+        responseFocus.Hover(null);
         var t = selection.Trace;
-        var token = timeline.Tokens;
-        timeAxis.Classes.Set("primary", !token); tokenAxis.Classes.Set("primary", token);
-        tokenAxis.IsEnabled = t.TotalTokens > 0 && (token || t.TokensAt(selection.ZoomFrom) != t.TokensAt(selection.ZoomTo));
-        fromStart.IsEnabled = selection.From > t.Start;
-        full.IsEnabled = selection.From != t.Start || selection.To != t.End;
-        zoom.IsEnabled = selection.Zoomed || full.IsEnabled && selection.From < selection.To && (!token || t.TokensAt(selection.From) < t.TokensAt(selection.To));
+        SetAxisLink(timeAxis, !selection.CostAxis);
+        SetAxisLink(costAxis, selection.CostAxis);
+        fromStart.IsEnabled = selection.CostAxis ? selection.FirstResponse > 0 : selection.From > t.Start;
+        full.IsEnabled = !selection.FullRange;
+        zoom.IsEnabled = selection.Zoomed || full.IsEnabled &&
+            (selection.CostAxis ? selection.FirstResponse < selection.LastResponse : selection.From < selection.To);
         zoom.Content = selection.Zoomed ? "Reset zoom" : "Zoom to range";
-        UpdateStamp();
-        hint.Text = t.Calls.Count == 0 ? "No completed tool calls in this session." : "Drag to select a range, or click an event.";
+        stamp.Text = $"{RangeLabel(true)} – {RangeLabel(false)}";
+        hint.Text = t.Responses.Count == 0 ? "No model responses in this session." : "Drag to select a range, or click an event.";
         ToolTip.SetTip(hint, hint.Text);
-        summary = selection.Summarize();
-        timeline.InvalidateVisual();
+        summary = selection.Summarize(groupActions.IsChecked == true);
+        timeline.UpdateRangeHandles();
         RenderSummary();
     }
 }

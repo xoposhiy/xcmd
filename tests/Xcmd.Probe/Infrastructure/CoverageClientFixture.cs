@@ -71,7 +71,7 @@ internal static class CoverageClientFixture
     private static async Task CheckResumeAsync(ICoverageReviewer reviewer, CoverageInput input)
     {
         var file = new TraceFile("src/Menu.cs", "Read", 1, 4, 4);
-        var call = new TraceCall("Main agent", "Read files", 1, 2, 10, [file]) { Review = input };
+        var call = new TraceCall("Main agent", "Read files", 1, 2, [file]) { Review = input };
         var other = call with { End = 3, Files = [] };
         var trace = new SessionTrace(0, 4, [call, other], [], []);
         var review = new CoverageReview();

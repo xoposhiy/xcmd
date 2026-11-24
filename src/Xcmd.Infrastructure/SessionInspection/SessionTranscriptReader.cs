@@ -128,7 +128,7 @@ public sealed class SessionTranscriptReader(string codexHome, string claudeHome,
         {
             var parser = new ClaudeTraceReader(trace, agent, agent == SessionTrace.MainAgent ? session.Directory : "", trace.ForAgent(agent, Path.GetFileNameWithoutExtension(file)));
             ReadLines(file, trace, parser.Record, token);
-            trace.Unfinished += parser.Unfinished;
+            parser.Finish();
         }
     }
 

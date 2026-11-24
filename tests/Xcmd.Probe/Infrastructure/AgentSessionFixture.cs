@@ -35,16 +35,16 @@ internal sealed class AgentSessionFixture : IAgentSessions
     {
         var read = new ToolLabel("source", "read");
         var test = new ToolLabel("tests", "exec");
-        var trace = new SessionTrace(0, 10000, [
-            Call(test, 0, 3000, 300), Call(read, 3000, 3500, 450),
-            Call(test, 3500, 6500, 300), Call(test, 6500, 9500, 300),
-            Call(read, 9500, 10000, 500)
-        ], [], []);
+        var trace = SessionTimelineFixture.Priced(10000, [
+            Call(test, 0, 3000, 0.30m), Call(read, 3000, 3500, 0.45m, new ToolLabel("source", "write")),
+            Call(test, 3500, 6500, 0.30m), Call(test, 6500, 9500, 0.30m),
+            Call(read, 9500, 10000, 107.399m)
+        ]);
         Inspector = (_, _) => Task.FromResult(trace);
 
-        static TraceCall Call(ToolLabel label, long start, long end, long tokens) =>
-            new(SessionTrace.MainAgent, label.ToString(), start, end, tokens, [])
-            { Classification = new(label.ToString(), [new(label, [])], []) };
+        static (TraceCall, decimal) Call(ToolLabel label, long start, long end, decimal cost, params ToolLabel[] extra) =>
+            (new(SessionTrace.MainAgent, label.ToString(), start, end, [])
+            { Classification = new(label.ToString(), extra.Prepend(label).Select(item => new ToolOperation(item, [])).ToArray(), []) }, cost);
     }
 
     internal List<(SessionAgent Agent, SessionListScope Scope)> Reads { get; } = [];
@@ -55,10 +55,11 @@ internal sealed class AgentSessionFixture : IAgentSessions
         Updated = Codex.Updated.AddDays(-i)
     }).ToArray();
 
-    internal AgentSession AddCodexSession(string topic, string directory, DateTimeOffset updated, string? project = null, SessionActivity activity = SessionActivity.Unknown)
+    internal AgentSession AddCodexSession(string topic, string directory, DateTimeOffset updated, string? project = null,
+        SessionActivity activity = SessionActivity.Unknown, long? transcriptBytes = null)
     {
         var row = new AgentSession(SessionAgent.Codex, Guid.NewGuid(), topic, directory, updated)
-        { ProjectDirectory = project ?? directory, Activity = activity };
+        { ProjectDirectory = project ?? directory, Activity = activity, TranscriptBytes = transcriptBytes };
         older = [.. older, row];
         return row;
     }

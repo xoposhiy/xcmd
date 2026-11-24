@@ -47,6 +47,7 @@ internal static class CodexToolItem
                 break;
             case "ImageView":
                 name = "View image";
+                input = item.Str("path");
                 if (trace.FileCoverageStudy) files = ImageReads(item, cwd, trace.Project);
                 break;
             default:
@@ -54,7 +55,9 @@ internal static class CodexToolItem
                 break;
         }
         var failed = item.Str("status") is "failed" or "declined" || item.Number("exit_code") != 0;
-        return TraceRecords.Call(agent, new(name, input, start, cwd), end, command, output.Length, files, failed) with { Review = review };
+        return TraceRecords.Call(agent, new(name, input, start, cwd), end, command, output, files, failed)
+            with
+        { Review = review };
     }
 
     private static TraceFile[] ImageReads(JsonElement item, string cwd, string project) =>

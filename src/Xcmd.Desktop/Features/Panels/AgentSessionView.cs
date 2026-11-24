@@ -37,8 +37,8 @@ internal sealed partial class AgentSessionView : Grid
         AddColumn("Topic", new GridLength(2, GridUnitType.Star), TopicCell);
         AddColumn("Agent", new GridLength(74), AgentCell);
         AddColumn("Size", new GridLength(82), row => row.TranscriptBytes is { } bytes
-            ? Cell(FileSizeText.Format(bytes), tip: $"Main transcript: {bytes:N0} bytes")
-            : Cell("—", UiPalette.Secondary, "Transcript size unavailable"));
+            ? Cell($"{bytes / 1024m:N0} K", tip: $"Main transcript: {bytes:N0} bytes")
+            : Cell("—", UiPalette.Secondary, "Transcript size unavailable"), TextAlignment.Right);
         AddColumn("Updated", new GridLength(1.5, GridUnitType.Star), UpdatedCell).MaxWidth = 132;
         Children.Add(Heading);
         SetRow(Table, 1); Children.Add(Table);
@@ -56,11 +56,12 @@ internal sealed partial class AgentSessionView : Grid
         SetRow(footer, 2); Children.Add(footer);
     }
 
-    private TableViewColumn AddColumn(string title, GridLength width, Func<AgentSession, TextBlock> cell)
+    private TableViewColumn AddColumn(string title, GridLength width, Func<AgentSession, TextBlock> cell, TextAlignment alignment = TextAlignment.Left)
     {
         var header = new TextBlock
         {
             Text = title,
+            TextAlignment = alignment,
             Margin = UiPalette.CellPadding,
             VerticalAlignment = VerticalAlignment.Center,
             FontWeight = FontWeight.SemiBold
@@ -70,7 +71,13 @@ internal sealed partial class AgentSessionView : Grid
             Header = header,
             Width = width,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
-            CellTemplate = new FuncDataTemplate<AgentSession>((row, _) => row == null ? null : cell(row))
+            CellTemplate = new FuncDataTemplate<AgentSession>((row, _) =>
+            {
+                if (row == null) return null;
+                var text = cell(row);
+                text.TextAlignment = alignment;
+                return text;
+            })
         };
         Table.Columns.Add(column);
         return column;

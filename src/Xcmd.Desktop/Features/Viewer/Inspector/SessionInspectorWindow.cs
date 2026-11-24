@@ -26,7 +26,7 @@ internal sealed class SessionInspectorWindow : Window
     private readonly Button back;
     private readonly Button guide;
     private Control? overview;
-    private readonly Stack<(Control Page, Control? Focus, string Back)> previous = new();
+    private Control? overviewFocus;
     private bool detail;
     private readonly WorkspaceWindowPlacement placement;
     private InspectorRange? savedRange;
@@ -98,7 +98,7 @@ internal sealed class SessionInspectorWindow : Window
                 : await source.InspectAsync(session, token);
             if (token.IsCancellationRequested) return;
             var ready = new InspectorOverview(session, trace, ShowDetail, () => _ = LoadAsync(analyze: true)).WithFeedbackId("SessionInspector.overview");
-            if (prior != null) ready.Restore(prior.Capture());
+            if (prior != null) ready.RestoreView(prior);
             else if (savedRange != null) ready.Restore(savedRange);
             overview = ready;
         }
@@ -139,9 +139,8 @@ internal sealed class SessionInspectorWindow : Window
 
     private void ShowDetail(string heading, Control body)
     {
-        if (page.Content is Control current)
-            previous.Push((current, FocusManager?.GetFocusedElement() as Control, back.Content?.ToString() ?? ""));
-        back.Content = detail ? "‹  All resources" : "‹  Session overview";
+        overviewFocus = FocusManager?.GetFocusedElement() as Control;
+        back.Content = "‹  Session overview";
         detail = true;
         ToolTip.SetTip(back, "Return to the previous view (Esc)");
         guide.IsVisible = false;
@@ -156,13 +155,15 @@ internal sealed class SessionInspectorWindow : Window
 
     private void Back()
     {
+        if (!detail && overview is InspectorOverview inspector && inspector.ClearSelectedCalls()) { inspector.FocusTimeline(); return; }
         if (!detail) { Close(); return; }
-        var prior = previous.Pop();
-        detail = previous.Count > 0;
-        back.Content = prior.Back;
-        ToolTip.SetTip(back, detail ? "Return to the selected range (Esc)" : "Close this inspector (Esc)");
-        guide.IsVisible = !detail; page.Content = detail ? prior.Page : overview;
-        if (prior.Focus?.Focus() != true) back.Focus();
+        detail = false;
+        back.Content = "Close";
+        ToolTip.SetTip(back, "Close this inspector (Esc)");
+        guide.IsVisible = true;
+        page.Content = overview;
+        if (overviewFocus?.Focus() != true) back.Focus();
+        overviewFocus = null;
     }
 
     private void ShowGuide()
@@ -174,13 +175,14 @@ internal sealed class SessionInspectorWindow : Window
             guideBody.Children.Add(Paragraph(explanation));
         }
         Entry("Select an interval", "Drag across the timeline or click a task, work phase or tool call. Drag the two purple edges to adjust the range. From start extends the range backwards. Full session restores the entire trace.");
-        Entry("Use the keyboard", "Tab to the timeline. Use Up and Down to change tracks, Left and Right to browse events, and Enter to select. Use the start and end sliders below the timeline for a custom range. Esc returns to the previous view.");
-        Entry("Read the axes", "Time shows when each call ran. Est. tokens orders results by completion and estimates the size of tool inputs and outputs at one token per four characters. The estimate excludes model messages, images and billing.");
-        Entry("Understand the totals", "Calls, tokens and touched resources count when a result arrives. Tool time includes the part of each call inside the range, including parallel calls. Outside tools counts time with no selected agent running a tool.");
-        Entry("Activity breakdown", "Luna classifies each completed call by target and action. A call can appear in several rows. The session totals count each call once. Open View tool calls to see each summary and its objects.");
+        Entry("Use the keyboard", "Tab to the timeline. Use Up and Down to change tracks, Left and Right to browse events, and Enter to select. Tab to either Range handle and use Left or Right to move it. Esc returns to the previous view.");
+        Entry("Read the axes", "API cost shows model responses at standard global API rates. Each response takes up the same interval on every track it touches. A red outline marks a response with missing cost. Info and range totals sum each priced response once. Time shows when calls ran, including calls that overlap.");
+        Entry("Read tool blocks", "Source, Tests, Docs and Others group tool calls by target. Docs includes documentation, agent instructions and issue trackers. Messages without calls appear in Others. Adjacent responses can share a fill. Hover to see the response boundaries and rates. Click to see the response and its calls. A pencil marks a write and a play icon marks a run.");
+        Entry("Read session information", "The top panel shows the date, agent, model and totals for the whole session. The selected range totals follow the agent filter. Cost range handles snap to whole response boundaries. Select text in the call details and press Ctrl+C to copy it.");
         Entry("Analyze a session", "Xcmd loads saved classifications when you open the inspector. Choose Analyze with Luna to send new or changed calls to OpenAI for classification. When the prompt changes, choose Update with Luna to refresh saved results.");
+        Entry("Activity breakdown", "A response shares its cost equally among its calls. Each call shares its cost equally among its targets, then among the actions for each target. Clear Combine actions by target to see each action's share. Select Tool time, API cost or Tool calls to sort.");
         Entry("Read tasks and phases", "Tasks come from user messages. Work phases follow plan steps, progress messages or runs of similar tools, in that order.");
-        Entry("Touched resources", "Luna identifies files, directories, URLs, issues, repositories and other resources while classifying tool calls. The table counts completed calls in the selected range and agent scope. Open a resource to see those calls.");
+        Entry("Touched resources", "Open Type, Target or Action and check the options to show. The list updates as you check options. Each action filter includes Other for calls with no clear action on that resource. Counts, bars and resource details show matching calls in the selected range. Expand a folder to see its files. Bars use the same target colors as the session timeline. Brighter bars and icons mark edits and runs.");
         ShowDetail("Reading the timeline", new ScrollViewer { Content = guideBody }.WithFeedbackId("SessionInspector.guideScroll"));
     }
 }

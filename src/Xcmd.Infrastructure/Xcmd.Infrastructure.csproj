@@ -19,6 +19,7 @@
     <Content Include="claude_sessions.mjs" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <EmbeddedResource Include="Syntax/Grammars/*.json" LogicalName="Xcmd.Syntax.%(Filename).json" />
     <EmbeddedResource Include="SessionClassification/Instructions.txt" LogicalName="Xcmd.SessionClassification.Instructions" />
+    <EmbeddedResource Include="../Xcmd.Desktop/config/session-api-prices.json" LogicalName="Xcmd.SessionApiPrices" />
     <Content Include="Syntax/Grammars/*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup Condition="'$(XcmdLauncher)' == 'true'">
