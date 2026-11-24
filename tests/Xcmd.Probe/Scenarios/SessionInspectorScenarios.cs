@@ -44,7 +44,7 @@ public static class SessionInspectorScenarios
             var shortened = await fixture.ReadAsync();
             Check(shortened.ClassificationError == null && shortened.Calls.Count == 2 && fixture.Packets.Length == 0, "Truncation uses surviving calls offline");
         }),
-        new("session-inspector-classification-context", "Invalidate changed context and older prompts, then resume an unreadable response", async c =>
+        new("session-inspector-classification-context", "Invalidate changed context and unknown cache formats, then resume an unreadable response", async c =>
         {
             using var fixture = new ClassificationFixture(c);
             fixture.Write(2);
@@ -55,18 +55,63 @@ public static class SessionInspectorScenarios
             fixture.Rewrite("new settings", "old settings");
             await fixture.ReadAsync();
             Equal(6, fixture.Packets.Single().Single(), "Only the call with changed message context expires");
-            fixture.InvalidateVersion();
-            Check(!await fixture.ReadyAsync(), "A cache from another prompt version has no ready mark");
+            fixture.UseUnknownCacheFormat();
+            Check(!await fixture.ReadyAsync(), "An unknown cache format has no ready mark");
             fixture.Reset();
             fixture.UnreadableReply = true;
             var incomplete = await fixture.ReadAsync();
             Check(incomplete.Calls.All(c => c.Classification == null) && incomplete.ClassificationError?.Contains("0 of 3") == true,
-                "Old prompt results and unreadable replies cannot mark a session complete");
+                "Incompatible cache results and unreadable replies cannot mark a session complete");
             Equal(4, fixture.Packets.Length, "Recheck each unresolved ID with more evidence");
             fixture.UnreadableReply = false;
             fixture.Reset();
             var complete = await fixture.ReadAsync();
             Check(complete.ClassificationError == null && fixture.Packets.Single().Length == 3, "Retry finishes the session using the current prompt");
+        }),
+        new("session-inspector-classification-prompt", "Keep saved results through a prompt change and retry only unfinished updates", async c =>
+        {
+            using var fixture = new ClassificationFixture(c);
+            fixture.Write(3);
+            await fixture.ReadAsync();
+            fixture.UseLegacyCache();
+            fixture.Reset();
+            var unchanged = await fixture.ReadAsync();
+            Check(!unchanged.HasOutdatedClassifications && unchanged.ClassificationError == null && fixture.Packets.Length == 0,
+                "A legacy cache with the current prompt needs no refresh");
+
+            fixture.UseOlderPrompt();
+            Check(await fixture.ReadyAsync(), "Complete saved results keep the ready mark after a prompt change");
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Update with Luna");
+            Check(probe.HasText("The classification prompt changed.") && probe.HasText("Touched resources"),
+                "The inspector shows the update and the saved results together");
+            Equal(0, fixture.Packets.Length, "Opening the inspector does not refresh saved results");
+
+            fixture.OmitReplyFor = 4;
+            await probe.Click("Update with Luna");
+            await probe.Ready("Retry analysis");
+            Check(probe.HasText("2 of 3 tool calls with the current prompt") && probe.HasText("The classification prompt changed."),
+                "A partial response keeps the update notice and offers a retry");
+            Equal("3,4,5|4", string.Join('|', fixture.Packets.Select(ids => string.Join(',', ids))), "Update requests the old rows and retries the missing reply");
+            var partial = await fixture.InspectAsync();
+            Check(partial.HasOutdatedClassifications && partial.Calls.All(call => call.Classification != null),
+                "Reopening keeps the saved result for the call without a new reply");
+            Equal("Saved summary from the older prompt.", partial.Calls.Single(call => call.Id == 4).Classification!.Summary,
+                "An unanswered call keeps its original summary");
+
+            fixture.OmitReplyFor = null;
+            fixture.Reset();
+            await probe.Click("Retry analysis");
+            await WorkspaceProbe.WaitAsync(() => !probe.HasText("Retry analysis"));
+            Equal(4, fixture.Packets.Single().Single(), "Retry requests only the call that still has an old result");
+            var updated = await fixture.InspectAsync();
+            Check(!updated.HasOutdatedClassifications && !probe.HasText("The classification prompt changed.") && !probe.HasText("Update with Luna"),
+                "The update notice and action go away once all results are current");
+            Equal("Read and updated component 4.", updated.Calls.Single(call => call.Id == 4).Classification!.Summary,
+                "The saved summary comes from the current prompt");
+            await probe.Key(Key.Escape);
         }),
         new("session-inspector-classification-claude", "Keep Claude results and linked agents in separate classification batches", async c =>
         {
@@ -140,6 +185,21 @@ public static class SessionInspectorScenarios
             Equal(0, fixture.Packets.Length, "Resource details reuse the cached classification");
             await probe.Screenshot("resource-details");
             await probe.Key(Key.Escape);
+            await probe.Key(Key.Escape);
+        }),
+        new("session-inspector-manual-analysis", "Open the local timeline and explicitly classify missing results", async c =>
+        {
+            using var fixture = new ClassificationFixture(c);
+            fixture.Write(3);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Analyze with Luna");
+            Check(probe.HasText("Session timeline") && fixture.Packets.Length == 0,
+                "An uncached session opens without a Luna request");
+            await probe.Click("Analyze with Luna");
+            await WorkspaceProbe.WaitAsync(() => !probe.HasText("Analyze with Luna"));
+            Equal("3,4,5", string.Join(',', fixture.Packets.Single()), "The action classifies the missing calls");
             await probe.Key(Key.Escape);
         }),
         new("session-inspector-activity-order", "Rank activities by estimated tokens in the selected range", async c =>
@@ -296,6 +356,9 @@ public static class SessionInspectorScenarios
             await c.KeyAsync(Key.F3);
             var probe = new InspectorProbe(c);
             await probe.Ready("Touched resources");
+            await probe.Ready("Analyze with Luna");
+            await probe.Click("Analyze with Luna");
+            await probe.Ready("Browse all 40 resources");
             await probe.Screenshot("touched-resources");
             probe.Window.Width = 650;
             probe.Window.Height = 650;

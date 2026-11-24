@@ -49,11 +49,17 @@ As a user, I want to inspect what an agent did during a session so that I can un
 - Keep each inspector in an independent window. Let users browse other sessions
   while it is open.
   Codex session ID 01a20095-f346-7aa1-bffe-b63fc3b3d258.
-- Classify completed tool calls with Luna when the inspector opens. Keep the
-  summary, target/action pairs and concrete objects for each call. Reuse saved
+- Keep the summary, target/action pairs and concrete objects for each call. Reuse saved
   classifications when the session grows or the user opens it again.
   See the [classification specification](../archive/session-tool-call-classification.md).
   Codex session ID 01a205bb-aa5d-7a91-b342-a1790338950d.
+- Open the local timeline and saved results immediately. Start Luna only when
+  the user chooses Analyze with Luna. Point Taken #71 and #74.
+  Codex session ID 01a20a89-fac7-7b33-abc9-9b1bfa8e7d25.
+- Reuse saved classifications after a prompt change. Show that an update is
+  available and refresh outdated results when the user chooses Update with Luna.
+  Invalidate saved results when the cache format changes.
+  Codex session ID 01a20cf0-8539-7331-a19d-25a416b17d90.
 - Ask Luna for each call's touched resources in the same classification request,
   in batches of up to 20 calls with medium reasoning effort. Use the model's
   resource lists to show files, directories, URLs, issues, repositories and other

@@ -18,7 +18,7 @@ internal sealed class ClassificationStatus(string folder, AgentSession session)
         internal bool IsCurrent() => this == Read(Path, Directory);
     }
 
-    private sealed record Snapshot(string Version, string Project, string Directory, string? Transcript, bool Ready, Stamp[] Inputs);
+    private sealed record Snapshot(int CacheFormatVersion, string Project, string Directory, string? Transcript, bool Ready, Stamp[] Inputs);
     private readonly List<Stamp> inputs = [];
     private readonly string path = Path.Combine(folder, "classification.status");
 
@@ -30,7 +30,7 @@ internal sealed class ClassificationStatus(string folder, AgentSession session)
         {
             using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             var saved = JsonSerializer.Deserialize<Snapshot>(file);
-            if (saved != null && saved.Version == ClassificationPacket.Version && saved.Project == session.ProjectDirectory &&
+            if (saved != null && saved.CacheFormatVersion == ClassificationCache.FormatVersion && saved.Project == session.ProjectDirectory &&
                 saved.Directory == session.Directory && saved.Transcript == session.TranscriptPath &&
                 saved.Inputs is { Length: > 0 } && saved.Inputs.All(s => s is { Path.Length: > 0 } && s.IsCurrent()))
                 return saved.Ready;
@@ -47,7 +47,7 @@ internal sealed class ClassificationStatus(string folder, AgentSession session)
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            File.WriteAllBytes(temp, JsonSerializer.SerializeToUtf8Bytes(new Snapshot(ClassificationPacket.Version, session.ProjectDirectory,
+            File.WriteAllBytes(temp, JsonSerializer.SerializeToUtf8Bytes(new Snapshot(ClassificationCache.FormatVersion, session.ProjectDirectory,
                 session.Directory, session.TranscriptPath, ready, [.. inputs])));
             File.Move(temp, path, true);
         }

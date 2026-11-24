@@ -10,7 +10,8 @@ internal sealed record ClassificationCall(CallEvidence Call, SessionMessage[] Re
 internal static class ClassificationPacket
 {
     private static readonly string Instructions = ReadInstructions();
-    internal static readonly string Version = ClassificationText.Hash("projection-1/validation-1\n" + Request("", [], false));
+    // Keep the hash used in the original cache so an unchanged prompt can reuse its results.
+    internal static readonly string PromptVersion = ClassificationText.Hash("projection-1/validation-1\n" + Request("", [], false));
 
     private static string ReadInstructions()
     {

@@ -29,6 +29,7 @@ public sealed class SessionTrace
     public IReadOnlyList<TraceSpan> Phases { get; }
     public string? Note { get; }
     public string? ClassificationError { get; init; }
+    public bool HasOutdatedClassifications { get; init; }
     private readonly bool caseSensitivePaths;
     public string FileKey(string path)
     {

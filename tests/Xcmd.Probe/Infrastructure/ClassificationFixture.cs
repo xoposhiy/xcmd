@@ -22,6 +22,7 @@ internal sealed class ClassificationFixture : IDisposable
     internal bool UnreadableReply { set => transport.UnreadableReply = value; }
     internal bool DamageFirstReply { set => transport.DamageFirstReply = value; }
     internal bool CheckResourceReplies { set => transport.CheckResourceReplies = value; }
+    internal int? OmitReplyFor { set => transport.OmitReplyFor = value; }
     internal void Reset() => transport.Packets.Clear();
 
     internal ClassificationFixture(ProbeContext c)
@@ -30,7 +31,8 @@ internal sealed class ClassificationFixture : IDisposable
         file = Path.Combine(root, "classification.jsonl");
         Session = c.AgentSessions.AddCodexSession("Classify runtime operations", c.LeftPath, DateTimeOffset.UtcNow) with { TranscriptPath = file };
         http = new(transport);
-        c.AgentSessions.Inspector = (_, token) => ReadAsync(token);
+        c.AgentSessions.Inspector = (_, token) => Reader(root).ReadAsync(Session, token);
+        c.AgentSessions.Analyzer = (_, token) => ReadAsync(token);
     }
 
     internal void Write(int count)
@@ -43,13 +45,37 @@ internal sealed class ClassificationFixture : IDisposable
     internal void Append(int n) => File.AppendAllLines(file, [Call(n)]);
     internal void Message(string text) => File.AppendAllLines(file, [Event(new { type = "UserMessage", content = new[] { new { text } } })]);
 
-    internal void InvalidateVersion()
+    private string CacheFile() => Directory.EnumerateFiles(Path.Combine(root, "cache"), "*.json", SearchOption.AllDirectories).Single();
+
+    internal void UseUnknownCacheFormat()
     {
-        var cache = Directory.EnumerateFiles(Path.Combine(root, "cache"), "*.json", SearchOption.AllDirectories).Single();
+        var cache = CacheFile();
         var json = JsonNode.Parse(File.ReadAllText(cache))!;
-        json["Version"] = "previous-prompt";
+        json["FormatVersion"] = int.MaxValue;
         File.WriteAllText(cache, json.ToJsonString());
     }
+
+    internal void UseLegacyCache()
+    {
+        var cache = CacheFile();
+        var entries = JsonNode.Parse(File.ReadAllText(cache))!["Rows"]!.AsObject();
+        var version = entries.First().Value!["PromptVersion"]!.GetValue<string>();
+        var rows = new JsonObject();
+        foreach (var entry in entries)
+            rows[entry.Key] = entry.Value!["Classification"]!.DeepClone();
+        File.WriteAllText(cache, new JsonObject { ["Version"] = version, ["Rows"] = rows }.ToJsonString());
+    }
+
+    internal void UseOlderPrompt()
+    {
+        var cache = CacheFile();
+        var json = JsonNode.Parse(File.ReadAllText(cache))!;
+        json["Version"] = new string('0', 64);
+        foreach (var entry in json["Rows"]!.AsObject())
+            entry.Value!["Summary"] = "Saved summary from the older prompt.";
+        File.WriteAllText(cache, json.ToJsonString());
+    }
+
     internal void Rewrite(string before, string after)
     {
         var original = File.ReadAllText(file);
@@ -63,7 +89,9 @@ internal sealed class ClassificationFixture : IDisposable
     internal Task<bool> ReadyAsync(AgentSession? claude = null) =>
         Reader(claude == null ? root : Path.Combine(root, "inspector")).IsClassificationReadyAsync(claude ?? Session, default);
 
-    internal Task<SessionTrace> ReadAsync(CancellationToken token = default) => Reader(root).ReadAsync(Session, token);
+    internal Task<SessionTrace> ReadAsync(CancellationToken token = default) => Reader(root).AnalyzeAsync(Session, token);
+
+    internal Task<SessionTrace> InspectAsync() => Reader(root).ReadAsync(Session, default);
 
     internal Task<SessionTrace[]> OpenTwoInspectorsAsync() => Task.WhenAll(ReadAsync(), ReadAsync());
 
@@ -71,7 +99,7 @@ internal sealed class ClassificationFixture : IDisposable
     {
         transport.CheckCommandFixture = false;
         var transcripts = Path.Combine(root, "inspector");
-        return Reader(transcripts).ReadAsync(session, default);
+        return Reader(transcripts).AnalyzeAsync(session, default);
     }
 
     private static string Call(int n) => Event(new
@@ -102,6 +130,7 @@ internal sealed class ClassificationFixture : IDisposable
         internal bool DamageFirstReply;
         internal bool CheckResourceReplies;
         internal bool UnreadableReply;
+        internal int? OmitReplyFor;
         internal bool CheckCommandFixture = true;
         internal int Peak;
         private int running;
@@ -135,7 +164,7 @@ internal sealed class ClassificationFixture : IDisposable
                 if (DamageFirstReply && Packets.Count > 0)
                     Check(calls[0].GetProperty("command").GetString()!.Length > 1800, "Repair includes expanded evidence");
                 Packets.Enqueue(ids);
-                var rows = ids.Select(id => Row(id)).ToList();
+                var rows = ids.Where(id => id != OmitReplyFor).Select(id => Row(id)).ToList();
                 if (DamageFirstReply && ids.Length > 1)
                 {
                     rows.Add(Row(ids[0]));

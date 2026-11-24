@@ -14,7 +14,7 @@ internal static class ToolClassificationEvaluation
         var reader = new SessionTranscriptReader(cache, cache, classifier);
         var projectDirectory = Path.Combine(cache, project);
         var session = new AgentSession(SessionAgent.Codex, Guid.Empty, "", projectDirectory, DateTimeOffset.UnixEpoch) { TranscriptPath = transcript };
-        var trace = await reader.ReadAsync(session, CancellationToken.None);
+        var trace = live ? await reader.AnalyzeAsync(session, CancellationToken.None) : await reader.ReadAsync(session, CancellationToken.None);
         foreach (var call in trace.Calls)
         {
             var answer = call.Classification;

@@ -27,7 +27,7 @@ internal sealed partial class AgentSessionView
                 var ready = await source.IsClassificationReadyAsync(row, request.Token);
                 if (request.IsCancellationRequested) return;
                 text.Text = ready ? name + " ✓" : name;
-                ToolTip.SetTip(text, ready ? "F3 uses saved Luna results" : "F3 asks Luna to classify uncached tool calls");
+                ToolTip.SetTip(text, ready ? "F3 uses saved Luna results" : "Press F3 to inspect the session. Choose Analyze with Luna to classify calls.");
             }
             catch (OperationCanceledException) when (request.IsCancellationRequested) { }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)

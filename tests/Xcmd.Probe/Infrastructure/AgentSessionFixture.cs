@@ -26,7 +26,10 @@ internal sealed class AgentSessionFixture : IAgentSessions
     private TaskCompletionSource? historyReady;
     internal Func<AgentSession, CancellationToken, Task<SessionTrace>> Inspector { get; set; } =
         (_, _) => throw new FileNotFoundException("The local transcript is missing.");
-    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) => Inspector(session, token);
+    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token) => Inspector(session, token);
+    internal Func<AgentSession, CancellationToken, Task<SessionTrace>>? Analyzer { get; set; }
+    public Task<SessionTrace> AnalyzeAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
+        (Analyzer ?? Inspector)(session, token);
 
     internal void UseActivityBreakdownTrace()
     {

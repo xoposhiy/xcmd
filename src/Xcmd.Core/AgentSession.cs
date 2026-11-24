@@ -32,7 +32,8 @@ public interface IAgentSessions
 {
     Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token);
     Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token);
-    Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null);
+    Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token);
+    Task<SessionTrace> AnalyzeAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null);
     Task ListAsync(SessionAgent agent, SessionListScope scope, Func<IReadOnlyList<AgentSession>, Task> showPage, CancellationToken token);
     ExternalLaunch Resume(AgentSession session);
 }

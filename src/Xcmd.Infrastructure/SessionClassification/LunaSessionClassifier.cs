@@ -11,27 +11,38 @@ public sealed class LunaSessionClassifier(string cacheDirectory, Func<string?> a
     public static LunaSessionClassifier Local() => new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Xcmd", "session-classification"), LunaResponses.ReadKey, SharedHttp);
 
-    internal async Task ClassifyAsync(AgentSession session, TraceRecords trace, IProgress<string>? progress, CancellationToken token)
+    internal async Task ApplyAsync(AgentSession session, TraceRecords trace, bool analyze, IProgress<string>? progress, CancellationToken token)
     {
-        var answers = new Dictionary<(string Agent, int Id), ToolClassification>();
+        var answers = new Dictionary<(string Agent, int Id), CachedClassification>();
         var run = new ClassificationRun(progress, trace.Calls.Count);
         var project = Project(session);
         run.Report(0);
         foreach (var group in trace.Calls.GroupBy(c => c.Agent))
         {
+            token.ThrowIfCancellationRequested();
             var evidence = trace.Evidence[group.Key];
+            var path = CachePath(session, evidence);
+            if (!analyze && !File.Exists(path)) continue;
             var calls = ClassificationPacket.Prepare(group, evidence, project);
-            var cache = new ClassificationCache(CachePath(session, evidence));
-            var found = await ClassifyStreamAsync(project, calls, cache, run, token).ConfigureAwait(false);
+            var cache = new ClassificationCache(path);
+            Dictionary<int, CachedClassification> found;
+            if (analyze) found = await ClassifyStreamAsync(project, calls, cache, run, token).ConfigureAwait(false);
+            else
+            {
+                try { found = cache.Load(calls); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
+            }
             foreach (var row in found) answers[(group.Key, row.Key)] = row.Value;
         }
         for (var i = 0; i < trace.Calls.Count; i++)
         {
             var call = trace.Calls[i];
-            if (answers.TryGetValue((call.Agent, call.Id), out var row)) trace.Calls[i] = call with { Classification = row };
+            if (answers.TryGetValue((call.Agent, call.Id), out var row)) trace.Calls[i] = call with { Classification = row.Classification };
         }
-        if (answers.Count < trace.Calls.Count)
-            trace.ClassificationError = $"Luna classified {answers.Count:N0} of {trace.Calls.Count:N0} tool calls. " +
+        var current = answers.Values.Count(row => row.IsCurrent);
+        trace.HasOutdatedClassifications = current < answers.Count;
+        if (analyze && current < trace.Calls.Count)
+            trace.ClassificationError = $"Luna classified {current:N0} of {trace.Calls.Count:N0} tool calls with the current prompt. " +
                 (run.Error ?? "Some replies did not contain a valid classification.");
     }
 
@@ -56,17 +67,17 @@ public sealed class LunaSessionClassifier(string cacheDirectory, Func<string?> a
     private string CachePath(AgentSession session, ClassificationEvidence evidence) => Path.Combine(Folder(session), evidence.Stream + ".json");
     private static string Project(AgentSession session) => new ClassificationText(session.ProjectDirectory).Clean(session.ProjectName).ReplaceLineEndings(" ");
 
-    private async Task<Dictionary<int, ToolClassification>> ClassifyStreamAsync(string project, ClassificationCall[] calls,
+    private async Task<Dictionary<int, CachedClassification>> ClassifyStreamAsync(string project, ClassificationCall[] calls,
         ClassificationCache cache, ClassificationRun run, CancellationToken token)
     {
-        var found = new Dictionary<int, ToolClassification>();
+        var found = new Dictionary<int, CachedClassification>();
         try
         {
             using var lease = await cache.LockAsync(token).ConfigureAwait(false);
             found = cache.Load(calls);
-            run.Report(found.Count);
-            var pending = calls.Where(c => !found.ContainsKey(c.Call.Id)).Chunk(20).ToArray();
-            await Parallel.ForEachAsync(pending, new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = token }, ReviewBatch).ConfigureAwait(false);
+            var pending = calls.Where(c => !found.TryGetValue(c.Call.Id, out var row) || !row.IsCurrent).ToArray();
+            run.Report(calls.Length - pending.Length);
+            await Parallel.ForEachAsync(pending.Chunk(20), new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = token }, ReviewBatch).ConfigureAwait(false);
         }
         catch (Exception e) when (Recoverable(e, token)) { run.Fail(e); }
         return found;
@@ -82,9 +93,10 @@ public sealed class LunaSessionClassifier(string cacheDirectory, Func<string?> a
             catch (Exception e) when (Recoverable(e, ct)) { run.Fail(e); }
         }
 
-        async Task<Dictionary<int, ToolClassification>> Review(ClassificationCall[] batch, bool expanded, CancellationToken ct)
+        async Task<Dictionary<int, CachedClassification>> Review(ClassificationCall[] batch, bool expanded, CancellationToken ct)
         {
-            var rows = await RequestAsync(project, batch, expanded, ct).ConfigureAwait(false);
+            var answers = await RequestAsync(project, batch, expanded, ct).ConfigureAwait(false);
+            var rows = answers.ToDictionary(row => row.Key, row => new CachedClassification(row.Value, ClassificationPacket.PromptVersion));
             if (rows.Count == 0) return rows;
             lock (cache)
             {

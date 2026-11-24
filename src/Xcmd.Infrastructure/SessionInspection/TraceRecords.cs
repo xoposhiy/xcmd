@@ -23,6 +23,7 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
     internal ClassificationStatus? Status { get; init; }
     internal Dictionary<string, ClassificationEvidence> Evidence { get; } = [];
     internal string? ClassificationError { get; set; }
+    internal bool HasOutdatedClassifications { get; set; }
 
     internal ClassificationEvidence ForAgent(string name, string stream) => Evidence[name] = new(Project, stream);
 
@@ -36,7 +37,10 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
         if (MissingAgents > 0) notes.Add($"Local transcripts unavailable for {MissingAgents:N0} linked agents.");
         return new(First == long.MaxValue ? session.Updated.ToUnixTimeMilliseconds() : First, Last, Calls, Tasks, Steps.Count > 0 ? Steps : Progress,
             notes.Count == 0 ? null : string.Join(" ", notes), TranscriptPath.IsUnixRoot(Project))
-        { ClassificationError = ClassificationError };
+        {
+            ClassificationError = ClassificationError,
+            HasOutdatedClassifications = HasOutdatedClassifications
+        };
     }
 
     internal void MarkProgress(string agent, string text, long at)

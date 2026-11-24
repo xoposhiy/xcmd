@@ -86,24 +86,27 @@ internal sealed class SessionInspectorWindow : Window
         Show();
     }
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool analyze = false)
     {
         var token = lifetime.Token;
+        var prior = overview as InspectorOverview;
         try
         {
-            var status = Text("Reading session…", 22, strong: true);
-            overview = Box(status, padding: new Thickness(24));
-            if (!detail) page.Content = overview;
-            var trace = await source.InspectAsync(session, token, new Progress<string>(value => status.Text = value));
+            prior?.SetAnalysisStatus("Analyzing tool calls…", busy: true);
+            var trace = analyze
+                ? await source.AnalyzeAsync(session, token, new Progress<string>(value => prior?.SetAnalysisStatus(value, busy: true)))
+                : await source.InspectAsync(session, token);
             if (token.IsCancellationRequested) return;
-            var ready = new InspectorOverview(session, trace, ShowDetail, RetryClassification).WithFeedbackId("SessionInspector.overview");
-            if (savedRange != null) ready.Restore(savedRange);
+            var ready = new InspectorOverview(session, trace, ShowDetail, () => _ = LoadAsync(analyze: true)).WithFeedbackId("SessionInspector.overview");
+            if (prior != null) ready.Restore(prior.Capture());
+            else if (savedRange != null) ready.Restore(savedRange);
             overview = ready;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)
         {
             if (token.IsCancellationRequested) return;
+            if (prior != null) { prior.SetAnalysisStatus(error.Message); return; }
             var retry = Action("Read again", () => { overview = Message("Reading session…", session.DisplayTopic); page.Content = overview; _ = LoadAsync(); });
             overview = Message("Cannot read this session", error.Message, retry);
         }
@@ -115,12 +118,6 @@ internal sealed class SessionInspectorWindow : Window
                 if (overview is InspectorOverview ready) ready.FocusTimeline(); else back.Focus();
             }
         }
-    }
-
-    private void RetryClassification()
-    {
-        savedRange = (overview as InspectorOverview)?.Capture();
-        _ = LoadAsync();
     }
 
     private static Control Message(string heading, string message, Control? action = null)
@@ -180,7 +177,8 @@ internal sealed class SessionInspectorWindow : Window
         Entry("Use the keyboard", "Tab to the timeline. Use Up and Down to change tracks, Left and Right to browse events, and Enter to select. Use the start and end sliders below the timeline for a custom range. Esc returns to the previous view.");
         Entry("Read the axes", "Time shows when each call ran. Est. tokens orders results by completion and estimates the size of tool inputs and outputs at one token per four characters. The estimate excludes model messages, images and billing.");
         Entry("Understand the totals", "Calls, tokens and touched resources count when a result arrives. Tool time includes the part of each call inside the range, including parallel calls. Outside tools counts time with no selected agent running a tool.");
-        Entry("Activity breakdown", "Luna classifies each completed call by target and action. A call can appear in several rows. The session totals count each call once. Open View tool calls to see each summary and its objects. Xcmd saves validated answers locally and sends new or changed calls to OpenAI when you open the inspector.");
+        Entry("Activity breakdown", "Luna classifies each completed call by target and action. A call can appear in several rows. The session totals count each call once. Open View tool calls to see each summary and its objects.");
+        Entry("Analyze a session", "Xcmd loads saved classifications when you open the inspector. Choose Analyze with Luna to send new or changed calls to OpenAI for classification. When the prompt changes, choose Update with Luna to refresh saved results.");
         Entry("Read tasks and phases", "Tasks come from user messages. Work phases follow plan steps, progress messages or runs of similar tools, in that order.");
         Entry("Touched resources", "Luna identifies files, directories, URLs, issues, repositories and other resources while classifying tool calls. The table counts completed calls in the selected range and agent scope. Open a resource to see those calls.");
         ShowDetail("Reading the timeline", new ScrollViewer { Content = guideBody }.WithFeedbackId("SessionInspector.guideScroll"));

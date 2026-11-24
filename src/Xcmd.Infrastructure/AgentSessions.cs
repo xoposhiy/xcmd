@@ -33,8 +33,11 @@ public sealed class AgentSessions : IAgentSessions, IAsyncDisposable
     public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) =>
         SessionStatisticsReader.ReadAsync(session, token);
 
-    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
-        transcripts.ReadAsync(session, token, progress);
+    public Task<SessionTrace> InspectAsync(AgentSession session, CancellationToken token) =>
+        transcripts.ReadAsync(session, token);
+
+    public Task<SessionTrace> AnalyzeAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
+        transcripts.AnalyzeAsync(session, token, progress);
 
     public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) =>
         transcripts.IsClassificationReadyAsync(session, token);

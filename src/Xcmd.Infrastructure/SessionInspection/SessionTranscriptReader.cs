@@ -16,12 +16,15 @@ public sealed class SessionTranscriptReader(string codexHome, string claudeHome,
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), fallback);
 
     public Task<SessionTrace> ReadAsync(AgentSession session, CancellationToken token) =>
-        ReadAsync(session, token, null);
+        ReadAsync(session, token, null, analyze: false);
 
-    public Task<SessionTrace> ReadAsync(AgentSession session, CancellationToken token, IProgress<string>? progress) => Task.Run(async () =>
+    public Task<SessionTrace> AnalyzeAsync(AgentSession session, CancellationToken token, IProgress<string>? progress = null) =>
+        ReadAsync(session, token, progress, analyze: true);
+
+    private Task<SessionTrace> ReadAsync(AgentSession session, CancellationToken token, IProgress<string>? progress, bool analyze) => Task.Run(async () =>
     {
         var trace = ReadRecords(session, null, token);
-        if (classifier != null) await classifier.ClassifyAsync(session, trace, progress, token).ConfigureAwait(false);
+        if (classifier != null) await classifier.ApplyAsync(session, trace, analyze, progress, token).ConfigureAwait(false);
         return trace.Finish(session);
     }, token);
 

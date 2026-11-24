@@ -26,12 +26,14 @@ internal sealed partial class InspectorOverview : UserControl
     private readonly Grid tables = Grid("*,12,*", "Auto,Auto");
     private readonly Grid ranges = Grid("Auto,*,Auto,*");
     private readonly Slider startSlider, endSlider;
+    private readonly Button analyze;
+    private readonly TextBlock analysisStatus = SessionInspectorWindow.Paragraph("");
     private readonly StackPanel resources = Stack(), activities = Stack();
     private bool updating;
     private bool narrow;
     private SessionSummary summary;
 
-    internal InspectorOverview(AgentSession session, SessionTrace trace, Action<string, Control> detail, Action retry)
+    internal InspectorOverview(AgentSession session, SessionTrace trace, Action<string, Control> detail, Action startAnalysis)
     {
         this.detail = detail;
         selection = new(trace);
@@ -64,12 +66,15 @@ internal sealed partial class InspectorOverview : UserControl
             totals.Margin = new Thickness(0, small ? 4 : 0, 0, 0);
         };
         if (trace.Note != null) content.Children.Add(SessionInspectorWindow.Paragraph(trace.Note));
-        if (trace.ClassificationError != null)
+        var analysisAction = trace.ClassificationError != null ? "Retry analysis" :
+            trace.HasOutdatedClassifications ? "Update with Luna" : "Analyze with Luna";
+        analyze = Action(analysisAction, startAnalysis);
+        if (trace.HasOutdatedClassifications || trace.Calls.Any(c => c.Classification == null))
         {
-            content.Children.Add(SessionInspectorWindow.Paragraph(trace.ClassificationError));
-            var resume = Action("Retry classification", retry);
-            resume.HorizontalAlignment = HorizontalAlignment.Left;
-            content.Children.Add(resume);
+            analyze.HorizontalAlignment = HorizontalAlignment.Left;
+            content.Children.Add(analyze);
+            content.Children.Add(analysisStatus);
+            SetAnalysisStatus(trace.ClassificationError);
         }
         content.Children.Add(BuildTimeline());
         content.Children.Add(BuildRange());
@@ -124,6 +129,15 @@ internal sealed partial class InspectorOverview : UserControl
     }
 
     private void Filter(string? agent) => scope.SelectedItem = agent ?? "All agents";
+    internal void SetAnalysisStatus(string? message, bool busy = false)
+    {
+        analyze.IsEnabled = !busy;
+        if (!busy && selection.Trace.HasOutdatedClassifications)
+            message = $"The classification prompt changed. Update with Luna sends outdated and unclassified calls to OpenAI. Saved results are still available.\n{message}".TrimEnd();
+        analysisStatus.Text = message;
+        analysisStatus.IsVisible = !string.IsNullOrEmpty(message);
+    }
+
     internal void FocusTimeline() => timeline.Focus(NavigationMethod.Directional);
     internal InspectorRange Capture() => new(selection.From, selection.To, selection.ZoomFrom, selection.ZoomTo, selection.Zoomed, selection.Agent, timeline.Tokens);
     internal void Restore(InspectorRange saved)
