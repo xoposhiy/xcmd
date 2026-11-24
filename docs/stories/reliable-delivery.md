@@ -56,6 +56,10 @@ that I can locate reported interface targets independently of visual position.
   Apply the rule to labels and nested surfaces as well as interactive controls.
   Source: [2026-11-10T17-42-56-01a1c657-5941-7960-adcb-f3b2b3198e58.md → Turn 7](../codex-sessions/2026-11-10T17-42-56-01a1c657-5941-7960-adcb-f3b2b3198e58.md#turn-7).
 
+- Name Session Inspector feedback IDs by each control's role. Give panels,
+  headings, values, and actions distinct IDs. Point Taken #93.
+  Codex session ID 01a20ef4-bc33-7d01-ab23-94751e719902.
+
 ## FeedbackQueue
 
 As a developer, I want to list, claim, close, release, and reopen feedback items

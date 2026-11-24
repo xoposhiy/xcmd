@@ -27,7 +27,7 @@ internal sealed partial class SessionTimeline
                 Add(response, LaneFor(response.Agent, null), [], null, 0, 1);
                 continue;
             }
-            var rows = response.Calls.Select(call => SessionCallBlock.For(Trace, call))
+            var rows = response.Calls.Select(SessionCallBlock.For)
                 .SelectMany(block => CallTracks(block, response.Agent)
                     .Select(track => (track.Lane, track.Categories, Block: block))).ToLookup(row => row.Lane);
             foreach (var row in rows)
@@ -42,7 +42,8 @@ internal sealed partial class SessionTimeline
         void Add(SessionResponse response, int lane, TimelineCategory[] categories, SessionCallBlock? block, double offset, double share)
         {
             responseRows[(lane, response.Index)] = response;
-            bars.Add(new(lane, response.Index, response.Index + 1, response.Title,
+            var title = block?.Calls[0] is { IsStandaloneJavaScript: true } call ? call.Title : response.Title;
+            bars.Add(new(lane, response.Index, response.Index + 1, title,
                 response.Calls.Count == 0 ? MessageFill : UiPalette.ControlBorder, block, categories, response, offset, share));
         }
     }
@@ -50,7 +51,7 @@ internal sealed partial class SessionTimeline
     private void AddCalls()
     {
         var rows = Trace.Calls.Where(call => call.End >= selection.ZoomFrom && call.Start <= selection.ZoomTo)
-            .Select(call => SessionCallBlock.For(Trace, call))
+            .Select(SessionCallBlock.For)
             .SelectMany(block => CallTracks(block, block.Calls[0].Agent).Select(track => (track, block)))
             .ToLookup(row => row.track.Lane);
         foreach (var row in rows)
@@ -63,7 +64,7 @@ internal sealed partial class SessionTimeline
                 var band = bands.FindIndex(end => end <= call.Start);
                 if (band < 0) { band = bands.Count; bands.Add(call.End); }
                 else bands[band] = call.End;
-                bars.Add(new(track.Lane, call.Start, call.End, call.Classification?.Summary ?? call.Title,
+                bars.Add(new(track.Lane, call.Start, call.End, call.DisplayTitle,
                     UiPalette.ControlBorder, block, track.Categories, Band: band));
             }
             for (var i = startIndex; i < bars.Count; i++) bars[i] = bars[i] with { Bands = bands.Count };
@@ -88,13 +89,5 @@ internal sealed partial class SessionTimeline
             if (width >= 42) ShortLabel(context, last == response ? "Message" : "Messages", left + 3,
                 LaneTop(bar.Lane), width - 6, UiPalette.Text);
         }
-    }
-
-    private ResponseHit FocusFor(Bar bar)
-    {
-        var response = bar.Response!;
-        var track = TrackAt(bar.Lane)!.Value;
-        var calls = response.Calls.Where(call => call.Labels.Any(label => LaneFor(call.Agent, label.Target) == bar.Lane)).ToArray();
-        return new(response, calls, track.Name);
     }
 }

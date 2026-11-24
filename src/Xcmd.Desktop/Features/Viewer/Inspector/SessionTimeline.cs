@@ -44,8 +44,8 @@ internal sealed partial class SessionTimeline : Decorator
         Focusable = true;
         ClipToBounds = true;
         Child = handles;
-        startHandle = AddRangeHandle(true);
-        endHandle = AddRangeHandle(false);
+        startHandle = AddRangeHandle(true, "SessionInspector.rangeStartHandle", "SessionInspector.rangeStartArrow");
+        endHandle = AddRangeHandle(false, "SessionInspector.rangeEndHandle", "SessionInspector.rangeEndArrow");
         SizeChanged += (_, _) => UpdateRangeHandles();
         focus.Changed += InvalidateVisual;
         AutomationProperties.SetName(this, "Session timeline. Use arrow keys to browse events and Enter to select.");

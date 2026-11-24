@@ -54,11 +54,12 @@ public sealed partial class FeedbackController
             catch (Exception error) { actions.SetHint("Start Point Taken to report an issue."); actions.Trace(error.Message); }
         });
     }
-    private (int X, int Y, int Width, int Height)? PreviewTarget(long hwnd, int x, int y)
+    private (int X, int Y, int Width, int Height, string SourceId)? PreviewTarget(long hwnd, int x, int y)
     {
         var source = surfaces.Keys.FirstOrDefault(w => w.IsVisible && w.TryGetPlatformHandle()?.Handle == (nint)hwnd);
-        if (source == null || surfaces[source].BoundsAt(new(x, y)) is not { } rect) return null;
-        return (rect.X, rect.Y, rect.Width, rect.Height);
+        if (source == null || surfaces[source].PreviewAt(new(x, y)) is not { } target) return null;
+        var rect = target.Bounds;
+        return (rect.X, rect.Y, rect.Width, rect.Height, target.SourceId);
     }
 
     private ChannelReader<object?>? StartSelection(long hwnd, bool repeat, (int X, int Y)? point, bool useControl)

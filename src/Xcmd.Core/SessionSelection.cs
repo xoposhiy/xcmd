@@ -75,7 +75,12 @@ public sealed class SessionSelection
     public void ToggleZoom()
     {
         if (Zoomed) ResetZoom();
-        else if (CostAxis && FirstResponse < LastResponse)
+        else ZoomToRange();
+    }
+
+    public void ZoomToRange()
+    {
+        if (CostAxis && FirstResponse < LastResponse)
         {
             ZoomFirstResponse = FirstResponse;
             ZoomLastResponse = LastResponse;
@@ -85,7 +90,7 @@ public sealed class SessionSelection
         else if (To > From) { ZoomFrom = From; ZoomTo = To; }
     }
 
-    private void ResetZoom()
+    public void ResetZoom()
     {
         ZoomFrom = Trace.Start;
         ZoomTo = Trace.End;

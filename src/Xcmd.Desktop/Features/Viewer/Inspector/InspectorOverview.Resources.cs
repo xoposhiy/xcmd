@@ -13,24 +13,24 @@ internal sealed partial class InspectorOverview
 {
     private const double ResourceRowHeight = 20;
     private readonly HashSet<string> collapsedGroups = [];
-    private readonly StackPanel resourceRows = Stack();
-    private readonly TextBlock resourceCount = Text("", 12, UiPalette.Secondary);
+    private readonly StackPanel resourceRows = Stack("SessionInspector.resourceRows");
+    private readonly TextBlock resourceCount = Text("SessionInspector.resourceCount", "", 12, UiPalette.Secondary);
     private readonly Dictionary<ToolResource, SessionResourceActivity> visibleActivity = [];
-    private readonly ResourceFilter resourceType = new("Type",
+    private readonly ResourceFilter resourceType = new("SessionInspector.filterResourcesByType", "Type",
         new[] { "file", "directory", "url", "issue", "repository", "other" }
             .Select(key => (key, SessionResourceGroup.KindName(key))), initial: "file");
-    private readonly ResourceFilter resourceTarget = new("Target",
+    private readonly ResourceFilter resourceTarget = new("SessionInspector.filterResourcesByTarget", "Target",
         new[] { "source", "tests", "docs", "agent_instructions", "tracker", "git", "build_release", "project", "unknown" }
             .Select(key => (key, TimelineCaption.Name(key))));
-    private readonly ResourceFilter resourceAction = new("Action", ResourceTimeline.Actions.Where(a => a.Action != "other"),
+    private readonly ResourceFilter resourceAction = new("SessionInspector.filterResourcesByAction", "Action", ResourceTimeline.Actions.Where(a => a.Action != "other"),
         hint: "Selections also include Other.");
 
     private void BuildResourcePanel()
     {
         Avalonia.Controls.Grid.SetIsSharedSizeScope(resourceRows, true);
-        var heading = Grid("*,Auto");
+        var heading = Grid("SessionInspector.resourcePanelHeader", "*,Auto");
         heading.Margin = new Thickness(11, 8);
-        Put(heading, Text("Touched resources", 16, strong: true));
+        Put(heading, Text("SessionInspector.resourcePanelTitle", "Touched resources", 16, strong: true));
         Put(heading, resourceCount, 1);
         resources.Children.Add(heading);
         var filters = new WrapPanel { Margin = new Thickness(10, 0, 4, 2) }.WithFeedbackId("SessionInspector.resourceFilters");
@@ -59,11 +59,11 @@ internal sealed partial class InspectorOverview
         resourceCount.Text = $"{visible.Count:N0} of {summary.Resources.Count:N0}";
         var missing = summary.Results.Count(c => c.Classification == null);
         if (missing > 0)
-            resourceRows.Children.Add(Note($"Resource lists unavailable for {missing:N0} of {summary.Results.Count:N0} calls in this range."));
+            resourceRows.Children.Add(Note("SessionInspector.resourcesUnavailable", $"Resource lists unavailable for {missing:N0} of {summary.Results.Count:N0} calls in this range."));
         if (visible.Count == 0)
         {
-            if (summary.Resources.Count > 0) resourceRows.Children.Add(Note("No resources match the selected filters."));
-            else if (missing == 0) resourceRows.Children.Add(Note(summary.Results.Count == 0
+            if (summary.Resources.Count > 0) resourceRows.Children.Add(Note("SessionInspector.resourcesNoMatches", "No resources match the selected filters."));
+            else if (missing == 0) resourceRows.Children.Add(Note("SessionInspector.resourcesEmpty", summary.Results.Count == 0
                 ? "No tool calls finished in this range." : "Luna identified no resources in this range."));
             return;
         }
@@ -77,15 +77,15 @@ internal sealed partial class InspectorOverview
         var header = new ResourceRowGrid { MinHeight = ResourceRowHeight }.WithFeedbackId("SessionInspector.resourceHeader");
         header.Background = Subtle;
         header.Margin = new Thickness(8, 4, 8, 0);
-        Put(header, Text("Resource", 12, UiPalette.Secondary));
-        var calls = Text("Calls", 12, UiPalette.Secondary);
+        Put(header, Text("SessionInspector.resourceNameHeading", "Resource", 12, UiPalette.Secondary));
+        var calls = Text("SessionInspector.resourceCallsHeading", "Calls", 12, UiPalette.Secondary);
         calls.HorizontalAlignment = HorizontalAlignment.Right;
         ToolTip.SetTip(calls, "Completed tool calls for each resource");
         Put(header, calls, 1);
-        var axis = Grid("*,Auto");
+        var axis = Grid("SessionInspector.resourceAxisHeading", "*,Auto");
         var unit = selection.CostAxis ? "API cost" : "Time";
-        Put(axis, Text($"{unit} {RangeLabel(true)}", 11, UiPalette.Secondary));
-        Put(axis, Text(RangeLabel(false), 11, UiPalette.Secondary), 1);
+        Put(axis, Text("SessionInspector.resourceAxisStart", $"{unit} {RangeLabel(true)}", 11, UiPalette.Secondary));
+        Put(axis, Text("SessionInspector.resourceAxisEnd", RangeLabel(false), 11, UiPalette.Secondary), 1);
         Put(header, axis, 2);
         return header;
     }
@@ -105,7 +105,7 @@ internal sealed partial class InspectorOverview
             return;
         }
 
-        var children = Stack();
+        var children = Stack("SessionInspector.resourceGroupMembers");
         var toggle = new Button
         {
             Margin = new Thickness(Indent(depth), 0, 0, 0),
@@ -118,7 +118,7 @@ internal sealed partial class InspectorOverview
         toggle.Classes.Add("quiet");
         if (group.Directory is { } directory)
         {
-            var header = Grid("*");
+            var header = Grid("SessionInspector.resourceDirectoryHeader", "*");
             Put(header, ResourceButton(directory, depth, label, 20));
             Put(header, toggle);
             list.Children.Add(header);
@@ -160,18 +160,18 @@ internal sealed partial class InspectorOverview
         var name = row.Resource.Kind is "file" or "directory" ? value.Replace('\\', '/').TrimEnd('/').Split('/')[^1] : value;
         var activity = visibleActivity[row.Resource];
         var target = activity.Targets.FirstOrDefault() ?? "unknown";
-        var title = Text(groupName ?? (name.Length == 0 ? value : name), 13, Color(target));
+        var title = Text("SessionInspector.resourceNameValue", groupName ?? (name.Length == 0 ? value : name), 13, Color(target));
         title.Margin = new Thickness(Indent(depth) - 8 + toggleWidth, 0, 0, 0);
         var content = new ResourceRowGrid().WithFeedbackId("SessionInspector.resourceRow");
         Put(content, title);
-        var calls = Text(Number(row.Calls.Count), 12, UiPalette.Secondary);
+        var calls = Text("SessionInspector.resourceCallsValue", Number(row.Calls.Count), 12, UiPalette.Secondary);
         calls.HorizontalAlignment = HorizontalAlignment.Right;
         DescribeNumber(calls, $"{calls.Text} completed tool calls");
         Put(content, calls, 1);
-        Put(content, new ResourceTimeline(activity.Intervals, selection, responseFocus, value, ShowResourceResponse)
+        Put(content, new ResourceTimeline(activity.Intervals, selection, responseFocus, ShowResourceResponse)
             .WithFeedbackId("SessionInspector.resourceTimeline"), 2);
         var tip = value + "  ·  " + string.Join(", ", activity.Targets);
-        var button = Action("", () => ShowResource(row), tip);
+        var button = Action("SessionInspector.openResourceDetails", "", () => ShowResource(row), tip);
         button.Content = content;
         button.HorizontalAlignment = button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
         button.Padding = new Thickness(8, 0);
@@ -183,10 +183,12 @@ internal sealed partial class InspectorOverview
 
     private void ShowResource(TouchedResource row)
     {
-        var body = Grid("*", "Auto,Auto,*");
-        Put(body, SessionInspectorWindow.Paragraph(row.Resource.Value));
-        Put(body, SectionTitle("Tool calls", $"{row.Resource.Kind}   ·   {Number(row.Calls.Count)}"), 0, 1);
-        Put(body, CallList(row.Calls), 0, 2);
+        var body = Grid("SessionInspector.resourceDetailContent", "*", "Auto,Auto,*");
+        Put(body, SessionInspectorWindow.Paragraph("SessionInspector.resourceDetailPath", row.Resource.Value));
+        Put(body, SectionTitle("SessionInspector.resourceDetailCallsHeader",
+            Text("SessionInspector.resourceDetailCallsTitle", "Tool calls", 16, strong: true),
+            Text("SessionInspector.resourceDetailCallCount", $"{row.Resource.Kind}   ·   {Number(row.Calls.Count)}", 12, UiPalette.Secondary)), 0, 1);
+        Put(body, CallList("SessionInspector.resourceDetailCallList", row.Calls), 0, 2);
         detail("Resource details", body);
     }
 

@@ -19,7 +19,7 @@ internal sealed class ResourceFilter
     internal IReadOnlySet<string> Selected => selected;
     internal event Action? Changed;
 
-    internal ResourceFilter(string name, IEnumerable<(string Key, string Caption)> options, string? initial = null, string? hint = null)
+    internal ResourceFilter([FeedbackId] string id, string name, IEnumerable<(string Key, string Caption)> options, string? initial = null, string? hint = null)
     {
         this.name = name;
         var list = new StackPanel().WithFeedbackId("SessionInspector.resourceFilterList");
@@ -32,10 +32,10 @@ internal sealed class ResourceFilter
             list.Children.Add(check);
             check.IsCheckedChanged += (_, _) => ChoiceChanged(key, check.IsChecked == true);
         }
-        if (hint != null) list.Children.Add(InspectorStyle.Text(hint, 11, UiPalette.Secondary));
+        if (hint != null) list.Children.Add(InspectorStyle.Text("SessionInspector.resourceFilterHelp", hint, 11, UiPalette.Secondary));
         var flyout = new Flyout { Content = list, Placement = PlacementMode.BottomEdgeAlignedLeft };
         Button = new Button { Flyout = flyout, FontSize = 12, MinWidth = 100, MinHeight = 26, Padding = new Thickness(8, 2) }
-            .WithFeedbackId("SessionInspector.resourceFilter");
+            .WithFeedbackId(id);
         AutomationProperties.SetName(Button, "Resource " + name.ToLowerInvariant());
         FeedbackTarget.SetScope(Button, "Resource " + name.ToLowerInvariant());
         all.Click += (_, _) =>

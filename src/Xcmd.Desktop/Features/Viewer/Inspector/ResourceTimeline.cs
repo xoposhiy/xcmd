@@ -18,17 +18,15 @@ internal sealed class ResourceTimeline : Control
     private readonly (long From, long To) range;
     private readonly SessionSelection selection;
     private readonly ResponseFocus focus;
-    private readonly string resource;
     private readonly Action<ResponseHit> selected;
     private readonly ResourceResponse[] responses;
     private sealed record ResourceResponse(SessionResponse Response, TraceCall[] Calls, IBrush[] Colors, TimelineMark[] Marks);
 
     internal ResourceTimeline(ResourceInterval[] intervals, SessionSelection selection, ResponseFocus focus,
-        string resource, Action<ResponseHit> selected)
+        Action<ResponseHit> selected)
     {
         this.selection = selection;
         this.focus = focus;
-        this.resource = resource;
         this.selected = selected;
         range = (selection.From, selection.To);
         responses = selection.CostAxis ? intervals.GroupBy(interval => selection.Trace.ResponseFor(interval.Call)!)
@@ -169,7 +167,7 @@ internal sealed class ResourceTimeline : Control
         base.OnPointerPressed(e);
         if (!selection.CostAxis || e.KeyModifiers.HasFlag(KeyModifiers.Alt) || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         if (Hit(e.GetPosition(this).X) is not { } row) return;
-        selected(new(row.Response, row.Calls, resource));
+        selected(new(row.Response, row.Calls[0]));
         e.Handled = true;
     }
 

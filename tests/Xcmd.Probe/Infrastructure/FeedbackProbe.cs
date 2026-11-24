@@ -116,10 +116,11 @@ public static class FeedbackProbe
         await context.SettleAsync();
     }
 
-    public static async Task<FeedbackIssue> CommentAsync(ProbeContext context, Window window, Control element, string expectedName)
+    public static async Task<FeedbackIssue> CommentAsync(ProbeContext context, Window window, Control element, string expectedName, Point? relativePoint = null)
     {
         await context.KeyAsync(Key.F12, target: window);
-        await context.ClickAsync(element, target: window);
+        if (relativePoint is { } at) await context.ClickPartAsync(element, at.X, at.Y, window);
+        else await context.ClickAsync(element, target: window);
         var comment = context.Window.Feedback.ActiveComment;
         Check(comment != null, "Clicking a visible element opens a comment.");
         await context.TextAsync("Feedback selection check", comment);

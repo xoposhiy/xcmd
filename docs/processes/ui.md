@@ -42,11 +42,13 @@ claim of desktop accessibility compliance.
 
 ## Feedback identity
 
-Every application-authored control needs a unique literal `.WithFeedbackId("...")`
-at its creation site. Keep IDs stable when changing layout, because reports refer
-to source definitions. The Desktop analyzer enforces this, including labels,
-containers and disabled controls. Framework-generated internals use the nearest
-identified application ancestor.
+Give every application-authored control a unique literal ID. Pass the ID to
+`.WithFeedbackId("...")` at the creation site or to a factory's required
+`[FeedbackId]` parameter at the call site. Use one ID per repeated row template.
+Keep IDs stable when changing layout, because reports refer to source
+definitions. The Desktop analyzer checks labels, containers and disabled
+controls. Framework-generated internals use the nearest identified application
+ancestor.
 
 Keep meaningful content selectable for feedback, including disabled actions.
 Preserve hit-test surfaces and attach application dialogs through

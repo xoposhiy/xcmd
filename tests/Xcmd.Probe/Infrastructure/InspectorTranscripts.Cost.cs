@@ -5,6 +5,39 @@ namespace Xcmd.Probe.Infrastructure;
 
 internal sealed partial class InspectorTranscripts
 {
+    internal const string StoreScript = "const output = await tools.exec_command({cmd: 'Get-Content a.txt'});\nstore(\"read0\", output);";
+
+    internal void CodexJavaScript()
+    {
+        User(0, "Read files and reuse the output");
+        Event(1, "turn_context", new { model = "gpt-6.2-sol" });
+        Script(1, "store", StoreScript);
+        Runtime(1, 2, "a", "Get-Content a.txt");
+        Runtime(1, 3, "b", "Get-Content b.txt");
+        ScriptResult(3, "store", "Stored command outputs.");
+        for (var i = 0; i < 4; i++)
+        {
+            var id = $"read{i}";
+            var at = 4 + 2 * i;
+            Script(at, id, $"text(load(\"{id}\"));");
+            ScriptResult(at + 1, id, $"Saved output {i}.");
+        }
+        Save(Path.Combine(root, "sessions", "rollout-" + Session.Id + ".jsonl"));
+    }
+
+    private void Script(int at, string id, string input)
+    {
+        Event(at, "response_item", new { type = "custom_tool_call", name = "exec", call_id = id, input });
+        Usage(at, id, new { input_tokens = 1000, output_tokens = 100 });
+    }
+
+    private void ScriptResult(int at, string id, string text) => Event(at, "response_item", new
+    {
+        type = "custom_tool_call_output",
+        call_id = id,
+        output = new[] { new { type = "input_text", text } }
+    });
+
     internal void CodexCost()
     {
         var child = Guid.Parse("33333333-1111-4111-8111-333333333333");

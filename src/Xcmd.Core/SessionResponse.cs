@@ -27,7 +27,7 @@ public sealed record SessionResponse(int Index, ResponseRecord Record, IReadOnly
     public string Title => Record.Message ?? (Calls.Count switch
     {
         0 => "Model response",
-        1 => Calls[0].Classification?.Summary ?? Calls[0].Title,
+        1 => Calls[0].DisplayTitle,
         _ => $"{Calls.Count} tool calls"
     });
 

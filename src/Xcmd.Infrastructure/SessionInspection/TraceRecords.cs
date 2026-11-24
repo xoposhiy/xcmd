@@ -8,6 +8,9 @@ internal sealed record PendingTool(string Name, string Input, long Start, string
 {
     internal ResponseKey? Response { get; init; }
     internal int Order { get; init; }
+    internal string? JavaScript { get; init; }
+    internal string? RecordType { get; init; }
+    internal string? Shell { get; init; }
 }
 
 internal sealed class TraceRecords(string project, bool fileCoverageStudy)
@@ -63,7 +66,8 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
     internal static TraceCall Call(string agent, PendingTool tool, long end, string command, string output,
         TraceFile[] files, bool failed)
     {
-        var title = TraceJson.Caption(command.Length == 0 ? tool.Name : command);
+        var title = tool.JavaScript is { } script ? "JavaScript · " + TraceJson.Caption(script)
+            : TraceJson.Caption(command.Length == 0 ? tool.Name : command);
         return new(agent, title, Math.Min(tool.Start, end), end, failed ? [] : files, failed,
             FileEvidence(tool, command))
         {
@@ -71,7 +75,11 @@ internal sealed class TraceRecords(string project, bool fileCoverageStudy)
             Output = output,
             WorkingDirectory = tool.Directory,
             Response = tool.Response,
-            EmissionOrder = tool.Order
+            EmissionOrder = tool.Order,
+            JavaScript = tool.JavaScript,
+            ToolName = tool.Name,
+            RecordType = tool.RecordType,
+            Shell = tool.Shell
         };
     }
 

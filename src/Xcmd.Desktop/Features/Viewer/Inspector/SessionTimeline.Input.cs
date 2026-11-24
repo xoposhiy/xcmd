@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Input;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Viewer;
@@ -17,7 +18,10 @@ internal sealed partial class SessionTimeline
     private long anchor;
     private double gripOffset;
     private Bar? keyboardBar;
+    private Bar? hoveredBar;
+    private IDisposable? hoverTimer;
     private bool dragged;
+    private bool doubleClick;
     internal event Action<string>? EventSelected;
     internal event Action<SessionCallBlock>? BlockSelected;
     internal event Action<ResponseHit>? ResponseSelected;
@@ -58,8 +62,16 @@ internal sealed partial class SessionTimeline
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || e.KeyModifiers.HasFlag(KeyModifiers.Alt)) return;
-        var p = e.GetPosition(this);
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Alt)) return;
+        var cursor = e.GetCurrentPoint(this);
+        var p = cursor.Position;
+        if (cursor.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
+        {
+            ResetSpanZoom(p, e);
+            return;
+        }
+        if (!cursor.Properties.IsLeftButtonPressed) return;
+        UpdateHover(null);
         var handle = startHandle.Bounds.Contains(p) ? startHandle : endHandle.Bounds.Contains(p) ? endHandle : null;
         if (handle == null && p.X < Rail)
         {
@@ -70,10 +82,20 @@ internal sealed partial class SessionTimeline
         e.Pointer.Capture(this);
         pressed = p;
         dragged = false;
+        doubleClick = e.ClickCount == 2;
         anchor = PositionFor(p.X);
         grip = handle == startHandle ? Grip.Start : handle == endHandle ? Grip.End :
             Math.Abs(p.X - RangeX(true)) <= 5 ? Grip.Start : Math.Abs(p.X - RangeX(false)) <= 5 ? Grip.End : Grip.New;
         gripOffset = handle == null ? 0 : p.X - RangeX(grip == Grip.Start);
+        e.Handled = true;
+    }
+
+    private void ResetSpanZoom(Point point, PointerPressedEventArgs e)
+    {
+        if (!selection.Zoomed || Hit(point)?.Lane is not (1 or 2)) return;
+        UpdateHover(null);
+        selection.ResetZoom();
+        changed();
         e.Handled = true;
     }
 
@@ -83,10 +105,7 @@ internal sealed partial class SessionTimeline
         var p = e.GetPosition(this);
         if (grip == Grip.None)
         {
-            var hit = Hit(p);
-            focus.Hover(hit?.Response);
-            var tip = hit is { } b ? BarTip(b) : null;
-            if (!Equals(ToolTip.GetTip(this), tip)) ToolTip.SetTip(this, tip);
+            UpdateHover(Hit(p));
             return;
         }
         dragged |= Math.Abs(p.X - pressed.X) > 3;
@@ -96,7 +115,35 @@ internal sealed partial class SessionTimeline
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
-        if (focus.Hovered != null) focus.Hover(null);
+        UpdateHover(null);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        UpdateHover(null);
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateHover(Bar? bar)
+    {
+        focus.Hover(bar?.Response);
+        if (ReferenceEquals(bar, hoveredBar)) return;
+        hoveredBar = bar;
+        hoverTimer?.Dispose();
+        hoverTimer = null;
+        ToolTip.SetIsOpen(this, false);
+        if (bar == null)
+        {
+            ToolTip.SetTip(this, null);
+            return;
+        }
+        ToolTip.SetTip(this, bar.Block is { } block ? TimelineCallTip.Build(block) : BarDetails(bar));
+        // Entering a bar can set the tip after the timeline receives PointerEntered.
+        hoverTimer = DispatcherTimer.RunOnce(() =>
+        {
+            hoverTimer = null;
+            ToolTip.SetIsOpen(this, true);
+        }, TimeSpan.FromMilliseconds(ToolTip.GetShowDelay(this)));
     }
 
     private void MoveGrip(long position)
@@ -113,11 +160,24 @@ internal sealed partial class SessionTimeline
         base.OnPointerReleased(e);
         if (grip == Grip.None) return;
         if (dragged) MoveGrip(PositionFor(e.GetPosition(this).X - gripOffset));
-        else if (Hit(pressed) is { } hit) Choose(hit);
+        else if (Hit(pressed) is { } hit)
+        {
+            if (doubleClick && hit.Lane is 1 or 2) ZoomToSpan(hit);
+            else Choose(hit);
+        }
         else if (grip == Grip.New) { SelectRange(ZoomStart, anchor); changed(); }
         grip = Grip.None;
         e.Pointer.Capture(null);
         e.Handled = true;
+    }
+
+    private void ZoomToSpan(Bar bar)
+    {
+        SelectRange(bar.Start, bar.End);
+        selection.ZoomToRange();
+        changed();
+        Announce(bar);
+        EventSelected?.Invoke(bar.Title);
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
@@ -130,18 +190,17 @@ internal sealed partial class SessionTimeline
     {
         keyboardBar = bar;
         Announce(bar);
-        if (bar.Response != null)
+        if (bar.Response is { } response)
         {
-            ResponseSelected?.Invoke(FocusFor(bar));
-            EventSelected?.Invoke(bar.Title);
+            ResponseSelected?.Invoke(new(response, bar.Block?.Calls[0]));
             return;
         }
         var from = bar.Start;
         if (!CostAxis && from == bar.End && from > Trace.Start) from--;
         SelectRange(Math.Max(ZoomStart, from), Math.Min(ZoomEnd, bar.End));
         changed();
-        EventSelected?.Invoke(bar.Title);
         if (bar.Block != null) BlockSelected?.Invoke(bar.Block);
+        else EventSelected?.Invoke(bar.Title);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -172,16 +231,12 @@ internal sealed partial class SessionTimeline
     private void Announce(Bar bar)
     {
         var label = bar.Agent ?? (bar.Lane == 1 ? "Task" : "Work phase");
-        AutomationProperties.SetName(this, $"{label}: {BarTip(bar)}");
+        var details = bar.Block is { } block ? TimelineCallTip.Describe(block) : BarDetails(bar);
+        AutomationProperties.SetName(this, $"{label}: {details}");
     }
 
-    private string BarTip(Bar bar)
-    {
-        var details = bar.Response is { } response ? CostDetails(response) : $"{bar.Title}\n{BarRange(bar)}";
-        if (bar.Categories is not { Length: > 0 } categories) return bar.Block == null ? details : "Unclassified\n" + details;
-        return string.Join("\n", categories.Select(category => $"{TimelineCaption.Describe(category)}\n{string.Join(", ", category.Actions)}"))
-            + "\n" + details;
-    }
+    private string BarDetails(Bar bar) => bar.Response is { } response
+        ? CostDetails(response) : $"{bar.Title}\n{BarRange(bar)}";
 
     private string BarRange(Bar bar) => CostAxis ? $"{Usd(Trace.CostAxis.At((int)bar.Start).Usd)} – {Usd(Trace.CostAxis.At((int)bar.End).Usd)}" :
         $"{Time(Trace, bar.Start)} – {Time(Trace, bar.End)}";

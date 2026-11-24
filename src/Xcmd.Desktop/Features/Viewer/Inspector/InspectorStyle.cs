@@ -1,5 +1,6 @@
 // @implements InspectAgentSession, OpenViewers
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -34,7 +35,7 @@ internal static class InspectorStyle
         return vivid ? pair.Vivid : pair.Base;
     }
 
-    internal static TextBlock Text(string value, double size = 14, IBrush? color = null, bool strong = false) =>
+    internal static TextBlock Text([FeedbackId] string id, string value, double size = 14, IBrush? color = null, bool strong = false) =>
         new TextBlock
         {
             Text = value,
@@ -43,9 +44,24 @@ internal static class InspectorStyle
             FontWeight = strong ? FontWeight.SemiBold : FontWeight.Normal,
             TextTrimming = TextTrimming.CharacterEllipsis,
             VerticalAlignment = VerticalAlignment.Center
-        }.WithFeedbackId("SessionInspector.text");
+        }.WithFeedbackId(id);
 
-    internal static Button Action(string title, Action click, string? tip = null)
+    internal static PathIcon? ActionGlyph([FeedbackId] string id, string action, string target)
+    {
+        if (TimelineCaption.ActionIcon(action) is not { } symbol) return null;
+        var icon = new PathIcon
+        {
+            Data = symbol.Shape,
+            Foreground = Color(target),
+            Width = 12,
+            Height = 12,
+            VerticalAlignment = VerticalAlignment.Center
+        }.WithFeedbackId(id);
+        AutomationProperties.SetName(icon, symbol.Name);
+        return icon;
+    }
+
+    internal static Button Action([FeedbackId] string id, string title, Action click, string? tip = null)
     {
         var button = new Button
         {
@@ -54,14 +70,14 @@ internal static class InspectorStyle
             Padding = new Thickness(10, 3),
             MinHeight = 28,
             VerticalContentAlignment = VerticalAlignment.Center
-        }.WithFeedbackId("SessionInspector.action");
+        }.WithFeedbackId(id);
         button.Click += (_, _) => click();
         if (tip != null) ToolTip.SetTip(button, tip);
         return button;
     }
 
-    internal static Grid Grid(string columns, string rows = "*") =>
-        new Grid { ColumnDefinitions = new ColumnDefinitions(columns), RowDefinitions = new RowDefinitions(rows) }.WithFeedbackId("SessionInspector.grid");
+    internal static Grid Grid([FeedbackId] string id, string columns, string rows = "*") =>
+        new Grid { ColumnDefinitions = new ColumnDefinitions(columns), RowDefinitions = new RowDefinitions(rows) }.WithFeedbackId(id);
 
     internal static void Put(Grid grid, Control child, int column = 0, int row = 0)
     {
@@ -70,10 +86,10 @@ internal static class InspectorStyle
         grid.Children.Add(child);
     }
 
-    internal static StackPanel Stack(double spacing = 0) =>
-        new StackPanel { Spacing = spacing }.WithFeedbackId("SessionInspector.stack");
+    internal static StackPanel Stack([FeedbackId] string id, double spacing = 0) =>
+        new StackPanel { Spacing = spacing }.WithFeedbackId(id);
 
-    internal static Border Box(Control child, IBrush? fill = null, Thickness? padding = null) =>
+    internal static Border Box([FeedbackId] string id, Control child, IBrush? fill = null, Thickness? padding = null) =>
         new Border
         {
             Child = child,
@@ -81,7 +97,7 @@ internal static class InspectorStyle
             BorderBrush = GridLine,
             BorderThickness = new Thickness(1),
             Padding = padding ?? default
-        }.WithFeedbackId("SessionInspector.box");
+        }.WithFeedbackId(id);
 
     internal static string Duration(long ms)
     {
@@ -91,6 +107,19 @@ internal static class InspectorStyle
     }
 
     internal static string Time(SessionTrace trace, long ms) => Duration(ms - trace.Start);
+
+    internal static string CallDuration(TraceCall call)
+    {
+        if (!call.Completed) return "Unavailable";
+        var duration = Math.Max(0, call.End - call.Start);
+        return duration < 1000 ? $"{duration} ms" : $"{duration / 1000d:0.00} s";
+    }
+
+    internal static string ToolCallName(TraceCall call) => !string.IsNullOrWhiteSpace(call.ToolName) ? call.ToolName :
+        !string.IsNullOrWhiteSpace(call.RecordType) ? call.RecordType : "Tool call";
+
+    internal static string CallSummary(TraceCall call) => call.Classification?.Summary ?? call.Title;
+
     internal static string Number(long n) => n.ToString("N0");
     internal static string Usd(decimal amount) => "$" + amount.ToString(amount is > 0 and < 0.01m ? "0.00######" : "0.00",
         System.Globalization.CultureInfo.InvariantCulture);

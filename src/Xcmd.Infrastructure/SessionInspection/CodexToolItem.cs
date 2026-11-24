@@ -8,23 +8,25 @@ internal static class CodexToolItem
 {
     internal static TraceCall? Read(JsonElement item, string agent, string cwd, TraceRecords trace, long start, long end)
     {
-        var name = item.Str("type");
+        var type = item.Str("type");
+        var name = type;
         if (name is "" or "Reasoning" or "AgentMessage" or "UserMessage" or "SubAgentActivity" or "ContextCompaction") return null;
         if (item.Str("cwd") is { Length: > 0 } working) cwd = working;
         var files = Array.Empty<TraceFile>();
         var input = "";
         var command = "";
         var output = "";
+        string? shell = null;
         CoverageInput? review = null;
         switch (name)
         {
             case "CommandExecution":
                 output = item.Str("aggregated_output");
                 command = CommandText(item.Field("command"));
+                shell = item.Field("command").Items().FirstOrDefault().Words();
                 if (trace.FileCoverageStudy)
                 {
                     (_, files) = ReadCommand(item, output, cwd, trace.Project);
-                    var shell = item.Field("command").Items().FirstOrDefault().Words();
                     review = CoverageRouting.Shell(shell, command, output, CommandStatus(item), cwd, trace.Project, files);
                 }
                 input = command;
@@ -55,9 +57,21 @@ internal static class CodexToolItem
                 break;
         }
         var failed = item.Str("status") is "failed" or "declined" || item.Number("exit_code") != 0;
-        return TraceRecords.Call(agent, new(name, input, start, cwd), end, command, output, files, failed)
-            with
-        { Review = review };
+        var recordType = type switch
+        {
+            "CommandExecution" => "Command execution",
+            "FileChange" => "File change",
+            "McpToolCall" => "MCP tool call",
+            "CollabAgentToolCall" => "Agent tool call",
+            "ImageView" => "Image view",
+            _ => type
+        };
+        var tool = new PendingTool(name, input, start, cwd) { RecordType = recordType, Shell = shell };
+        return TraceRecords.Call(agent, tool, end, command, output, files, failed) with
+        {
+            Review = review,
+            ToolName = item.Str("tool")
+        };
     }
 
     private static TraceFile[] ImageReads(JsonElement item, string cwd, string project) =>

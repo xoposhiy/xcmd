@@ -21,14 +21,14 @@ internal static class WindowHeader
     public static StackPanel CaptionButtons(Window window, string prefix)
     {
         var buttons = new StackPanel { Orientation = Orientation.Horizontal }.WithFeedbackId("WindowHeader.buttons");
-        buttons.Children.Add(Button("—", "Minimize", prefix + "Minimize", WindowDecorationsElementRole.MinimizeButton, () => window.WindowState = WindowState.Minimized));
-        buttons.Children.Add(Button("□", "Maximize or restore", prefix + "Maximize", WindowDecorationsElementRole.MaximizeButton,
+        buttons.Children.Add(Button("WindowHeader.minimize", "—", "Minimize", prefix + "Minimize", WindowDecorationsElementRole.MinimizeButton, () => window.WindowState = WindowState.Minimized));
+        buttons.Children.Add(Button("WindowHeader.maximizeRestore", "□", "Maximize or restore", prefix + "Maximize", WindowDecorationsElementRole.MaximizeButton,
             () => window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized));
-        buttons.Children.Add(Button("×", "Close", prefix + "CloseWindow", WindowDecorationsElementRole.CloseButton, window.Close));
+        buttons.Children.Add(Button("WindowHeader.close", "×", "Close", prefix + "CloseWindow", WindowDecorationsElementRole.CloseButton, window.Close));
         return buttons;
     }
 
-    private static Button Button(string symbol, string label, string name, WindowDecorationsElementRole role, Action action)
+    private static Button Button([FeedbackId] string id, string symbol, string label, string name, WindowDecorationsElementRole role, Action action)
     {
         var button = new Button
         {
@@ -45,7 +45,7 @@ internal static class WindowHeader
             BorderThickness = new Thickness(0),
             FontSize = 16,
             Focusable = false
-        }.WithFeedbackId("WindowHeader.button");
+        }.WithFeedbackId(id);
         AutomationProperties.SetAutomationId(button, name);
         AutomationProperties.SetName(button, label);
         ToolTip.SetTip(button, label);

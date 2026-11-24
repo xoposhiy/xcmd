@@ -138,6 +138,9 @@ public static class SessionInspectorScenarios
             fixture.Write(3);
             var trace = await fixture.ReadAsync();
             Equal("3,4", string.Join(',', fixture.Packets.Skip(1).SelectMany(ids => ids)), "Retry only unresolved IDs");
+            var repaired = trace.Calls.Single(call => call.Id == 3).Classification!;
+            var read = repaired.Pairs.Single(pair => pair.Label == new ToolLabel("source", "read"));
+            Equal("settings.cs, defaults.cs", string.Join(", ", read.Objects), "Duplicate read operations keep both objects");
             var summary = new SessionSelection(trace).Summarize();
             Equal(2, summary.Activities.Count, "Distinct target/action pairs");
             Equal(3000L, summary.ToolTime, "Each call contributes once to total time");
@@ -151,7 +154,9 @@ public static class SessionInspectorScenarios
             Check(!probe.HasText("View tool calls") && !probe.HasText("Analyze with Luna"), "A fully cached session opens with the analyzed overview");
             await probe.Click("Time");
             await probe.OpenTimelineCall(0.15);
-            Check(probe.HasText("Read and updated component 3.") && probe.HasText("settings.cs, defaults.cs"), "The call shows its summary and merged concrete objects");
+            Equal("Read and updated component 3.", probe.CallCardText("callSummary"), "The card shows the repaired summary");
+            await probe.ExpandCallResources();
+            Check(probe.CallResourceNames().Contains("Component03.cs", StringComparison.Ordinal), "The card shows the saved resource");
             probe.Window.Width = 650;
             probe.Window.Height = 650;
             probe.Window.SetScaleForTest(1.5);
@@ -204,8 +209,15 @@ public static class SessionInspectorScenarios
             await probe.Screenshot("local-overview");
             await probe.Click("Time");
             await probe.OpenTimelineCall(0.15);
-            Check(probe.HasText("read component-1.cs") && probe.HasText("Output") && probe.HasText("done"), "An unclassified call opens its recorded input and output");
-            await probe.CheckCallCopy();
+            Check(probe.HasText("read component-1.cs") && probe.HasText("Unclassified"), "An unclassified call shows the recorded operation");
+            var callDialog = await probe.OpenToolCall();
+            var output = InspectorProbe.ToolCallPayload(callDialog, "Output");
+            Check(output.Text?.Contains("done") == true, "The call opens on its recorded output");
+            Check(output.FontFamily.Name == "Consolas" && output.FontSize == 15, "The output uses larger monospaced text");
+            await probe.CheckCallCopy(callDialog);
+            await probe.SelectCallTab(callDialog, "Input");
+            Check(InspectorProbe.ToolCallPayload(callDialog, "Input").Text?.Contains("read component-1.cs") == true, "Input shows the raw tool arguments");
+            await probe.CloseToolCall(callDialog);
             await probe.Key(Key.Escape);
             fixture.Offline = true;
             await probe.Click("Analyze with Luna");
@@ -303,6 +315,8 @@ public static class SessionInspectorScenarios
             Check(probe.HasText("codex-fixture") && !probe.HasText("outside tools"), "The top information panel shows the recorded model");
             Check(probe.AxisSelected("API cost"), "The timeline opens on API cost even without usage");
             await probe.Screenshot("session-overview");
+            await probe.CheckSessionId(fixture.Session.Id);
+            await probe.CheckSummaryFeedback();
             var sessionCalls = probe.MetricValue("Tool calls");
             var sessionCost = probe.MetricValue("API cost");
             var sessionDuration = probe.MetricValue("Duration");
@@ -341,13 +355,62 @@ public static class SessionInspectorScenarios
             probe.Window.Height = 650;
             probe.Window.SetScaleForTest(1.5);
             await probe.Screenshot("session-narrow-150");
+            probe.Window.Width = probe.Window.MinWidth;
+            await c.SettleAsync();
+            await probe.Screenshot("session-id-minimum-width-150");
+            await probe.CheckSessionId(fixture.Session.Id);
             await probe.Click("Reading guide");
             Check(probe.HasText("Use the keyboard"), "The guide explains keyboard inspection");
             await probe.Key(Key.Escape);
             await probe.PickFeedback();
+            await probe.CheckSessionIdFeedback();
             await probe.Key(Key.Escape);
             Check(c.Window.SessionInspector == null && Equals(fixture.Session, Table(c.Window.Right).SelectedItem), "Escape returns to the selected session");
             Equal(0, c.Launcher.Requests.Count, "Inspecting never resumes the agent");
+        }),
+        new("session-inspector-codex-javascript", "Show the input and output of shell commands and standalone JavaScript calls", async c =>
+        {
+            var fixture = new InspectorTranscripts(c);
+            fixture.CodexJavaScript();
+            var trace = await fixture.Reader.ReadAsync(fixture.Session, default);
+            Equal(6, trace.Calls.Count, "The outer tool contributes script details to two commands without adding a duplicate");
+            Check(trace.Responses[0].Calls.All(call => call.JavaScript == InspectorTranscripts.StoreScript),
+                "Both nested commands retain the recorded script");
+            Check(trace.Responses.Skip(1).All(response => response.Calls.Single().IsStandaloneJavaScript),
+                "The four loads appear as individual calls");
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Session timeline");
+            await probe.OpenTimelineCall(0.10);
+            var nestedDialog = await probe.OpenToolCall();
+            InspectorProbe.CheckToolCallTabs(nestedDialog);
+            Equal("PowerShell (pwsh)", InspectorProbe.ToolCallField(nestedDialog, "toolCallShell"), "The shell executable is explained and labeled");
+            Check(InspectorProbe.ToolCallField(nestedDialog, "toolCallRecord")?.Contains("run in a shell") == true,
+                "The record type explains what Command execution means");
+            var command = InspectorProbe.ToolCallPayload(nestedDialog, "Input");
+            Check(command.Text is { } source && source.StartsWith("Get-Content ", StringComparison.Ordinal) && !source.Contains("store("),
+                "A nested command opens on its own input");
+            Check(command.FontFamily.Name == "Consolas" && command.FontSize == 15, "The input uses larger monospaced text");
+            await c.ScreenshotAsync("tool-call-command", nestedDialog);
+            await probe.CloseToolCall(nestedDialog);
+            await probe.Key(Key.Escape);
+            Check((await probe.TimelineTip(0.5, 0))?.Contains("JavaScript · text(load(\"read1\"));") == true,
+                "The cost tooltip names the script instead of the tool alone");
+            await probe.OpenTimelineCall(0.5);
+            var standaloneDialog = await probe.OpenToolCall();
+            InspectorProbe.CheckToolCallTabs(standaloneDialog);
+            Equal("Saved output 1.", InspectorProbe.ToolCallPayload(standaloneDialog, "Output").Text, "The standalone call opens on its recorded result");
+            Equal("exec", InspectorProbe.ToolCallField(standaloneDialog, "toolCallName"), "The window shows the recorded tool name");
+            await probe.SelectCallTab(standaloneDialog, "Input");
+            Equal("text(load(\"read1\"));", InspectorProbe.ToolCallPayload(standaloneDialog, "Input").Text,
+                "A standalone JavaScript call shows the script as its input");
+            await c.ScreenshotAsync("tool-call-javascript-input", standaloneDialog);
+            await probe.CloseToolCall(standaloneDialog);
+            await probe.Key(Key.Escape);
+            await probe.Click("Time");
+            await probe.OpenTimelineCall(0.59, rowY: 4);
+            Check(probe.HasText("JavaScript · text(load(\"read1\"));"), "The Time axis opens the same call by its recorded interval");
         }),
         new("session-inspector-api-cost-codex", "Price each Codex response once at its model's snapshot rate", async c =>
         {
@@ -415,20 +478,48 @@ public static class SessionInspectorScenarios
             var first = await probe.TimelineTip(0.08, 0);
             var second = await probe.TimelineTip(0.28, 0);
             var tests = await probe.TimelineTip(0.28, 1);
-            Check(first?.Contains("src/main.cs") == true && second?.Contains("src/other.cs") == true &&
-                new[] { first, second, tests }.All(tip => tip?.Contains("$0.06 API cost") == true),
-                "Both equal-width Source segments and the Tests segment select the first response");
-            Check(first?.Contains("2026-11-24") == true && first.Contains("Reasoning"), "The tooltip shows the rate date and reasoning tokens");
+            Equal("exec_command\nRead the main file\nSource: Read", first, "The first Source segment describes the read");
+            Equal("exec_command\nEdit the other file\nSource: Write", second, "The second Source segment describes the edit");
+            Equal("exec_command\nRun the tests\nTests: Execute", tests, "The Tests segment describes the run");
             await SessionTimelineFixture.CheckJoinedHoverAsync(c, probe);
             await probe.OpenTimelineCall(0.28, 0);
-            Check(probe.HasText("Model response") && probe.HasText("Edit the other file") && probe.HasText("Run the tests"),
-                "Selecting Source shows calls from all tracks");
+            Check(probe.HasText("Selected span") && probe.HasText("Edit the other file") && probe.HasText("Run the tests"),
+                "The selected span shows calls from all tracks");
+            Check(probe.HasText("See Selected span below the timeline."), "The timeline points to the details after a call is selected");
+            Check(!probe.HasText("Model response") && !probe.HasText("matching calls"), "The span has one heading");
+            Equal("3 calls", probe.CallCardText("responseCallCount"), "The heading reports the total number of calls");
+            probe.CheckCallCardLayout(sideBySide: true);
+            Equal("2", probe.CallCardText("activeCallNumber"), "The card displays the clicked call's sequence number");
+            Equal("900 ms", probe.SpanCallDuration(2), "Each list row shows the call duration");
+            Equal("exec_command", probe.ToolCallLinkName, "The card links to the recording by tool name");
+            Equal("Edit the other file", probe.CallCardText("callSummary"), "The clicked segment selects its specific tool call");
+            Equal("other.cs", probe.CallCardText("callResourceName"), "One resource is visible without expanding the card");
+            Equal("≈$0.02 (1/3)", probe.CallCardText("callShareValue"), "The card shows the call's estimated share of the full response cost");
+            await probe.Screenshot("timeline-call-details");
+            await probe.SelectSpanCall(3);
+            Equal("3", probe.CallCardText("activeCallNumber"), "Selecting another row updates the card number");
+            Equal("Run the tests", probe.CallCardText("callSummary"), "Selecting another row updates the card content");
+            Equal(probe.SpanCallDuration(3), probe.CallCardText("callDurationValue"), "The row and card show the same duration");
             await probe.Key(Key.Escape);
 
             var resource = await probe.ResourceInterval("src/other.cs", 0.30, click: true);
-            Check(resource?.Contains("$0.06 API cost") == true && probe.HasText("Model response") &&
-                probe.HasText("src/other.cs") && probe.HasText("Run the tests"), "Selecting a resource interval opens the same response");
+            Check(resource?.Contains("$0.06 API cost") == true && probe.HasText("Selected span") &&
+                probe.HasText("Run the tests"), "Selecting a resource interval opens the same response");
+            Equal("2", probe.CallCardText("activeCallNumber"), "The resource opens on its matching call and keeps the call order");
             await probe.Key(Key.Escape);
+
+            await probe.OpenTimelineCall(0.45, 0);
+            Check(!probe.HasCallResourceDisclosure && probe.CallResourceNames() == "main.cs verify.cs",
+                "Two resources appear directly in their target groups");
+            probe.Window.Width = 580;
+            probe.Window.SetScaleForTest(1.5);
+            await probe.ShowCallCardInViewport();
+            probe.CheckCallCardLayout(sideBySide: false);
+            await probe.Screenshot("timeline-call-details-narrow-150");
+            await probe.Key(Key.Escape);
+            probe.Window.Width = 1120;
+            probe.Window.SetScaleForTest(1);
+            await c.SettleAsync();
 
             await probe.DragHandle("Range end", 0.38, () => probe.CheckRangeCalls(3));
             probe.CheckActivityNumbers("source", "$0.04", "2");
@@ -437,7 +528,8 @@ public static class SessionInspectorScenarios
             Check(probe.HasText("Results are ready"), "A response without calls opens its message and cost");
             await probe.Key(Key.Escape);
 
-            Check((await probe.TimelineTip(0.997, 0))?.Contains("Usage unavailable") == true, "An unknown cost has its own interval and reason");
+            Equal("exec\nReview the main file\nSource: Read", await probe.TimelineTip(0.997, 0),
+                "A classified JavaScript call shows its summary in its own interval");
             probe.Window.Width = 580;
             probe.Window.SetScaleForTest(1.5);
             await probe.Screenshot("session-api-cost-narrow");
@@ -463,12 +555,70 @@ public static class SessionInspectorScenarios
 
             async Task CheckReleaseAsync(string screenshot)
             {
-                Check((await probe.TimelineTip(0.25, 0))?.StartsWith("Git:\nRepository: mdview\nwrite, read", StringComparison.Ordinal) == true,
-                    "The Git write names its repository");
-                Check((await probe.TimelineTip(0.37, 0))?.Contains("Build:\nscripts/release.ps1\nexec", StringComparison.Ordinal) == true
-                    && (await probe.TimelineTip(0.25, 1))?.StartsWith("Tests:\nscripts/release.ps1\nexec", StringComparison.Ordinal) == true,
-                    "The same script is shown under both of its observed operations");
+                var git = await probe.TimelineTip(0.25, 0);
+                await probe.WaitForTimelineTooltip();
+                Equal("exec_command\nCommitted changes and ran release checks.\nGit\nBuild\nTests", probe.TimelineTipText(),
+                    "The visible tooltip has only the tool name, summary and categories");
+                Equal("Write,Read", probe.TimelineTipActions("Git"), "The Git row shows both action icons");
+                Equal("Execute", probe.TimelineTipActions("Build"), "The Git block also shows the Build action");
+                Equal("Execute", probe.TimelineTipActions("Tests"), "The Git block also shows the Tests action");
+                var tests = await probe.TimelineTip(0.25, 1);
+                Equal(git, tests, "Hovering the same call on another track shows the same tooltip");
+                await probe.TimelineTip(0.52, 0);
+                Equal("Read,Execute", probe.TimelineTipActions("Build"), "A read and run show two different icons");
                 await SessionTimelineFixture.CheckReleaseColorsAsync(c, probe, screenshot);
+            }
+        }),
+        new("session-inspector-call-resources", "Show short resource lists directly and reveal compact groups when a long list opens", async c =>
+        {
+            SessionTimelineFixture.UseResourceLists(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Session timeline");
+            await probe.OpenTimelineCall(0.15);
+            Check(!probe.HasCallResourceDisclosure && probe.CallResourceNames() == "build-1.ps1 test-1.ps1",
+                "Two resources need no disclosure");
+            await probe.OpenTimelineCall(0.50);
+            Check(!probe.HasCallResourceDisclosure && probe.CallResourceNames() == "build-1.ps1, build-2.ps1 test-1.ps1",
+                "Three resources need no disclosure");
+            probe.CheckResourceNamesShareLine("build-1.ps1,", "build-2.ps1");
+
+            probe.Window.Width = 580;
+            probe.Window.Height = 530;
+            probe.Window.SetScaleForTest(1.5);
+            await c.SettleAsync();
+            await probe.OpenTimelineCall(0.83);
+            Check(probe.HasCallResourceDisclosure && probe.CallResourceNames() == "", "Ten resources start collapsed");
+            await probe.ExpandCallResources();
+            Equal("build-1.ps1, build-2.ps1, build-3.ps1, build-4.ps1, build-5.ps1, build-6.ps1, build-7.ps1, build-8.ps1 test-1.ps1, test-2.ps1",
+                probe.CallResourceNames(), "All files appear in comma-separated groups");
+            probe.CheckResourceNamesShareLine("build-1.ps1,", "build-2.ps1,");
+            probe.CheckResourceGroupsInViewport();
+            await probe.Screenshot("expanded-call-resources-150");
+        }),
+        new("session-inspector-span-zoom", "Double-click tasks and work phases to zoom, and right-click to reset zoom", async c =>
+        {
+            SessionTimelineFixture.UseZoomSpans(c.AgentSessions);
+            await ChooseAsync(c, Key.F2, "Codex");
+            await c.KeyAsync(Key.F3);
+            var probe = new InspectorProbe(c);
+            await probe.Ready("Session timeline");
+            await CheckSpanZoom();
+            await probe.Click("Time");
+            await CheckSpanZoom();
+
+            async Task CheckSpanZoom()
+            {
+                await probe.ClickTimelineSpan(0.25, task: true, MouseButton.Left, clicks: 2);
+                Check(probe.HasZoomAction("Reset zoom"), "Double-clicking a task zooms to its range");
+                probe.CheckRangeCalls(2);
+                await probe.ClickTimelineSpan(0.25, task: false, MouseButton.Left, clicks: 2);
+                Check(probe.HasZoomAction("Reset zoom"), "Double-clicking a phase zooms further into the range");
+                probe.CheckRangeCalls(1);
+                await probe.ClickTimelineSpan(0.5, task: false, MouseButton.Right);
+                Check(probe.HasZoomAction("Zoom to range"), "Right-clicking the phase restores the full view");
+                probe.CheckRangeCalls(1);
             }
         }),
         new("session-inspector-range-handles", "Refresh the range panels while either timeline handle is held", async c =>

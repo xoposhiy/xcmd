@@ -156,12 +156,12 @@ internal sealed class FeedbackSurface
         return FeedbackController.Target(hit);
     }
 
-    public PixelRect? BoundsAt(PixelPoint point)
+    public (PixelRect Bounds, string SourceId)? PreviewAt(PixelPoint point)
     {
         if (Pick(window.PointToClient(point)) is not { } target) return null;
         var start = target.PointToScreen(default);
         var end = target.PointToScreen(new Point(target.Bounds.Width, target.Bounds.Height));
-        return new PixelRect(start.X, start.Y, end.X - start.X, end.Y - start.Y);
+        return (new PixelRect(start.X, start.Y, end.X - start.X, end.Y - start.Y), FeedbackTarget.Id(target));
     }
 
     public void UseAtScreenPoint(PixelPoint point)

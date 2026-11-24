@@ -144,7 +144,7 @@ internal sealed class PanelSourceController
 
     internal void OpenInspector(AgentSession session, InspectorHandoff? saved = null)
     {
-        var viewer = new SessionInspectorWindow(session, agentSessions).WithFeedbackId("PanelSource.inspector");
+        var viewer = new SessionInspectorWindow(session, agentSessions, window.Feedback).WithFeedbackId("PanelSource.inspector");
         inspectors.Add(viewer);
         viewer.Opened += (_, _) => TaskbarIdentity.Configure(viewer, window.Trace.Add);
         window.Feedback.Attach(viewer);

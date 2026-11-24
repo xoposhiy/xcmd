@@ -1,10 +1,13 @@
 // @implements InspectAgentSession, OpenViewers
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Viewer;
@@ -27,61 +30,128 @@ internal sealed partial class InspectorOverview
 
     private Control BuildInfo(AgentSession session, SessionTrace trace)
     {
-        var info = new WrapPanel().WithFeedbackId("SessionInspector.info");
+        var info = new WrapPanel().WithFeedbackId("SessionInspector.summaryFields");
         var started = DateTimeOffset.FromUnixTimeMilliseconds(trace.Start).ToLocalTime();
-        Add("Started", Text($"{started:dd MMM yyyy, HH:mm}", 16));
-        Add("Agent", Text(AgentSession.AgentName(session.Agent), 16));
-        if (trace.Model != null) Add("Model", Text(trace.Model, 16));
+        Add("SessionInspector.startedField", "SessionInspector.startedLabel", "Started",
+            Text("SessionInspector.startedValue", $"{started:dd MMM yyyy, HH:mm}", 16));
+        Add("SessionInspector.agentField", "SessionInspector.agentLabel", "Agent",
+            Text("SessionInspector.agentValue", AgentSession.AgentName(session.Agent), 16));
+        if (trace.Model != null)
+            Add("SessionInspector.modelField", "SessionInspector.modelLabel", "Model",
+                Text("SessionInspector.modelValue", trace.Model, 16));
         var counts = trace.CostAxis.At(trace.Responses.Count);
-        var cost = Text(trace.Responses.Count > 0 && counts.Missing == trace.Responses.Count ? "Unavailable" : Usd(counts.Usd), 16);
-        var callCount = Text(Number(trace.Calls.Count), 16);
+        var cost = Text("SessionInspector.sessionCostValue",
+            trace.Responses.Count > 0 && counts.Missing == trace.Responses.Count ? "Unavailable" : Usd(counts.Usd), 16);
+        var callCount = Text("SessionInspector.sessionCallCountValue", Number(trace.Calls.Count), 16);
         var snapshot = trace.Responses.Select(response => response.Cost.Snapshot).FirstOrDefault(date => date != null);
         var description = $"{Usd(counts.Usd)} API cost for the whole session";
         if (counts.Missing > 0) description += $" · {Number(counts.Missing)} responses without cost";
         if (snapshot != null) description += $" · Standard global API rates · {snapshot}";
         DescribeNumber(cost, description);
         DescribeNumber(callCount, $"{callCount.Text} completed tool calls for the whole session");
-        Add("Duration", Text(Duration(trace.End - trace.Start), 16));
-        Add("API cost", cost);
-        Add("Tool calls", callCount);
-        return Box(info);
+        Add("SessionInspector.durationField", "SessionInspector.durationLabel", "Duration",
+            Text("SessionInspector.durationValue", Duration(trace.End - trace.Start), 16));
+        Add("SessionInspector.sessionCostField", "SessionInspector.sessionCostLabel", "API cost", cost);
+        Add("SessionInspector.sessionCallCountField", "SessionInspector.sessionCallCountLabel", "Tool calls", callCount);
+        Add("SessionInspector.sessionIdField", "SessionInspector.sessionIdLabel", "Session ID", BuildSessionId(session.Id));
+        return Box("SessionInspector.sessionSummary", info);
 
-        void Add(string label, TextBlock value)
+        void Add([FeedbackId] string fieldId, [FeedbackId] string labelId, string label, Control value)
         {
-            var field = Stack(1);
+            var field = Stack(fieldId, 1);
             field.Margin = new Thickness(12, 6);
-            field.Children.Add(Text(label, 13, UiPalette.Secondary));
+            field.Children.Add(Text(labelId, label, 13, UiPalette.Secondary));
             field.Children.Add(value);
             info.Children.Add(field);
         }
     }
 
-    private static Control SectionTitle(string title, string? count)
+    private static Control BuildSessionId(Guid sessionId)
     {
-        var row = Grid("*,Auto"); row.Margin = new Thickness(11, 8);
-        Put(row, Text(title, 16, strong: true));
-        if (count != null) Put(row, Text(count, 12, UiPalette.Secondary), 1);
+        const string copyLabel = "Copy session ID";
+        var id = sessionId.ToString("D");
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 3 }
+            .WithFeedbackId("SessionInspector.sessionId");
+        row.Children.Add(new TextBlock { Text = id, FontSize = 14, VerticalAlignment = VerticalAlignment.Center }
+            .WithFeedbackId("SessionInspector.sessionIdValue"));
+        var copyGlyph = Geometry.Parse("M 1,1 H 10 V 2.5 H 2.5 V 11 H 1 Z M 5,4 H 15 V 15 H 5 Z M 6.5,5.5 V 13.5 H 13.5 V 5.5 Z");
+        var copiedGlyph = Geometry.Parse("M 1,7 L 2.5,5.5 L 6,9 L 13,2 L 14.5,3.5 L 6,12 Z");
+        var errorGlyph = Geometry.Parse("M 6,1 H 8 V 10 H 6 Z M 6,12 H 8 V 14 H 6 Z");
+        var icon = new PathIcon { Data = copyGlyph, Width = 14, Height = 14 }.WithFeedbackId("SessionInspector.copySessionIdIcon");
+        var copy = new Button
+        {
+            Content = icon,
+            Width = 24,
+            Height = 22,
+            MinHeight = 0,
+            MinWidth = 0,
+            Padding = default,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center
+        }.WithFeedbackId("SessionInspector.copySessionId");
+        copy.Classes.Add("quiet");
+        AutomationProperties.SetName(copy, copyLabel);
+        ToolTip.SetTip(copy, copyLabel);
+        IDisposable? resetIcon = null;
+        copy.Click += async (_, _) =>
+        {
+            try
+            {
+                var clipboard = TopLevel.GetTopLevel(copy)?.Clipboard ?? throw new InvalidOperationException();
+                await clipboard.SetTextAsync(id);
+                await clipboard.FlushAsync();
+                ShowResult(copiedGlyph, "Session ID copied");
+            }
+            catch (Exception error) when (error is System.Runtime.InteropServices.COMException or InvalidOperationException or NotSupportedException)
+            {
+                ShowResult(errorGlyph, "Could not copy the session ID");
+            }
+        };
+        row.Children.Add(copy);
+        return row;
+
+        void ShowResult(Geometry glyph, string message)
+        {
+            icon.Data = glyph;
+            AutomationProperties.SetItemStatus(copy, message);
+            ToolTip.SetTip(copy, message);
+            resetIcon?.Dispose();
+            resetIcon = DispatcherTimer.RunOnce(() =>
+            {
+                resetIcon = null;
+                icon.Data = copyGlyph;
+                AutomationProperties.SetItemStatus(copy, "");
+                ToolTip.SetTip(copy, copyLabel);
+            }, TimeSpan.FromSeconds(1.2));
+        }
+    }
+
+    private static Control SectionTitle([FeedbackId] string id, TextBlock title, TextBlock? count = null)
+    {
+        var row = Grid(id, "*,Auto"); row.Margin = new Thickness(11, 8);
+        Put(row, title);
+        if (count != null) Put(row, count, 1);
         return row;
     }
 
     private Grid TableRow(ActivityTotal activity, double share)
     {
-        var row = ActivityGrid();
+        var row = ActivityGrid("SessionInspector.activityRow");
         var color = Color(activity.Target);
         var name = activity.Name;
         var time = Duration(activity.Milliseconds);
         var cost = Usd(activity.Cost);
         var calls = Number(activity.Calls);
-        foreach (var (s, i) in new[] { name, time, cost, calls }.Select((s, i) => (s, i)))
-        {
-            var cell = Text(i == 0 ? "■  " + s : s, 12, i == 0 ? color : UiPalette.Text);
-            if (i == 0) ToolTip.SetTip(cell, name);
-            if (i == 2) DescribeNumber(cell, $"{cost} API cost");
-            if (i == 3) DescribeNumber(cell, $"{calls} completed tool calls");
-            cell.HorizontalAlignment = i == 0 ? HorizontalAlignment.Left : HorizontalAlignment.Right;
-            cell.Margin = new Thickness(i == 0 ? 11 : 0, 2, 9, 2);
-            Put(row, cell, i);
-        }
+        var targetCell = Text("SessionInspector.activityTargetValue", "■  " + name, 12, color);
+        ToolTip.SetTip(targetCell, name);
+        AddCell(targetCell, 0);
+        AddCell(Text("SessionInspector.activityToolTimeValue", time, 12), 1);
+        var costCell = Text("SessionInspector.activityCostValue", cost, 12);
+        DescribeNumber(costCell, $"{cost} API cost");
+        AddCell(costCell, 2);
+        var callsCell = Text("SessionInspector.activityCallCountValue", calls, 12);
+        DescribeNumber(callsCell, $"{calls} completed tool calls");
+        AddCell(callsCell, 3);
         if (share > 0)
         {
             var bar = new Border
@@ -96,6 +166,13 @@ internal sealed partial class InspectorOverview
             Put(row, bar, selection.CostAxis ? 2 : 1);
         }
         return row;
+
+        void AddCell(TextBlock cell, int column)
+        {
+            cell.HorizontalAlignment = column == 0 ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+            cell.Margin = new Thickness(column == 0 ? 11 : 0, 2, 9, 2);
+            Put(row, cell, column);
+        }
     }
 
     private static void DescribeNumber(TextBlock cell, string description)
@@ -104,9 +181,9 @@ internal sealed partial class InspectorOverview
         Avalonia.Automation.AutomationProperties.SetName(cell, description);
     }
 
-    private static TextBlock Note(string value)
+    private static TextBlock Note([FeedbackId] string id, string value)
     {
-        var note = SessionInspectorWindow.Paragraph(value);
+        var note = SessionInspectorWindow.Paragraph(id, value);
         note.Margin = new Thickness(11, 8); return note;
     }
 
@@ -115,6 +192,7 @@ internal sealed partial class InspectorOverview
         if (!selectedCalls.IsVisible) return false;
         selectedCalls.IsVisible = false;
         selectedCalls.Children.Clear();
+        ResetTimelineHint();
         timeline.SelectedBlock = null;
         responseFocus.Select(null);
         timeline.InvalidateVisual();
@@ -124,110 +202,124 @@ internal sealed partial class InspectorOverview
     private void ShowBlock(SessionCallBlock block)
     {
         timeline.SelectedBlock = block;
-        selectedCalls.IsVisible = true;
-        selectedCalls.Children.Clear();
-        selectedCalls.Children.Add(SectionTitle("Tool call details", block.Calls.Count > 1 ? $"{block.Calls.Count} calls" : null));
-        if (block.Calls.Count == 1)
-            selectedCalls.Children.Add(CallDetails(block.Calls[0]));
-        else
-        {
-            var list = CallList(block.Calls);
-            list.MaxHeight = 240;
-            list.DoubleTapped += (_, _) => OpenSelected();
-            list.KeyDown += (_, e) => { if (e.Key == Key.Enter) { OpenSelected(); e.Handled = true; } };
-            selectedCalls.Children.Add(list);
-            void OpenSelected()
-            {
-                if (list.SelectedItem is TraceCall call) detail("Tool call details", CallDetails(call));
-            }
-        }
+        ShowSpan(block.Calls);
     }
 
     private void ShowResponse(ResponseHit hit)
     {
-        var response = hit.Response;
-        responseFocus.Select(response);
+        responseFocus.Select(hit.Response);
+        ShowSpan(hit.Response.Calls, hit.SelectedCall, hit.Response);
+    }
+
+    private void ShowSpan(IReadOnlyList<TraceCall> calls, TraceCall? selected = null, SessionResponse? response = null)
+    {
+        SetTimelineHint("See Selected span below the timeline.");
         selectedCalls.IsVisible = true;
         selectedCalls.Children.Clear();
-        selectedCalls.Children.Add(SectionTitle("Model response", $"{Number(response.Calls.Count)} calls"));
-        selectedCalls.Children.Add(Note(CostDetails(response)));
-        if (response.Calls.Count == 0) return;
-        if (response.Calls.Count == 1)
+        var header = Stack("SessionInspector.responseHeader", 8);
+        header.Orientation = Orientation.Horizontal;
+        header.Margin = new Thickness(9, 2);
+        header.Children.Add(Text("SessionInspector.responseTitle", "Selected span", 14, strong: true));
+        if (calls.Count > 1)
+            header.Children.Add(Text("SessionInspector.responseCallCount", $"{Number(calls.Count)} calls", 12, UiPalette.Secondary));
+        if (calls.Count == 0 && response != null)
         {
-            selectedCalls.Children.Add(CallDetails(response.Calls[0]));
-            return;
+            var price = response.Cost.Usd is { } cost ? $"{Usd(cost)} API cost" : response.Cost.Unavailable!;
+            var status = Text("SessionInspector.messageCostValue", price, 12, UiPalette.Secondary);
+            ToolTip.SetTip(status, CostDetails(response));
+            header.Children.Add(status);
         }
-        selectedCalls.Children.Add(SectionTitle(hit.Context, $"{Number(hit.Calls.Count)} matching calls"));
-        var matched = hit.Calls.ToHashSet();
-        var list = CallList(response.Calls.OrderByDescending(matched.Contains).ToArray());
-        list.SelectedItem = hit.Calls.FirstOrDefault();
-        list.MaxHeight = 240;
+        selectedCalls.Children.Add(header);
+        if (response?.Record.Message is { Length: > 0 } message)
+            selectedCalls.Children.Add(Note("SessionInspector.responseMessage", message));
+        if (calls.Count == 1)
+            selectedCalls.Children.Add(BuildCallCard(calls[0]));
+        else if (calls.Count > 1)
+            ShowCallPicker(calls, selected);
+    }
+
+    private sealed record CallChoice(int Position, TraceCall Call);
+
+    private void ShowCallPicker(IReadOnlyList<TraceCall> calls, TraceCall? selected = null)
+    {
+        var choices = calls.Select((call, index) => new CallChoice(index + 1, call)).ToArray();
+        var card = new ContentControl { HorizontalContentAlignment = HorizontalAlignment.Stretch }
+            .WithFeedbackId("SessionInspector.activeCallCard");
+        var list = new ListBox
+        {
+            ItemsSource = choices,
+            MaxHeight = 140,
+            ItemTemplate = new FuncDataTemplate<CallChoice>((choice, _) => CallPickerRow(choice!))
+        }.WithFeedbackId("SessionInspector.callPicker");
+        AutomationProperties.SetName(list, "Tool calls");
+        list.SelectionChanged += (_, _) =>
+            card.Content = list.SelectedItem is CallChoice choice ? BuildCallCard(choice.Call, choice.Position) : null;
         list.DoubleTapped += (_, _) => OpenSelected();
-        list.KeyDown += (_, e) => { if (e.Key == Key.Enter) { OpenSelected(); e.Handled = true; } };
-        selectedCalls.Children.Add(list);
+        list.KeyDown += (_, e) =>
+        {
+            if (e.Key != Key.Enter) return;
+            OpenSelected();
+            e.Handled = true;
+        };
+        var browser = Stack("SessionInspector.callBrowser");
+        browser.Children.Add(list);
+        browser.Children.Add(card);
+        selectedCalls.Children.Add(browser);
+        list.SelectedItem = choices.FirstOrDefault(choice => choice.Call == selected) ?? choices[0];
 
         void OpenSelected()
         {
-            if (list.SelectedItem is TraceCall call) detail("Tool call details", CallDetails(call));
+            if (list.SelectedItem is CallChoice choice) viewToolCall(choice.Call);
         }
     }
 
-    private Control CallDetails(TraceCall call)
+    private static Control CallPickerRow(CallChoice choice)
     {
-        List<string> sections = [call.Classification?.Summary ?? call.Title,
-            $"{call.Agent}   ·   #{call.Id}   ·   {Time(selection.Trace, call.Start)} – {Time(selection.Trace, call.End)}   ·   {CallStatus(call)}"];
-        if (!string.IsNullOrEmpty(call.WorkingDirectory))
-            sections.Add("Working directory: " + call.WorkingDirectory);
-        if (call.Classification is { } classified)
-        {
-            sections.AddRange(classified.Pairs.Select(pair => pair.Label + "   ·   " + string.Join(", ", pair.Objects)));
-            sections.AddRange(classified.Resources.Select(resource => resource.Kind + "   ·   " + resource.Value));
-        }
-        foreach (var (label, value) in new[] { ("Input", call.Input), ("Output", call.Output) })
-            if (!string.IsNullOrEmpty(value)) sections.Add(label + Environment.NewLine + value);
-        var field = new TextBox
-        {
-            Text = string.Join(Environment.NewLine + Environment.NewLine, sections),
-            IsReadOnly = true,
-            AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap,
-            MaxHeight = 320,
-            FontSize = 14,
-            Padding = new Thickness(8)
-        }.WithFeedbackId("SessionInspector.callDetails");
-        Avalonia.Automation.AutomationProperties.SetName(field, "Tool call details");
-        ScrollViewer.SetVerticalScrollBarVisibility(field, Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
-        return field;
+        var row = Grid("SessionInspector.callPickerRow", "27,76,*");
+        row.ColumnSpacing = 8;
+        var position = Number(choice.Position);
+        var duration = CallDuration(choice.Call);
+        var summary = CallSummary(choice.Call);
+        Put(row, Text("SessionInspector.callPickerNumber", position, 12, UiPalette.Secondary, strong: true));
+        Put(row, Text("SessionInspector.callPickerDuration", duration, 12, UiPalette.Secondary), 1);
+        var label = Text("SessionInspector.callPickerSummary", summary, 13);
+        ToolTip.SetTip(label, summary);
+        Put(row, label, 2);
+        AutomationProperties.SetName(row, $"Call {position}, {duration}, {summary}");
+        return row;
     }
+
+    private Control BuildCallCard(TraceCall call, int? position = null) =>
+        InspectorCallCard.Build(selection.Trace, call, () => viewToolCall(call), position);
 
     private static string CallStatus(TraceCall call) => !call.Completed ? "Awaiting result" : call.Failed ? "Failed" : "Completed";
 
-    private ListBox CallList(IReadOnlyList<TraceCall> calls)
+    private ListBox CallList([FeedbackId] string id, IReadOnlyList<TraceCall> calls)
     {
         return new ListBox
         {
             ItemsSource = calls,
             ItemTemplate = new FuncDataTemplate<TraceCall>((call, _) => call == null ? null : CallRow(call))
-        }.WithFeedbackId("SessionInspector.callList");
+        }.WithFeedbackId(id);
     }
 
     private Control CallRow(TraceCall call)
     {
-        var row = Stack(2); row.Margin = new Thickness(6, 4);
-        row.Children.Add(Text($"{Time(selection.Trace, call.End)}   ·   {call.Agent}   ·   #{call.Id}" +
+        var row = Stack("SessionInspector.callRow", 2); row.Margin = new Thickness(6, 4);
+        row.Children.Add(Text("SessionInspector.callRowStatus", $"{Time(selection.Trace, call.End)}   ·   {call.Agent}   ·   #{call.Id}" +
             (call.Completed && !call.Failed ? "" : "   ·   " + CallStatus(call)), 12, Color(call.Labels.First().Target)));
-        row.Children.Add(SessionInspectorWindow.Paragraph(call.Classification?.Summary ?? "Unclassified"));
+        row.Children.Add(SessionInspectorWindow.Paragraph("SessionInspector.callRowSummary", call.Classification?.Summary ?? "Unclassified"));
         if (call.Classification is { } classification)
         {
             foreach (var pair in classification.Pairs)
-                row.Children.Add(SessionInspectorWindow.Paragraph(pair.Label + "   ·   " + string.Join(", ", pair.Objects)));
+                row.Children.Add(SessionInspectorWindow.Paragraph("SessionInspector.callRowClassification", pair.Label + "   ·   " + string.Join(", ", pair.Objects)));
         }
-        var title = Text(call.Title, 13, UiPalette.Secondary);
+        var title = Text("SessionInspector.callRowOperationTitle", call.Title, 13, UiPalette.Secondary);
         if (call.Evidence is { } evidence && evidence != call.Title)
             row.Children.Add(new Expander
             {
                 Header = title,
-                Content = SessionInspectorWindow.Paragraph(evidence),
+                Content = SessionInspectorWindow.Paragraph("SessionInspector.callRowOperationEvidence", evidence),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             }.WithFeedbackId("SessionInspector.recordedOperation"));
         else row.Children.Add(title);

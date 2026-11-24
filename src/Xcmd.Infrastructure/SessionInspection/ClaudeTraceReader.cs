@@ -56,7 +56,8 @@ internal sealed class ClaudeTraceReader(TraceRecords trace, string agent, string
             if (part.Str("type") == "tool_use" && tools.Add(part.Str("id")))
             {
                 var input = part.Field("input");
-                pending[part.Str("id")] = new(part.Str("name"), input.ToString(), at, cwd) { Response = response, Order = ++toolOrder };
+                pending[part.Str("id")] = new(part.Str("name"), input.ToString(), at, cwd)
+                { Response = response, Order = ++toolOrder, RecordType = "Tool use" };
                 trace.MarkStep(agent, input.Field("todos"), at);
             }
             if (part.Str("type") == "tool_result" && pending.Remove(part.Str("tool_use_id"), out var tool))

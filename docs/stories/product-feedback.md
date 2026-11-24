@@ -34,8 +34,8 @@ can give the development agent feedback with a stable target.
   nested target. Show the interaction path in the comment dialog.
   Feedback 01bd18d. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
-- With Point Taken connected, return the bounds of the control under the
-  pointer, including items in open menus. Point Taken draws the corners. In
+- With Point Taken connected, return the bounds and source ID of the control under the
+  pointer, including items in open menus. Point Taken shows the source ID beside the corners. In
   standalone feedback mode, Xcmd draws the yellow outline and clears it
   when the item disappears or the comment dialog opens.
   Feedback a782ed1 and Point Taken #27. Codex session IDs

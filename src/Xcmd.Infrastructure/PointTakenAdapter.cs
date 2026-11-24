@@ -15,13 +15,13 @@ public sealed class PointTakenAdapter : IDisposable
 {
     private readonly CancellationTokenSource lifetime = new();
     private readonly Func<long, bool, (int X, int Y)?, bool, Task<ChannelReader<object?>?>> begin;
-    private readonly Func<long, int, int, Task<(int X, int Y, int Width, int Height)?>> preview;
+    private readonly Func<long, int, int, Task<(int X, int Y, int Width, int Height, string SourceId)?>> preview;
     private readonly Func<Task> finish;
     private readonly Func<string> build;
     private readonly Action<string> trace;
     private uint tracker;
     public PointTakenAdapter(Func<long, bool, (int X, int Y)?, bool, Task<ChannelReader<object?>?>> begin,
-        Func<long, int, int, Task<(int X, int Y, int Width, int Height)?>> preview, Func<Task> finish, Func<string> build, Action<string> trace)
+        Func<long, int, int, Task<(int X, int Y, int Width, int Height, string SourceId)?>> preview, Func<Task> finish, Func<string> build, Action<string> trace)
     {
         this.begin = begin;
         this.preview = preview;
@@ -88,12 +88,13 @@ public sealed class PointTakenAdapter : IDisposable
         var (request, session) = await ReadFirstMessage(pipe, "PreviewTarget", timeout.Token);
         if (request.GetProperty("version").GetInt32() != 1) return;
         var point = request.GetProperty("screenPoint");
-        var rect = await preview(request.GetProperty("hwnd").GetInt64(), point.GetProperty("x").GetInt32(), point.GetProperty("y").GetInt32());
+        var target = await preview(request.GetProperty("hwnd").GetInt64(), point.GetProperty("x").GetInt32(), point.GetProperty("y").GetInt32());
         await Send(pipe, new
         {
             type = "TargetBounds",
             sessionId = session,
-            bounds = rect is { } r ? new { x = r.X, y = r.Y, width = r.Width, height = r.Height } : null
+            bounds = target is { } r ? new { x = r.X, y = r.Y, width = r.Width, height = r.Height } : null,
+            sourceId = target?.SourceId
         }, timeout.Token);
     }
 

@@ -16,8 +16,10 @@ internal static class Program
             public class TextBlock : Control { }
         }
         namespace Xcmd.Desktop.Shared.Ui {
+            [System.AttributeUsage(System.AttributeTargets.Parameter)]
+            internal sealed class FeedbackIdAttribute : System.Attribute { }
             public static class FeedbackTarget {
-                public static T WithFeedbackId<T>(this T value, string id) where T : Avalonia.Controls.Control => value;
+                public static T WithFeedbackId<T>(this T value, [FeedbackId] string id) where T : Avalonia.Controls.Control => value;
             }
         }
         """;
@@ -35,7 +37,13 @@ internal static class Program
             ("class C { object value = new Avalonia.Controls.Button().WithFeedbackId(\"\"); }", ["XCMDUI003"]),
             ("class C { string id = \"dynamic\"; object Make() => new Avalonia.Controls.Button().WithFeedbackId(id); }", ["XCMDUI003"]),
             ("class C { object one = new Avalonia.Controls.Button().WithFeedbackId(\"duplicate\"); object two = new Avalonia.Controls.TextBlock().WithFeedbackId(\"duplicate\"); }", ["XCMDUI002", "XCMDUI002"]),
-            ("class C { object Make() => new Avalonia.Controls.Button().WithFeedbackId(\"same\"); void Mark(Avalonia.Controls.Button b) => b.WithFeedbackId(\"same\"); }", ["XCMDUI002", "XCMDUI002"])
+            ("class C { object Make() => new Avalonia.Controls.Button().WithFeedbackId(\"same\"); void Mark(Avalonia.Controls.Button b) => b.WithFeedbackId(\"same\"); }", ["XCMDUI002", "XCMDUI002"]),
+            ("class C { object Make([FeedbackId] string id) => new Avalonia.Controls.Button().WithFeedbackId(id); object First() => Make(\"first\"); object Second() => Make(id: \"second\"); }", []),
+            ("class C { object Make([FeedbackId] string id) => new Avalonia.Controls.Button().WithFeedbackId(id); object Forward([FeedbackId] string id) => Make(id); object Use() => Forward(\"first\"); }", []),
+            ("class C { object Make([FeedbackId] string id) => new Avalonia.Controls.Button().WithFeedbackId(id); object Use(string id) => Make(id); }", ["XCMDUI003"]),
+            ("class C { object Make([FeedbackId] string id = \"default\") => new Avalonia.Controls.Button().WithFeedbackId(id); object Use() => Make(); }", ["XCMDUI003"]),
+            ("class C { object Make([FeedbackId] string id) => new Avalonia.Controls.Button().WithFeedbackId(id); object Use() => Make(\"same\"); object Other = new Avalonia.Controls.TextBlock().WithFeedbackId(\"same\"); }", ["XCMDUI002", "XCMDUI002"]),
+            ("class C { object Make([FeedbackId] string id) => new[] { new Avalonia.Controls.Button().WithFeedbackId(id), new Avalonia.Controls.Button().WithFeedbackId(id) }; }", ["XCMDUI002", "XCMDUI002"])
         };
         var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
             .Select(path => MetadataReference.CreateFromFile(path)).ToArray();

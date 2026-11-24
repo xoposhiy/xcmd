@@ -15,10 +15,10 @@ internal sealed partial class SessionTimeline
     private readonly Canvas handles = new Canvas().WithFeedbackId("SessionInspector.rangeHandles");
     private readonly Border startHandle, endHandle;
 
-    private Border AddRangeHandle(bool start)
+    private Border AddRangeHandle(bool start, [FeedbackId] string handleId, [FeedbackId] string arrowId)
     {
         var name = start ? "Range start" : "Range end";
-        var arrow = Text(start ? "◂" : "▸", 16, Accent, true);
+        var arrow = Text(arrowId, start ? "◂" : "▸", 16, Accent, true);
         arrow.HorizontalAlignment = HorizontalAlignment.Center;
         var handle = new Border
         {
@@ -30,7 +30,7 @@ internal sealed partial class SessionTimeline
             BorderThickness = new Thickness(1),
             Cursor = new Cursor(StandardCursorType.SizeWestEast),
             Child = arrow
-        }.WithFeedbackId("SessionInspector.rangeHandle");
+        }.WithFeedbackId(handleId);
         AutomationProperties.SetName(handle, name);
         ToolTip.SetTip(handle, name + " (drag or use arrow keys)");
         handle.GotFocus += (_, _) => handle.BorderBrush = UiPalette.Focus;

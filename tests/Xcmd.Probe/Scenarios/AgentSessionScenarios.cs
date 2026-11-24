@@ -15,7 +15,7 @@ public static class AgentSessionScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
-        new("agent-session-statistics", "One footer line shows the session count and the size of the selected conversation", async c =>
+        new("agent-session-statistics", "The session list footer shows selected session tool calls, with exact token counts in the tooltip", async c =>
         {
             var codex = SessionStatisticsFixture.CodexTranscript(c.FixturePath, c.AgentSessions.Codex);
             var claude = SessionStatisticsFixture.ClaudeTranscript(c.FixturePath, c.AgentSessions.Claude);
@@ -29,7 +29,7 @@ public static class AgentSessionScenarios
             Equal("Loading session statistics…", bar.Text, "The list is ready before its statistics");
             await c.KeyAsync(Key.Down);
             await WorkspaceProbe.WaitAsync(() => bar.Text?.Contains("claude-test", StringComparison.Ordinal) == true);
-            Equal("2 user prompts · 100k context tokens · claude-test", bar.Text, "The footer shows context usage in thousands");
+            Equal("2 user prompts · 1 tool call · claude-test", bar.Text, "The Claude footer shows one tool call");
             Check(ToolTip.GetTip(bar)?.ToString()?.Contains($"Tokens in last request: {100_007:N0}", StringComparison.Ordinal) == true, "The details show the exact context count");
             Check(ToolTip.GetTip(bar)?.ToString()?.Contains("Recorded cost: $2.75", StringComparison.Ordinal) == true, "Recorded cost is available in the details");
             pending.SetResult(codexStats);
@@ -37,7 +37,7 @@ public static class AgentSessionScenarios
             Check(bar.Text!.Contains("claude-test", StringComparison.Ordinal), "Late statistics cannot overwrite the current row");
             await c.KeyAsync(Key.Up);
             await WorkspaceProbe.WaitAsync(() => bar.Text?.Contains("test-model", StringComparison.Ordinal) == true);
-            Equal("2 user prompts · 10m tokens · test-model", bar.Text, "The footer shows the session total in millions");
+            Equal("2 user prompts · 2 tool calls · test-model", bar.Text, "The Codex footer shows both calls");
             Check(ToolTip.GetTip(bar)?.ToString()?.Contains($"Total tokens: {10_000_123:N0}", StringComparison.Ordinal) == true, "The details show the exact session total");
             await c.ScreenshotAsync("session-statistics");
             SessionStatisticsFixture.CheckFooter(c.Window.Left);

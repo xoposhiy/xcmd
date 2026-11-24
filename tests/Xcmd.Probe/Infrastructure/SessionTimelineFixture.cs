@@ -16,6 +16,7 @@ internal static class SessionTimelineFixture
         var second = Key(1);
         var third = Key(2);
         var missing = Key(5);
+        const string reviewScript = "text(load(\"review\"));";
         var trace = new SessionTrace(0, 10000,
         [
             Call(first, 1200, 1600, 3, "Run the tests", Operation("tests", "exec", tests)),
@@ -24,7 +25,13 @@ internal static class SessionTimelineFixture
             Call(second, 3000, 4100, 4, "Check source and tests", Operation("source", "read", main), Operation("tests", "read", tests)),
             Call(second, 3100, 4500, 5, "Rerun the tests", Operation("tests", "exec", tests)),
             Call(third, 5000, 6000, 6, "Confirm results", Operation("tests", "read", tests)),
-            Call(missing, 9000, 9500, 7, "Review the main file", Operation("source", "read", main))
+            Call(missing, 9000, 9500, 7, "Review the main file", Operation("source", "read", main)) with
+            {
+                ToolName = "exec",
+                Title = "JavaScript · " + reviewScript,
+                Input = reviewScript,
+                JavaScript = reviewScript
+            }
         ], [new("Review and verify", 0)], [new("Inspect", 0), new("Verify", 2800)], responses:
         [
             Response(first, 1000, 0.06m), Response(second, 3000, 0.04m), Response(third, 5000, 0.02m),
@@ -39,17 +46,28 @@ internal static class SessionTimelineFixture
             {
                 Id = order,
                 Response = key,
+                ToolName = "exec_command",
                 EmissionOrder = order,
                 Classification = new(summary, operations, operations.SelectMany(op => op.Objects).Distinct()
                     .Select(path => new ToolResource("file", path)).ToArray())
             };
     }
 
-    internal static SessionTrace Priced(long end, (TraceCall Call, decimal Cost)[] calls)
+    internal static SessionTrace Priced(long end, (TraceCall Call, decimal Cost)[] calls,
+        TraceMarker[]? tasks = null, TraceMarker[]? phases = null)
     {
         var assigned = calls.Select((entry, index) => (Call: entry.Call with { Response = Key(index) }, entry.Cost)).ToArray();
-        return new(0, end, assigned.Select(entry => entry.Call), [], [], responses: assigned.Select(entry =>
+        return new(0, end, assigned.Select(entry => entry.Call), tasks ?? [], phases ?? [], responses: assigned.Select(entry =>
             Response(entry.Call.Response!.Value, entry.Call.Start, entry.Cost, agent: entry.Call.Agent)));
+    }
+
+    internal static void UseZoomSpans(AgentSessionFixture sessions)
+    {
+        var calls = Enumerable.Range(0, 4).Select(index =>
+            (new TraceCall(SessionTrace.MainAgent, $"Operation {index + 1}", index * 1000 + 100, index * 1000 + 900, []), 0.10m)).ToArray();
+        var trace = Priced(4000, calls, [new("Review", 0), new("Publish", 2000)],
+            [new("Read", 0), new("Check", 1000), new("Ship", 2000)]);
+        sessions.Inspector = (_, _) => Task.FromResult(trace);
     }
 
     private static ResponseKey Key(int index) => new("fixture", index.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -82,10 +100,35 @@ internal static class SessionTimelineFixture
     private static ToolOperation Operation(string target, string action, ToolResource resource) =>
         new(new(target, action), [resource.Value]);
 
+    internal static void UseResourceLists(AgentSessionFixture sessions)
+    {
+        var trace = Priced(3000, [
+            ListCall(0, 1, 1), ListCall(1000, 2, 1), ListCall(2000, 8, 2)
+        ]);
+        sessions.Inspector = (_, _) => Task.FromResult(trace);
+
+        static (TraceCall, decimal) ListCall(int start, int builds, int tests)
+        {
+            var buildFiles = Files("build", builds);
+            var testFiles = Files("test", tests);
+            return (new(SessionTrace.MainAgent, "Read build and test scripts", start, start + 900, [])
+            {
+                ToolName = "exec_command",
+                Classification = new("Read build and test scripts",
+                    [new(new("build_release", "read"), buildFiles.Select(file => file.Value).ToArray()),
+                     new(new("tests", "read"), testFiles.Select(file => file.Value).ToArray())], [.. buildFiles, .. testFiles])
+            }, 0.10m);
+        }
+
+        static ToolResource[] Files(string kind, int count) => Enumerable.Range(1, count)
+            .Select(index => new ToolResource("file", $"scripts/{kind}-{index}.ps1")).ToArray();
+    }
+
     private static (TraceCall, decimal) ReleaseCall(int end, string summary, ToolOperation[] operations, params ToolResource[] resources) =>
         (new(SessionTrace.MainAgent, "Run shell command", end - 100, end, [])
         {
             Id = end,
+            ToolName = "exec_command",
             Classification = new(summary, operations, resources)
         }, 0.10m);
 

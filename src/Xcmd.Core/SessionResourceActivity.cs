@@ -16,7 +16,7 @@ public sealed record SessionResourceActivity(ResourceInterval[] Intervals, strin
         return new(intervals, matchingTargets);
     }
 
-    internal static IEnumerable<ToolLabel> Labels(SessionTrace trace, ToolResource resource, ToolClassification classification)
+    public static IEnumerable<ToolLabel> Labels(SessionTrace trace, ToolResource resource, ToolClassification classification)
     {
         var pairs = classification.Pairs;
         if (pairs.Length == 1) return [pairs[0].Label];

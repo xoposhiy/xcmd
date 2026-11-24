@@ -29,10 +29,11 @@ folder so that I can find the work I am looking for.
 - Show transcript sizes in whole KiB with the suffix `K`. Right-align the
   heading and values for comparison. Keep the exact byte count in the tooltip.
   Point Taken #87. Codex session ID 01a20d43-56bc-7101-ba17-d594796a4a04.
-- Use one footer line for the session count and the size of the selected
-  conversation. Separate the footer from the list with a line. Use short token
-  counts such as 100k and 10m. Keep exact counts in the tooltip. Point Taken #48.
-  Codex session ID 01a207d0-dfad-7c01-89a6-e6ae815ea892.
+- Use one footer line for the session count and the selected session's user
+  prompts, tool calls and model. Separate the footer from the list with a line.
+  Keep exact token counts in the tooltip. Point Taken #48 and #97.
+  Codex session IDs 01a207d0-dfad-7c01-89a6-e6ae815ea892 and
+  01a20ef4-bc33-7d01-ab23-94751e719902.
 
 ## InspectAgentSession
 
@@ -56,17 +57,21 @@ As a user, I want to inspect what an agent did during a session so that I can un
   boundaries in both timelines. Click to see its cost and calls below the
   session timeline. Use whole responses when selecting a cost range.
   Codex session ID 01a20e2d-e2e4-7860-96b3-6f75fff6da43.
+- Double-click a task or work phase to zoom to its range. Right-click a task
+  or work phase to reset zoom and keep the selected range. Point Taken #112.
 - Split the main agent into Source, Tests, Docs and Others. The Docs track
   includes documentation, agent instructions and issue tracker activity.
   Use the same target tracks for child agents on the API cost axis and one track
   per child agent on the Time axis. Order activity tracks by their first event
   on the selected axis. Fill the track height with colored blocks and show
-  the category and its files on hover. Draw a pencil on the block for an
-  edit and a play icon for a run, aligned with the call. Use one icon color
+  the tool name, summary and icons for all target and action pairs on hover.
+  Draw a pencil on the block for an edit and a play icon for a run, aligned with
+  the call. Use one icon color
   at every block width. Give edits and runs the same, more saturated version
   of the target color.
   Leave reads unmarked.
   Codex session ID 01a20cd8-9aeb-7db2-896f-4640815be77a.
+  Point Taken #95. Codex session ID 01a20faa-fd7c-75e1-a059-002d7e87c8c7.
 - Sort Activity breakdown by API cost in the selected range, highest first.
   Split each response's cost equally among its calls. Split each call's share
   equally among its targets, then among each target's actions.
@@ -79,9 +84,19 @@ As a user, I want to inspect what an agent did during a session so that I can un
   call count from the API cost. Point Taken #80 and #82.
   Codex session ID 01a20d11-4e43-7ee0-bc64-0a73729ea0bb.
 - Filter touched resources by resource type, target and action. Include
-  Other with each action choice. Let users select and copy text across
-  sections of a tool call's details. Point Taken #75 and #77.
+  Other with each action choice. Let users select and copy recorded tool call
+  text. Point Taken #75 and #77.
   Codex session ID 01a20cd8-9aeb-7db2-896f-4640815be77a.
+- Show the call count for a selected span with several calls. List those calls
+  in order with a number and duration. Show the selected call's tool name,
+  timing, response cost and model on the left. Show its summary, actions and
+  resources on the right. Show up to three resources directly. Let the user
+  expand larger lists and bring the expanded groups into view. Separate
+  resource names within each group with commas and wrap at the available
+  width. Select the tool name to open the selected
+  call's recorded input and output in a dialog. Show JavaScript in Input
+  when the tool received JavaScript as its input.
+  Point Taken #96, #109 and #110.
 - Use the same checkbox drop-down for resource type, target and action. Let
   users select several options in each filter and apply each change while the
   drop-down stays open. Match any selected option within a filter and require
@@ -101,6 +116,8 @@ As a user, I want to inspect what an agent did during a session so that I can un
 - Show whole-session duration, API cost and completed calls at the top.
   Show range and agent totals beside the selected range. Point Taken #83.
   Codex session ID 01a20d11-4e43-7ee0-bc64-0a73729ea0bb.
+- Show the full session ID in the top summary with a borderless copy icon.
+  Point Taken #94. Codex session ID 01a20ef4-bc33-7d01-ab23-94751e719902.
 - Keep the summary, target/action pairs and concrete objects for each call. Reuse saved
   classifications when the session grows or the user opens it again.
   See the [classification specification](../archive/session-tool-call-classification.md).

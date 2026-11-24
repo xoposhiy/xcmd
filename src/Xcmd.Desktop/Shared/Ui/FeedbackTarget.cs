@@ -6,6 +6,9 @@ using Avalonia.VisualTree;
 
 namespace Xcmd.Desktop.Shared.Ui;
 
+[AttributeUsage(AttributeTargets.Parameter)]
+internal sealed class FeedbackIdAttribute : Attribute;
+
 public static class FeedbackTarget
 {
     public static readonly AttachedProperty<string?> IdProperty = AvaloniaProperty.RegisterAttached<Control, string?>("FeedbackId", typeof(FeedbackTarget));
@@ -25,7 +28,7 @@ public static class FeedbackTarget
     internal static string? Scope(Control control) => Ancestors(control)
         .Select(item => item.GetValue(ScopeProperty)).FirstOrDefault(name => name != null);
 
-    public static T WithFeedbackId<T>(this T control, string id) where T : Control
+    public static T WithFeedbackId<T>(this T control, [FeedbackId] string id) where T : Control
     {
         control.SetValue(IdProperty, id);
         return control;

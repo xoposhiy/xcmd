@@ -11,11 +11,17 @@ public sealed record TraceCall(string Agent, string Title, long Start, long End,
     public int Id { get; init; }
     public string? Input { get; init; }
     public string? Output { get; init; }
+    public string? JavaScript { get; init; }
+    public string? ToolName { get; init; }
+    public string? RecordType { get; init; }
+    public string? Shell { get; init; }
     public string? WorkingDirectory { get; init; }
     public ResponseKey? Response { get; init; }
     public int EmissionOrder { get; init; }
     public bool Completed { get; init; } = true;
     public ToolClassification? Classification { get; init; }
+    public bool IsStandaloneJavaScript => JavaScript != null && JavaScript == Input;
+    public string DisplayTitle => IsStandaloneJavaScript ? Title : Classification?.Summary ?? Title;
     public IEnumerable<ToolLabel> Labels => Classification?.Pairs.Select(p => p.Label) ?? [ToolLabel.Unclassified];
     public string ActivityName => string.Join(", ", Labels);
     public CoverageInput? Review { get; init; }

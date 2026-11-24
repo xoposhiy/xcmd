@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace UiChecks;
 
@@ -16,7 +17,9 @@ public sealed class FeedbackIdAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor Duplicate = new("XCMDUI002", "Duplicate feedback identity",
         "Feedback ID '{0}' is declared more than once; give each source definition a unique ID", "Feedback", DiagnosticSeverity.Error, true);
     private static readonly DiagnosticDescriptor Invalid = new("XCMDUI003", "Invalid feedback identity",
-        "Feedback IDs must be nonempty string literals so agents can search for their definitions", "Feedback", DiagnosticSeverity.Error, true);
+        "Pass a nonempty feedback ID literal or forward a required [FeedbackId] parameter", "Feedback", DiagnosticSeverity.Error, true);
+    private const string FeedbackTargetType = "Xcmd.Desktop.Shared.Ui.FeedbackTarget";
+    private const string FeedbackIdAttribute = "Xcmd.Desktop.Shared.Ui.FeedbackIdAttribute";
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Missing, Duplicate, Invalid];
 
     public override void Initialize(AnalysisContext context)
@@ -26,12 +29,16 @@ public sealed class FeedbackIdAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(start =>
         {
             var declarations = new ConcurrentDictionary<string, ConcurrentBag<Location>>(StringComparer.Ordinal);
+            var forwarding = new ConcurrentDictionary<ISymbol, ConcurrentBag<Location>>(SymbolEqualityComparer.Default);
             start.RegisterSyntaxNodeAction(CheckCreation, SyntaxKind.ObjectCreationExpression, SyntaxKind.ImplicitObjectCreationExpression);
-            start.RegisterSyntaxNodeAction(node => CheckId(node, declarations), SyntaxKind.InvocationExpression);
+            start.RegisterSyntaxNodeAction(CheckParameter, SyntaxKind.Parameter);
+            start.RegisterOperationAction(context => CheckArgument(context, declarations, forwarding), OperationKind.Argument);
             start.RegisterCompilationEndAction(end =>
             {
                 foreach (var pair in declarations.Where(pair => pair.Value.Count > 1))
                     foreach (var location in pair.Value) end.ReportDiagnostic(Diagnostic.Create(Duplicate, location, pair.Key));
+                foreach (var pair in forwarding.Where(pair => pair.Value.Count > 1))
+                    foreach (var location in pair.Value) end.ReportDiagnostic(Diagnostic.Create(Duplicate, location, pair.Key.Name));
             });
         });
     }
@@ -46,24 +53,38 @@ public sealed class FeedbackIdAnalyzer : DiagnosticAnalyzer
     private static void CheckCreation(SyntaxNodeAnalysisContext context)
     {
         if (!IsControl(context.SemanticModel.GetTypeInfo(context.Node).Type)) return;
-        if (context.Node.Parent is not MemberAccessExpressionSyntax { Name.Identifier.ValueText: "WithFeedbackId", Parent: InvocationExpressionSyntax })
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Missing, context.Node.GetLocation(), context.SemanticModel.GetTypeInfo(context.Node).Type!.Name));
-            return;
-        }
+        if (context.Node.Parent is MemberAccessExpressionSyntax { Name.Identifier.ValueText: "WithFeedbackId", Parent: InvocationExpressionSyntax invocation } &&
+            context.SemanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol method &&
+            method.ContainingType.ToDisplayString() == FeedbackTargetType) return;
+        context.ReportDiagnostic(Diagnostic.Create(Missing, context.Node.GetLocation(), context.SemanticModel.GetTypeInfo(context.Node).Type!.Name));
     }
 
-    private static void CheckId(SyntaxNodeAnalysisContext context, ConcurrentDictionary<string, ConcurrentBag<Location>> declarations)
+    private static bool IsFeedbackId(IParameterSymbol? parameter) =>
+        parameter?.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == FeedbackIdAttribute) == true;
+
+    private static void CheckParameter(SyntaxNodeAnalysisContext context)
     {
-        var invocation = (InvocationExpressionSyntax)context.Node;
-        if (context.SemanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol { Name: "WithFeedbackId" } method ||
-            method.ContainingType.ToDisplayString() != "Xcmd.Desktop.Shared.Ui.FeedbackTarget") return;
-        if (invocation.ArgumentList.Arguments is not [var argument] || argument.Expression is not LiteralExpressionSyntax literal ||
-            !literal.IsKind(SyntaxKind.StringLiteralExpression) || string.IsNullOrWhiteSpace(literal.Token.ValueText))
+        if (context.SemanticModel.GetDeclaredSymbol(context.Node) is IParameterSymbol parameter &&
+            IsFeedbackId(parameter) && (parameter.IsOptional || parameter.Type.SpecialType != SpecialType.System_String))
+            context.ReportDiagnostic(Diagnostic.Create(Invalid, context.Node.GetLocation()));
+    }
+
+    private static void CheckArgument(OperationAnalysisContext context, ConcurrentDictionary<string, ConcurrentBag<Location>> declarations,
+        ConcurrentDictionary<ISymbol, ConcurrentBag<Location>> forwarding)
+    {
+        var argument = (IArgumentOperation)context.Operation;
+        if (!IsFeedbackId(argument.Parameter) || argument.IsImplicit) return;
+        if (argument.Value.Syntax is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression) &&
+            !string.IsNullOrWhiteSpace(literal.Token.ValueText))
         {
-            context.ReportDiagnostic(Diagnostic.Create(Invalid, invocation.GetLocation()));
+            declarations.GetOrAdd(literal.Token.ValueText, _ => []).Add(literal.GetLocation());
             return;
         }
-        declarations.GetOrAdd(literal.Token.ValueText, _ => []).Add(literal.GetLocation());
+        if (argument.Value is IParameterReferenceOperation reference && IsFeedbackId(reference.Parameter))
+        {
+            forwarding.GetOrAdd(reference.Parameter, _ => []).Add(argument.Value.Syntax.GetLocation());
+            return;
+        }
+        context.ReportDiagnostic(Diagnostic.Create(Invalid, argument.Syntax.GetLocation()));
     }
 }

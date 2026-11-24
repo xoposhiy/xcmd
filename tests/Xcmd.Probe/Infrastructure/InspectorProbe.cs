@@ -4,6 +4,8 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xcmd.Desktop.Shared.Ui;
 using static Xcmd.Probe.Infrastructure.ProbeContext;
@@ -24,6 +26,52 @@ internal sealed class InspectorProbe(ProbeContext c)
     internal Task Click(string caption) => ClickVisible(Find<Button>(button => Equals(button.Content, caption)));
     internal Task Key(Key key) => c.KeyAsync(key, target: Window);
     internal Task Screenshot(string file) => c.ScreenshotAsync(file, Window);
+
+    internal async Task CheckSessionId(Guid sessionId)
+    {
+        var value = Find<TextBlock>(text => text.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.sessionIdValue");
+        var copy = Find<Button>(button => AutomationProperties.GetName(button) == "Copy session ID");
+        var icon = (PathIcon)copy.Content!;
+        var copyGlyph = icon.Data;
+        var expected = sessionId.ToString("D");
+        Equal(expected, value.Text, "The session summary shows the full session ID");
+        Check(copy.Bounds.Width <= 24 && copy.BorderThickness == default && Equals(copy.Background, Brushes.Transparent),
+            "The copy button shows a compact icon without a border or background");
+        var right = copy.TranslatePoint(new Point(copy.Bounds.Width, 0), Window)!.Value.X;
+        Check(right <= Window.Bounds.Width && value.Bounds.Right <= copy.Bounds.Left, "The full ID and copy action fit in the window");
+        var clipboard = Window.Clipboard!;
+        await clipboard.SetTextAsync("Previous clipboard text");
+        await ClickVisible(copy);
+        await WorkspaceProbe.WaitAsync(() => AutomationProperties.GetItemStatus(copy) == "Session ID copied");
+        Check(icon.Data != copyGlyph, "The icon confirms that the ID was copied");
+        Equal(expected, await clipboard.TryGetTextAsync(), "Clicking Copy places the exact ID on the clipboard");
+        await WorkspaceProbe.WaitAsync(() => icon.Data == copyGlyph);
+    }
+
+    internal async Task CheckSessionIdFeedback()
+    {
+        var copy = Find<Button>(button => AutomationProperties.GetName(button) == "Copy session ID");
+        copy.BringIntoView();
+        await c.SettleAsync();
+        var note = await FeedbackProbe.CommentAsync(c, Window, copy, Window.Title + ": Copy session ID");
+        Equal("SessionInspector.copySessionId", note.Target.Id, "Feedback identifies the session ID copy button");
+    }
+
+    internal async Task CheckSummaryFeedback()
+    {
+        const string summaryId = "SessionInspector.sessionSummary";
+        var summary = FeedbackProbe.Control<Border>(Window, summaryId);
+        var panel = await FeedbackProbe.CommentAsync(c, Window, summary, Window.Title + ": " + summaryId,
+            new Point(0.995, 0.5));
+        Equal(summaryId, panel.Target.Id, "The summary border reports its own source ID");
+        var label = Find<TextBlock>(t => t.Text == "Model");
+        var heading = await FeedbackProbe.CommentAsync(c, Window, label, Window.Title + ": Model");
+        Equal("SessionInspector.modelLabel", heading.Target.Id, "The model label has its own source ID");
+        var value = Find<TextBlock>(t => t.Text == "codex-fixture");
+        var model = await FeedbackProbe.CommentAsync(c, Window, value, Window.Title + ": codex-fixture");
+        Equal("SessionInspector.modelValue", model.Target.Id, "The model value has a different source ID");
+    }
+
     internal async Task CheckTableLayout(double width, bool sideBySide)
     {
         Window.Width = width;
@@ -120,18 +168,120 @@ internal sealed class InspectorProbe(ProbeContext c)
         await CloseResourceFilter();
     }
 
-    internal async Task CheckCallCopy()
+    internal async Task<Window> OpenToolCall()
     {
-        var field = Find<TextBox>(box => AutomationProperties.GetName(box) == "Tool call details");
-        await ClickVisible(field);
+        await ClickVisible(ToolCallLink);
+        await WorkspaceProbe.WaitAsync(() => Window.OwnedWindows.Any(dialog => dialog.Title == "Tool call" && dialog.IsVisible));
+        return Window.OwnedWindows.Single(dialog => dialog.Title == "Tool call");
+    }
+
+    private HyperlinkButton ToolCallLink => Find<HyperlinkButton>(button =>
+        button.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.viewToolCall");
+
+    internal string? ToolCallLinkName => ((TextBlock)ToolCallLink.Content!).Text;
+
+    internal static TextBox ToolCallPayload(Window dialog, string name) => dialog.GetVisualDescendants().OfType<TextBox>()
+        .Single(box => AutomationProperties.GetName(box) == name);
+
+    internal static string? ToolCallField(Window dialog, string field) => dialog.GetVisualDescendants().OfType<SelectableTextBlock>()
+        .Single(text => text.GetValue(FeedbackTarget.IdProperty) == $"SessionInspector.{field}").Text;
+
+    internal static void CheckToolCallTabs(Window dialog)
+    {
+        var tabs = dialog.GetVisualDescendants().OfType<TabControl>().Single();
+        Equal("Input,Output", string.Join(',', tabs.Items.OfType<TabItem>().Select(item => item.Header)),
+            "The window shows the selected call's input and output");
+        Check(!dialog.GetVisualDescendants().OfType<Button>().Any(button => Equals(button.Content, "Close")),
+            "The tool call window uses the system close control");
+    }
+
+    internal async Task SelectCallTab(Window dialog, string name)
+    {
+        var tab = dialog.GetVisualDescendants().OfType<TabItem>().Single(item => Equals(item.Header, name));
+        await c.ClickAsync(tab, target: dialog);
+    }
+
+    internal async Task CloseToolCall(Window dialog)
+    {
+        await c.KeyAsync(Avalonia.Input.Key.Escape, target: dialog);
+        await WorkspaceProbe.WaitAsync(() => !dialog.IsVisible);
+        Check(Window.IsVisible && Window.FocusManager?.GetFocusedElement() == ToolCallLink,
+            "Escape closes the dialog and restores focus to the tool name link");
+    }
+
+    internal async Task CheckCallCopy(Window dialog)
+    {
+        var field = ToolCallPayload(dialog, "Output");
+        await c.ClickAsync(field, target: dialog);
         Check(field.IsReadOnly, "The details field protects the recorded call");
-        await c.KeyAsync(Avalonia.Input.Key.Home, RawInputModifiers.Control, Window);
-        for (var i = 0; i < 4; i++) await c.KeyAsync(Avalonia.Input.Key.Right, RawInputModifiers.Shift, Window);
-        await c.KeyAsync(Avalonia.Input.Key.C, RawInputModifiers.Control, Window);
-        Equal(field.Text![..4], await Window.Clipboard!.TryGetTextAsync(), "Ctrl+C copies only the selected characters");
-        await c.KeyAsync(Avalonia.Input.Key.A, RawInputModifiers.Control, Window);
-        await c.KeyAsync(Avalonia.Input.Key.C, RawInputModifiers.Control, Window);
-        Equal(field.Text.ReplaceLineEndings(), (await Window.Clipboard!.TryGetTextAsync())?.ReplaceLineEndings(), "Ctrl+A and Ctrl+C copy every call section");
+        await c.KeyAsync(Avalonia.Input.Key.Home, RawInputModifiers.Control, dialog);
+        for (var i = 0; i < 4; i++) await c.KeyAsync(Avalonia.Input.Key.Right, RawInputModifiers.Shift, dialog);
+        await c.KeyAsync(Avalonia.Input.Key.C, RawInputModifiers.Control, dialog);
+        Equal(field.Text![..4], await dialog.Clipboard!.TryGetTextAsync(), "Ctrl+C copies only the selected characters");
+        await c.KeyAsync(Avalonia.Input.Key.A, RawInputModifiers.Control, dialog);
+        await c.KeyAsync(Avalonia.Input.Key.C, RawInputModifiers.Control, dialog);
+        Equal(field.Text.ReplaceLineEndings(), (await dialog.Clipboard!.TryGetTextAsync())?.ReplaceLineEndings(), "Ctrl+A and Ctrl+C copy the full payload");
+    }
+
+    internal void CheckCallCardLayout(bool sideBySide)
+    {
+        var facts = Find<Border>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callFactsPanel");
+        var activity = Find<StackPanel>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callActivity");
+        Check(sideBySide ? facts.Bounds.Right <= activity.Bounds.Left : facts.Bounds.Bottom <= activity.Bounds.Top,
+            "The technical panel sits to the left of the activity at wide widths and above it at narrow widths");
+    }
+
+    internal async Task ExpandCallResources()
+    {
+        var toggle = Find<Button>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceDisclosure");
+        await ClickVisible(toggle);
+        Check(AutomationProperties.GetName(toggle)?.StartsWith("Collapse ", StringComparison.Ordinal) == true,
+            "The resource disclosure opens with pointer input");
+    }
+
+    internal bool HasCallResourceDisclosure => Window.GetVisualDescendants().OfType<Button>().Any(button =>
+        button.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceDisclosure");
+
+    private IEnumerable<TextBlock> CallResourceLabels() => Window.GetVisualDescendants().OfType<TextBlock>().Where(text =>
+        text.IsEffectivelyVisible && text.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceName");
+
+    internal string CallResourceNames() => string.Join(' ', CallResourceLabels().Select(label => label.Text));
+
+    internal void CheckResourceNamesShareLine(string first, string second)
+    {
+        var labels = CallResourceLabels().ToArray();
+        var left = labels.Single(text => text.Text == first).TranslatePoint(default, Window)!.Value;
+        var right = labels.Single(text => text.Text == second).TranslatePoint(default, Window)!.Value;
+        Check(right.X > left.X && Math.Abs(right.Y - left.Y) < 1, "The files share one comma-separated line");
+    }
+
+    internal void CheckResourceGroupsInViewport()
+    {
+        var scroll = Find<ScrollViewer>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.scroll");
+        var groups = scroll.GetVisualDescendants().OfType<Border>().Where(control =>
+            control.IsEffectivelyVisible && control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceGroupPanel").ToArray();
+        Check(groups.Length > 1 && groups.All(group =>
+        {
+            var top = group.TranslatePoint(default, scroll)!.Value.Y;
+            return top >= -1 && top + group.Bounds.Height <= scroll.Viewport.Height + 1;
+        }), "All expanded resource groups fit inside the viewport");
+    }
+
+    internal string? CallCardText(string field) =>
+        Find<TextBlock>(control => control.GetValue(FeedbackTarget.IdProperty) == $"SessionInspector.{field}").Text;
+
+    private TextBlock SpanCallNumber(int position) => Find<TextBlock>(control =>
+        control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callPickerNumber" && control.Text == position.ToString("N0"));
+
+    internal Task SelectSpanCall(int position) => ClickVisible(SpanCallNumber(position));
+
+    internal string? SpanCallDuration(int position) => ((Grid)SpanCallNumber(position).Parent!).Children.OfType<TextBlock>()
+        .Single(text => text.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callPickerDuration").Text;
+
+    internal async Task ShowCallCardInViewport()
+    {
+        Find<Border>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callCard").BringIntoView();
+        await c.SettleAsync();
     }
 
     private Point RangePoint(double fraction)
@@ -162,7 +312,29 @@ internal sealed class InspectorProbe(ProbeContext c)
     {
         new InputDriver(Window).MovePointer(TimelinePoint(fraction, track, rowY));
         await c.SettleAsync();
-        return ToolTip.GetTip(Find<Control>(control => control.GetType().Name == "SessionTimeline")) as string;
+        return TimelineTipContent() switch
+        {
+            Control control => AutomationProperties.GetName(control),
+            string text => text,
+            _ => null
+        };
+    }
+
+    private object? TimelineTipContent() => ToolTip.GetTip(Find<Control>(control => control.GetType().Name == "SessionTimeline"));
+
+    internal Task WaitForTimelineTooltip() => WorkspaceProbe.WaitAsync(() =>
+        TimelineTipContent() is Control tip && TopLevel.GetTopLevel(tip) != null);
+
+    internal string TimelineTipText() => string.Join('\n', ((Control)TimelineTipContent()!).GetLogicalDescendants()
+        .OfType<TextBlock>().Select(text => text.Text));
+
+    internal string TimelineTipActions(string target)
+    {
+        var tip = (Panel)TimelineTipContent()!;
+        var row = tip.GetLogicalDescendants().OfType<StackPanel>().Single(panel =>
+            panel.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.timelineTipTargetActions" &&
+            panel.Children.OfType<TextBlock>().Single().Text == target);
+        return string.Join(',', row.Children.OfType<PathIcon>().Select(AutomationProperties.GetName));
     }
 
     internal async Task OpenTimelineCall(double fraction, int track = 0, double rowY = 8)
@@ -174,8 +346,29 @@ internal sealed class InspectorProbe(ProbeContext c)
         var point = TimelinePoint(fraction, track, rowY);
         driver.PressPointer(point, MouseButton.Left);
         driver.ReleasePointer(point, MouseButton.Left);
-        await Ready(AxisSelected("API cost") ? "Model response" : "Tool call details");
+        await c.SettleAsync();
+        await Ready("Selected span");
     }
+
+    internal async Task ClickTimelineSpan(double fraction, bool task, MouseButton button, int clicks = 1)
+    {
+        var timeline = Find<Control>(control => control.GetType().Name == "SessionTimeline");
+        timeline.BringIntoView();
+        await c.SettleAsync();
+        var origin = timeline.TranslatePoint(default, Window)!.Value;
+        var point = new Point(RangePoint(fraction).X, origin.Y + (task ? 45 : 75));
+        var driver = new InputDriver(Window);
+        driver.MovePointer(point);
+        for (var i = 0; i < clicks; i++)
+        {
+            driver.PressPointer(point, button);
+            driver.ReleasePointer(point, button);
+        }
+        await c.SettleAsync();
+    }
+
+    internal bool HasZoomAction(string text) => Window.GetVisualDescendants().OfType<Button>()
+        .Any(button => Equals(button.Content, text) && button.IsEnabled);
 
     internal async Task DragHandle(string name, double to, Action whileHeld)
     {
@@ -241,19 +434,24 @@ internal sealed class InspectorProbe(ProbeContext c)
         await Key(Avalonia.Input.Key.F12);
         Check(c.Window.Feedback.IsActive, "Feedback can select controls in the inspector");
         await c.ClickAsync(Find<TextBlock>(t => t.Text == "Session timeline"), target: Window);
-        Check(c.Window.Feedback.ActiveComment != null, "The timeline heading can receive feedback");
-        c.Window.Feedback.ActiveComment!.Close();
-        c.Window.Feedback.Cancel();
+        var comment = c.Window.Feedback.ActiveComment;
+        Check(comment != null, "The timeline heading can receive feedback");
+        await c.TextAsync("Timeline title", comment);
+        await c.KeyAsync(Avalonia.Input.Key.Enter, RawInputModifiers.Control, comment);
+        Equal("SessionInspector.timelineTitle", c.Window.Feedback.Notes.Last().Target.Id, "The timeline heading reports its own source ID");
     }
 
     internal async Task CheckAxisLinkFeedback()
     {
-        var link = AxisLink("Time");
-        link.BringIntoView();
-        await c.SettleAsync();
-        var note = await FeedbackProbe.CommentAsync(c, Window, link, Window.Title + ": Time");
-        Equal("SessionInspector.axisLink", note.Target.Id, "The Time link keeps its own feedback identity");
-        Check(AxisSelected("API cost"), "Picking the link leaves the selected axis alone");
+        foreach (var (axis, id) in new[] { ("Time", "SessionInspector.timeAxis"), ("API cost", "SessionInspector.costAxis") })
+        {
+            var link = AxisLink(axis);
+            link.BringIntoView();
+            await c.SettleAsync();
+            var note = await FeedbackProbe.CommentAsync(c, Window, link, Window.Title + ": " + axis);
+            Equal(id, note.Target.Id, $"The {axis} link has a distinct feedback identity");
+            Check(AxisSelected("API cost"), "Picking the link leaves the selected axis alone");
+        }
     }
 
     internal async Task CheckResourceFilterFeedback()

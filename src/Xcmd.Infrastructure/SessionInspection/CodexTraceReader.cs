@@ -13,6 +13,7 @@ internal sealed class CodexTraceReader(TraceRecords trace, string agent, Guid th
     private readonly List<TraceMarker> messages = [];
     private readonly List<TraceMarker> userEvents = [];
     private readonly List<TraceMarker> legacyMessages = [];
+    private readonly Dictionary<int, string> scripts = [];
     private readonly List<(long Start, long End, int Order, ResponseKey? Key)> envelopes = [];
     private readonly CodexResponses responses = new(trace, agent, thread);
     private string cwd = directory;
@@ -62,11 +63,16 @@ internal sealed class CodexTraceReader(TraceRecords trace, string agent, Guid th
             case "function_call":
             case "custom_tool_call":
                 var input = p.Str("arguments") is { Length: > 0 } args ? args : p.Str("input");
+                var script = p.Str("type") == "custom_tool_call" && p.Str("name") is "exec" or "functions.exec" ? input : null;
                 pending[id] = new(p.Str("name"), input, at, cwd)
                 {
                     Response = responses.Output(at, evidence.Line, call: id),
-                    Order = evidence.Line
+                    Order = evidence.Line,
+                    JavaScript = script,
+                    RecordType = p.Str("type") == "custom_tool_call" ? "Custom tool call" : "Function call",
+                    Shell = TraceJson.Object(input).Str("shell")
                 };
+                if (script != null) scripts[evidence.Line] = script;
                 if (p.Str("name").EndsWith("update_plan", StringComparison.Ordinal))
                     trace.MarkStep(agent, TraceJson.Object(input).Field("plan"), at);
                 break;
@@ -126,9 +132,8 @@ internal sealed class CodexTraceReader(TraceRecords trace, string agent, Guid th
         var line = evidence.Line;
         var details = envelope.ValueKind == JsonValueKind.Object && envelope.Field("output").ValueKind == JsonValueKind.Undefined ? envelope : default;
         evidence.Result(line, tool with { Directory = location }, command, new(captured, outcome, failed, exit, details), id);
-        raw.Add((id, toolName, TraceRecords.Call(agent, tool with { Directory = location }, at, command, output, files, failed)
-            with
-        { Review = review, Id = line }));
+        var call = TraceRecords.Call(agent, tool with { Directory = location }, at, command, output, files, failed);
+        raw.Add((id, toolName, call with { Review = review, Id = line }));
     }
 
     private void Child(string id, string name)
@@ -177,7 +182,31 @@ internal sealed class CodexTraceReader(TraceRecords trace, string agent, Guid th
     internal void Finish()
     {
         responses.Boundary(trace.Last, evidence.Line);
+        var expanded = AddStructuredCalls();
         var ends = structured.Select(row => row.Call.End).Order().ToArray();
+        foreach (var (id, tool, call) in raw)
+        {
+            if (runtimeIds.Contains(id) || expanded.Contains(call.EmissionOrder)) continue;
+            if (tool is "exec_command" or "apply_patch" && HasNestedCall(call)) continue;
+            trace.Calls.Add(call with { Response = responses.Resolve(call.Response) });
+        }
+        var prompts = messages.Count > 0 ? messages : userEvents.Count > 0 ? userEvents : legacyMessages;
+        foreach (var message in prompts) trace.MarkTask(agent, message.Title, message.At);
+        foreach (var (id, tool) in pending)
+            if (!runtimeIds.Contains(id))
+                trace.AddPending(agent, tool with { Response = responses.Resolve(tool.Response) });
+
+        bool HasNestedCall(TraceCall call)
+        {
+            var i = Array.BinarySearch(ends, call.Start);
+            if (i < 0) i = ~i;
+            return i < ends.Length && ends[i] <= call.End;
+        }
+    }
+
+    private HashSet<int> AddStructuredCalls()
+    {
+        var names = raw.ToLookup(row => row.Id, row => row.Call.ToolName);
         var windows = envelopes.OrderBy(window => window.Start).ToArray();
         var expanded = new HashSet<int>();
         var active = new PriorityQueue<(long Start, long End, int Order, ResponseKey? Key), (long, int)>();
@@ -197,29 +226,17 @@ internal sealed class CodexTraceReader(TraceRecords trace, string agent, Guid th
                 expanded.Add(order);
             }
             response ??= responses.Runtime(call.Start);
+            var toolName = call.ToolName;
+            if (string.IsNullOrEmpty(toolName))
+                toolName = names[id].FirstOrDefault() ?? pending.GetValueOrDefault(id)?.Name;
             trace.Calls.Add(call with
             {
                 Response = responses.Resolve(response) ?? responses.Missing(call.Start, call.Id),
-                EmissionOrder = order == 0 ? call.EmissionOrder : order
+                EmissionOrder = order == 0 ? call.EmissionOrder : order,
+                JavaScript = scripts.GetValueOrDefault(order),
+                ToolName = toolName
             });
         }
-        foreach (var (id, tool, call) in raw)
-        {
-            if (runtimeIds.Contains(id) || expanded.Contains(call.EmissionOrder)) continue;
-            if (tool is "exec_command" or "apply_patch" && HasNestedCall(call)) continue;
-            trace.Calls.Add(call with { Response = responses.Resolve(call.Response) });
-        }
-        var prompts = messages.Count > 0 ? messages : userEvents.Count > 0 ? userEvents : legacyMessages;
-        foreach (var message in prompts) trace.MarkTask(agent, message.Title, message.At);
-        foreach (var (id, tool) in pending)
-            if (!runtimeIds.Contains(id))
-                trace.AddPending(agent, tool with { Response = responses.Resolve(tool.Response) });
-
-        bool HasNestedCall(TraceCall call)
-        {
-            var i = Array.BinarySearch(ends, call.Start);
-            if (i < 0) i = ~i;
-            return i < ends.Length && ends[i] <= call.End;
-        }
+        return expanded;
     }
 }

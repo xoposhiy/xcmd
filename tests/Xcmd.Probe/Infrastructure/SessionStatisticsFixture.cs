@@ -22,7 +22,7 @@ internal static class SessionStatisticsFixture
         var start = summary.TranslatePoint(default, footer)!.Value;
         var end = count.TranslatePoint(default, footer)!.Value;
         ProbeContext.Check(Math.Abs(start.Y - end.Y) < 1 && start.X + summary.Bounds.Width <= end.X && end.X + count.Bounds.Width <= footer.Bounds.Width,
-            "Session size and list count fit side by side on the same line");
+            "Session statistics and list count fit side by side on the same line");
     }
 
     internal static AgentSession CodexTranscript(string root, AgentSession session) => Write(root, session, """

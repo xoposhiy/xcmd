@@ -3,7 +3,7 @@ using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Viewer;
 
-internal sealed record ResponseHit(SessionResponse Response, IReadOnlyList<TraceCall> Calls, string Context);
+internal sealed record ResponseHit(SessionResponse Response, TraceCall? SelectedCall);
 
 internal sealed class ResponseFocus
 {

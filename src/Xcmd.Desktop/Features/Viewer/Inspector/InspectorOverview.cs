@@ -16,44 +16,48 @@ internal sealed partial class InspectorOverview : UserControl
 {
     private readonly SessionSelection selection;
     private readonly Action<string, Control> detail;
+    private readonly Action<TraceCall> viewToolCall;
     private readonly SessionTimeline timeline;
-    private readonly StackPanel selectedCalls = Stack(3);
+    private readonly StackPanel selectedCalls = Stack("SessionInspector.selectedCalls", 3);
     private readonly ComboBox scope = new ComboBox { MinWidth = 116, MaxWidth = 200, FontSize = 13 }.WithFeedbackId("SessionInspector.scope");
     private readonly Button timeAxis, costAxis, zoom, full, fromStart;
-    private readonly TextBlock stamp = Text("", 14, Accent, true);
-    private readonly TextBlock hint = Text("", 12, UiPalette.Secondary);
-    private readonly TextBlock rangeTotals = Text("", 12, UiPalette.Secondary);
+    private readonly TextBlock stamp = Text("SessionInspector.selectedRangeInterval", "", 14, Accent, true);
+    private readonly TextBlock hint = Text("SessionInspector.timelineHint", "", 12, UiPalette.Secondary);
+    private readonly TextBlock rangeTotals = Text("SessionInspector.rangeTotals", "", 12, UiPalette.Secondary);
     private readonly Button analyze;
-    private readonly TextBlock analysisStatus = SessionInspectorWindow.Paragraph("");
-    private readonly StackPanel resources = Stack(), activities = Stack();
+    private readonly TextBlock analysisStatus = SessionInspectorWindow.Paragraph("SessionInspector.analysisStatus", "");
+    private readonly StackPanel resources = Stack("SessionInspector.resourceContent");
+    private readonly StackPanel activities = Stack("SessionInspector.activityContent");
     private readonly string projectName;
     private readonly bool hasClassifications;
     private readonly bool hasCalls;
     private readonly ResponseFocus responseFocus = new();
     private SessionSummary summary;
 
-    internal InspectorOverview(AgentSession session, SessionTrace trace, Action<string, Control> detail, Action startAnalysis)
+    internal InspectorOverview(AgentSession session, SessionTrace trace, Action<string, Control> detail,
+        Action<TraceCall> viewToolCall, Action startAnalysis)
     {
         this.detail = detail;
+        this.viewToolCall = viewToolCall;
         projectName = session.ProjectName;
         selection = new(trace);
         selection.SetAxis(true);
         summary = selection.Summarize();
         timeline = new SessionTimeline(selection, responseFocus, Refresh, Filter).WithFeedbackId("SessionInspector.timeline");
-        timeline.EventSelected += value => { hint.Text = value; ToolTip.SetTip(hint, value); };
+        timeline.EventSelected += SetTimelineHint;
         timeline.BlockSelected += ShowBlock;
         timeline.ResponseSelected += ShowResponse;
-        timeAxis = AxisLink("Time", false);
-        costAxis = AxisLink("API cost", true, "Compare model responses at standard global API rates");
-        zoom = Action("Zoom to range", () => { selection.ToggleZoom(); Refresh(); });
-        full = Action("Full session", () => Select(trace.Start, trace.End));
-        fromStart = Action("From start", SelectFromStart);
-        var content = Stack(12); content.Margin = new Thickness(18, 12, 18, 16);
+        timeAxis = AxisLink("SessionInspector.timeAxis", "Time", false);
+        costAxis = AxisLink("SessionInspector.costAxis", "API cost", true, "Compare model responses at standard global API rates");
+        zoom = Action("SessionInspector.zoomRange", "Zoom to range", () => { selection.ToggleZoom(); Refresh(); });
+        full = Action("SessionInspector.fullSession", "Full session", () => Select(trace.Start, trace.End));
+        fromStart = Action("SessionInspector.rangeFromStart", "From start", SelectFromStart);
+        var content = Stack("SessionInspector.overviewContent", 12); content.Margin = new Thickness(18, 12, 18, 16);
         content.Children.Add(BuildInfo(session, trace));
-        if (trace.Note != null) content.Children.Add(SessionInspectorWindow.Paragraph(trace.Note));
+        if (trace.Note != null) content.Children.Add(SessionInspectorWindow.Paragraph("SessionInspector.transcriptNote", trace.Note));
         var analysisAction = trace.ClassificationError != null ? "Retry analysis" :
             trace.HasOutdatedClassifications ? "Update with Luna" : "Analyze with Luna";
-        analyze = Action(analysisAction, startAnalysis);
+        analyze = Action("SessionInspector.analyzeCalls", analysisAction, startAnalysis);
         if (trace.HasOutdatedClassifications || trace.Calls.Any(c => c.Classification == null))
         {
             analyze.HorizontalAlignment = HorizontalAlignment.Left;
@@ -69,12 +73,13 @@ internal sealed partial class InspectorOverview : UserControl
         if (hasCalls)
         {
             BuildActivityPanel();
+            var activityPanel = Box("SessionInspector.activityPanel", activities);
             if (hasClassifications)
             {
                 BuildResourcePanel();
-                content.Children.Add(BuildTables());
+                content.Children.Add(BuildTables(activityPanel));
             }
-            else content.Children.Add(Box(activities));
+            else content.Children.Add(activityPanel);
         }
         Content = new ScrollViewer { Content = content, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }.WithFeedbackId("SessionInspector.scroll");
         scope.ItemsSource = new[] { "All agents" }.Concat(trace.Agents).ToArray();
@@ -86,23 +91,23 @@ internal sealed partial class InspectorOverview : UserControl
 
     private Control BuildTimeline()
     {
-        var panel = Stack();
-        var header = Stack(10);
+        var panel = Stack("SessionInspector.timelineContent");
+        var header = Stack("SessionInspector.timelineHeader", 10);
         header.Orientation = Orientation.Horizontal;
         header.Margin = new Thickness(12, 8);
-        header.Children.Add(Text("Session timeline", 17, strong: true));
+        header.Children.Add(Text("SessionInspector.timelineTitle", "Session timeline", 17, strong: true));
         header.Children.Add(timeAxis);
         header.Children.Add(costAxis);
         panel.Children.Add(header); panel.Children.Add(timeline);
-        var footer = Grid("*,Auto"); footer.Margin = new Thickness(12, 3, 10, 7);
+        var footer = Grid("SessionInspector.timelineFooter", "*,Auto"); footer.Margin = new Thickness(12, 3, 10, 7);
         Put(footer, hint); Put(footer, zoom, 1); panel.Children.Add(footer);
-        return Box(panel);
+        return Box("SessionInspector.timelinePanel", panel);
     }
 
-    private HyperlinkButton AxisLink(string title, bool cost, string? tip = null)
+    private HyperlinkButton AxisLink([FeedbackId] string id, string title, bool cost, string? tip = null)
     {
         var link = new HyperlinkButton { Content = title, FontSize = 12, MinHeight = 22, Padding = new Thickness(2, 0) }
-            .WithFeedbackId("SessionInspector.axisLink");
+            .WithFeedbackId(id);
         link.Click += (_, _) => Axis(cost);
         if (tip != null) ToolTip.SetTip(link, tip);
         return link;
@@ -119,19 +124,19 @@ internal sealed partial class InspectorOverview : UserControl
     {
         var row = new WrapPanel { VerticalAlignment = VerticalAlignment.Center }.WithFeedbackId("SessionInspector.rangeHeader");
         AutomationProperties.SetAutomationId(rangeTotals, "session-inspector.range-totals");
-        foreach (var control in new Control[] { Text("Selected range", 18, strong: true), stamp, rangeTotals, fromStart, full, scope })
+        var title = Text("SessionInspector.selectedRangeTitle", "Selected range", 18, strong: true);
+        foreach (var control in new Control[] { title, stamp, rangeTotals, fromStart, full, scope })
         { control.Margin = new Thickness(0, 2, 10, 2); row.Children.Add(control); }
         return row;
     }
 
-    private Grid BuildTables()
+    private Grid BuildTables(Border activityPanel)
     {
-        var tables = Grid("Auto,*", "Auto,Auto");
+        var tables = Grid("SessionInspector.activityAndResourcePanels", "Auto,*", "Auto,Auto");
         tables.ColumnSpacing = 12;
         Avalonia.Controls.Grid.SetIsSharedSizeScope(activities, true);
-        var activityPanel = Box(activities);
         activityPanel.HorizontalAlignment = HorizontalAlignment.Left;
-        var resourcePanel = Box(resources);
+        var resourcePanel = Box("SessionInspector.resourcePanel", resources);
         resourcePanel.VerticalAlignment = activityPanel.VerticalAlignment = VerticalAlignment.Top;
         Put(tables, activityPanel);
         Put(tables, resourcePanel, 1);
@@ -216,6 +221,15 @@ internal sealed partial class InspectorOverview : UserControl
         return Time(trace, start ? selection.From : selection.To);
     }
 
+    private void SetTimelineHint(string value)
+    {
+        hint.Text = value;
+        ToolTip.SetTip(hint, value);
+    }
+
+    private void ResetTimelineHint() => SetTimelineHint(selection.Trace.Responses.Count == 0
+        ? "No model responses in this session." : "Drag to select a range, or click an event.");
+
     private void Refresh()
     {
         ClearSelectedCalls();
@@ -229,8 +243,7 @@ internal sealed partial class InspectorOverview : UserControl
             (selection.CostAxis ? selection.FirstResponse < selection.LastResponse : selection.From < selection.To);
         zoom.Content = selection.Zoomed ? "Reset zoom" : "Zoom to range";
         stamp.Text = $"{RangeLabel(true)} – {RangeLabel(false)}";
-        hint.Text = t.Responses.Count == 0 ? "No model responses in this session." : "Drag to select a range, or click an event.";
-        ToolTip.SetTip(hint, hint.Text);
+        ResetTimelineHint();
         summary = selection.Summarize(groupActions.IsChecked == true);
         timeline.UpdateRangeHandles();
         RenderSummary();
