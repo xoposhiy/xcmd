@@ -225,7 +225,7 @@ The original design drew on the [architecture](architecture.md),
 - Keep indexing cancellable and outside the UI thread. Reject stale results after
   file, encoding, or document-version changes. Show partial indexing honestly.
 - Do not format each loaded text page independently. The current reader uses 16 KiB
-  pages, and [syntax highlighting](../stories/reusable-boundaries.md#syntaxspans) supplies lexical spans,
+  pages, and [syntax highlighting](../stories/reusable-components.md#syntaxspans) supplies lexical spans,
   not a document tree. Containers and peer groups can cross page boundaries.
 - Keep large arrays and group commands responsive without constructing a fully
   expanded string for the entire file. Exact resource budgets belong to implementation

@@ -1,5 +1,5 @@
 ---
-id: ReusableBoundaries
+id: ReusableComponents
 title: "Reuse shared components across features"
 order: 10
 role: developer

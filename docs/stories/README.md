@@ -20,7 +20,7 @@ for the format, semantic IDs and source mapping conventions.
 | 7 | [Work with coding agents](coding-agents.md) | user |
 | 8 | [Work with repository changes](repository-work.md) | user |
 | 9 | [Improve Xcmd while using it](product-feedback.md) | user-developer |
-| 10 | [Reuse shared components across features](reusable-boundaries.md) | developer |
+| 10 | [Reuse shared components across features](reusable-components.md) | developer |
 | 11 | [Deliver and maintain a reliable application](reliable-delivery.md) | developer |
 
 The previous documents and source map are [archived ChangeDocs](../archive/README.md).
