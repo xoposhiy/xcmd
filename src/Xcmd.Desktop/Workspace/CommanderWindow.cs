@@ -155,7 +155,7 @@ public sealed partial class CommanderWindow : Window
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
         root.Children.Add(frame.BuildLayout(this, viewing.QuickViewControl));
         Content = root;
-        GitCommitController.Attach([Left, Right], Activate, RestoreFocusAfterGitMenu,
+        GitCommitController.Attach([Left, Right], Activate, RestoreFocusAfterGitAction,
             () => GitHistory.Open(selectedItem: false), ui, LaunchExternalAsync, tools.Claude);
         var shellContext = new ShellInteractionContext(this, [Left, Right], Activate, ui, RecordActivity);
         var packing = new ZipPackingController(operationDialogs, operationStore, Operations, Execute, () => HasOpenDialog);
@@ -246,7 +246,11 @@ public sealed partial class CommanderWindow : Window
         if (Feedback.ActiveComment != null || Feedback.ActiveNotes != null) return;
         if (RouteWorkspaceInput(e)) return;
         if (HandleFavoritesShortcut(e)) { e.Handled = true; return; }
-        if (HasGitActionsFocus) return;
+        if (HasGitActionsFocus)
+        {
+            if (e.Key == Key.Enter && !BeginLaunchKey(e.Key)) e.Handled = true;
+            return;
+        }
         if (GitHistory.CancelPending(e)) { e.Handled = true; return; }
         if (e.Key == Key.F7 && e.KeyModifiers == KeyModifiers.Alt)
         { ResetQuickJump(); FileSearch.Open(); e.Handled = true; return; }

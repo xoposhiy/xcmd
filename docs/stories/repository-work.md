@@ -36,6 +36,9 @@ that I can understand how my files relate to current repository work.
   change counts inside the button. Point Taken #47 and #63.
   Codex session ID 01a207d0-dfad-7c01-89a6-e6ae815ea892.
 
+- Open the GitHub Actions run in the browser when the user clicks a CI status
+  that has a run. Point Taken #108. Codex session ID 01a2119b-2123-7ae0-9960-7c2cdd4e3ad0.
+
 ## SyncRepository
 
 As a user, I want to push and pull from the Git status menu so that I can

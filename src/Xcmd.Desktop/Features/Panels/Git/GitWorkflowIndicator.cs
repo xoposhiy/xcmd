@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xcmd.Core;
@@ -14,24 +15,42 @@ public interface IWorkflowStatusProvider
     WorkflowStatusCache WorkflowStatuses { get; }
 }
 
-internal sealed class GitWorkflowIndicator : TextBlock
+internal sealed class GitWorkflowIndicator : Button
 {
+    private static readonly Cursor LinkCursor = new(StandardCursorType.Hand);
     private readonly WorkflowStatusCache? cache;
+    private readonly TextBlock text = new TextBlock
+    {
+        FontFamily = new FontFamily("Consolas"),
+        FontSize = UiPalette.BodySize,
+        FontWeight = FontWeight.SemiBold,
+        LineHeight = 18,
+        Foreground = UiPalette.Secondary,
+        IsHitTestVisible = false
+    }.WithFeedbackId("GitStatusView.workflowText");
     private WorkflowTarget? target;
     private Task<WorkflowStatus>? lastRead;
+
+    internal Uri? RunUrl { get; private set; }
 
     internal GitWorkflowIndicator(WorkflowStatusCache? cache)
     {
         this.cache = cache ?? (Application.Current as IWorkflowStatusProvider)?.WorkflowStatuses;
         IsVisible = false;
+        IsEnabled = false;
+        Height = 24;
+        MinHeight = 0;
+        MinWidth = 0;
+        Padding = new Thickness(0);
         Margin = new Thickness(8, 0, 0, 0);
         VerticalAlignment = VerticalAlignment.Center;
-        FontFamily = new FontFamily("Consolas");
-        FontSize = UiPalette.BodySize;
-        FontWeight = FontWeight.SemiBold;
-        LineHeight = 18;
-        Foreground = UiPalette.Secondary;
+        VerticalContentAlignment = VerticalAlignment.Center;
+        Classes.Add("quiet");
+        Content = text;
+        ToolTip.SetShowOnDisabled(this, true);
     }
+
+    protected override Type StyleKeyOverride => typeof(Button);
 
     internal async Task UpdateAsync(WorkflowTarget? current, bool poll)
     {
@@ -39,8 +58,7 @@ internal sealed class GitWorkflowIndicator : TextBlock
         {
             target = current;
             lastRead = null;
-            if (current == null) IsVisible = false;
-            else ShowStatus(current, "Unknown", "Waiting for the workflow status.");
+            ShowStatus(current, current == null ? "" : "Unknown", "Waiting for the workflow status.");
         }
         if (current == null || !poll || cache == null) return;
         var read = cache.ReadAsync(current);
@@ -48,14 +66,17 @@ internal sealed class GitWorkflowIndicator : TextBlock
         lastRead = read;
         var result = await read;
         if (lastRead != read || target != current) return;
-        ShowStatus(current, result.Label, result.Details);
+        ShowStatus(current, result.Label, result.Details, result.RunUrl);
     }
 
-    private void ShowStatus(WorkflowTarget current, string label, string details)
+    private void ShowStatus(WorkflowTarget? current, string label, string details, Uri? url = null)
     {
-        IsVisible = label.Length > 0;
-        Inlines!.Clear();
-        if (!IsVisible) return;
+        IsVisible = current != null && label.Length > 0;
+        RunUrl = IsVisible ? url : null;
+        IsEnabled = RunUrl != null;
+        Cursor = IsEnabled ? LinkCursor : null;
+        text.Inlines!.Clear();
+        if (!IsVisible || current == null) return;
         var (symbol, color) = label switch
         {
             "Passed" => ("●", UiPalette.Success),
@@ -63,10 +84,10 @@ internal sealed class GitWorkflowIndicator : TextBlock
             "Running" or "Pending" => ("●", UiPalette.Mark),
             _ => ("○", UiPalette.Mark)
         };
-        Inlines.Add(new Run("CI: "));
-        Inlines.Add(new Run(symbol) { Foreground = color });
+        text.Inlines.Add(new Run("CI: ") { TextDecorations = IsEnabled ? TextDecorations.Underline : null });
+        text.Inlines.Add(new Run(symbol) { Foreground = color });
         var description = $"GitHub Actions · {label} · {current.Repository} · {current.Ref}\n{details}";
-        ToolTip.SetTip(this, description);
-        AutomationProperties.SetName(this, description);
+        ToolTip.SetTip(this, IsEnabled ? description + "\nOpen the workflow run in your browser." : description);
+        AutomationProperties.SetName(this, IsEnabled ? "Open workflow run · " + description : description);
     }
 }

@@ -11,7 +11,7 @@ namespace Xcmd.Probe;
 
 public static class ProbeAppBuilder
 {
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() => new App { WorkflowStatuses = WorkflowFixture.NoRemoteWorkflows() })
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() => new App { WorkflowStatuses = WorkflowFixture.ProbeWorkflows() })
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

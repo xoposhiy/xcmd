@@ -50,7 +50,7 @@ public static class GitHubWorkflows
             commit = tip.Trim();
             args.AddRange(["--branch", target.Ref]);
         }
-        args.AddRange(["--commit", commit, "--limit", "100", "--json", "workflowDatabaseId,workflowName,headSha,status,conclusion"]);
+        args.AddRange(["--commit", commit, "--limit", "100", "--json", "workflowDatabaseId,workflowName,headSha,status,conclusion,url"]);
         try
         {
             var json = await run([.. args]).ConfigureAwait(false);
@@ -58,7 +58,7 @@ public static class GitHubWorkflows
             using var data = JsonDocument.Parse(json);
             var runs = data.RootElement.EnumerateArray().Select(row => new WorkflowRun(
                 row.GetProperty("workflowDatabaseId").ToString(), row.GetProperty("workflowName").GetString() ?? "Workflow",
-                row.GetProperty("headSha").GetString()!, row.GetProperty("status").GetString()!, row.GetProperty("conclusion").GetString() ?? "")).ToArray();
+                row.GetProperty("headSha").GetString()!, row.GetProperty("status").GetString()!, row.GetProperty("conclusion").GetString() ?? "", RunUrl(row))).ToArray();
             if (runs.Length > 0) return WorkflowStatus.FromRuns(commit, runs);
             var workflows = await run(["workflow", "list", "--all", "--repo", target.Repository, "--limit", "1", "--json", "id"]).ConfigureAwait(false);
             if (workflows == null) return WorkflowStatus.Unavailable;
@@ -67,6 +67,11 @@ public static class GitHubWorkflows
         }
         catch (Exception error) when (error is JsonException or KeyNotFoundException or InvalidOperationException) { return WorkflowStatus.Unavailable; }
     }
+
+    private static Uri? RunUrl(JsonElement row) =>
+        row.TryGetProperty("url", out var value) && value.ValueKind == JsonValueKind.String
+        && Uri.TryCreate(value.GetString(), UriKind.Absolute, out var url)
+        && url.Scheme == Uri.UriSchemeHttps && url.Host == "github.com" ? url : null;
 
     private static Task<string?> RunAsync(string[] arguments) => StatusCommand.ReadAsync("gh.exe", arguments, TimeSpan.FromSeconds(10), CancellationToken.None);
 }

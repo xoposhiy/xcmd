@@ -81,7 +81,7 @@ public sealed partial class CommanderWindow
         if (IsActive) ActivePanel.FocusCurrent();
     }
 
-    private void RestoreFocusAfterGitMenu()
+    private void RestoreFocusAfterGitAction()
     {
         RecordActivity();
         ActivePanel.FocusCurrent(scrollIntoView: false);

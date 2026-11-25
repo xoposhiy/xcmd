@@ -11,7 +11,7 @@ public sealed partial class CommanderWindow
     // Enter can move focus to the file panel before the key is released.
     private readonly HashSet<Key> launchKeysHeld = [];
     private bool favoritesKeyHeld;
-    private bool HasGitActionsFocus => Left.Git.ActionsButton.IsKeyboardFocusWithin || Right.Git.ActionsButton.IsKeyboardFocusWithin;
+    private bool HasGitActionsFocus => Left.Git.HasActionFocus || Right.Git.HasActionFocus;
 
     private bool HandlePanelSwitch(KeyEventArgs e)
     {

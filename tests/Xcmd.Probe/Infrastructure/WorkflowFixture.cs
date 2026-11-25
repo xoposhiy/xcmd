@@ -11,16 +11,21 @@ namespace Xcmd.Probe.Infrastructure;
 
 internal sealed class WorkflowFixture : TimeProvider
 {
+    internal const string LinkRepository = "github.com/xc-test/workflow-link";
+    internal const string RunningRun = "https://" + LinkRepository + "/actions/runs/42";
     private DateTimeOffset now = DateTimeOffset.UnixEpoch;
     internal static WorkflowStatusCache NoRemoteWorkflows() => new(_ => Task.FromResult(WorkflowStatus.Empty(false)), TimeProvider.System);
+    internal static WorkflowStatusCache ProbeWorkflows() => new(target => Task.FromResult(target.Repository == LinkRepository
+        ? WorkflowStatus.FromRuns("current", [new("1", "Build", "current", "in_progress", "", new Uri(RunningRun))])
+        : WorkflowStatus.Empty(false)), TimeProvider.System);
     internal void Advance(TimeSpan time) => now += time;
     public override DateTimeOffset GetUtcNow() => now;
-    internal static TextBlock? Indicator(GitStatusView view) => view.GetVisualDescendants().OfType<TextBlock>()
-        .SingleOrDefault(text => text.GetValue(FeedbackTarget.IdProperty) == "GitStatusView.workflows");
+    internal static Button? Indicator(GitStatusView view) => view.GetVisualDescendants().OfType<Button>()
+        .SingleOrDefault(button => button.GetValue(FeedbackTarget.IdProperty) == "GitStatusView.workflows");
 
     internal static string Details(GitStatusView view) => Indicator(view) is { } indicator ? ToolTip.GetTip(indicator) as string ?? "" : "";
     internal static bool Shows(GitStatusView view, string label, string symbol) =>
-        Indicator(view) is { IsVisible: true, Inlines: [Run { Text: "CI: " }, Run mark] }
+        Indicator(view) is { IsVisible: true, Content: TextBlock { Inlines: [Run { Text: "CI: " }, Run mark] } }
         && mark.Text == symbol && mark.Foreground is ISolidColorBrush brush && ExpectedColor(brush.Color.ToHsl().H, label)
         && Details(view).Contains(" · " + label + " · ", StringComparison.Ordinal);
 
@@ -49,8 +54,10 @@ internal sealed class WorkflowRemote
     public Task<string?> RunAsync(string[] args)
     {
         if (args.Contains("repos/team/project/branches/main")) return nextTip?.Task ?? Task.FromResult<string?>("first");
-        if (args[0] != "run" || !args.Contains("--commit") || !args.Contains("--branch")) throw new InvalidOperationException("Unexpected GitHub CLI arguments.");
+        if (args[0] != "run" || !args.Contains("--commit") || !args.Contains("--branch")
+            || !args[^1].Split(',').Contains("url")) throw new InvalidOperationException("Unexpected GitHub CLI arguments.");
         RequestedCommit = args[Array.IndexOf(args, "--commit") + 1];
-        return Task.FromResult<string?>($$"""[{"workflowDatabaseId":1,"workflowName":"Verify","headSha":"{{RunCommit}}","status":"completed","conclusion":"{{Conclusion}}"}]""");
+        var runId = RunCommit == "first" ? "123" : "456";
+        return Task.FromResult<string?>($$"""[{"workflowDatabaseId":1,"workflowName":"Verify","headSha":"{{RunCommit}}","status":"completed","conclusion":"{{Conclusion}}","url":"https://github.com/team/project/actions/runs/{{runId}}"}]""");
     }
 }

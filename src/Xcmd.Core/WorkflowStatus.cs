@@ -2,8 +2,8 @@
 namespace Xcmd.Core;
 
 public sealed record WorkflowTarget(string Repository, string Ref, bool IsCommit, string? TrackingCommit = null);
-public sealed record WorkflowRun(string Workflow, string Name, string Commit, string Status, string Conclusion);
-public sealed record WorkflowStatus(string Label, string Details, TimeSpan RefreshAfter)
+public sealed record WorkflowRun(string Workflow, string Name, string Commit, string Status, string Conclusion, Uri? Url = null);
+public sealed record WorkflowStatus(string Label, string Details, TimeSpan RefreshAfter, Uri? RunUrl = null)
 {
     public static WorkflowStatus Unavailable => new("Unavailable", "Could not read GitHub Actions. Check the connection and GitHub CLI sign-in.", TimeSpan.FromMinutes(5));
     public static WorkflowStatus Empty(bool hasWorkflows) => hasWorkflows
@@ -14,14 +14,16 @@ public sealed record WorkflowStatus(string Label, string Details, TimeSpan Refre
     {
         var latest = runs.Where(run => run.Commit == commit).DistinctBy(run => run.Workflow).ToArray();
         if (latest.Length == 0) return Empty(true);
-        var pending = latest.Any(run => run.Status != "completed");
-        var failed = latest.Any(run => run.Conclusion is "failure" or "timed_out" or "action_required" or "startup_failure");
-        var label = failed ? "Failed" : pending ? PendingLabel(latest) : CompletedLabel(latest);
+        var failed = latest.FirstOrDefault(run => run.Conclusion is "failure" or "timed_out" or "action_required" or "startup_failure");
+        var running = latest.FirstOrDefault(run => run.Status == "in_progress");
+        var pending = latest.FirstOrDefault(run => run.Status != "completed");
+        var label = failed != null ? "Failed" : running != null ? "Running" : pending != null ? "Pending" : CompletedLabel(latest);
         var details = string.Join("\n", latest.Select(run => run.Name + ": " + (run.Status == "completed" ? run.Conclusion : run.Status).Replace('_', ' ')));
-        return new(label, commit[..Math.Min(8, commit.Length)] + "\n" + details, pending ? TimeSpan.FromSeconds(30) : TimeSpan.FromMinutes(5));
+        var selected = failed ?? running ?? pending ?? latest[0];
+        return new(label, commit[..Math.Min(8, commit.Length)] + "\n" + details,
+            pending != null ? TimeSpan.FromSeconds(30) : TimeSpan.FromMinutes(5), selected.Url);
     }
 
-    private static string PendingLabel(WorkflowRun[] runs) => runs.Any(run => run.Status == "in_progress") ? "Running" : "Pending";
 
     private static string CompletedLabel(WorkflowRun[] runs) => runs.Select(run => run.Conclusion).Distinct().Take(2).ToArray() switch
     {

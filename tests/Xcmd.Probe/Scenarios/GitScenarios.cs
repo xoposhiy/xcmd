@@ -26,13 +26,15 @@ public static class GitScenarios
             var cache = new WorkflowStatusCache(_ => { Interlocked.Increment(ref calls); return first.Task; }, clock);
             var a = cache.ReadAsync(target);
             var b = cache.ReadAsync(target);
-            var active = WorkflowStatus.FromRuns("current", [new("1", "Build", "current", "in_progress", ""), new("2", "Tests", "current", "completed", "failure"),
+            var failedRun = new Uri("https://github.com/team/project/actions/runs/400");
+            var active = WorkflowStatus.FromRuns("current", [new("1", "Build", "current", "in_progress", ""), new("2", "Tests", "current", "completed", "failure", failedRun),
                 new("2", "Tests", "older", "completed", "success")]);
             first.SetResult(active);
             await a;
             await b;
             Equal(1, calls, "Both panels share an in-flight request");
             Equal("Failed", active.Label, "A failed workflow is visible while another is still running");
+            Equal(failedRun, active.RunUrl, "The failed badge links to the failed workflow run");
             Equal(TimeSpan.FromSeconds(30), active.RefreshAfter, "A pending workflow receives a fast refresh");
             clock.Advance(TimeSpan.FromSeconds(29)); await cache.ReadAsync(target);
             Equal(1, calls, "Repeated directory reads reuse the cached result");
@@ -52,6 +54,9 @@ public static class GitScenarios
             var cache = new WorkflowStatusCache(target => { requested.TrySetResult(target); return response.Task; }, TimeProvider.System);
             var view = new GitStatusView("workflow-probe", workflowCache: cache);
             var host = new Window { Content = view, Width = 450, Height = 180 };
+            var opened = new List<ExternalLaunch>();
+            view.WorkflowRunRequested += opened.Add;
+            var runUrl = new Uri("https://github.com/team/project/actions/runs/123");
             try
             {
                 host.Show(); host.Activate();
@@ -59,7 +64,7 @@ public static class GitScenarios
                 var target = await requested.Task.WaitAsync(TimeSpan.FromSeconds(10));
                 Equal(new WorkflowTarget("github.com/team/project", "main", false), target, "The SSH remote and local branch select the GitHub query");
                 view.SetDirectory("");
-                response.SetResult(WorkflowStatus.FromRuns("abcdef12", [new("1", "Verify", "abcdef12", "completed", "success")]));
+                response.SetResult(WorkflowStatus.FromRuns("abcdef12", [new("1", "Verify", "abcdef12", "completed", "success", runUrl)]));
                 await c.UpdateLayoutAsync();
                 Check(WorkflowFixture.Indicator(view)?.IsVisible != true, "A late result stays hidden outside the repository");
                 view.SetDirectory(root);
@@ -73,11 +78,36 @@ public static class GitScenarios
                 host.SetScaleForTest(1.5);
                 await c.ScreenshotAsync("git-workflow-changes-150", host);
                 await c.ClickAsync(indicator, target: host);
+                Equal(runUrl.AbsoluteUri, opened.Single().Target, "The CI link works in a narrow header at 150% scale");
                 Check(!view.IsMenuOpen, "Clicking CI leaves the repository menu closed");
                 await c.ClickAsync(view.ActionsButton, target: host);
                 Check(view.IsMenuOpen, "The adjacent branch and change counts open repository actions");
             }
             finally { view.SetDirectory(""); host.Close(); await view.PendingWork; GitFixture.AllowCleanup(root); }
+        }),
+        new("git-workflows-open-run", "Open the displayed GitHub Actions run from the workspace", async c =>
+        {
+            await GitFixture.InitializeAsync(c.RightPath);
+            await GitFixture.RunAsync(c.RightPath, "remote", "add", "origin", "https://" + WorkflowFixture.LinkRepository + ".git");
+            var view = c.Window.Right.Git;
+            await GitFixture.RefreshAsync(view);
+            await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Running", "●"));
+            var indicator = WorkflowFixture.Indicator(view)!;
+            var expected = new ExternalLaunch(ExternalLaunchKind.Url, WorkflowFixture.RunningRun, c.RightPath);
+            await c.SelectAsync("alpha.txt");
+            await c.ClickAsync(indicator);
+            Equal(expected, c.Launcher.Requests.Single(), "Clicking CI sends the exact running workflow URL to the browser launcher");
+            Check(!view.IsMenuOpen, "The workflow link leaves the repository menu closed");
+            Check(c.Window.ActivePanel == c.Window.Left, "The workflow link leaves the active file panel unchanged");
+            Check(indicator.Focus(), "A workflow link can receive keyboard focus");
+            c.Input.KeyDown(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            c.Input.KeyDown(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            c.Input.KeyUp(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            await c.SettleAsync();
+            Equal(expected, c.Launcher.Requests.Last(), "Enter on the focused workflow link opens the same run");
+            Equal(2, c.Launcher.Requests.Count, "Holding Enter opens the run once and leaves the selected file closed");
+            await c.KeyAsync(Key.Enter);
+            Equal(ExternalLaunchKind.File, c.Launcher.Requests.Last().Kind, "A fresh Enter opens the selected file after focus returns to the panel");
         }),
         new("git-workflows-remote-tip", "The badge follows the remote commit after a push and ignores runs for older commits", async c =>
         {
@@ -90,11 +120,16 @@ public static class GitScenarios
             var cache = new WorkflowStatusCache(target => GitHubWorkflows.ReadAsync(target, remote.RunAsync), clock);
             var view = new GitStatusView("workflow-tip", workflowCache: cache);
             var host = new Window { Content = view, Width = 450, Height = 180 };
+            var opened = new List<ExternalLaunch>();
+            view.WorkflowRunRequested += opened.Add;
             try
             {
                 host.Show(); host.Activate();
                 view.SetDirectory(root);
                 await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Passed", "●"));
+                var indicator = WorkflowFixture.Indicator(view)!;
+                await c.ClickAsync(indicator, target: host);
+                Equal("https://github.com/team/project/actions/runs/123", opened.Single().Target, "The completed badge uses the GitHub CLI run URL");
                 var previous = view.Status!.WorkflowTarget!.TrackingCommit;
                 remote.DelayTip();
                 await WorkflowFixture.AdvanceRemoteAsync(root, "second");
@@ -105,12 +140,16 @@ public static class GitScenarios
                 await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Details(view).Contains("No workflow runs", StringComparison.Ordinal));
                 Equal("next", remote.RequestedCommit, "Query workflow runs for the live remote commit");
                 Check(WorkflowFixture.Shows(view, "Unknown", "○"), "An old successful run cannot turn the new tip green");
+                await c.ClickAsync(indicator, target: host);
+                Equal(1, opened.Count, "An unknown badge cannot open an old run");
                 await c.ScreenshotAsync("git-workflow-unknown", host);
                 remote.RunCommit = "next";
                 remote.Conclusion = "failure";
                 clock.Advance(TimeSpan.FromSeconds(30));
                 await GitFixture.RefreshAsync(view);
                 await WorkspaceProbe.WaitAsync(() => WorkflowFixture.Shows(view, "Failed", "×"));
+                await c.ClickAsync(indicator, target: host);
+                Equal("https://github.com/team/project/actions/runs/456", opened.Last().Target, "The new tip opens its own run");
                 await c.ScreenshotAsync("git-workflow-failed", host);
             }
             finally { remote.ReturnTip("next"); view.SetDirectory(""); host.Close(); await view.PendingWork; GitFixture.AllowCleanup(root); }

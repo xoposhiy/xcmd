@@ -1,4 +1,4 @@
-// @implements BrowseHistory, DelegateCommit, SyncRepository
+// @implements BrowseHistory, DelegateCommit, SyncRepository, SeeRepositoryState
 using Xcmd.Infrastructure;
 using Xcmd.Desktop.Features.Panels;
 using Xcmd.Core;
@@ -7,7 +7,7 @@ namespace Xcmd.Desktop.Features.Git;
 
 internal static class GitCommitController
 {
-    public static void Attach(PanelView[] panels, Action<PanelView> activate, Action closeMenu, Action openLog,
+    public static void Attach(PanelView[] panels, Action<PanelView> activate, Action restoreFocus, Action openLog,
         UiActions ui, Func<ExternalLaunch, Task> launch, string? executable)
     {
         var launcher = new ClaudeCommitLauncher(executable);
@@ -16,7 +16,12 @@ internal static class GitCommitController
         {
             panel.Git.LogRequested += () => { activate(panel); openLog(); };
             panel.Git.Actions.Opened += (_, _) => activate(panel);
-            panel.Git.Actions.Closed += (_, _) => closeMenu();
+            panel.Git.Actions.Closed += (_, _) => restoreFocus();
+            panel.Git.WorkflowRunRequested += request =>
+            {
+                restoreFocus();
+                ui.Execute(() => launch(request));
+            };
             panel.Git.CommitRequested += directory => ui.Execute(async () =>
             {
                 var request = await launcher.PrepareAsync(directory);

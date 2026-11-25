@@ -51,6 +51,7 @@ public sealed class GitStatusView : Border
     }.WithFeedbackId("GitStatusView.ActionsButton");
     public ContextMenu Actions { get; } = new ContextMenu() { Placement = PlacementMode.Bottom }.WithFeedbackId("GitStatusView.Actions");
     public bool IsMenuOpen => Actions.IsOpen;
+    internal bool HasActionFocus => ActionsButton.IsKeyboardFocusWithin || workflows.IsKeyboardFocusWithin;
     public MenuItem CommitCommand { get; } = new MenuItem() { Header = "_Commit repository with Claude Code…" }.WithFeedbackId("GitStatusView.CommitCommand");
     public MenuItem LogCommand { get; } = new MenuItem() { Header = "_Log of current folder" }.WithFeedbackId("GitStatusView.LogCommand");
     private readonly MenuItem push = new MenuItem { Header = "P_ush" }.WithFeedbackId("GitStatusView.Push");
@@ -60,6 +61,7 @@ public sealed class GitStatusView : Border
     public event Action? LogRequested;
     public event Action<string>? CommitRequested;
     public event Action<string, GitRemoteCommand>? RemoteCommandRequested;
+    public event Action<ExternalLaunch>? WorkflowRunRequested;
     public event Action? StatusChanged;
     public Task PendingWork { get; private set; } = Task.CompletedTask;
     public Task DirectoryReady { get; private set; } = Task.CompletedTask;
@@ -77,6 +79,12 @@ public sealed class GitStatusView : Border
         AutomationProperties.SetAutomationId(state, id + ".git.status");
         AutomationProperties.SetAutomationId(remote, id + ".git.remote");
         AutomationProperties.SetAutomationId(arrow, id + ".git.arrow");
+        AutomationProperties.SetAutomationId(workflows, id + ".git.workflows");
+        workflows.Click += (_, _) =>
+        {
+            if (DirectoryReady.IsCompletedSuccessfully && workflows.RunUrl is { } url && Status?.Root is { } root)
+                WorkflowRunRequested?.Invoke(LaunchPlans.OpenUrl(url, root));
+        };
         ToolTip.SetTip(remote, "Repository has a remote");
         AutomationProperties.SetName(remote, "Repository has a remote");
         Height = 24; MaxWidth = 300; ClipToBounds = true; VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center; IsVisible = false;
