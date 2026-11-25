@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Xcmd.Core;
 using Xcmd.Desktop.Features.Panels;
 using Xcmd.Infrastructure;
@@ -309,6 +310,20 @@ public static class AgentSessionScenarios
             var right = c.Window.Right;
             c.AgentSessions.AddCodexSession("Large transcript", c.LeftPath, DateTimeOffset.UnixEpoch, transcriptBytes: 12_416L * 1024);
             c.AgentSessions.AddCodexSession("Small transcript", c.LeftPath, DateTimeOffset.UnixEpoch.AddSeconds(-1), transcriptBytes: 37);
+            var pendingClassification = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var classificationReadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var codexChecks = 0;
+            c.AgentSessions.ClassificationCheck = (row, _) =>
+            {
+                if (row.Id != c.AgentSessions.Codex.Id) return Task.FromResult(false);
+                var check = Interlocked.Increment(ref codexChecks);
+                if (check == 2)
+                {
+                    classificationReadStarted.TrySetResult();
+                    return pendingClassification.Task;
+                }
+                return Task.FromResult(c.AgentSessions.ClassificationReady(row));
+            };
             await ChooseAsync(c, Key.F2, "All Agent Sessions");
             Check(right.ShowsAgentSessions && !left.ShowsAgentSessions, "Alt+F2 opens sessions on the right.");
             var table = Table(right);
@@ -329,6 +344,10 @@ public static class AgentSessionScenarios
             await c.UpdateLayoutAsync();
             ((Window)c.Window).Activate();
             await c.UpdateLayoutAsync();
+            await classificationReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            pendingClassification.SetResult(false);
+            await WorkspaceProbe.WaitAsync(() => table.ContainerFromIndex(0)!.GetVisualDescendants().OfType<TextBlock>()
+                .Any(cell => cell.Text == "Codex ✓" && ToolTip.GetTip(cell)?.ToString() == "F3 uses saved Luna results"));
             Equal("F3 uses saved Luna results", ToolTip.GetTip(Cell(table, 0, "Codex ✓")), "Returning from the inspector refreshes the ready mark");
             Equal(c.AgentSessions.Codex, table.SelectedItem, "Most recently updated conversation");
             await c.KeyAsync(Key.Enter);

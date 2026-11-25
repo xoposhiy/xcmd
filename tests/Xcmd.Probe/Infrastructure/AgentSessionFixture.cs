@@ -22,7 +22,9 @@ internal sealed class AgentSessionFixture : IAgentSessions
         (_, _) => Task.FromResult<SessionStatistics?>(null);
     public Task<SessionStatistics?> ReadStatisticsAsync(AgentSession session, CancellationToken token) => Statistics(session, token);
     internal Func<AgentSession, bool> ClassificationReady { get; set; } = _ => false;
-    public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) => Task.FromResult(ClassificationReady(session));
+    internal Func<AgentSession, CancellationToken, Task<bool>>? ClassificationCheck { get; set; }
+    public Task<bool> IsClassificationReadyAsync(AgentSession session, CancellationToken token) =>
+        ClassificationCheck?.Invoke(session, token) ?? Task.FromResult(ClassificationReady(session));
     private TaskCompletionSource? historyReady;
     internal Func<AgentSession, CancellationToken, Task<SessionTrace>> Inspector { get; set; } =
         (_, _) => throw new FileNotFoundException("The local transcript is missing.");

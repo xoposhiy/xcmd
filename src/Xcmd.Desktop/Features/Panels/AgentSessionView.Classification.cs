@@ -13,13 +13,23 @@ internal sealed partial class AgentSessionView
         var name = row.Agent == SessionAgent.Codex ? "Codex" : "Claude";
         var text = Cell(name, row.Agent == SessionAgent.Codex ? UiPalette.Focus : UiPalette.Mark);
         CancellationTokenSource? reading = null;
-        text.AttachedToVisualTree += (_, _) => { UpdateClassifications += Refresh; Refresh(); };
-        text.DetachedFromVisualTree += (_, _) => { UpdateClassifications -= Refresh; reading?.Cancel(); reading = null; };
+        var attached = false;
+        var refreshPending = false;
+        text.AttachedToVisualTree += (_, _) => { attached = true; UpdateClassifications += Refresh; Refresh(); };
+        text.DetachedFromVisualTree += (_, _) =>
+        {
+            attached = false;
+            refreshPending = false;
+            UpdateClassifications -= Refresh;
+            reading?.Cancel();
+            reading = null;
+        };
         return text;
 
         async void Refresh()
         {
-            if (reading != null || source == null) return;
+            if (reading != null) { refreshPending = true; return; }
+            if (source == null) return;
             using var request = new CancellationTokenSource();
             reading = request;
             try
@@ -36,7 +46,18 @@ internal sealed partial class AgentSessionView
                 text.Text = name;
                 ToolTip.SetTip(text, "Luna cache status unavailable");
             }
-            finally { if (reading == request) reading = null; }
+            finally
+            {
+                if (reading == request)
+                {
+                    reading = null;
+                    if (refreshPending && attached && source != null)
+                    {
+                        refreshPending = false;
+                        Refresh();
+                    }
+                }
+            }
         }
     }
 }
