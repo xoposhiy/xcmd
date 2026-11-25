@@ -90,10 +90,9 @@ As a user, I want to inspect what an agent did during a session so that I can un
 - Show the call count for a selected span with several calls. List those calls
   in order with a number and duration. Show the selected call's tool name,
   timing, response cost and model on the left. Show its summary, actions and
-  resources on the right. Show up to three resources directly. Let the user
-  expand larger lists and bring the expanded groups into view. Separate
-  resource names within each group with commas and wrap at the available
-  width. Select the tool name to open the selected
+  resources on the right. Show all resources directly in their groups.
+  Separate resource names within each group with commas and wrap at the
+  available width. Select the tool name to open the selected
   call's recorded input and output in a dialog. Show JavaScript in Input
   when the tool received JavaScript as its input.
   Point Taken #96, #109 and #110.

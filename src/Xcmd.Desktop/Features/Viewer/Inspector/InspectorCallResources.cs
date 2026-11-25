@@ -2,9 +2,9 @@
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Xcmd.Core;
 
 namespace Xcmd.Desktop.Features.Viewer;
@@ -13,12 +13,8 @@ using static InspectorStyle;
 
 internal static class InspectorCallResources
 {
-    internal static Control Build(SessionTrace trace, TraceCall call)
-    {
-        if (call.Classification is not { Resources.Length: > 0 } classification) return Targets(call);
-        var resources = Groups(trace, classification);
-        return classification.Resources.Length <= 3 ? resources : WithDisclosure(Targets(call), resources, classification.Resources.Length);
-    }
+    internal static Control Build(SessionTrace trace, TraceCall call) =>
+        call.Classification is { Resources.Length: > 0 } classification ? Groups(trace, classification) : Targets(call);
 
     private static Control Targets(TraceCall call)
     {
@@ -34,48 +30,6 @@ internal static class InspectorCallResources
         }
 
         return targets;
-    }
-
-    private static Control WithDisclosure(Control targets, Control resources, int resourceCount)
-    {
-        var caption = new ContentControl { Content = targets, HorizontalContentAlignment = HorizontalAlignment.Stretch }
-            .WithFeedbackId("SessionInspector.callResourcesCaption");
-        var count = Text("SessionInspector.callResourceCount", $"{Number(resourceCount)} resources", 13, UiPalette.Secondary);
-        var arrow = Text("SessionInspector.callResourcesArrow", "▸", 13, UiPalette.Secondary);
-        var header = Grid("SessionInspector.callResourcesHeader", "Auto,*");
-        header.ColumnSpacing = 5;
-        Put(header, arrow);
-        Put(header, caption, 1);
-        var disclosure = new Button
-        {
-            Content = header,
-            Background = Brushes.Transparent,
-            BorderThickness = default,
-            Padding = new Thickness(2),
-            MinHeight = 24,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            HorizontalContentAlignment = HorizontalAlignment.Stretch
-        }.WithFeedbackId("SessionInspector.callResourceDisclosure");
-        disclosure.Classes.Add("quiet");
-        var countLabel = count.Text!;
-        AutomationProperties.SetName(disclosure, $"Expand {countLabel}");
-        resources.IsVisible = false;
-        var body = Stack("SessionInspector.callResourceDisclosureContent", 2);
-        body.Children.Add(disclosure);
-        body.Children.Add(resources);
-        disclosure.Click += (_, _) =>
-        {
-            var expanded = !resources.IsVisible;
-            arrow.Text = expanded ? "▾" : "▸";
-            caption.Content = expanded ? count : targets;
-            AutomationProperties.SetName(disclosure, expanded ? $"Collapse {countLabel}" : $"Expand {countLabel}");
-            resources.IsVisible = expanded;
-            if (expanded) Dispatcher.UIThread.Post(() =>
-            {
-                if (resources.IsVisible && TopLevel.GetTopLevel(body) != null) body.BringIntoView();
-            }, DispatcherPriority.Loaded);
-        };
-        return body;
     }
 
     private static Control Groups(SessionTrace trace, ToolClassification classification)
@@ -134,9 +88,9 @@ internal static class InspectorCallResources
         if (resource.Kind != "file")
         {
             name.Text = null;
-            name.Inlines!.Add(new Avalonia.Controls.Documents.Run(display));
-            name.Inlines.Add(new Avalonia.Controls.Documents.Run($" ({resource.Kind})") { Foreground = UiPalette.Secondary });
-            name.Inlines.Add(new Avalonia.Controls.Documents.Run(separator));
+            name.Inlines!.Add(new Run(display));
+            name.Inlines.Add(new Run($" ({resource.Kind})") { Foreground = UiPalette.Secondary });
+            name.Inlines.Add(new Run(separator));
         }
         ToolTip.SetTip(name, resource.Value);
         AutomationProperties.SetName(name, $"{resource.Value} ({resource.Kind})");

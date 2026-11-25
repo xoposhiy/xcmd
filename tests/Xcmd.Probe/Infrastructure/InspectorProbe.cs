@@ -231,14 +231,6 @@ internal sealed class InspectorProbe(ProbeContext c)
             "The technical panel sits to the left of the activity at wide widths and above it at narrow widths");
     }
 
-    internal async Task ExpandCallResources()
-    {
-        var toggle = Find<Button>(control => control.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceDisclosure");
-        await ClickVisible(toggle);
-        Check(AutomationProperties.GetName(toggle)?.StartsWith("Collapse ", StringComparison.Ordinal) == true,
-            "The resource disclosure opens with pointer input");
-    }
-
     internal bool HasCallResourceDisclosure => Window.GetVisualDescendants().OfType<Button>().Any(button =>
         button.GetValue(FeedbackTarget.IdProperty) == "SessionInspector.callResourceDisclosure");
 
@@ -264,7 +256,7 @@ internal sealed class InspectorProbe(ProbeContext c)
         {
             var top = group.TranslatePoint(default, scroll)!.Value.Y;
             return top >= -1 && top + group.Bounds.Height <= scroll.Viewport.Height + 1;
-        }), "All expanded resource groups fit inside the viewport");
+        }), "All resource groups fit inside the viewport after scrolling");
     }
 
     internal string? CallCardText(string field) =>

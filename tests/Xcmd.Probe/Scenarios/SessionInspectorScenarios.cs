@@ -155,7 +155,6 @@ public static class SessionInspectorScenarios
             await probe.Click("Time");
             await probe.OpenTimelineCall(0.15);
             Equal("Read and updated component 3.", probe.CallCardText("callSummary"), "The card shows the repaired summary");
-            await probe.ExpandCallResources();
             Check(probe.CallResourceNames().Contains("Component03.cs", StringComparison.Ordinal), "The card shows the saved resource");
             probe.Window.Width = 650;
             probe.Window.Height = 650;
@@ -569,7 +568,7 @@ public static class SessionInspectorScenarios
                 await SessionTimelineFixture.CheckReleaseColorsAsync(c, probe, screenshot);
             }
         }),
-        new("session-inspector-call-resources", "Show short resource lists directly and reveal compact groups when a long list opens", async c =>
+        new("session-inspector-call-resources", "Show every resource directly in a compact group", async c =>
         {
             SessionTimelineFixture.UseResourceLists(c.AgentSessions);
             await ChooseAsync(c, Key.F2, "Codex");
@@ -589,13 +588,13 @@ public static class SessionInspectorScenarios
             probe.Window.SetScaleForTest(1.5);
             await c.SettleAsync();
             await probe.OpenTimelineCall(0.83);
-            Check(probe.HasCallResourceDisclosure && probe.CallResourceNames() == "", "Ten resources start collapsed");
-            await probe.ExpandCallResources();
+            Check(!probe.HasCallResourceDisclosure, "Ten resources need no disclosure");
             Equal("build-1.ps1, build-2.ps1, build-3.ps1, build-4.ps1, build-5.ps1, build-6.ps1, build-7.ps1, build-8.ps1 test-1.ps1, test-2.ps1",
                 probe.CallResourceNames(), "All files appear in comma-separated groups");
             probe.CheckResourceNamesShareLine("build-1.ps1,", "build-2.ps1,");
+            await probe.ShowCallCardInViewport();
             probe.CheckResourceGroupsInViewport();
-            await probe.Screenshot("expanded-call-resources-150");
+            await probe.Screenshot("call-resources-150");
         }),
         new("session-inspector-span-zoom", "Double-click tasks and work phases to zoom, and right-click to reset zoom", async c =>
         {
