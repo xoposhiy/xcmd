@@ -18,9 +18,13 @@ public static class GitFixture
             File.SetAttributes(file, FileAttributes.Normal);
     }
 
-    public static async Task RunAsync(string directory, params string[] arguments)
+    public static Task RunAsync(string directory, params string[] arguments) => RunAsync(directory, null, arguments);
+
+    internal static async Task RunAsync(string directory, DateTimeOffset? commitDate, string[] arguments)
     {
         var start = new ProcessStartInfo("git") { WorkingDirectory = directory, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        if (commitDate is { } date)
+            start.Environment["GIT_COMMITTER_DATE"] = date.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
         foreach (var argument in arguments) start.ArgumentList.Add(argument);
         using var process = Process.Start(start)!;
         var output = process.StandardOutput.ReadToEndAsync();

@@ -19,6 +19,7 @@ public sealed record GitStatus(string Branch, int Staged, int Changed, int Untra
     public WorkflowTarget? WorkflowTarget { get; init; }
     public string? Upstream { get; init; }
     public string? Root { get; init; }
+    public GitBranchTip[] RecentBranches { get; init; } = [];
     public GitPathStatus[] Paths { get; init; } = [];
     public string[] IgnoredPaths { get; init; } = [];
     public string[] TrackedIgnoredPaths { get; init; } = [];
@@ -47,9 +48,9 @@ public sealed class GitStatusReader : IGitStatusReader
         }, cancellationToken);
 
     public Task<GitStatus?> ReadAsync(string directory, CancellationToken cancellationToken) =>
-        Task.Run(() => ReadBackgroundAsync(directory, cancellationToken), cancellationToken);
+        Task.Run(() => ReadBackgroundAsync(directory, cancellationToken, includeBranches: true), cancellationToken);
 
-    private async Task<GitStatus?> ReadBackgroundAsync(string directory, CancellationToken cancellationToken)
+    private async Task<GitStatus?> ReadBackgroundAsync(string directory, CancellationToken cancellationToken, bool includeBranches = false)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
@@ -70,6 +71,7 @@ public sealed class GitStatusReader : IGitStatusReader
             {
                 HasRemote = !string.IsNullOrWhiteSpace(remotes),
                 Root = root,
+                RecentBranches = includeBranches ? await GitBranches.RecentAsync(root, timeout.Token).ConfigureAwait(false) : [],
                 WorkflowTarget = workflow,
                 Paths = paths.Changes,
                 IgnoredPaths = paths.Ignored,

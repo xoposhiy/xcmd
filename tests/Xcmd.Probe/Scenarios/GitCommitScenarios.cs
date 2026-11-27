@@ -13,6 +13,94 @@ public static class GitCommitScenarios
 {
     public static IReadOnlyList<Scenario> All { get; } =
     [
+        new("git-switch-branch-recent", "Switch from four dated local branches at the bottom of the repository menu", async c =>
+        {
+            using var repo = new GitBranchFixture(c);
+            await repo.PrepareAsync();
+            await repo.AddMoreBranchesAsync();
+            File.AppendAllText(repo.FilePath("alpha.txt"), "local edit");
+            var items = await repo.OpenRecentAsync();
+            Check(items.Select(item => item.Header?.ToString()).SequenceEqual(new[]
+            {
+                GitBranchFixture.Topic + " · 2025-05-03", "another_branch · 2025-05-02", "main · 2025-05-01",
+                "z-older · 2025-05-01", "_Other branches…"
+            }), "The four newest tips appear in commit date order above Other branches");
+            Check(items[2].IsChecked && !items[2].IsEnabled, "The current branch is marked");
+            await c.ScreenshotAsync("recent-branches");
+            await c.ClickAsync(items[3]);
+            Equal("z-older", c.Window.Left.Git.Status?.Branch, "One click switches to the fourth branch");
+            Check(!c.Window.HasOpenDialog && File.ReadAllText(repo.FilePath("alpha.txt")).EndsWith("local edit", StringComparison.Ordinal),
+                "A compatible edit follows the switch without another dialog");
+            var dialog = await repo.OpenAsync();
+            Check(GitBranchFixture.VisibleRows(dialog).SequenceEqual([
+                (GitBranchFixture.Topic, "2025-05-03"), ("another_branch", "2025-05-02"),
+                ("main", "2025-05-01"), ("z-older", "2025-05-01"), ("z-oldest", "2025-05-01")
+            ]), "The picker shows all branch names beside their commit dates, newest first, with ties sorted by name");
+            Check(!GitBranchFixture.Message(dialog).Contains("Switching keeps", StringComparison.Ordinal),
+                "Opening the picker does not show switch advice");
+            await c.KeyAsync(Key.Escape, target: dialog);
+        }),
+        new("git-switch-branch", "Browse local branches and switch with staged, unstaged and untracked changes", async c =>
+        {
+            using var repo = new GitBranchFixture(c);
+            await repo.PrepareAsync();
+            await c.Window.Right.LoadAsync(c.LeftPath);
+            await GitFixture.RefreshAsync(c.Window.Right.Git);
+            File.WriteAllText(repo.FilePath("alpha.txt"), "staged");
+            await GitFixture.RunAsync(c.LeftPath, "add", "alpha.txt");
+            File.AppendAllText(repo.FilePath("alpha.txt"), " and unstaged");
+            File.WriteAllText(repo.FilePath("notes.txt"), "untracked");
+
+            var dialog = await repo.OpenAsync();
+            Equal("main", GitBranchFixture.SelectedBranch(dialog), "The list starts on the current branch");
+            await c.ScreenshotAsync("local-branches", dialog);
+            await c.KeyAsync(Key.F12, target: dialog);
+            await c.ClickAsync(GitBranchFixture.List(dialog), target: dialog);
+            Check(c.Window.Feedback.ActiveComment != null, "The branch list accepts feedback");
+            await c.KeyAsync(Key.Escape, target: c.Window.Feedback.ActiveComment);
+            await c.KeyAsync(Key.Escape, target: dialog);
+            Check(!c.Window.HasOpenDialog && !File.Exists(repo.FilePath("topic.txt")), "Escape leaves the checkout unchanged");
+
+            dialog = await repo.OpenAsync();
+            await repo.SwitchToTopicAsync(dialog);
+            Equal(GitBranchFixture.Topic, c.Window.Left.Git.Status?.Branch, "The source panel shows the new branch");
+            Equal(GitBranchFixture.Topic, c.Window.Right.Git.Status?.Branch, "The other panel in the repository updates too");
+            Equal(1, c.Window.Left.Git.Status?.Staged, "The index retains the staged change");
+            Equal(1, c.Window.Left.Git.Status?.Changed, "The working tree retains the unstaged change");
+            Equal("staged and unstaged", File.ReadAllText(repo.FilePath("alpha.txt")), "Working file content survives");
+            Equal("untracked", File.ReadAllText(repo.FilePath("notes.txt")), "Untracked notes survive");
+            Check(c.Window.Right.Rows.Any(row => row.Name == "topic.txt"), "Files from the selected branch appear in the panel");
+        }),
+        new("git-switch-branch-conflicts", "Protect tracked edits and ignored files that the selected branch would overwrite", async c =>
+        {
+            using var repo = new GitBranchFixture(c);
+            await repo.PrepareAsync();
+            File.WriteAllText(repo.FilePath("zeta.md"), "local work");
+            var items = await repo.OpenRecentAsync();
+            Equal(3, items.Length, "Two local branches and Other branches are visible");
+            await c.ClickAsync(items[0]);
+            var dialog = c.Window.OperationDialog ?? throw new InvalidOperationException("The blocked switch did not show the Git error.");
+            Equal(GitBranchFixture.Topic, GitBranchFixture.SelectedBranch(dialog), "The blocked branch stays selected for retry");
+            Check(dialog.IsVisible && GitBranchFixture.Message(dialog).Contains("zeta.md", StringComparison.Ordinal),
+                "Git names the conflicting tracked file in the picker");
+            Equal("local work", File.ReadAllText(repo.FilePath("zeta.md")), "The conflicting edit survives");
+            await GitFixture.RunAsync(c.LeftPath, "restore", "zeta.md");
+            File.WriteAllText(repo.FilePath("topic.txt"), "untracked work");
+            await repo.SwitchToTopicAsync(dialog);
+            Check(dialog.IsVisible && GitBranchFixture.Message(dialog).Contains("topic.txt", StringComparison.Ordinal),
+                "Git names the untracked file that would be overwritten");
+            Equal("untracked work", File.ReadAllText(repo.FilePath("topic.txt")), "The untracked file survives");
+            File.WriteAllText(repo.FilePath(".gitignore"), "topic.txt\n");
+            File.WriteAllText(repo.FilePath("topic.txt"), "ignored work");
+            await repo.SwitchToTopicAsync(dialog);
+            Check(dialog.IsVisible && GitBranchFixture.Message(dialog).Contains("topic.txt", StringComparison.Ordinal),
+                "Git names the ignored file that would be overwritten");
+            Equal("ignored work", File.ReadAllText(repo.FilePath("topic.txt")), "The ignored file survives");
+            await c.ScreenshotAsync("branch-switch-blocked", dialog);
+            await c.KeyAsync(Key.Escape, target: dialog);
+            await GitFixture.RefreshAsync(c.Window.Left.Git);
+            Equal("main", c.Window.Left.Git.Status?.Branch, "The original branch stays checked out");
+        }),
         new("git-remote-commands", "Push and pull the current repository and choose how to join diverged branches", async c =>
         {
             using var repository = await GitRemoteFixture.CreateAsync(c);

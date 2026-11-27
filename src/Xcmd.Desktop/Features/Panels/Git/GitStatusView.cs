@@ -54,11 +54,14 @@ public sealed class GitStatusView : Border
     internal bool HasActionFocus => ActionsButton.IsKeyboardFocusWithin || workflows.IsKeyboardFocusWithin;
     public MenuItem CommitCommand { get; } = new MenuItem() { Header = "_Commit repository with Claude Code…" }.WithFeedbackId("GitStatusView.CommitCommand");
     public MenuItem LogCommand { get; } = new MenuItem() { Header = "_Log of current folder" }.WithFeedbackId("GitStatusView.LogCommand");
+    private readonly MenuItem branches = new MenuItem { Header = "_Other branches…" }.WithFeedbackId("GitStatusView.Branches");
     private readonly MenuItem push = new MenuItem { Header = "P_ush" }.WithFeedbackId("GitStatusView.Push");
     private readonly MenuItem pull = new MenuItem { Header = "_Pull (fast-forward only)" }.WithFeedbackId("GitStatusView.Pull");
     private readonly MenuItem pullRebase = new MenuItem { Header = "Pull with _rebase" }.WithFeedbackId("GitStatusView.PullRebase");
     private readonly MenuItem pullMerge = new MenuItem { Header = "Pull with _merge" }.WithFeedbackId("GitStatusView.PullMerge");
     public event Action? LogRequested;
+    public event Action<string>? BranchesRequested;
+    public event Action<string, string>? SwitchBranchRequested;
     public event Action<string>? CommitRequested;
     public event Action<string, GitRemoteCommand>? RemoteCommandRequested;
     public event Action<ExternalLaunch>? WorkflowRunRequested;
@@ -102,7 +105,17 @@ public sealed class GitStatusView : Border
         AutomationProperties.SetAutomationId(CommitCommand, id + ".git.commit");
         CommitCommand.Name = id + "GitCommit";
         ToolTip.SetTip(CommitCommand, "Open Claude Code to commit all changes in this repository.");
-        Actions.ItemsSource = new[] { LogCommand, CommitCommand, push, pull, pullRebase, pullMerge };
+        var recent = Enumerable.Range(0, GitBranches.RecentBranchLimit).Select(_ => GitBranchMenu.Create(name =>
+        {
+            if (actionRoot != null && Status?.Root == actionRoot) SwitchBranchRequested?.Invoke(actionRoot, name);
+        })).ToArray();
+        var separator = new Separator().WithFeedbackId("GitStatusView.branchSeparator");
+        Control[] menuItems = [LogCommand, CommitCommand, push, pull, pullRebase, pullMerge, separator, .. recent, branches];
+        Actions.ItemsSource = menuItems;
+        branches.Click += (_, _) =>
+        {
+            if (actionRoot != null && Status?.Root == actionRoot) BranchesRequested?.Invoke(actionRoot);
+        };
         BindRemoteCommands();
         LogCommand.Click += (_, _) => LogRequested?.Invoke();
         Actions.Opened += (_, _) =>
@@ -110,6 +123,7 @@ public sealed class GitStatusView : Border
             actionDirectory = directory;
             actionRoot = Status?.Root;
             UpdateRemoteMenu(Status);
+            GitBranchMenu.Show(recent, Status);
         };
         ActionsButton.Click += (_, _) => { if (Status != null) Actions.Open(ActionsButton); };
         CommitCommand.Click += (_, _) => { if (actionDirectory.Length > 0) CommitRequested?.Invoke(actionDirectory); };

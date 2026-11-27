@@ -32,6 +32,13 @@ that I can understand how my files relate to current repository work.
   more than one change type in the same status column.
   Feedback 2e4213d and 3a65f60. Codex session ID 01a1ef14-4083-7e53-915f-46aed5aab6cd.
 
+- List local branches by the date of their latest commit, newest first. Show the date beside each name.
+  Show Git's error if a switch fails. Point Taken #117 and #118.
+  Codex session IDs 01a21c45-9e63-7731-8328-f16f9cf3aa48 and 01a21cbb-baea-7440-b09f-1078cbcb722b.
+
+- Show up to four recent local branches above **Other branches…** in the repository actions menu.
+  Point Taken #119. Codex session ID 01a21cbf-e56b-7f11-b11a-9104419c700a.
+
 - Show CI status beside the repository actions button. Keep the branch and
   change counts inside the button. Point Taken #47 and #63.
   Codex session ID 01a207d0-dfad-7c01-89a6-e6ae815ea892.

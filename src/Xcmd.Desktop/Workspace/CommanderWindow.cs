@@ -155,8 +155,7 @@ public sealed partial class CommanderWindow : Window
         CommandLine.Focused += () => { Left.SetActive(false); Right.SetActive(false); };
         root.Children.Add(frame.BuildLayout(this, viewing.QuickViewControl));
         Content = root;
-        GitCommitController.Attach([Left, Right], Activate, RestoreFocusAfterGitAction,
-            () => GitHistory.Open(selectedItem: false), ui, LaunchExternalAsync, tools.Claude);
+        WorkspaceGitActions.Attach(this, operationDialogs, ui, RestoreFocusAfterGitAction, LaunchExternalAsync, tools.Claude);
         var shellContext = new ShellInteractionContext(this, [Left, Right], Activate, ui, RecordActivity);
         var packing = new ZipPackingController(operationDialogs, operationStore, Operations, Execute, () => HasOpenDialog);
         shell.Attach(shellContext, packing, () => !Feedback.IsActive && !HasOpenDialog,
